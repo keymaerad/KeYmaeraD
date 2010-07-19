@@ -3,10 +3,6 @@ SCALAFILES= banyan.scala  worker.scala coordinator.scala \
 	DLprover.scala DLclient.scala parse.scala  printing.scala \
 	DLrunner.scala
 
-SCALAFLYLES= $(SCALAFILES) banyan-fly.scala
-
-BANYANFILES = banyan.scala worker.scala coordinator.scala printing.scala
-
 PROVERFILES = rational.scala arithmetic.scala \
 		DLprover.scala DLclient.scala parse.scala
 
