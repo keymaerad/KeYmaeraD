@@ -261,7 +261,7 @@ final object AM {
   }
 
   def setify[A <% Ordered[A]](lst: List[A]) : List[A] = {
-    if(setifiedp(lst)) lst else lst.sort((x,y) => x < y).removeDuplicates
+    if(setifiedp(lst)) lst else lst.sortWith((x,y) => x < y).distinct
   }
 
   
@@ -735,8 +735,8 @@ final object AM {
 
 
 
-  val rZero = new Rational(0);
-  val rOne = new Rational(1);
+  val rZero = new Exact.Rational(0);
+  val rOne = new Exact.Rational(1);
 
   val zero = Num(rZero)
   val one = Num(rOne)
@@ -939,9 +939,9 @@ final object AM {
 
   def poly_diffn(x: Term, n: Int, p: Term): Term = p match {
     case Fn("+", List(c, Fn("*", List(y,q)))) if y == x => 
-      Fn("+", List(poly_cmul(new Rational(n), c), 
+      Fn("+", List(poly_cmul(new Exact.Rational(n), c), 
                    Fn("*", List(x, poly_diffn(x,n+1,q)))))
-    case _ => poly_cmul( new Rational(n), p)
+    case _ => poly_cmul( new Exact.Rational(n), p)
   }
 
   def poly_diff(vars: List[String], p: Term): Term = p match {
@@ -984,7 +984,7 @@ final object AM {
     val s_1 = swap(swf,s);
     val s_0 = try { assoc(p_1,sgns) } catch { case e => s_1};
     if(s_1 == s_0 || (s_0 == Nonzero() && (s_1==Positive() || s_1==Negative())))
-      (p_1,s_1)::(sgns --  List((p_1,s_0)))
+      (p_1,s_1)::(sgns filterNot ( List((p_1,s_0)) contains ))
     else throw new Error("assertsign 1")
     }
   }
@@ -1130,7 +1130,7 @@ final object AM {
                 List[(Term,Sign)]  => FOFormula = sgns => pols match {
 //    case Nil => monicize(vars,dun,cont,sgns)
 //    case Nil => matrix(vars,dun,cont,sgns)
-    case Nil => val (mols,swaps) = List.unzip(dun.map(monic));
+    case Nil => val (mols,swaps) = dun.map(monic).unzip;
                 val sols = setify(mols);
                 val indices = mols.map(p => index(p, sols));
                 def transform(m: List[Sign]) : List[Sign] = {
@@ -1263,7 +1263,7 @@ final object AM {
 
   def elim_fractional_literals(fm: FOFormula): FOFormula = {
     def elim_fraction_term : Term => Term = tm => tm match {
-      case Num(Rational(p,q)) => 
+      case Num(Exact.Rational(p,q)) => 
         if(p == BigInt(0)) Num(Exact.Integer(0))
         else if (q == BigInt(1)) Num(Exact.Integer(p))
 	else  Fn("/", List(Num(Exact.Integer(p)), Num(Exact.Integer(q))))
@@ -1307,17 +1307,6 @@ final object AM {
 }
 
 
-class Arithmetic(fm: FOFormula, res : Ref[Option[Boolean]]) extends Thread {
-
-
-  override def run(): Unit = {
-    println("thread says: hello world.")
-    res.set(None)
-    val r = AM.real_elim_goal(fm)
-    res.set(Some(r))
-    exit
-  }
-}
 
 
   
