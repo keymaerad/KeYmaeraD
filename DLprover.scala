@@ -94,7 +94,7 @@ final object Prover {
 
     }
 
-  def varsOfTerm(tm: Term): Set[String] = tm match {
+  def varsOfTerm(tm: Term): HashSet[String] = tm match {
     case Var(x)  =>
       HashSet.empty + x
     case Fn(f, ps) =>

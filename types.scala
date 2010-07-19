@@ -43,9 +43,16 @@ case class Diamond(hp: HP, rest: DLFormula) extends DLFormula
 
 abstract class Goal
 case class Sequent(ctxt: List[FOFormula], 
-                   succedent: DLFormula) extends Goal
+                   succedent: List[DLFormula]) extends Goal
 //case class FOGoal(fm: FOFormula) extends Goal
 
+
+
+
+case class ProofRule( name: String,
+                      premiseFV: List[String],
+                      premises: List[Sequent],
+                      conclusion: Sequent)
 
 
 abstract class Result
