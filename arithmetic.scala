@@ -1,4 +1,4 @@
-//package DLprover
+package DLBanyan
 //package prover
 //package cohenhormander;
 

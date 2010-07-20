@@ -1,4 +1,4 @@
-package DLprover
+package DLBanyan
 //package cohenhormander;
 
 import java.io.BufferedWriter
@@ -7,7 +7,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.InputStream
 
-import banyan._
+
 
 
 class ParseFailure(s: String, ast: Any, rest: P.Tokens ) extends Exception {
@@ -21,7 +21,7 @@ object P {
   type Tokens = List[String];
 
   def explode(s: String): List[Char] = 
-    List.fromArray(s.toCharArray())
+    s.toCharArray().toList
 
   def matches(s: String): Char => Boolean = {
     (c: Char) => (s contains c)
@@ -149,8 +149,8 @@ object P {
       val (ifn,afn) = fns;
       inp match {
         case Nil => throw new ParseFailure("formula expected", (),inp)
-        case "false"::rest => (False(), rest)
-        case "true"::rest => (True(),rest)
+        case "false"::rest => (False, rest)
+        case "true"::rest => (True,rest)
         case "("::rest => 
               try { ifn(vs,inp) } catch { case p:ParseFailure =>
                 parse_bracketed (inp => parse_formula(fns, vs, inp),
@@ -214,7 +214,7 @@ object P {
                 parse_bracketed(parse_list(",",parse_term(vs)),
                                 ")",rest))
       case a::rest => 
-        (if (is_const_name(a) && (! vs.contains(a))) Num(new ExactInt(a)) 
+        (if (is_const_name(a) && (! vs.contains(a))) Num(new Exact.Integer(a)) 
          else Var(a),
          rest)
     }
@@ -303,9 +303,9 @@ object P {
           val rest4 = parse_tok("(", rest3)
           val (invs, rest5) = parse_list(",",parse_formula0)(rest4)
           val rest6 = parse_tok(")", rest5)
-          (Repeat(body,True(),invs), rest6)
+          (Repeat(body,True,invs), rest6)
         case _ =>
-          (Repeat(body,True(), Nil), rest2)
+          (Repeat(body,True, Nil), rest2)
       }
     case _ => throw new ParseFailure("repeat", (), inp)
   }
@@ -442,8 +442,8 @@ object P {
 
   def print_formula: (Int => Pred => Unit) => FOFormula => Unit = pfn => {
     def print_formula1: Int => FOFormula => Unit = pr => fm => fm match {
-      case False() => print("false")
-      case True() => print("true")
+      case False => print("false")
+      case True => print("true")
       case Atom(pargs) => pfn(pr)(pargs)
       case Not(p) => bracket (pr > 10)(1)(print_prefix(10))("~")(p)
       case And(p,q) => bracket (pr > 8)(0)(print_infix(8)("&"))(p)(q)
@@ -482,8 +482,8 @@ object P {
    = pfn => {
     def string_of_formula1: Int => FOFormula => String 
      = pr => fm => fm match {
-      case False() => "false"
-      case True() => "true"
+      case False => "false"
+      case True => "true"
       case Atom(pargs) => pfn(pr)(pargs)
       case Not(p) => 
         string_of_bracket(pr > 10)(1)(string_of_prefix(10))("~")(p)
@@ -701,8 +701,8 @@ object P {
 //------- redlog output
 
   def redlog_of_formula(fm: FOFormula) :  String  = fm match {
-      case False() => "false"
-      case True() => "true"
+      case False => "false"
+      case True => "true"
       case Atom(R(r,List(lhs, rhs))) => 
         "(" + redlog_of_term(lhs) + ")" + r +
         "(" + redlog_of_term(rhs) + ")"
@@ -765,8 +765,8 @@ object P {
 
   def mathematica_of_term(tm: Term): Expr = tm match {
     case Var(x) => math_sym(x)
-    case Num(ExactInt(n)) => math_int(n.toString)
-    case Num(Rational(p,q)) => bin_fun("Divide", 
+    case Num(Exact.Integer(n)) => math_int(n.toString)
+    case Num(Exact.Rational(p,q)) => bin_fun("Divide", 
                                        math_int(p.toString),
                                        math_int(q.toString))
     case Fn("^",List(tm1,tm2)) => 
@@ -806,8 +806,8 @@ object P {
 
 
     def mathematica_of_formula(fm: FOFormula) :  Expr  = fm match {
-      case False() => math_sym("False")
-      case True() => math_sym("True")
+      case False => math_sym("False")
+      case True => math_sym("True")
       case Atom(R(r,List(lhs, rhs))) => 
         bin_fun(math_name(r), 
                 mathematica_of_term(lhs),
@@ -849,7 +849,7 @@ import scala.util.parsing.combinator._
 class RedlogParser(in: InputStream) 
  extends StdTokenParsers with Application { 
   type Tokens = StdLexical ; val lexical = new StdLexical 
-  lexical.delimiters ++= List(":", "$", "(", ")", "+", "-", "*", "/").elements
+  lexical.delimiters ++= List(":", "$", "(", ")", "+", "-", "*", "/").iterator
  
    val br = new BufferedReader(new InputStreamReader(in))
    var ins = ""
@@ -889,8 +889,8 @@ class RedlogParser(in: InputStream)
  // this seems to work for now
   def boolLit: Parser[FOFormula] = 
     ident ^^ (x => x match { 
-      case "true" => True() 
-      case  "false" => False()})
+      case "true" => True 
+      case  "false" => False})
 
 
   def redlogLine: Parser[FOFormula] = 

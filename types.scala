@@ -1,3 +1,5 @@
+package DLBanyan
+
 abstract class Term
 case class Var(s: String) extends Term
 case class Fn(f: String, ps: List[Term]) extends Term
@@ -43,7 +45,7 @@ case class Diamond(hp: HP, rest: DLFormula) extends DLFormula
 
 abstract class Goal
 case class Sequent(ctxt: List[FOFormula], 
-                   succedent: List[DLFormula]) extends Goal
+                   succedent: DLFormula) extends Goal
 //case class FOGoal(fm: FOFormula) extends Goal
 
 
