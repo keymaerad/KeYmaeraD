@@ -12,9 +12,9 @@ object Nodes {
   private var nextID = 0
 
   def nextNodeID : NodeID = {
-    val r = nextID;
+    val res = nextID;
     nextID += 1;
-    r
+    res
   }
 
 
@@ -41,12 +41,14 @@ object Nodes {
   }
 
 
-
-
-
-
   val nodeTable = new scala.collection.mutable.HashMap[NodeID, ProofNode]
 
+
+  def newNode(t: NodeType, g: Goal): ProofNode = {
+    val res = ProofNode(t,g)
+    nodeTable.put(res.nodeID, res)
+    res
+  }
 
 
   

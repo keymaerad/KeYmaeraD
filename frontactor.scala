@@ -22,6 +22,9 @@ class FrontActor extends Actor {
         case 'here =>
           displayThisNode
           sender ! ()
+        case ('load, filename:String) =>
+          loadfile(filename)
+          sender ! ()
         case msg =>
           println("got message: " + msg)
           sender ! ()
@@ -46,10 +49,12 @@ class FrontActor extends Actor {
     val inp = 
      io.Source.fromFile(filename).getLines.reduceLeft(_+_);
     
-    val g0 = 
+    val g = 
       Parser.sequent_parser(inp); 
 
-    val nd = ProofNode(OrNode, g0)
+    val nd = newNode(OrNode,g)
+    
+
 
     ()
 
