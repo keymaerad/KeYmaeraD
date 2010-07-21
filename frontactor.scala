@@ -38,6 +38,9 @@ class FrontActor extends Actor {
     nodeTable.get(hereNode) match {
       case Some(nd) =>
         println (nd)
+        println("nodeID = " + nd.nodeID)
+        println("status = " + nd.status)
+        println("children = " + nd.children)
       case None =>
         println ("node " + hereNode + " does not exist.")
     }
@@ -53,7 +56,8 @@ class FrontActor extends Actor {
       Parser.sequent_parser(inp); 
 
     val nd = newNode(OrNode,g)
-    
+
+    hereNode = nd.nodeID
 
 
     ()

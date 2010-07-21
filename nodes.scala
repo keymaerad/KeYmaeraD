@@ -38,6 +38,16 @@ object Nodes {
     var children : List[NodeID] = Nil
     var status = Open
 
+/*
+    override def toString : String = {
+      t.toString + "\n" +
+      g.toString + "\n" +
+          
+      println("nodeID = " + nodeID)
+      pri
+      }
+*/
+
   }
 
 
