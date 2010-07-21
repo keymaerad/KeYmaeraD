@@ -10,7 +10,7 @@ import java.io.InputStream
 
 
 
-class ParseFailure(s: String, ast: Any, rest: P.Tokens ) extends Exception {
+class ParseFailure(s: String, ast: Any, rest: Parser.Tokens ) extends Exception {
   override def toString() : String = {
     "ParseFailure: " + s + "\n parsed: " + ast + "\n rest: " + rest
    }

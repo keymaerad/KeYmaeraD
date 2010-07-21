@@ -9,6 +9,14 @@ object Nodes {
 
   type NodeID = Int
 
+  private var nextID = 0
+
+  def nextNodeID : NodeID = {
+    val r = nextID;
+    nextID += 1;
+    r
+  }
+
 
   abstract class NodeType
   case object AndNode extends NodeType
@@ -24,8 +32,9 @@ object Nodes {
 
 
   case class ProofNode(t: NodeType, g: Goal) {
-    //  val nodeType : NodeType = t
-    //  val goal : Goal = g
+    //val nodeType : NodeType = t
+    //val goal : Goal = g
+    val nodeID = nextNodeID 
     var children : List[NodeID] = Nil
     var status = Open
 
@@ -36,9 +45,9 @@ object Nodes {
 
 
 
-  val nodeTable = new scala.collection.mutable.HashMap[NodeID, TreeNode]
+  val nodeTable = new scala.collection.mutable.HashMap[NodeID, ProofNode]
 
-  var nextID = 0
+
 
   
 

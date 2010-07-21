@@ -49,7 +49,7 @@ class FrontActor extends Actor {
     val g0 = 
       Parser.sequent_parser(inp); 
 
-    
+    val nd = ProofNode(OrNode, g0)
 
     ()
 
