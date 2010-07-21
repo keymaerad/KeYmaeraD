@@ -16,7 +16,7 @@ class ParseFailure(s: String, ast: Any, rest: P.Tokens ) extends Exception {
    }
 }
 
-object P {
+object Parser {
   type Token = String;
   type Tokens = List[String];
 

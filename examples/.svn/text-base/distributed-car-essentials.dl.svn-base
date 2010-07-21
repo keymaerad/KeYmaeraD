@@ -1,0 +1,36 @@
+  x1<x2,
+  v1^2-v2^2 < 2*b*(x2-x1),
+   v1>=0,
+    v2>=0,
+     b>0 ,
+     aa>=0 ,
+    ep>0
+  |- 
+   [{
+    (a2:= -b ++ a2:= aa);
+    ((?( 2 * b * x2 > 2 * b * x1 + 
+                (v1^2 - v2^2 ) + (aa + b)*(aa*ep^2 + 2 * ep*v1));
+        a1 := aa)
+    ++
+        a1 := -b
+    );
+    (t:=0;
+       {x1'= v1, v1' =a1, x2' =v2, v2' =a2, t'=1; v1>=0 & v2>=0 & t<=ep} 
+        @solution(forall s . x1(s) = x1 + v1 * s + a1 * s^2 * (1/2),
+                  forall s . v1(s) = v1 + a1 * s,
+                  forall s . x2(s) = x2 + v2 * s + a2 * s^2 * (1/2) ,
+                  forall s . v2(s) = v2 + a2 * s,
+                  forall s . t(s) = t + s  )  )
+      
+    }*@invariant(
+       (v1^2-v2^2 < 2*b*(x2-x1)) 
+           & x1<x2 
+           & v1>=0 
+           & v2>=0
+           & aa >= 0
+           & b > 0
+           & ep > 0
+       )
+   ] x1<x2
+  
+

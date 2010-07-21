@@ -1,0 +1,17 @@
+C > 0,
+C < 1,
+H > 0,
+G > 0
+ |- [v:= 0; y:= H; 
+     { {y' = v, v' = -G; y >= 0}
+         @solution(forall t . y(t) = y + v * t  - G * t^2 * (1 / 2),
+                   forall t . v(t) = v - G * t
+                   ) ; 
+         ((? y = 0; v := - C * v) ++ (? true))   }* 
+	         @invariant(C > 0 &
+			    C < 1 &
+			    H > 0 &
+			    G > 0 &
+                            y >= 0 & 
+			    v*v + 2 * G * y <= 2 * G * H )   ] y <= H
+

@@ -57,9 +57,6 @@ case class ProofRule( name: String,
                       conclusion: Sequent)
 
 
-abstract class Status
-case object Proved extends Status
-case object Disproved extends Status
-case object Irrelevant extends Status
+
 
 

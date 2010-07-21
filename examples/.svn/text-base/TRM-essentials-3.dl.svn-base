@@ -1,0 +1,42 @@
+    (x1-y1)^2 + (x2-y2)^2 >= protectedzone^2,
+   (y1-z1)^2 + (y2-z2)^2 >= protectedzone^2,
+   (x1-z1)^2 + (x2-z2)^2 >= protectedzone^2
+ |-
+   [{
+       {
+         {x1'=d1,x2'=d2, d1'= -om*d2, d2'=om*d1,
+          y1'=e1,y2'=e2, e1'= -omy*e2, e2'=omy*e1,
+          z1'=f1,z2'=f2, f1'= -omz*f2, f2'=omz*f1;
+          ((x1-y1)^2 + (x2-y2)^2 >= protectedzone^2
+          &(y1-z1)^2 + (y2-z2)^2 >= protectedzone^2
+          &(x1-z1)^2 + (x2-z2)^2 >= protectedzone^2)}
+       }*@invariant((x1-y1)^2 + (x2-y2)^2 >= protectedzone^2
+          &(y1-z1)^2 + (y2-z2)^2 >= protectedzone^2
+          &(x1-z1)^2 + (x2-z2)^2 >= protectedzone^2);
+       c1:=* ; c2:=* ; om:=* ;
+       d1:= -om*(x2-c2); d2:=om*(x1-c1);
+       e1:= -om*(y2-c2); e2:=om*(y1-c1);
+       f1:= -om*(z2-c2); f2:=om*(z1-c1);
+       {x1'=d1,x2'=d2, d1'= -om*d2,d2'=om*d1,
+        y1'=e1,y2'=e2, e1'= -om*e2,e2'=om*e1,
+        z1'=f1,z2'=f2, f1'= -om*f2,f2'=om*f1; true}
+       @invariant( d1= -om*(x2-c2) & d2=om*(x1-c1)
+                  & e1= -om*(y2-c2) & e2=om*(y1-c1)
+                  & f1= -om*(z2-c2) & f2=om*(z1-c1), 
+                  (x1-y1)^2 + (x2-y2)^2 >= protectedzone^2             
+                  &(y1-z1)^2 + (y2-z2)^2 >= protectedzone^2
+                  &(x1-z1)^2 + (x2-z2)^2 >= protectedzone^2)
+    }*@invariant((x1-y1)^2 + (x2-y2)^2 >= protectedzone^2
+       &(y1-z1)^2 + (y2-z2)^2 >= protectedzone^2
+       &(x1-z1)^2 + (x2-z2)^2 >= protectedzone^2 )] 
+
+       (x1-y1)^2 + (x2-y2)^2 >= protectedzone^2
+      &(y1-z1)^2 + (y2-z2)^2 >= protectedzone^2
+      &(x1-z1)^2 + (x2-z2)^2 >= protectedzone^2
+    
+ 
+
+    
+  
+
+

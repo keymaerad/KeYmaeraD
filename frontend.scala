@@ -8,13 +8,13 @@ object FrontEnd {
 
   var frontactor = new FrontActor;
 
-  def begin : Unit = {
-    println ("Welcome to DLBanyan.")
-    frontactor.start()
-    frontactor ! 'hi
+//  def begin : Unit = {
+  println ("Welcome to DLBanyan.")
+  frontactor.start()
+//    frontactor ! 'hi
     
 
-  }
+//  }
 
 
 
