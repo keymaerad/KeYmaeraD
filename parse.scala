@@ -6,15 +6,116 @@ import java.io.OutputStreamWriter
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.InputStream
+import java.io.FileInputStream
+
+
+import scala.util.parsing.combinator.lexical._
+import scala.util.parsing.combinator.syntactical._
+import scala.util.parsing.combinator._
+
+
+class DLLexical extends StdLexical {
+  override def identChar = letter | elem('_') | elem('\'')
+}
+
+
+class DLParser(in: InputStream) 
+ extends StdTokenParsers { 
+  type Tokens = StdLexical ; val lexical = new DLLexical
+  lexical.delimiters ++= List(",", ";", "(", ")","[","]","{","}",
+                             "=", "<", ">", ">=", ">=", "<>",
+                              "+","-","*", "/", "^",
+                             "++", ":=", "@", "?", "\'",
+                             "&", "|", "<=>", "==>", "|-"
+                            ).iterator
+ 
+   lexical.reserved ++= List("forall", "exists",
+                             "true", "false",
+                             "solution", "invariant"
+                           ).iterator
+
+   val br = new BufferedReader(new InputStreamReader(in))
+   var ins = ""
+   var ln = br.readLine()
+   while (ln != null){
+     println( ln)
+     ins = ins + ln
+     ln = br.readLine()
+   }
+
+   println("input = " + ins)
+
+// these are from a parsercombinator tutorial
+  def expr: Parser[Int]
+   = term*(keyword("+") ^^^ {(x: Int, y: Int) 
+                           => x + y} 
+                    | keyword("-") ^^^ {(x: Int, y: Int) 
+                              => x - y}) 
+  def term
+   = factor*(this.keyword("*").^^^ {(x: Int, y: Int) 
+                             => x * y}  
+             | keyword("/") ^^^ {(x: Int, y: Int) 
+                                =>  x / y}) 
+  def factor: Parser[Int] = 
+    "(" ~> expr <~  ")" | numericLit ^^ (_.toInt) 
+
+//  def padding: Parser[Unit] =
+//    success | keyword ("START") ~ "$"
+
+
+ // this seems to work for now
+  def boolLit: Parser[Formula] = 
+    ident ^^ (x => x match { 
+      case "true" => True 
+      case  "false" => False})
+
+
+  def redlogLine: Parser[Formula] = 
+    numericLit ~> ":" ~> boolLit <~ "$"
+
+// skip until you hit "START"
+// read the next line
+///  def redlogLine: Parser[(Int, ] = 
+    
+
+  //Console.println(redlogLine(new lexical.Scanner(ins))) 
+
+
+   def result : Formula = {
+     var rdr: scala.util.parsing.input.Reader[lexical.Token] = new lexical.Scanner(ins);
+     while (! rdr.atEnd) {
+       val x = rdr.first;
+       println(x);
+       rdr = rdr.drop(1);
+     }
+//     redlogLine(new lexical.Scanner(ins)) match {
+//       case Success(r,_) => r
+//       case _ => throw new java.lang.Error("parse failure")
+//   }
+     True
+   }
+
+} 
 
 
 
 
+object P {
+  def openFile(f:String) : InputStream = {
+    new FileInputStream(f)
+  }
+
+}
+
+
+
+/*
 class ParseFailure(s: String, ast: Any, rest: Parser.Tokens ) extends Exception {
   override def toString() : String = {
     "ParseFailure: " + s + "\n parsed: " + ast + "\n rest: " + rest
    }
 }
+
 
 object Parser {
   type Token = String;
@@ -841,9 +942,7 @@ object Parser {
 }
 
 
-import scala.util.parsing.combinator.lexical._
-import scala.util.parsing.combinator.syntactical._
-import scala.util.parsing.combinator._
+
 
 
 class RedlogParser(in: InputStream) 
@@ -913,4 +1012,8 @@ class RedlogParser(in: InputStream)
 
 
 } 
+
+*/
+
+
 
