@@ -26,7 +26,7 @@ class DLParser(in: InputStream)
                              "=", "<", ">", ">=", ">=", "<>",
                               "+","-","*", "/", "^",
                              "++", ":=", "@", "?", "\'",
-                             "&", "|", "<=>", "==>", "|-"
+                             "&", "|", "<=>", "==>", "|-", "."
                             ).iterator
  
    lexical.reserved ++= List("forall", "exists",
@@ -45,22 +45,74 @@ class DLParser(in: InputStream)
 
    println("input = " + ins)
 
-// these are from a parsercombinator tutorial
-  def expr: Parser[Int]
-   = term*(keyword("+") ^^^ {(x: Int, y: Int) 
-                           => x + y} 
-                    | keyword("-") ^^^ {(x: Int, y: Int) 
-                              => x - y}) 
-  def term
-   = factor*(this.keyword("*").^^^ {(x: Int, y: Int) 
-                             => x * y}  
-             | keyword("/") ^^^ {(x: Int, y: Int) 
-                                =>  x / y}) 
-  def factor: Parser[Int] = 
-    "(" ~> expr <~  ")" | numericLit ^^ (_.toInt) 
+   def term: Parser[Term] = 
+     prod*("+" ^^^ {(x:Term, y:Term) => Fn("+", List(x,y))} 
+         | "-" ^^^ {(x: Term, y: Term) => Fn("-", List(x,y))}) 
+     
+   def prod: Parser[Term] =
+     factor*("*" ^^^ {(x: Term, y: Term) 
+                             => Fn("*", List(x, y))}  
+             | "/" ^^^ {(x: Term, y: Term) 
+                                =>  Fn("/", List(x, y))})
 
-//  def padding: Parser[Unit] =
-//    success | keyword ("START") ~ "$"
+   def factor: Parser[Term] = 
+      atomicTerm ~ "^" ~ numericLit ^^ 
+             {case x ~ "^" ~ y => 
+                  Fn("^", List(x,Num(Exact.Integer(Integer.parseInt(y)))))} |
+      atomicTerm
+
+   def atomicTerm : Parser[Term] = 
+      "(" ~> term <~  ")" | 
+     numericLit ^^ (x => Num(Exact.Integer(Integer.parseInt(x)))) | 
+     ident ^^ (x => Var(x))
+
+
+   def pred : Parser[Pred] = 
+     term ~ ("=" | "<" | ">" | "<=" | ">=" ) ~ term ^^
+       { case t1 ~ r ~ t2 =>
+          R(r, List(t1,t2))}
+
+
+
+   def formula : Parser[Formula] = 
+     formula1*( "<=>" ^^^ {(f1,f2) => Iff(f1,f2)})
+
+   def formula1 : Parser[Formula] = 
+     formula2*( "==>" ^^^ {(f1,f2) => Imp(f1,f2)})
+
+   def formula2 : Parser[Formula] = 
+     formula3*( "|" ^^^ {(f1,f2) => Or(f1,f2)})
+
+   def formula3 : Parser[Formula] = 
+     formula4*( "&" ^^^ {(f1,f2) => And(f1,f2)})
+
+   def formula4 : Parser[Formula] = 
+     "(" ~> formula <~  ")" | 
+     pred ^^ (x => Atom(x))  |
+     "true" ^^^ True |
+     "false" ^^^ False |
+     "forall" ~> ident ~ "."~ formula ^^ { case x ~ "." ~ f => Forall(x,f)} |
+     "exists" ~> ident ~ "."~ formula ^^ { case x ~ "." ~ f => Exists(x,f)} |
+     ("[" ~> hp <~ "]") ~ formula ^^ {case a ~ f => Box(a,f)}
+
+
+   def hp : Parser[HP] =
+     hp1*("++" ^^^ {(p1,p2) => Choose(p1,p2)})
+
+   def hp1 : Parser[HP] = 
+     hp2*(";" ^^^ {(p1,p2) => Seq(p1,p2)})
+
+   def hp2 : Parser[HP] = 
+     "(" ~> hp <~  ")" | 
+     "{" ~> hp  <~ "}" <~ "*" ^^ { x => Repeat(x, True, Nil)} 
+//     "{" ~> (diffeq*("," ^^^ {(x
+
+
+  def diffeq : Parser[(String,Term)] = 
+    ident ~ "=" ~ term ^?
+      {case s ~ "=" ~ tm if s.last == '\'' =>
+        ((s.substring(0,s.length - 1), tm))}
+   
 
 
  // this seems to work for now
@@ -88,10 +140,12 @@ class DLParser(in: InputStream)
        println(x);
        rdr = rdr.drop(1);
      }
-//     redlogLine(new lexical.Scanner(ins)) match {
-//       case Success(r,_) => r
-//       case _ => throw new java.lang.Error("parse failure")
-//   }
+     formula(new lexical.Scanner(ins)) match {
+       case Success(r,_) => println("success! " + r)
+       case f => 
+         println(f)
+         throw new java.lang.Error("parse failure")
+     }
      True
    }
 
