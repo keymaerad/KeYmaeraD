@@ -349,14 +349,15 @@ final object Prover {
 abstract class SearchStrategy
 case class BreadthFirst() extends SearchStrategy
 case class DepthFirst() extends SearchStrategy
-
+*/
 
 
 abstract class ProofRule() {
-  def applyRule(succ: Sequent): List[TreeNode]
+  val numInputs: Int
+  def applyRule(inputs: List[FOFormula], succ: Sequent): List[Nodes.ProofNode]
 }
 
-
+/*
 object PRArithmeticFV extends ProofRule{
   def applyRule(sq: Sequent): List[TreeNode] = sq match {
     case Sequent(ctxt, NoModality(fo) ) => 

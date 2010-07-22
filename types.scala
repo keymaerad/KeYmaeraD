@@ -50,13 +50,13 @@ case class Sequent(ctxt: List[FOFormula],
 
 
 
-
+/*
 case class ProofRule( name: String,
                       premiseFV: List[String],
                       premises: List[Sequent],
                       conclusion: Sequent)
 
 
-
+*/
 
 
