@@ -23,7 +23,7 @@ class DLParser(in: InputStream)
  extends StdTokenParsers { 
   type Tokens = StdLexical ; val lexical = new DLLexical
   lexical.delimiters ++= List(",", ";", "(", ")","[","]","{","}",
-                             "=", "<", ">", ">=", ">=", "<>",
+                             "=", "<", ">", ">=", "<=", "<>",
                               "+","-","*", "/", "^",
                              "++", ":=", "@", "?", "\'",
                              "&", "|", "<=>", "==>", "|-", "."
@@ -65,6 +65,8 @@ class DLParser(in: InputStream)
    def atomicTerm : Parser[Term] = 
       "(" ~> term <~  ")" | 
      numericLit ^^ (x => Num(Exact.Integer(Integer.parseInt(x)))) | 
+     (ident <~ "(") ~ ( repsep(term, ",") <~ ")") ^^
+        {case f ~ xs => Fn(f, xs)} |
      ident ^^ (x => Var(x))
 
 
@@ -127,23 +129,10 @@ class DLParser(in: InputStream)
        
 
 
+   def sequent : Parser[Sequent] = 
+     repsep(formula, ",") ~ ("|-" ~> repsep(formula,",")) ^^ 
+        {case c ~ s => Sequent(c,s)}
 
- // this seems to work for now
-  def boolLit: Parser[Formula] = 
-    ident ^^ (x => x match { 
-      case "true" => True 
-      case  "false" => False})
-
-
-  def redlogLine: Parser[Formula] = 
-    numericLit ~> ":" ~> boolLit <~ "$"
-
-// skip until you hit "START"
-// read the next line
-///  def redlogLine: Parser[(Int, ] = 
-    
-
-  //Console.println(redlogLine(new lexical.Scanner(ins))) 
 
 
    def result : Formula = {
@@ -154,7 +143,7 @@ class DLParser(in: InputStream)
        println(x);
        rdr = rdr.drop(1);
      }
-     formula(new lexical.Scanner(ins)) match {
+     phrase(sequent)(new lexical.Scanner(ins)) match {
        case Success(r,next) if next.atEnd => 
          println("success! ")
          println(r)
