@@ -53,7 +53,8 @@ class DLParser(in: InputStream)
      factor*("*" ^^^ {(x: Term, y: Term) 
                              => Fn("*", List(x, y))}  
              | "/" ^^^ {(x: Term, y: Term) 
-                                =>  Fn("/", List(x, y))})
+                                =>  Fn("/", List(x, y))}) | 
+     "-" ~> prod ^^ { x => Fn("*", List(Num(Exact.negone),x))} 
 
    def factor: Parser[Term] = 
       atomicTerm ~ "^" ~ numericLit ^^ 
@@ -104,8 +105,10 @@ class DLParser(in: InputStream)
 
    def hp2 : Parser[HP] = 
      "(" ~> hp <~  ")" | 
-     "{" ~> hp  <~ "}" <~ "*" ^^ { x => Repeat(x, True, Nil)} 
-//     "{" ~> (diffeq*("," ^^^ {(x
+      "?" ~> formula ^^ { x => Check(x)}  |
+     "{" ~> hp  <~ "}" <~ "*" ^^ { x => Repeat(x, True, Nil)} | 
+     ("{" ~> rep1sep(diffeq, ",") <~ ";")  ~ formula <~ "}" ^^ 
+           {case dvs ~ f => Evolve(dvs,f,Nil,Nil)}
 
 
   def diffeq : Parser[(String,Term)] = 

@@ -12,6 +12,11 @@ case class
 
 object Exact {
 
+  val zero : Num = Integer(0);
+  val one : Num = Integer(1);
+  val negone : Num = Integer(-1);
+
+
  trait Num {
   def +(that: Num): Num 
   def -(that: Num): Num 
