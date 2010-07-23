@@ -76,8 +76,12 @@ class DLParser(in: InputStream)
           R(r, List(t1,t2))}
 
 
-
    def formula : Parser[Formula] = 
+     "forall" ~> ident ~ "."~ formula ^^ { case x ~ "." ~ f => Forall(x,f)} |
+     "exists" ~> ident ~ "."~ formula ^^ { case x ~ "." ~ f => Exists(x,f)} |
+     formula0
+
+   def formula0 : Parser[Formula] = 
      formula1*( "<=>" ^^^ {(f1,f2) => Iff(f1,f2)})
 
    def formula1 : Parser[Formula] = 
@@ -94,9 +98,8 @@ class DLParser(in: InputStream)
      pred ^^ (x => Atom(x))  |
      "true" ^^^ True |
      "false" ^^^ False |
-     "forall" ~> ident ~ "."~ formula ^^ { case x ~ "." ~ f => Forall(x,f)} |
-     "exists" ~> ident ~ "."~ formula ^^ { case x ~ "." ~ f => Exists(x,f)} |
-     ("[" ~> hp <~ "]") ~ formula ^^ {case a ~ f => Box(a,f)}
+     ("[" ~> hp <~ "]") ~ formula ^^ {case a ~ f => Box(a,f)} |
+     ("<" ~> hp <~ ">") ~ formula ^^ {case a ~ f => Diamond(a,f)} 
 
 
    def hp : Parser[HP] =

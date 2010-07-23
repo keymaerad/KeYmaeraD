@@ -1,10 +1,85 @@
 package DLBanyan
 
-import org.apache.commons.cli.Options
-import org.apache.commons.cli.CommandLine
+
+import scala.text._
+import scala.text.Document._
 
 
 object Printing {
+
+  def docOfList(lst:List[Document], sep: Document) : Document = lst match {
+    case Nil => DocNil
+    case x:: Nil => x
+    case x::xs => x :: sep ::  docOfList(xs,sep)
+  }
+
+  
+  def docOfTerm(tm: Term): Document = tm match {
+    case Var(x) =>
+      Document.text(x)
+    case Fn(f, List(x,y)) if List("+","-","*", "/", "^").contains(f) =>
+      text("(") :: docOfTerm(x) :: "+" :: docOfTerm(y) :: text(")")
+    case Fn(f, args) =>
+      Document.text(f) :: "(" :: 
+        docOfList(args.map(docOfTerm), text(",")) :: text(")")
+    case Num(n) =>
+      Document.text(n.toString)
+  }
+
+  def docOfFormula(fm: Formula): Document = fm match {
+    case True => text("true")
+    case False => text("false")
+    case And(fm1,fm2) => 
+      text("(") :: docOfFormula(fm1) :: text("&") :: 
+        docOfFormula(fm2) :: text(")")
+    case Or(fm1,fm2) => 
+      text("(") :: docOfFormula(fm1) :: text("|") :: 
+        docOfFormula(fm2) :: text(")")
+    case Imp(fm1,fm2) => 
+      text("(") :: docOfFormula(fm1) :: text("==>") :: 
+        docOfFormula(fm2) :: text(")")
+    case Iff(fm1,fm2) => 
+      text("(") :: docOfFormula(fm1) :: text("<=>") :: 
+        docOfFormula(fm2) :: text(")")
+    case Forall(x,fm) => 
+      text("forall ") :: text(x) :: text(".") ::
+          text("(") :: docOfFormula(fm) :: text(")")
+    case Exists(x,fm) => 
+      text("exists ") :: text(x) :: text(".") ::
+          text("(") :: docOfFormula(fm) :: text(")")
+    case Box(h,fm) =>
+      text("[") :: docOfHP(h) :: text("]") :: docOfFormula(fm)
+    case Diamond(h,fm) =>
+      text("<") :: docOfHP(h) :: text(">") :: docOfFormula(fm)
+  }
+
+
+  def docOfHP(h: HP) : Document = h match {
+    case Assign(x,tm) => 
+     text(x) :: text(":=") :: docOfTerm(tm)
+    case AssignAny(x) =>
+     text(x) :: text(":= *")
+    case Check(fm) =>
+      text("?") :: docOfFormula(fm)
+    case Seq(h1,h2) =>
+      docOfHP(h1) :: text(";") :/: docOfHP(h2)
+    case Choose(h1,h2) =>
+      text("(") :: docOfHP(h1) :: text(")") :: 
+          text("++") :/: text("(") :: docOfHP(h2) :: text(")")
+    case Repeat(h, inv, hnts) =>
+      text("{") :: docOfHP(h) :: text("}*")
+    case Evolve(derivs, reg, hnts, sols) =>
+      text("{") :: 
+       docOfList(derivs.map(docOfDeriv), text(",")) ::
+       text(";") ::
+       docOfFormula(reg) :: 
+       text("}")
+  }
+
+
+  def docOfDeriv(pr: (String,Term )) : Document = {
+    text(pr._1 +"'") :: text(" = ") :: docOfTerm(pr._2)
+  }
 
 
   def assoc[A,B](k: A, al: List[(A,B)]): Option[B] = al match {
@@ -14,6 +89,7 @@ object Printing {
     case Nil => None
   }
 
+/*
   type NodeLogEntry = (String, String, String)
   type NodeAttribute = (String, String)
   type NodeRecord = (String, List[NodeAttribute], List[NodeLogEntry])
@@ -512,7 +588,7 @@ object Printing {
 
   }
 
-
+*/
 
 }
 
