@@ -157,9 +157,9 @@ final object AM {
   }
 
   // yuck. Is there a better way to write this?
-  implicit def formula2Ordered(f: FOFormula): Ordered[FOFormula] = 
-    new Ordered[FOFormula] {
-      def compare(that: FOFormula): Int = f match {
+  implicit def formula2Ordered(f: Formula): Ordered[Formula] = 
+    new Ordered[Formula] {
+      def compare(that: Formula): Int = f match {
         case False => if(that == False) 0 else -1
         case True => that match {
           case False => 1
@@ -229,9 +229,9 @@ final object AM {
     }
 
   
-  implicit def formulaList2Ordered(flst: List[FOFormula])
-    : Ordered[List[FOFormula]] =  new Ordered[List[FOFormula]] {
-      def compare(that: List[FOFormula]): Int = (flst,that) match {
+  implicit def formulaList2Ordered(flst: List[Formula])
+    : Ordered[List[Formula]] =  new Ordered[List[Formula]] {
+      def compare(that: List[Formula]): Int = (flst,that) match {
         case (Nil, Nil) => 0
         case (Nil, _) => -1
         case (_, Nil) => 1
@@ -383,7 +383,7 @@ final object AM {
 
 
 
-  def psimplify1(fm: FOFormula): FOFormula = fm match {
+  def psimplify1(fm: Formula): Formula = fm match {
     case Not(False) => True
     case Not(True) => False
     case Not(Not(p)) => p
@@ -409,7 +409,7 @@ final object AM {
 
   /* Simplify a propositional formula. */
 
-  def psimplify(fm: FOFormula): FOFormula = fm match {
+  def psimplify(fm: Formula): Formula = fm match {
     case Not(p) => psimplify1(Not(psimplify(p)))
     case And(p,q) => psimplify1(And(psimplify(p),psimplify(q)))
     case Or(p,q) => psimplify1(Or(psimplify(p),psimplify(q)))
@@ -427,7 +427,7 @@ final object AM {
   }
 
 
-  def vari(fm: FOFormula): List[String] = fm match {
+  def vari(fm: Formula): List[String] = fm match {
     case False | True => Nil
     case Atom(R(p,args)) => unions(args.map(fvt))
     case Not(p) => vari(p)
@@ -439,7 +439,7 @@ final object AM {
     case Exists(x,p) => insert(x, vari(p))
   }
 
-  def fv(fm: FOFormula): List[String] = fm match {
+  def fv(fm: Formula): List[String] = fm match {
     case False | True => Nil
     case Atom(R(p,args)) => unions(args.map(fvt))
     case Not(p) => fv(p)
@@ -451,11 +451,11 @@ final object AM {
     case Exists(x,p) => subtract(fv(p),List(x) )
   }
 
-//  def quantify_fvs(fm: FOFormula): FOFormula = 
+//  def quantify_fvs(fm: Formula): Formula = 
 
 
  
-  def simplify1(fm: FOFormula): FOFormula = fm match {
+  def simplify1(fm: Formula): Formula = fm match {
     case Forall(x,p) => if( fv(p).contains(x) ) fm
                         else p
     case Exists(x,p) => if( fv(p).contains(x) ) fm
@@ -466,7 +466,7 @@ final object AM {
 
   /* Simplify a first order formula. */
 
-  def simplify(fm: FOFormula): FOFormula = fm match {
+  def simplify(fm: Formula): Formula = fm match {
     case Not(p) => simplify1(Not(simplify(p)))
     case And(p,q) => simplify1(And(simplify(p),simplify(q)))
     case Or(p,q) => simplify1(Or(simplify(p),simplify(q)))
@@ -484,30 +484,30 @@ final object AM {
     setify(allpairs(union[A],s1,s2))
   }
 
-  def purednf(fm: FOFormula): List[List[FOFormula]] = fm match {
+  def purednf(fm: Formula): List[List[Formula]] = fm match {
     case And(p,q) => distrib(purednf(p),purednf(q))
     case Or(p,q) => union(purednf(p),purednf(q))
     case _ => List(List(fm))
   }
 
   // does this list of formulas have a pair f and Not(f)?
-  def trivial(lits: List[FOFormula]): Boolean = {
+  def trivial(lits: List[Formula]): Boolean = {
     val (pos,neg) = lits.partition(positive(_));
     ! intersect(pos, setify(neg.map(negate))).isEmpty
   }
 
-  def simpdnf(fm: FOFormula): List[List[FOFormula]] = {
+  def simpdnf(fm: Formula): List[List[Formula]] = {
     if(fm == False) Nil else if(fm == True) List(Nil) else {
-    val djs = purednf(nnf(fm)).filter((x:List[FOFormula]) => ! trivial(x));
+    val djs = purednf(nnf(fm)).filter((x:List[Formula]) => ! trivial(x));
     djs.filter(d => !(djs.exists(d_1 => psubset(d_1,d))))
     }
   }
 
-  def dnf(fm: FOFormula): FOFormula = {
+  def dnf(fm: Formula): Formula = {
     list_disj(simpdnf(fm).map(list_conj))
   }
 
-  def nnf(fm: FOFormula): FOFormula = fm match {
+  def nnf(fm: Formula): Formula = fm match {
     case And(p,q) => And(nnf(p), nnf(q))
     case Or(p,q) => Or(nnf(p), nnf(q))
     case Imp(p,q) => Or(nnf(Not(p)), nnf(q))
@@ -524,14 +524,14 @@ final object AM {
     case _ => fm
   }
 
-  def separate(x: String, cjs: List[FOFormula]): FOFormula = {
+  def separate(x: String, cjs: List[Formula]): Formula = {
     val (yes,no) = cjs.partition(c => fv(c).contains(x));
     if(yes == Nil) list_conj(no) 
     else if(no == Nil) Exists(x,list_conj(yes))
     else And(Exists(x,list_conj(yes)), list_conj(no))
   }
   
-  def pushquant(x: String, p: FOFormula): FOFormula = {
+  def pushquant(x: String, p: Formula): Formula = {
 //    P.print_fol_formula(p);
 //    println();
     if(! fv(p).contains(x)) p else {
@@ -540,7 +540,7 @@ final object AM {
     }
   }
 
-  def miniscope(fm: FOFormula): FOFormula = {
+  def miniscope(fm: Formula): Formula = {
     fm match {
     case Not(p) => Not(miniscope(p))
     case And(p,q) => And(miniscope(p),miniscope(q))
@@ -553,7 +553,7 @@ final object AM {
 
 
 
-  def eval(fm: FOFormula, v: Pred => Boolean): Boolean = fm match {
+  def eval(fm: Formula, v: Pred => Boolean): Boolean = fm match {
     case False => false
     case True => true
     case Atom(x) => v(x)
@@ -572,7 +572,7 @@ final object AM {
          (">=", (r,s) => r >= s))
 
 
-  def evalc(fm: FOFormula) : FOFormula =  {
+  def evalc(fm: Formula) : Formula =  {
     onatoms(
       at => at match {
         case R(p,List(Num(n),Num(m))) => 
@@ -583,20 +583,20 @@ final object AM {
   }
 
 
-  def mk_and(p: FOFormula, q: FOFormula): FOFormula = And(p,q);
-  def mk_or(p: FOFormula, q: FOFormula): FOFormula = Or(p,q);
+  def mk_and(p: Formula, q: Formula): Formula = And(p,q);
+  def mk_or(p: Formula, q: Formula): Formula = Or(p,q);
 
-  def conjuncts(fm: FOFormula): List[FOFormula] = fm match {
+  def conjuncts(fm: Formula): List[Formula] = fm match {
     case And(p,q) => conjuncts(p) ++ conjuncts(q) 
     case _ => List(fm)
   }
 
-  def disjuncts(fm: FOFormula): List[FOFormula] = fm match {
+  def disjuncts(fm: Formula): List[Formula] = fm match {
     case Or(p,q) => disjuncts(p) ++ disjuncts(q) 
     case _ => List(fm)
   }
 
-  def onatoms(f: Pred => FOFormula, fm: FOFormula): FOFormula  = fm match {
+  def onatoms(f: Pred => Formula, fm: Formula): Formula  = fm match {
     case Atom(a) => f(a)
     case Not(p) => Not(onatoms(f,p))
     case And(p,q) => And(onatoms(f, p), onatoms(f,q))
@@ -608,14 +608,14 @@ final object AM {
     case _ => fm
   }
 
-  def simplify_terms(fm: FOFormula): FOFormula = {
+  def simplify_terms(fm: Formula): Formula = {
     onatoms( fol => fol match {
       case R(r,  List(t1,t2)) => Atom(R(r,List(tsimplify(t1),tsimplify(t2))))
       case _ => throw new Error("simplify terms.")
     }, fm)
   }
 
-  def overatoms[B](f: Pred => B => B, fm: FOFormula, b: B): B = fm match {
+  def overatoms[B](f: Pred => B => B, fm: Formula, b: B): B = fm match {
     case Atom(a) => f(a)(b)
     case Not(p) => overatoms(f,p,b)
     case And(p,q) => overatoms(f, p, overatoms(f,q,b))
@@ -627,25 +627,25 @@ final object AM {
     case _ => b
   }
 
-  def atom_union[A <% Ordered[A]](f: Pred => List[A], fm: FOFormula): List[A] = {
+  def atom_union[A <% Ordered[A]](f: Pred => List[A], fm: Formula): List[A] = {
     setify(overatoms( (h:Pred) => (t:List[A]) => f(h) ++ t, fm, Nil))
   }
 
    
-  def list_conj(l: List[FOFormula]) : FOFormula = l match {
+  def list_conj(l: List[Formula]) : Formula = l match {
     case Nil => True
     case f::Nil => f
     case f::fs => And(f, list_conj(fs))
   }
 
-  def list_disj(l: List[FOFormula]) : FOFormula = l match {
+  def list_disj(l: List[Formula]) : Formula = l match {
     case Nil => False
     case f::Nil => f
     case f::fs => Or(f, list_disj(fs))
   }
 
 
-  def qelim(bfn: FOFormula => FOFormula, x: String, p: FOFormula): FOFormula = {
+  def qelim(bfn: Formula => Formula, x: String, p: Formula): Formula = {
     val cjs = conjuncts(p);
     val (ycjs, ncjs) = cjs.partition(c => fv(c).contains(x));
     if(ycjs == Nil) p else {
@@ -657,11 +657,11 @@ final object AM {
   }
 
 
-  def lift_qelim(afn: (List[String], FOFormula) => FOFormula,
-                 nfn: FOFormula => FOFormula,
-                 qfn: List[String] => FOFormula => FOFormula) : 
-  FOFormula => FOFormula = {
-    def qelift(vars: List[String], fm: FOFormula): FOFormula = fm match {
+  def lift_qelim(afn: (List[String], Formula) => Formula,
+                 nfn: Formula => Formula,
+                 qfn: List[String] => Formula => Formula) : 
+  Formula => Formula = {
+    def qelift(vars: List[String], fm: Formula): Formula = fm match {
       case Atom(R(_,_)) => afn(vars,fm)
       case Not(p) => Not(qelift(vars,p))
       case And(p,q) => 
@@ -682,7 +682,7 @@ final object AM {
         val r = list_disj(djs2)
         println("");
         r
-//        list_disj(Parallel.pmap(djs, ((p1:FOFormula) => qelim(qfn(vars), x, p1))))
+//        list_disj(Parallel.pmap(djs, ((p1:Formula) => qelim(qfn(vars), x, p1))))
       case _ => fm
     }
     fm => {
@@ -695,23 +695,23 @@ final object AM {
    }
 
 
-  def negative(fm: FOFormula) : Boolean = fm match {
+  def negative(fm: Formula) : Boolean = fm match {
     case Not(p) => true
     case _ => false
   }
 
-  def positive(fm: FOFormula) : Boolean = fm match {
+  def positive(fm: Formula) : Boolean = fm match {
     case Not(p) => false
     case _ => true
   }
 
-  def negate(fm: FOFormula) : FOFormula = fm match {
+  def negate(fm: Formula) : Formula = fm match {
     case Not(p) => p
     case p => Not(p)
   }
 
-  def cnnf(lfn:  FOFormula => FOFormula ) : FOFormula => FOFormula  =  {
-    def cnnf_aux(fm: FOFormula): FOFormula = fm match {
+  def cnnf(lfn:  Formula => Formula ) : Formula => Formula  =  {
+    def cnnf_aux(fm: Formula): Formula = fm match {
       case And(p,q) => And(cnnf_aux(p), cnnf_aux(q))
       case Or(p,q) => Or(cnnf_aux(p), cnnf_aux(q))
       case Imp(p,q) => Or(cnnf_aux(Not(p)), cnnf_aux(q))
@@ -851,7 +851,7 @@ final object AM {
   }
 
 
-  def polyatom(vars: List[String], fm: FOFormula): FOFormula = fm match {
+  def polyatom(vars: List[String], fm: Formula): Formula = fm match {
     case Atom(R(a,List(s,t))) =>
       val r = Atom(R(a,List(polynate(vars,Fn("-",List(s,t))),zero)));
       r
@@ -990,8 +990,8 @@ final object AM {
   }
 
   final def split_zero(sgns: List[(Term,Sign)], pol: Term, 
-                 cont_z: List[(Term,Sign)] => FOFormula,
-                 cont_n: List[(Term,Sign)] => FOFormula) : FOFormula 
+                 cont_z: List[(Term,Sign)] => Formula,
+                 cont_n: List[(Term,Sign)] => Formula) : Formula 
   = try {
       val z = findsign(sgns,pol);
       (if(z == Zero()) cont_z else cont_n)(sgns)
@@ -1013,7 +1013,7 @@ final object AM {
 
 
 
- def testform(pmat: List[(Term, Sign)], fm: FOFormula): Boolean = {
+ def testform(pmat: List[(Term, Sign)], fm: Formula): Boolean = {
 //   println("in testform. pmat = ");
 //   pmat.map( x => {print("("); 
 //                   P.printert(x._1); 
@@ -1067,8 +1067,8 @@ final object AM {
 
 
 
-  def dedmatrix(cont: List[List[Sign]] => FOFormula,
-                 mat: List[List[Sign]]) : FOFormula = {
+  def dedmatrix(cont: List[List[Sign]] => Formula,
+                 mat: List[List[Sign]]) : Formula = {
     val l = (mat.head).length / 2;
     val mat1 = condense(mat.map((lst:List[Sign])=>inferpsign(lst.splitAt(l))));
 //    val mat1 = condense(Parallel.pmap(mat,(lst:List[Sign])=>inferpsign(lst.splitAt(l))));
@@ -1091,7 +1091,7 @@ final object AM {
    }
 
   def split_sign(sgns: List[(Term,Sign)], pol: Term, 
-                 cont: List[(Term,Sign)] => FOFormula) : FOFormula = 
+                 cont: List[(Term,Sign)] => Formula) : Formula = 
     findsign(sgns, pol) match {
       case Nonzero() => 
         val fm = Atom(R(">",List(pol,zero)));
@@ -1102,22 +1102,22 @@ final object AM {
 
   final def split_trichotomy(sgns: List[(Term,Sign)], 
                        pol: Term,
-                       cont_z: List[(Term,Sign)] => FOFormula,
-                       cont_pn: List[(Term,Sign)] => FOFormula) : FOFormula =
+                       cont_z: List[(Term,Sign)] => Formula,
+                       cont_pn: List[(Term,Sign)] => Formula) : Formula =
     split_zero(sgns,pol,cont_z,(s_1 => split_sign(s_1,pol,cont_pn)))
 
 
 /* inlined
   final def monicize(vars: List[String], 
                      pols: List[Term],
-                     cont: List[List[Sign]] => FOFormula,
-                     sgns: List[(Term,Sign)] ): FOFormula = {
+                     cont: List[List[Sign]] => Formula,
+                     sgns: List[(Term,Sign)] ): Formula = {
      val (mols,swaps) = List.unzip(pols.map(monic));
      val sols = setify(mols);
      val indices = mols.map(p => index(p, sols));
      def transform(m: List[Sign]) : List[Sign] = {
        (swaps zip indices).map( pr => swap(pr._1, el(pr._2, m)))}
-     val (cont_1 : (List[List[Sign]] => FOFormula)) = mat => cont(mat.map(transform));
+     val (cont_1 : (List[List[Sign]] => Formula)) = mat => cont(mat.map(transform));
      matrix(vars,sols,cont_1,sgns)
      }
 */
@@ -1126,8 +1126,8 @@ final object AM {
   final def casesplit(vars: List[String],
                 dun: List[Term],
                 pols: List[Term],
-                cont: List[List[Sign]] => FOFormula):
-                List[(Term,Sign)]  => FOFormula = sgns => pols match {
+                cont: List[List[Sign]] => Formula):
+                List[(Term,Sign)]  => Formula = sgns => pols match {
 //    case Nil => monicize(vars,dun,cont,sgns)
 //    case Nil => matrix(vars,dun,cont,sgns)
     case Nil => val (mols,swaps) = dun.map(monic).unzip;
@@ -1135,7 +1135,7 @@ final object AM {
                 val indices = mols.map(p => index(p, sols));
                 def transform(m: List[Sign]) : List[Sign] = {
                   (swaps zip indices).map( pr => swap(pr._1, el(pr._2, m)))}
-                val (cont_1 : (List[List[Sign]] => FOFormula)) = mat => cont(mat.map(transform));
+                val (cont_1 : (List[List[Sign]] => Formula)) = mat => cont(mat.map(transform));
                 matrix(vars,sols,cont_1,sgns)
     case p::ops => 
       split_trichotomy(sgns,head(vars,p),
@@ -1149,9 +1149,9 @@ final object AM {
                dun: List[Term], 
                p: Term, 
                ops: List[Term],
-               cont: List[List[Sign]] => FOFormula) :
-               List[(Term,Sign)] => FOFormula = sgns => {
-    def cont_1(m: List[List[Sign]]): FOFormula = 
+               cont: List[List[Sign]] => Formula) :
+               List[(Term,Sign)] => Formula = sgns => {
+    def cont_1(m: List[List[Sign]]): Formula = 
       cont(m.map((rw:List[Sign]) => insertat(dun.length,findsign(sgns,p),rw)));
     casesplit(vars,dun,ops,cont_1)(sgns)
   }
@@ -1160,8 +1160,8 @@ final object AM {
 
   final def matrix(vars: List[String],
              pols: List[Term],
-             cont: List[List[Sign]] => FOFormula,
-             sgns: List[(Term,Sign)]): FOFormula = {
+             cont: List[List[Sign]] => Formula,
+             sgns: List[(Term,Sign)]): Formula = {
 //    CV.lock.synchronized{
       if(CV.keepGoing == false) throw new CHAbort();
 //    }
@@ -1179,7 +1179,7 @@ final object AM {
 //    println("in matrix. number of divisions to perform = " + qs.length);
     val gs = qs.map((p_3:Term) => pdivide_pos(vars,sgns,p,p_3));
 //    val gs = Parallel.pmap(qs,((p_3:Term) => pdivide_pos(vars,sgns,p,p_3)));
-    def cont_1(m: List[List[Sign]]): FOFormula = 
+    def cont_1(m: List[List[Sign]]): Formula = 
       cont(m.map(l => insertat(i,l.head,l.tail)));
     casesplit(vars, Nil, qs ++ gs, ls => dedmatrix(cont_1,ls))(sgns)
                                       
@@ -1189,7 +1189,7 @@ final object AM {
   val init_sgns:List[(Term,Sign)] = List((one, Positive()),
                                          (zero, Zero()));
 
-  def basic_real_qelim(vars: List[String]): FOFormula => FOFormula 
+  def basic_real_qelim(vars: List[String]): Formula => Formula 
   = fm => fm match {
     case Exists(x,p) =>
       val pols = atom_union(
@@ -1203,7 +1203,7 @@ final object AM {
 
 
 
-  def real_elim(fm: FOFormula): FOFormula = {
+  def real_elim(fm: Formula): Formula = {
     simplify(evalc(lift_qelim(polyatom,
                               fm1 => simplify(evalc(fm1)),
                               basic_real_qelim)(fm)))
@@ -1211,19 +1211,19 @@ final object AM {
 
 
   /* better version that first converts to dnf */
-  def real_elim2(fm: FOFormula): FOFormula = {
+  def real_elim2(fm: Formula): Formula = {
     simplify(evalc(lift_qelim(polyatom,
-                              fm1 => dnf(cnnf( (x:FOFormula)=>x)(evalc(fm1))),
+                              fm1 => dnf(cnnf( (x:Formula)=>x)(evalc(fm1))),
                               basic_real_qelim)(fm)))
   }
 
-  def univ_close(fm: FOFormula): FOFormula = {
+  def univ_close(fm: Formula): Formula = {
     val fvs = fv(fm);
     fvs.foldRight(fm) ((v,fm1) => Forall(v,fm1))
   }
 
 
-  def real_elim_goal(fm: FOFormula): Boolean = {
+  def real_elim_goal(fm: Formula): Boolean = {
     val fm0 = real_elim(fm);
     fm0 match {
       case True => true
@@ -1232,7 +1232,7 @@ final object AM {
   }
 
 
-  def real_elim_goal_univ_closure(fm: FOFormula): Boolean = {
+  def real_elim_goal_univ_closure(fm: Formula): Boolean = {
     val fm0 = real_elim(univ_close(fm));
     fm0 match {
       case True => true
@@ -1243,7 +1243,7 @@ final object AM {
 
 
   @throws(classOf[CHAbort])
-  def real_elim_try_universal_closure(fm: FOFormula, opt: Int): FOFormula = {
+  def real_elim_try_universal_closure(fm: Formula, opt: Int): Formula = {
     val re = if(opt == 1) real_elim _ else real_elim2 _ ;
     val fm0 = simplify(evalc(fm));
 //    println("after initial simplification:");
@@ -1261,7 +1261,7 @@ final object AM {
   }
   
 
-  def elim_fractional_literals(fm: FOFormula): FOFormula = {
+  def elim_fractional_literals(fm: Formula): Formula = {
     def elim_fraction_term : Term => Term = tm => tm match {
       case Num(Exact.Rational(p,q)) => 
         if(p == BigInt(0)) Num(Exact.Integer(0))
@@ -1270,7 +1270,7 @@ final object AM {
       case Fn(f,args) => Fn(f, args.map(elim_fraction_term))
       case _ => tm
     }
-    def elim_fraction_atom : Pred => FOFormula = fol => fol match {
+    def elim_fraction_atom : Pred => Formula = fol => fol match {
       case R(s, List(t1,t2)) => 
         Atom(R(s, List(elim_fraction_term(t1),elim_fraction_term(t2))))
       case _ => Atom(fol)
@@ -1286,7 +1286,7 @@ final object AM {
 //  def test1 = polynate(List("x"), P.parset("1 + x"));
 
 
-  def test_qelim(func: Int, fm: FOFormula): Unit = {
+  def test_qelim(func: Int, fm: Formula): Unit = {
     println("testing qelim on: ")
 //    P.print_fol_formula(fm);
     println();

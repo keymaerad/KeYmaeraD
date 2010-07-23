@@ -135,26 +135,20 @@ class DLParser(in: InputStream)
 
 
 
-   def result : Formula = {
-     var rdr: scala.util.parsing.input.Reader[lexical.Token] = 
-           new lexical.Scanner(ins);
-     while (! rdr.atEnd) {
-       val x = rdr.first;
-       println(x);
-       rdr = rdr.drop(1);
-     }
+   def result : Option[Goal] = {
      phrase(sequent)(new lexical.Scanner(ins)) match {
        case Success(r,next) if next.atEnd => 
          println("success! ")
          println(r)
+         Some(r)
        case Success(r,next)  => 
          println("failure! Left over input. only parsed: " )
          println(r)
+         None
        case f => 
          println(f)
-         throw new java.lang.Error("parse failure")
+         None
      }
-     True
    }
 
 } 

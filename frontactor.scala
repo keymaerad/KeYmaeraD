@@ -49,16 +49,19 @@ class FrontActor extends Actor {
 
 
   def loadfile(filename: String) : Unit = {
-    val inp = 
-     io.Source.fromFile(filename).getLines.reduceLeft(_+_);
-    
-    val g = 
-      Parser.sequent_parser(inp); 
+    val fi = 
+      new java.io.FileInputStream(filename)
 
-    val nd = newNode(OrNode,g)
+    val dlp = new DLParser(fi)
 
-    hereNode = nd.nodeID
+    dlp.result match {
+      case Some(g) =>
+        val nd = newNode(OrNode,g)
+        hereNode = nd.nodeID
+      case None =>
+        println("failed to load file")
 
+    }
 
     ()
 

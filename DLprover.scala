@@ -72,7 +72,7 @@ final object Prover {
 
 
   // TODO handle other cases
-  def totalDeriv(d: List[(String,Term)], fm: FOFormula) : FOFormula 
+  def totalDeriv(d: List[(String,Term)], fm: Formula) : Formula 
     = fm match {
       case True => True
       case False => False
@@ -90,7 +90,7 @@ final object Prover {
       case _ => 
         throw new Error("can't take total derivative of quantified term " +
                         fm);
-                      //P.string_of_FOFormula(fm))
+                      //P.string_of_Formula(fm))
 
     }
 
@@ -115,7 +115,7 @@ final object Prover {
   }
 
   // conservative guess as to whether this formula is an open set
-  def openSet(fm: FOFormula): Boolean = fm match {
+  def openSet(fm: Formula): Boolean = fm match {
     case Atom(R("<", _)) => true
     case Atom(R(">", _)) => true
     case And(fm1,fm2)  => openSet(fm1) & openSet(fm2)
@@ -123,7 +123,7 @@ final object Prover {
     case _ => false
   }
 
-  def setClosure(fm: FOFormula): FOFormula = fm match {
+  def setClosure(fm: Formula): Formula = fm match {
     case Atom(R("<", ts)) => Atom(R("<=", ts))
     case Atom(R(">", ts)) => Atom(R(">=", ts))
     case And(fm1,fm2)  => And(setClosure(fm1), setClosure(fm2))
@@ -144,25 +144,25 @@ final object Prover {
     case _ => tm
   }
 
-  def rename_FOFormula(xold: String,
+  def rename_Formula(xold: String,
                       xnew: String,
-                      fm: FOFormula): FOFormula = fm match {
+                      fm: Formula): Formula = fm match {
     case True | False => fm
     case Atom(R(r,ps)) => 
       Atom(R(r, ps.map(p => rename_Term(xold,xnew,p))))
-    case Not(f) => Not(rename_FOFormula(xold,xnew,f))
+    case Not(f) => Not(rename_Formula(xold,xnew,f))
     case And(f1,f2) => 
-      And(rename_FOFormula(xold,xnew,f1),rename_FOFormula(xold,xnew,f2))
+      And(rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
     case Or(f1,f2) => 
-      Or(rename_FOFormula(xold,xnew,f1),rename_FOFormula(xold,xnew,f2))
+      Or(rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
     case Imp(f1,f2) => 
-      Imp(rename_FOFormula(xold,xnew,f1),rename_FOFormula(xold,xnew,f2))
+      Imp(rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
     case Iff(f1,f2) => 
-      Iff(rename_FOFormula(xold,xnew,f1),rename_FOFormula(xold,xnew,f2))
+      Iff(rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
     case Exists(v,f) if v != xold =>
-      Exists(v, rename_FOFormula(xold,xnew,f))
+      Exists(v, rename_Formula(xold,xnew,f))
     case Forall(v,f) if v != xold =>
-      Forall(v, rename_FOFormula(xold,xnew,f))
+      Forall(v, rename_Formula(xold,xnew,f))
     case _ => fm
   }
 
@@ -175,15 +175,15 @@ final object Prover {
       val x1 = if(x == xold) xnew else x
       AssignAny(x1)
     case Check(fm) =>
-      Check(rename_FOFormula(xold,xnew,fm))
+      Check(rename_Formula(xold,xnew,fm))
     case Seq(p,q) => 
       Seq(rename_HP(xold,xnew,p), rename_HP(xold,xnew,q))
     case Choose(p1,p2) => 
       Choose(rename_HP(xold,xnew,p1), rename_HP(xold,xnew,p2))
     case Repeat(p,fm, inv_hints) =>
       Repeat(rename_HP(xold,xnew,p), 
-             rename_FOFormula(xold,xnew,fm), 
-             inv_hints.map(f => rename_FOFormula(xold,xnew,f)))
+             rename_Formula(xold,xnew,fm), 
+             inv_hints.map(f => rename_Formula(xold,xnew,f)))
     case Evolve(derivs, fm, inv_hints, sols) =>
       val replace_deriv: ((String, Term)) => (String, Term) = vt => {
         val (v,t) = vt
@@ -192,22 +192,23 @@ final object Prover {
         (v1,t1)
       }
       Evolve(derivs.map( replace_deriv), 
-             rename_FOFormula(xold,xnew,fm),
-             inv_hints.map(f => rename_FOFormula(xold,xnew,f)),
-             sols.map(f => rename_FOFormula(xold,xnew,f)))
+             rename_Formula(xold,xnew,fm),
+             inv_hints.map(f => rename_Formula(xold,xnew,f)),
+             sols.map(f => rename_Formula(xold,xnew,f)))
       
   }
 
+/*
   def rename_DLFormula(xold: String, 
                       xnew: String, 
                       dlfm: DLFormula): DLFormula = dlfm match {
     case NoModality(fm) =>
-      NoModality(rename_FOFormula(xold, xnew, fm))
+      NoModality(rename_Formula(xold, xnew, fm))
     case Box(hp, dlfm1) => 
       val hp1 = rename_HP(xold,xnew,hp)
       Box(hp1, rename_DLFormula(xold,xnew,dlfm1))
   }
-
+*/
 
   def matchAndSplice[A](lst: List[A],
                         f : A => Option[List[A]]): Option[List[A]]
@@ -256,90 +257,90 @@ final object Prover {
 
   
 
-  def substitute_FOFormula(xold: String,
+  def substitute_Formula(xold: String,
                       xnew: Term,
                       xnew_fv: Set[String],
-                      fm: FOFormula): FOFormula = fm match {
+                      fm: Formula): Formula = fm match {
     case True | False => fm
     case Atom(R(r,ps)) => 
       Atom(R(r, ps.map(p => substitute_Term(xold,xnew,p))))
-    case Not(f) => Not(substitute_FOFormula(xold,xnew,xnew_fv,f))
+    case Not(f) => Not(substitute_Formula(xold,xnew,xnew_fv,f))
     case And(f1,f2) => 
-      And(substitute_FOFormula(xold,xnew,xnew_fv,f1),
-          substitute_FOFormula(xold,xnew,xnew_fv,f2))
+      And(substitute_Formula(xold,xnew,xnew_fv,f1),
+          substitute_Formula(xold,xnew,xnew_fv,f2))
     case Or(f1,f2) => 
-      Or(substitute_FOFormula(xold,xnew,xnew_fv,f1),
-          substitute_FOFormula(xold,xnew,xnew_fv,f2))
+      Or(substitute_Formula(xold,xnew,xnew_fv,f1),
+          substitute_Formula(xold,xnew,xnew_fv,f2))
     case Imp(f1,f2) => 
-      Imp(substitute_FOFormula(xold,xnew,xnew_fv,f1),
-          substitute_FOFormula(xold,xnew,xnew_fv,f2))
+      Imp(substitute_Formula(xold,xnew,xnew_fv,f1),
+          substitute_Formula(xold,xnew,xnew_fv,f2))
     case Iff(f1,f2) => 
-      Iff(substitute_FOFormula(xold,xnew,xnew_fv,f1),
-          substitute_FOFormula(xold,xnew,xnew_fv,f2))
+      Iff(substitute_Formula(xold,xnew,xnew_fv,f1),
+          substitute_Formula(xold,xnew,xnew_fv,f2))
     case Exists(v,f) =>
       if( ! xnew_fv.contains(v)){
-        Exists(v, substitute_FOFormula(xold,xnew, xnew_fv, f))
+        Exists(v, substitute_Formula(xold,xnew, xnew_fv, f))
       } else {
         val v1 = uniqify(v)
-        val f1 = rename_FOFormula(v,v1,f)
-        Exists(v1,substitute_FOFormula(xold,xnew, xnew_fv, f1))
+        val f1 = rename_Formula(v,v1,f)
+        Exists(v1,substitute_Formula(xold,xnew, xnew_fv, f1))
       }
     case Forall(v,f) =>
       if( ! xnew_fv.contains(v)){
-        Forall(v, substitute_FOFormula(xold,xnew, xnew_fv, f))
+        Forall(v, substitute_Formula(xold,xnew, xnew_fv, f))
       } else {
         val v1 = uniqify(v)
-        val f1 = rename_FOFormula(v,v1,f)
-        Forall(v1,substitute_FOFormula(xold,xnew, xnew_fv, f1))
+        val f1 = rename_Formula(v,v1,f)
+        Forall(v1,substitute_Formula(xold,xnew, xnew_fv, f1))
       }
   }
 
 
-  def simul_substitute_FOFormula1(
+  def simul_substitute_Formula1(
                       subs: List[(String,Term)],
                       new_fv: Set[String],
-                      fm: FOFormula): FOFormula = fm match {
+                      fm: Formula): Formula = fm match {
     case True | False => fm
     case Atom(R(r,ps)) => 
       Atom(R(r, ps.map(p => simul_substitute_Term(subs,p))))
     case Not(f) => 
-      Not(simul_substitute_FOFormula1(subs,new_fv,f))
+      Not(simul_substitute_Formula1(subs,new_fv,f))
     case And(f1,f2) => 
-      And(simul_substitute_FOFormula1(subs,new_fv,f1),
-          simul_substitute_FOFormula1(subs,new_fv,f2))
+      And(simul_substitute_Formula1(subs,new_fv,f1),
+          simul_substitute_Formula1(subs,new_fv,f2))
     case Or(f1,f2) => 
-      Or(simul_substitute_FOFormula1(subs,new_fv,f1),
-          simul_substitute_FOFormula1(subs,new_fv,f2))
+      Or(simul_substitute_Formula1(subs,new_fv,f1),
+          simul_substitute_Formula1(subs,new_fv,f2))
     case Imp(f1,f2) => 
-      Imp(simul_substitute_FOFormula1(subs,new_fv,f1),
-          simul_substitute_FOFormula1(subs,new_fv,f2))
+      Imp(simul_substitute_Formula1(subs,new_fv,f1),
+          simul_substitute_Formula1(subs,new_fv,f2))
     case Iff(f1,f2) => 
-      Iff(simul_substitute_FOFormula1(subs,new_fv,f1),
-          simul_substitute_FOFormula1(subs,new_fv,f2))
+      Iff(simul_substitute_Formula1(subs,new_fv,f1),
+          simul_substitute_Formula1(subs,new_fv,f2))
     case Exists(v,f) =>
       if( ! new_fv.contains(v)){
-        Exists(v, simul_substitute_FOFormula1(subs, new_fv, f))
+        Exists(v, simul_substitute_Formula1(subs, new_fv, f))
       } else {
         val v1 = uniqify(v)
-        val f1 = rename_FOFormula(v,v1,f)
-        Exists(v1,simul_substitute_FOFormula1(subs, new_fv, f1))
+        val f1 = rename_Formula(v,v1,f)
+        Exists(v1,simul_substitute_Formula1(subs, new_fv, f1))
       }
     case Forall(v,f) =>
       if( ! new_fv.contains(v)){
-        Exists(v, simul_substitute_FOFormula1(subs, new_fv, f))
+        Exists(v, simul_substitute_Formula1(subs, new_fv, f))
       } else {
         val v1 = uniqify(v)
-        val f1 = rename_FOFormula(v,v1,f)
-        Forall(v1,simul_substitute_FOFormula1(subs, new_fv, f1))
+        val f1 = rename_Formula(v,v1,f)
+        Forall(v1,simul_substitute_Formula1(subs, new_fv, f1))
       }
   }
 
-  def simul_substitute_FOFormula(                      
+  def simul_substitute_Formula(                      
                       subs: List[(String,Term)],
-                      fm: FOFormula): FOFormula =  {
+                      fm: Formula): Formula =  {
     val ts = subs.map(_._2)
     val vs = HashSet.empty ++ (ts.map(varsOfTerm).flatten[String])
-    simul_substitute_FOFormula1(subs, vs, fm)
+    simul_substitute_Formula1(subs, vs, fm)
   }
 
 }
@@ -354,7 +355,7 @@ case class DepthFirst() extends SearchStrategy
 
 abstract class ProofRule() {
   val numInputs: Int
-  def applyRule(inputs: List[FOFormula], succ: Sequent): List[Nodes.ProofNode]
+  def applyRule(inputs: List[Formula], succ: Sequent): List[Nodes.ProofNode]
 }
 
 /*
@@ -500,7 +501,7 @@ object PRLoopStrengthen extends ProofRule {
   
   def applyRule(sq: Sequent): List[TreeNode] = sq match {
     case Sequent(ctxt, Box(Repeat(p1, h, inv_hints), fm)) => 
-      val loop_strengthen: FOFormula => AndNode = inv =>
+      val loop_strengthen: Formula => AndNode = inv =>
         new AndNode(
                     "loop strengthening", 
                     sq,
@@ -521,7 +522,7 @@ object PRLoopInduction extends ProofRule {
   
   def applyRule(sq: Sequent): List[TreeNode] = sq match {
     case Sequent(ctxt, Box(Repeat(p1, True(), inv_hints), fm)) => 
-      val loop_rule: FOFormula => AndNode = inv =>
+      val loop_rule: Formula => AndNode = inv =>
         new AndNode(
                     "loop induction", 
                     sq,
@@ -555,7 +556,7 @@ object PRDiffClose extends ProofRule{
 object PRDiffStrengthen extends ProofRule {
   def applyRule(sq: Sequent): List[TreeNode] = sq match {
     case Sequent(ctxt, Box(Evolve(derivs, h, inv_hints,_), fm)) => 
-      val diff_strengthen: FOFormula => AndNode = inv => {
+      val diff_strengthen: Formula => AndNode = inv => {
         val (ind_asm,ind_cons) = 
           { if(Prover.openSet(inv)) 
               ( List(inv,h), Prover.setClosure(Prover.totalDeriv(derivs,inv)))
@@ -587,7 +588,7 @@ object PRDiffSolve extends ProofRule {
 
   class BadSolution extends Exception 
 
-  def extract(sol: FOFormula): (String, (String, Term)) = sol match {
+  def extract(sol: Formula): (String, (String, Term)) = sol match {
     case Forall(t, Atom(R("=", List(Fn(f, List(t1)),
                                     sol_tm)))) if Var(t) == t1 =>
        (t,(f,sol_tm))
@@ -658,9 +659,9 @@ object PRDiffSolve extends ProofRule {
            val t2_range = 
              And(Atom(R(">=", List(Var(t2), Num(ExactInt(0))))),
                  Atom(R("<=", List(Var(t2), Var(t)))))
-           val endpoint_h = simul_substitute_FOFormula(sols, h)
+           val endpoint_h = simul_substitute_Formula(sols, h)
            val interm_h = 
-             rename_FOFormula(t,t2,simul_substitute_FOFormula(sols, h))
+             rename_Formula(t,t2,simul_substitute_Formula(sols, h))
            val new_xs = sols.map(x => uniqify(x._1))
            val old_and_new_xs = 
              sols.map(_._1).zip(new_xs)
@@ -702,14 +703,14 @@ object PRSubstitute extends ProofRule {
 
   import Prover._
 /*
-  def isAssign(fm: FOFormula):Option[(String,Term)] = fm match {
+  def isAssign(fm: Formula):Option[(String,Term)] = fm match {
     case Atom(R("=", List(Var(v), tm))) => Some(v,tm)
     case _ => None
   }
 */
 
-  def findAssignment(ctxt: List[FOFormula])
-       : Option[(String, Term, List[FOFormula])]  = ctxt match {
+  def findAssignment(ctxt: List[Formula])
+       : Option[(String, Term, List[Formula])]  = ctxt match {
          case Nil => None
          case Atom(R("=", List(Var(v), tm))) :: rest =>
            Some((v,tm,rest))
@@ -732,8 +733,8 @@ object PRSubstitute extends ProofRule {
         case Some((v,tm,ctxt1)) =>
           val tm_vars = varsOfTerm(tm)
           val ctxt2 = 
-            ctxt1.map(x => substitute_FOFormula(v, tm, tm_vars, x))
-          val fo2 = substitute_FOFormula(v,tm,tm_vars, fo)
+            ctxt1.map(x => substitute_Formula(v, tm, tm_vars, x))
+          val fo2 = substitute_Formula(v,tm,tm_vars, fo)
           List(new OrNode(Sequent(ctxt2,NoModality(fo2))))
       }
     case _ => Nil
@@ -746,7 +747,7 @@ object PRAlpha extends ProofRule {
   
   import Prover._
 
-  def matcher(fm: FOFormula): Option[List[FOFormula]] = fm match {
+  def matcher(fm: Formula): Option[List[Formula]] = fm match {
     case And(fm1, fm2) => Some(List(fm1,fm2))
     case True() => Some(Nil)
     case _ => None
@@ -789,9 +790,9 @@ object PRAllLeft extends ProofRule {
   
   import Prover._
 
-  def matcher(v1: String)(fm: FOFormula): Option[List[FOFormula]] = fm match {
+  def matcher(v1: String)(fm: Formula): Option[List[Formula]] = fm match {
     case Forall(v, fm) => 
-      Some(List(simul_substitute_FOFormula(List((v,Var(v1))), fm)))
+      Some(List(simul_substitute_Formula(List((v,Var(v1))), fm)))
     case _ => None
   }
 
@@ -864,13 +865,13 @@ abstract class DLNode() extends TreeNode() {
 
 
 @serializable
-class ArithmeticNode(fm: FOFormula)
+class ArithmeticNode(fm: Formula)
   extends DLNode() {
 
   def workHere(timeslice: Long): Unit = checkStatus() match {
     case Working() => 
        println("about to attempt quantifier elimination on:\n")
-       P.print_FOFormula(fm)
+       P.print_Formula(fm)
        println("\nredlog version of formula = ")
        println(P.redlog_of_formula(fm))
        println("tickets = " + checkTickets())
@@ -885,7 +886,7 @@ class ArithmeticNode(fm: FOFormula)
          } else {
            // TODO this doesn't actually mean disproved
            println("failure!")
-           println("returned: " + P.string_of_FOFormula(r))
+           println("returned: " + P.string_of_Formula(r))
        	   returnNode(GaveUp())
          }      
        } catch {
@@ -917,14 +918,14 @@ class ArithmeticNode(fm: FOFormula)
 
 
   override def toString(): String = {
-    "ArithmeticNode( " + P.string_of_FOFormula(fm)+ ")"
+    "ArithmeticNode( " + P.string_of_Formula(fm)+ ")"
   } 
 
 }
 
 
 @serializable
-class RedlogNode(fm: FOFormula)
+class RedlogNode(fm: Formula)
   extends DLNode() {
 
 
@@ -936,7 +937,7 @@ class RedlogNode(fm: FOFormula)
   def workHere(timeSlice: Long): Unit = checkStatus() match {
     case Working() => 
        println("about to attempt quantifier elimination on:\n")
-       P.print_FOFormula(fm)
+       P.print_Formula(fm)
        val rfm = P.redlog_of_formula(fm)
        println("\nredlog version of formula = ")
        println(rfm)
@@ -989,7 +990,7 @@ class RedlogNode(fm: FOFormula)
            } else {
              // TODO this doesn't actually mean disproved
              println("failure!")
-             println("returned: " + P.string_of_FOFormula(r))
+             println("returned: " + P.string_of_Formula(r))
        	     returnNode(GaveUp())
            }
           } else {println("exit value = " + exitValue)}
@@ -1034,7 +1035,7 @@ class RedlogNode(fm: FOFormula)
 
 
   override def toString(): String = {
-    "RedlogNode( " + P.string_of_FOFormula(fm)+ ")"
+    "RedlogNode( " + P.string_of_Formula(fm)+ ")"
   } 
 
 }
@@ -1111,7 +1112,7 @@ object Mathematica {
 
 
 @serializable
-class MathematicaNode(fm: FOFormula)
+class MathematicaNode(fm: Formula)
   extends DLNode() {
 
     import com.wolfram.jlink._
@@ -1130,7 +1131,7 @@ class MathematicaNode(fm: FOFormula)
     case Working() if timeSlice > 10 => 
        println(nodeID)
        println("about to attempt quantifier elimination on:\n")
-       P.print_FOFormula(fm)
+       P.print_Formula(fm)
        println()
        println("timeSlice = " + timeSlice)
        System.out.flush
@@ -1312,7 +1313,7 @@ class MathematicaNode(fm: FOFormula)
 
 
   override def toString(): String = {
-    "MathematicaNode( " + P.string_of_FOFormula(fm)+ ")"
+    "MathematicaNode( " + P.string_of_Formula(fm)+ ")"
   } 
 
 }
@@ -1583,7 +1584,7 @@ class AndNode(
 
 // this is experimental (doesn't work yet)
 @serializable
-class ThreadedArithmeticNode( fm: FOFormula)
+class ThreadedArithmeticNode( fm: Formula)
   extends DLNode() {
 
   var started = false
@@ -1597,7 +1598,7 @@ class ThreadedArithmeticNode( fm: FOFormula)
   def workHere(timeSlice: Long): Unit = checkStatus() match {
     case Working() if !started =>
        println("about to attempt quantifier elimination on:\n")
-       P.print_FOFormula(fm)
+       P.print_Formula(fm)
        println()
        CV.start()
        t.start()
@@ -1629,7 +1630,7 @@ class ThreadedArithmeticNode( fm: FOFormula)
   }
 
   override def toString(): String = {
-    "ArithmeticNode( " + P.string_of_FOFormula(fm)+ ")"
+    "ArithmeticNode( " + P.string_of_Formula(fm)+ ")"
   } 
 
 }
