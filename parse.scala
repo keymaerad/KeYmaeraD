@@ -106,9 +106,14 @@ class DLParser(in: InputStream)
    def hp2 : Parser[HP] = 
      "(" ~> hp <~  ")" | 
       "?" ~> formula ^^ { x => Check(x)}  |
-     "{" ~> hp  <~ "}" <~ "*" ^^ { x => Repeat(x, True, Nil)} | 
-     ("{" ~> rep1sep(diffeq, ",") <~ ";")  ~ formula <~ "}" ^^ 
-           {case dvs ~ f => Evolve(dvs,f,Nil,Nil)}
+      ident <~ ":=" <~ "*" ^^ { x  => AssignAny(x)} |
+      (ident <~ ":=") ~ term ^^ {case x ~ t => Assign(x,t)} |
+     ("{" ~> hp  <~ "}" <~ "*") ~ annotation("invariant") ^^ 
+           { case x ~ invs => Repeat(x, True, invs)} | 
+//     "{" ~> hp  <~ "}" <~ "*" ^^ { x => Repeat(x, True, Nil)} | 
+     ("{" ~> rep1sep(diffeq, ",") <~ ";")  ~ 
+         (formula <~ "}") ~ annotation("solution") ~  annotation("invariant") ^^
+           {case dvs ~ f ~ invs ~ sols => Evolve(dvs,f,invs,sols)}
 
 
   def diffeq : Parser[(String,Term)] = 
@@ -116,6 +121,11 @@ class DLParser(in: InputStream)
       {case s ~ "=" ~ tm if s.last == '\'' =>
         ((s.substring(0,s.length - 1), tm))}
    
+  def annotation(name: String) : Parser[List[Formula]] = 
+    "@" ~> keyword(name) ~> "(" ~> repsep(formula, ",") <~ ")" |
+    success(Nil)
+       
+
 
 
  // this seems to work for now
@@ -137,14 +147,20 @@ class DLParser(in: InputStream)
 
 
    def result : Formula = {
-     var rdr: scala.util.parsing.input.Reader[lexical.Token] = new lexical.Scanner(ins);
+     var rdr: scala.util.parsing.input.Reader[lexical.Token] = 
+           new lexical.Scanner(ins);
      while (! rdr.atEnd) {
        val x = rdr.first;
        println(x);
        rdr = rdr.drop(1);
      }
      formula(new lexical.Scanner(ins)) match {
-       case Success(r,_) => println("success! " + r)
+       case Success(r,next) if next.atEnd => 
+         println("success! ")
+         println(r)
+       case Success(r,next)  => 
+         println("failure! Left over input. only parsed: " )
+         println(r)
        case f => 
          println(f)
          throw new java.lang.Error("parse failure")
