@@ -31,7 +31,7 @@ object Nodes {
   case object Irrelevant extends Status
 
 
-  case class ProofNode(t: NodeType, g: Goal) {
+  case class ProofNode(t: NodeType, g: Sequent) {
     //val nodeType : NodeType = t
     //val goal : Goal = g
     val nodeID = nextNodeID 
@@ -54,7 +54,7 @@ object Nodes {
   val nodeTable = new scala.collection.mutable.HashMap[NodeID, ProofNode]
 
 
-  def newNode(t: NodeType, g: Goal): ProofNode = {
+  def newNode(t: NodeType, g: Sequent): ProofNode = {
     val res = ProofNode(t,g)
     nodeTable.put(res.nodeID, res)
     res

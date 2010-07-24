@@ -26,9 +26,19 @@ object Printing {
       Document.text(n.toString)
   }
 
+  def docOfPred(p: Pred): Document = p match {
+    case R(r,List(t1,t2)) if List("=", "<", ">", "<=", ">=", "<>"). contains(r) =>
+      docOfTerm(t1) :: text(r) :: docOfTerm(t2)
+    case R(r, ts)  =>
+      text(r) :: text("(") ::
+        docOfList(ts.map(docOfTerm), text(",")) :: text(")")
+  }
+
+
   def docOfFormula(fm: Formula): Document = fm match {
     case True => text("true")
     case False => text("false")
+    case Atom(p) => docOfPred(p)
     case And(fm1,fm2) => 
       text("(") :: docOfFormula(fm1) :: text("&") :: 
         docOfFormula(fm2) :: text(")")
@@ -79,6 +89,13 @@ object Printing {
 
   def docOfDeriv(pr: (String,Term )) : Document = {
     text(pr._1 +"'") :: text(" = ") :: docOfTerm(pr._2)
+  }
+
+  def docOfSequent(sq: Sequent) : Document = sq match {
+    case Sequent(c,s) =>
+      docOfList(c.map(docOfFormula), DocCons(text(","), DocBreak)) :/:
+       text("|-") ::
+       docOfList(s.map(docOfFormula), DocCons(text(","), DocBreak))
   }
 
 

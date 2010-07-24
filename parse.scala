@@ -138,7 +138,7 @@ class DLParser(in: InputStream)
 
 
 
-   def result : Option[Goal] = {
+   def result : Option[Sequent] = {
      phrase(sequent)(new lexical.Scanner(ins)) match {
        case Success(r,next) if next.atEnd => 
          println("success! ")
