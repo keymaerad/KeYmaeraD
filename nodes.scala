@@ -34,6 +34,7 @@ object Nodes {
   case class ProofNode(t: NodeType, g: Sequent) {
     //val nodeType : NodeType = t
     //val goal : Goal = g
+//    val rule: String
     val nodeID = nextNodeID 
     var children : List[NodeID] = Nil
     var status = Open

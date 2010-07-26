@@ -352,11 +352,17 @@ case class BreadthFirst() extends SearchStrategy
 case class DepthFirst() extends SearchStrategy
 */
 
-
+/*
 abstract class ProofRule() {
   val numInputs: Int
   def applyRule(inputs: List[Formula], succ: Sequent): List[Nodes.ProofNode]
 }
+*/
+
+/*
+abstract class ProofRule
+case class 
+*/
 
 /*
 object PRArithmeticFV extends ProofRule{

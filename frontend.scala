@@ -16,11 +16,11 @@ object FrontEnd {
 //  }
 
 
-  def cmd(cmd: Symbol): Unit = {
+  def dl(cmd: Symbol): Unit = {
     frontactor !? cmd
   }
 
-  def cmd(cmd: Symbol, arg: Any): Unit = {
+  def dl(cmd: Symbol, arg: Any): Unit = {
     frontactor.!?((cmd,arg))
   }
 
