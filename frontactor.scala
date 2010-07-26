@@ -19,11 +19,17 @@ class FrontActor extends Actor {
 
     loop (
       react {
+        case 'quit =>
+          sender ! ()
+          exit
         case 'here =>
           displayThisNode
           sender ! ()
         case ('load, filename:String) =>
           loadfile(filename)
+          sender ! ()
+        case ('show, nd: NodeID) =>
+          shownode(nd)
           sender ! ()
         case msg =>
           println("got message: " + msg)
@@ -35,9 +41,14 @@ class FrontActor extends Actor {
 
 
   def displayThisNode : Unit = {
-    nodeTable.get(hereNode) match {
-      case Some(nd) =>
-        println (nd)
+    shownode(hereNode)
+  }
+
+  def shownode(ndID: NodeID) : Unit = 
+    nodeTable.get(ndID) match {
+      case Some(nd@ProofNode(typ, gl)) =>
+        Printing.printSequent(gl)
+        println()
         println("nodeID = " + nd.nodeID)
         println("status = " + nd.status)
         println("children = " + nd.children)
@@ -45,7 +56,6 @@ class FrontActor extends Actor {
         println ("node " + hereNode + " does not exist.")
     }
 
-  }
 
 
   def loadfile(filename: String) : Unit = {

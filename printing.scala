@@ -7,6 +7,16 @@ import scala.text.Document._
 
 object Printing {
 
+  val osw = new java.io.OutputStreamWriter(System.out)
+
+  def printSequent(sq: Sequent): Unit = {
+    val d = docOfSequent(sq)
+    d.format(70, osw)
+    osw.flush
+  }
+
+
+
   def docOfList(lst:List[Document], sep: Document) : Document = lst match {
     case Nil => DocNil
     case x:: Nil => x

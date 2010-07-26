@@ -13,8 +13,16 @@ object FrontEnd {
   frontactor.start()
 //    frontactor ! 'hi
     
-
 //  }
+
+
+  def cmd(cmd: Symbol): Unit = {
+    frontactor !? cmd
+  }
+
+  def cmd(cmd: Symbol, arg: Any): Unit = {
+    frontactor.!?((cmd,arg))
+  }
 
 
 
