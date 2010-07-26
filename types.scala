@@ -23,6 +23,8 @@ case class Exists(v: String, f: Formula) extends Formula
 case class Forall(v: String, f: Formula) extends Formula
 case class Box(hp: HP, rest: Formula) extends Formula
 case class Diamond(hp: HP, rest: Formula) extends Formula
+//case class FVar(v: String) extends Formula
+
 
 abstract class HP
 case class Assign(s: String, v: Term) extends HP
