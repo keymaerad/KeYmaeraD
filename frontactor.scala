@@ -16,7 +16,10 @@ class FrontActor extends Actor {
 
   val rules = new scala.collection.mutable.HashMap[String,Rules.ProofRule]()
   rules ++= List(("seq", Rules.seq),
-                 ("chooseRight", Rules.chooseRight))
+                 ("chooseRight", Rules.chooseRight),
+                 ("assignRight", Rules.assignRight),
+                 ("assignAnyRight", Rules.assignAnyRight))
+
 
   def act(): Unit = {
     println("acting")
@@ -108,6 +111,7 @@ class FrontActor extends Actor {
               val orndIDs = ornds.map( _.nodeID)
               hereNode.children = andnd.nodeID :: hereNode.children 
               andnd.children = orndIDs
+              println("success")
             case None => 
               println("rule cannot be applied there")    
           }

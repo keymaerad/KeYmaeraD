@@ -41,15 +41,15 @@ object Nodes {
 
   class AndNode(rule: String, 
                 goal:Sequent,
-                fvs: List[String]) extends ProofNode(rule,goal) {
-    val freevars = fvs
+                svs: List[String]) extends ProofNode(rule,goal) {
+    val schemavars = svs
     def print : Unit = {
       println("AndNode")
       println("rule = " + rule)
       println("nodeID = " + nodeID)
       println("status = " + status)
       println("children = " + children)
-      println("freevars = " + freevars)
+      println("schemavars = " + schemavars)
 
     }
   }

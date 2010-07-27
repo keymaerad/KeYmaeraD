@@ -21,6 +21,13 @@ object Rules {
       else x::replacelist(i-1,xs,a)      
   }
 
+  def removelist[A](i: Int, lst: List[A]): List[A] = lst match {
+    case Nil => Nil
+    case x::xs =>
+      if(i <= 0) xs
+      else x::removelist(i-1,xs)      
+  }
+
 
   def replace(p: Position, s: Sequent,fm : Formula): Sequent = (p,s) match {
     case (Left(n), Sequent(ct,st)) => 
@@ -42,6 +49,18 @@ object Rules {
       if(n >= st.length || n < 0 )
         throw new LookupError()
       else st.slice(n,n+1).head
+  }
+
+
+  def remove(p: Position, s: Sequent): Sequent = (p,s) match {
+    case (Left(n), Sequent(ct,st)) => 
+      if(n >= ct.length || n < 0 )
+        throw new  LookupError()
+      else Sequent(removelist(n,ct),st)
+    case (Right(n), Sequent(ct,st)) => 
+      if(n >= st.length || n < 0 )
+        throw new LookupError()
+      else Sequent(ct,removelist(n,st))
   }
 
 
@@ -89,6 +108,40 @@ object Rules {
         }
       case _ => None
     }
+
+
+ val assignRight : ProofRule = 
+   p => sq => (p,sq) match {
+     case (Right(n),Sequent(c,s)) => 
+      val fm = lookup(p,sq)
+      fm match {
+        case Box(Assign(vr,tm),phi) =>
+          val vr1 = Prover.uniqify(vr)
+          val phi1 = Prover.rename_Formula(vr,vr1,phi)
+          val fm1 = Atom(R("=",List(Var(vr1),tm)))
+          val Sequent(c1,s1) = replace(p,sq, phi1)
+          Some((List(Sequent(fm1::c1,s1)),Nil))
+      }
+     case _ => None
+   }
+
+
+  /* this assumes that we don't have any
+   *  free variables from existentials */
+ val assignAnyRight : ProofRule = 
+   p => sq => (p,sq) match {
+     case (Right(n),Sequent(c,s)) => 
+      val fm = lookup(p,sq)
+      fm match {
+        case Box(AssignAny(vr),phi) =>
+          val vr1 = Prover.uniqify(vr)
+          val phi1 = Prover.rename_Formula(vr,vr1,phi)
+          val sq1 = replace(p,sq, phi1)
+          Some((List(sq1),Nil))
+      }
+     case _ => None
+   }
+
 
 }
 
