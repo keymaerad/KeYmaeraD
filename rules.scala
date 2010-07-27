@@ -66,7 +66,7 @@ object Rules {
       val fm  = lookup(p,sq)
       fm match {
         case  Box(Seq(h1,h2), phi) => 
-           val fm1 = Box(h1,Box(h2,fm))
+           val fm1 = Box(h1,Box(h2,phi))
            val sq1 = replace(p,sq,fm1)
            Some( List(sq1),Nil)
         case _ => None
@@ -78,9 +78,9 @@ object Rules {
       case (Right(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
-          case Box(Choose(h1,h2), fm) => 
-            val fm1 = Box(h1,fm) 
-            val fm2 = Box(h2,fm)
+          case Box(Choose(h1,h2), phi) => 
+            val fm1 = Box(h1,phi) 
+            val fm2 = Box(h2,phi)
             val sq1 = replace(p,sq,fm1)
             val sq2 = replace(p,sq,fm2)
             Some( (List(sq1,sq2),Nil))

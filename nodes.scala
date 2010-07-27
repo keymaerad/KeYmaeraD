@@ -18,9 +18,7 @@ object Nodes {
   }
 
 
-  abstract class NodeType
-  case object AndNode extends NodeType
-  case object OrNode extends NodeType
+
 
 
 
@@ -31,37 +29,56 @@ object Nodes {
   case object Irrelevant extends Status
 
 
-  case class ProofNode(t: NodeType, g: Sequent) {
+  abstract class ProofNode(r: String, g: Sequent) {
     //val nodeType : NodeType = t
-    //val goal : Goal = g
-//    val rule: String
+    val rule = r
+    val goal = g
     val nodeID = nextNodeID 
     var children : List[NodeID] = Nil
     var status = Open
+    def print: Unit
+  }
 
-/*
-    override def toString : String = {
-      t.toString + "\n" +
-      g.toString + "\n" +
-          
+  class AndNode(rule: String, 
+                goal:Sequent,
+                fvs: List[String]) extends ProofNode(rule,goal) {
+    val freevars = fvs
+    def print : Unit = {
+      println("AndNode")
+      println("rule = " + rule)
       println("nodeID = " + nodeID)
-      pri
-      }
-*/
+      println("status = " + status)
+      println("children = " + children)
+      println("freevars = " + freevars)
+
+    }
+  }
+
+  class OrNode (rule: String, 
+                goal: Sequent) extends ProofNode(rule,goal) {
+    def print : Unit = {
+      println("OrNode")
+      println("rule = " + rule)
+      println("nodeID = " + nodeID)
+      println("status = " + status)
+      println("children = " + children)
+    }
 
   }
+
+
+
 
 
   val nodeTable = new scala.collection.mutable.HashMap[NodeID, ProofNode]
 
 
-  def newNode(t: NodeType, g: Sequent): ProofNode = {
-    val res = ProofNode(t,g)
-    nodeTable.put(res.nodeID, res)
-    res
+  def register(nd: ProofNode): Unit = {
+    nodeTable.put(nd.nodeID, nd)
   }
 
-
+  val nullNode = new OrNode("null", Sequent(Nil,Nil))
+  register(nullNode)
   
 
 }

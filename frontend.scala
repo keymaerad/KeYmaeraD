@@ -24,6 +24,10 @@ object FrontEnd {
     frontactor.!?((cmd,arg))
   }
 
+  def dl(cmd: Symbol, arg1: Any, arg2: Any): Unit = {
+    frontactor.!?((cmd,arg1,arg2))
+  }
+
 
 
 

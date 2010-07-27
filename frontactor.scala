@@ -11,8 +11,12 @@ class FrontActor extends Actor {
 
   
 
-  var hereNode: NodeID = 0
+  var hereNode: ProofNode = nullNode
 
+
+  val rules = new scala.collection.mutable.HashMap[String,Rules.ProofRule]()
+  rules ++= List(("seq", Rules.seq),
+                 ("chooseRight", Rules.chooseRight))
 
   def act(): Unit = {
     println("acting")
@@ -31,6 +35,12 @@ class FrontActor extends Actor {
         case ('show, nd: NodeID) =>
           shownode(nd)
           sender ! ()
+        case ('goto, nd: NodeID) =>
+          gotonode(nd)
+          sender ! ()
+        case ('apply, pos: Rules.Position, rule: String) =>
+          applyrule(pos,rule)
+          sender ! ()
         case msg =>
           println("got message: " + msg)
           sender ! ()
@@ -41,19 +51,27 @@ class FrontActor extends Actor {
 
 
   def displayThisNode : Unit = {
-    shownode(hereNode)
+    shownode(hereNode.nodeID)
   }
 
   def shownode(ndID: NodeID) : Unit = 
     nodeTable.get(ndID) match {
-      case Some(nd@ProofNode(typ, gl)) =>
-        Printing.printSequent(gl)
+      case Some(nd) =>
+        Printing.printSequent(nd.goal)
         println()
-        println("nodeID = " + nd.nodeID)
-        println("status = " + nd.status)
-        println("children = " + nd.children)
+        nd.print
       case None =>
-        println ("node " + hereNode + " does not exist.")
+        println ("node " + ndID + " does not exist.")
+    }
+
+
+  def gotonode(ndID: NodeID) : Unit = 
+    nodeTable.get(ndID) match {
+      case Some(nd) =>
+        hereNode = nd
+        println("now at node " + ndID )
+      case None =>
+        println ("node " + ndID + " does not exist.")
     }
 
 
@@ -66,8 +84,9 @@ class FrontActor extends Actor {
 
     dlp.result match {
       case Some(g) =>
-        val nd = newNode(OrNode,g)
-        hereNode = nd.nodeID
+        val nd = new OrNode("loaded from " + filename, g)
+        register(nd)
+        hereNode = nd
       case None =>
         println("failed to load file")
 
@@ -76,6 +95,29 @@ class FrontActor extends Actor {
     ()
 
   }
+
+  def applyrule(p: Rules.Position, r: String): Unit = rules.get(r) match {
+    case Some(rl) =>
+          rl(p)(hereNode.goal) match {
+            case Some( (sqs, fvs)  ) =>
+              val andnd = new AndNode(r, hereNode.goal, Nil)
+              register(andnd)
+              val subname = r + " subgoal"
+              val ornds = sqs.map(s => new OrNode(subname, s))
+              ornds.map(register _)
+              val orndIDs = ornds.map( _.nodeID)
+              hereNode.children = andnd.nodeID :: hereNode.children 
+              andnd.children = orndIDs
+            case None => 
+              println("rule cannot be applied there")    
+          }
+    case None =>
+      println("rule " + r + " not found.")
+  }
+    
+
+
+
 
 
 
