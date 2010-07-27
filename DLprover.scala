@@ -347,12 +347,6 @@ final object Prover {
 
 
 /*
-abstract class SearchStrategy
-case class BreadthFirst() extends SearchStrategy
-case class DepthFirst() extends SearchStrategy
-*/
-
-/*
 abstract class ProofRule() {
   val numInputs: Int
   def applyRule(inputs: List[Formula], succ: Sequent): List[Nodes.ProofNode]
