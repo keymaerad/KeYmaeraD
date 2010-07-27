@@ -24,14 +24,18 @@ object Printing {
   }
 
   
+  def bracket(b1:String, b2: String, d: Document): Document = {
+    text(b1) :: DocNest(b1.length, d) :: text(b2)
+  }
+
   def docOfTerm(tm: Term): Document = tm match {
     case Var(x) =>
       Document.text(x)
     case Fn(f, List(x,y)) if List("+","-","*", "/", "^").contains(f) =>
-      text("(") :: docOfTerm(x) :: text(f) :: docOfTerm(y) :: text(")")
+      bracket("(",")", docOfTerm(x) :: text(f) :: docOfTerm(y))
     case Fn(f, args) =>
-      Document.text(f) :: "(" :: 
-        docOfList(args.map(docOfTerm), text(",")) :: text(")")
+      bracket(f+"(",")",
+        docOfList(args.map(docOfTerm), text(",") :: DocBreak))
     case Num(n) =>
       Document.text(n.toString)
   }
@@ -40,8 +44,8 @@ object Printing {
     case R(r,List(t1,t2)) if List("=", "<", ">", "<=", ">=", "<>"). contains(r) =>
       docOfTerm(t1) :: text(r) :: docOfTerm(t2)
     case R(r, ts)  =>
-      text(r) :: text("(") ::
-        docOfList(ts.map(docOfTerm), text(",")) :: text(")")
+      bracket(r+"(",")",
+        docOfList(ts.map(docOfTerm), text(",") :: DocBreak))
   }
 
 
@@ -50,17 +54,20 @@ object Printing {
     case False => text("false")
     case Atom(p) => docOfPred(p)
     case And(fm1,fm2) => 
-      text("(") :: docOfFormula(fm1) :: text("&") :: 
-        docOfFormula(fm2) :: text(")")
+      bracket("(",")", 
+              docOfFormula(fm1) :: text("&") :: 
+              docOfFormula(fm2))
     case Or(fm1,fm2) => 
-      text("(") :: docOfFormula(fm1) :: text("|") :: 
-        docOfFormula(fm2) :: text(")")
-    case Imp(fm1,fm2) => 
-      text("(") :: docOfFormula(fm1) :: text("==>") :: 
-        docOfFormula(fm2) :: text(")")
+      bracket("(",")",
+              docOfFormula(fm1) :: text("|") :: docOfFormula(fm2) )
+    case Imp(fm1,fm2) =>
+      bracket("(",")", 
+         docOfFormula(fm1) :: text("==>") :: 
+            docOfFormula(fm2))
     case Iff(fm1,fm2) => 
-      text("(") :: docOfFormula(fm1) :: text("<=>") :: 
-        docOfFormula(fm2) :: text(")")
+      bracket("(",")",
+              docOfFormula(fm1) :: text("<=>") :: 
+              docOfFormula(fm2))
     case Forall(x,fm) => 
       text("forall ") :: text(x) :: text(".") ::
           text("(") :: docOfFormula(fm) :: text(")")
@@ -68,9 +75,9 @@ object Printing {
       text("exists ") :: text(x) :: text(".") ::
           text("(") :: docOfFormula(fm) :: text(")")
     case Box(h,fm) =>
-      text("[") :: docOfHP(h) :: text("]") :: docOfFormula(fm)
+      bracket("[","]", docOfHP(h)) :: docOfFormula(fm)
     case Diamond(h,fm) =>
-      text("<") :: docOfHP(h) :: text(">") :: docOfFormula(fm)
+      bracket("<",">", docOfHP(h)) :: docOfFormula(fm)
   }
 
 
@@ -87,13 +94,12 @@ object Printing {
       text("(") :: docOfHP(h1) :: text(")") :: 
           text("++") :/: text("(") :: docOfHP(h2) :: text(")")
     case Repeat(h, inv, hnts) =>
-      text("{") :: docOfHP(h) :: text("}*")
+      bracket("{","}", docOfHP(h)):: text("*")
     case Evolve(derivs, reg, hnts, sols) =>
-      text("{") :: 
+      bracket("{","}",
        docOfList(derivs.map(docOfDeriv), text(",")) ::
        text(";") ::
-       docOfFormula(reg) :: 
-       text("}")
+       docOfFormula(reg))
   }
 
 
@@ -104,8 +110,8 @@ object Printing {
   def docOfSequent(sq: Sequent) : Document = sq match {
     case Sequent(c,s) =>
       docOfList(c.map(docOfFormula), DocCons(text(","), DocBreak)) :/:
-       text("|-") ::
-       docOfList(s.map(docOfFormula), DocCons(text(","), DocBreak))
+       text("|-") :: DocNest(2,
+        docOfList(s.map(docOfFormula), DocCons(text(","), DocBreak)))
   }
 
 
