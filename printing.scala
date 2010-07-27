@@ -28,7 +28,7 @@ object Printing {
     case Var(x) =>
       Document.text(x)
     case Fn(f, List(x,y)) if List("+","-","*", "/", "^").contains(f) =>
-      text("(") :: docOfTerm(x) :: "+" :: docOfTerm(y) :: text(")")
+      text("(") :: docOfTerm(x) :: text(f) :: docOfTerm(y) :: text(")")
     case Fn(f, args) =>
       Document.text(f) :: "(" :: 
         docOfList(args.map(docOfTerm), text(",")) :: text(")")

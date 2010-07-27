@@ -21,6 +21,13 @@ object Rules {
       else x::replacelist(i-1,xs,a)      
   }
 
+  def splicelist[A](i: Int, lst: List[A], a: List[A]): List[A] = lst match {
+    case Nil => Nil
+    case x::xs =>
+      if(i <= 0) a ++ xs
+      else x::splicelist(i-1,xs,a)      
+  }
+
   def removelist[A](i: Int, lst: List[A]): List[A] = lst match {
     case Nil => Nil
     case x::xs =>
@@ -78,6 +85,65 @@ object Rules {
    = optionbind(extract(p,s).map(f1 => replacesequent(p,s,f(f1))))
 
 */
+
+
+  val andLeft : ProofRule = 
+    p => sq => (p,sq) match {
+      case (Left(n), Sequent(c,s)) =>
+        val fm = lookup(p,sq)
+        fm match {
+          case And(f1,f2) => 
+            val sq1 = Sequent(splicelist(n,c,List(f1,f2)),s)
+            Some( (List(sq1),Nil))
+          case _ => 
+            None
+        }
+      case _ => None
+    }
+
+  val andRight : ProofRule = 
+    p => sq => (p,sq) match {
+      case (Right(n), Sequent(c,s)) =>
+        val fm = lookup(p,sq)
+        fm match {
+          case And(f1,f2) => 
+            val sq1 = replace(p,sq,f1)
+            val sq2 = replace(p,sq,f2)
+            Some( (List(sq1,sq2),Nil))
+          case _ => 
+            None
+        }
+      case _ => None
+    }
+
+  val orRight : ProofRule = 
+    p => sq => (p,sq) match {
+      case (Right(n), Sequent(c,s)) =>
+        val fm = lookup(p,sq)
+        fm match {
+          case Or(f1,f2) => 
+            val sq1 = Sequent(c,splicelist(n,s,List(f1,f2)))
+            Some( (List(sq1),Nil))
+          case _ => 
+            None
+        }
+      case _ => None
+    }
+
+  val orLeft : ProofRule = 
+    p => sq => (p,sq) match {
+      case (Left(n), Sequent(c,s)) =>
+        val fm = lookup(p,sq)
+        fm match {
+          case Or(f1,f2) => 
+            val sq1 = replace(p,sq,f1)
+            val sq2 = replace(p,sq,f2)
+            Some( (List(sq1,sq2),Nil))
+          case _ => 
+            None
+        }
+      case _ => None
+    }
 
 
   val seq : ProofRule =

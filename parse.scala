@@ -98,8 +98,8 @@ class DLParser(in: InputStream)
      pred ^^ (x => Atom(x))  |
      "true" ^^^ True |
      "false" ^^^ False |
-     ("[" ~> hp <~ "]") ~ formula ^^ {case a ~ f => Box(a,f)} |
-     ("<" ~> hp <~ ">") ~ formula ^^ {case a ~ f => Diamond(a,f)} 
+     ("[" ~> hp <~ "]") ~ formula4 ^^ {case a ~ f => Box(a,f)} |
+     ("<" ~> hp <~ ">") ~ formula4 ^^ {case a ~ f => Diamond(a,f)} 
 
 
    def hp : Parser[HP] =
