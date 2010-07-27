@@ -11,34 +11,42 @@ object Rules {
   type ProofRule = 
     (Position) => (Sequent) => Option[(List[Sequent], List[String])]
 
+  class LookupError() extends Exception()
+
 
   def replacelist[A](i: Int, lst: List[A], a: A): List[A] = lst match {
     case Nil => Nil
     case x::xs =>
       if(i <= 0) a::xs
-      else x::replacelist(i-1,xs,a)
-      
+      else x::replacelist(i-1,xs,a)      
   }
 
-  def replacesequent(i: Position, 
-                 s: Sequent, 
-                 f: Option[Formula]): Option[Sequent] = i match {
-    case Left(n) => 
-      f.map(f1 => replacelist(n,s.ctxt, f1)).map(c => 
-        Sequent(c,s.scdts))
-    case Right(n) => 
-      f.map(f1 => replacelist(n,s.scdts, f1)).map(sc =>
-        Sequent(s.ctxt, sc))
-  }
-  
 
-  def extract(p: Position, s: Sequent): Option[Formula] = (p,s) match {
+  def replace(p: Position, s: Sequent,fm : Formula): Sequent = (p,s) match {
     case (Left(n), Sequent(ct,st)) => 
-      ct.slice(n,n+1).headOption
+      if(n >= ct.length || n < 0 )
+        throw new  LookupError()
+      else Sequent(replacelist(n,ct,fm),st)
     case (Right(n), Sequent(ct,st)) => 
-      st.slice(n,n+1).headOption
+      if(n >= st.length || n < 0 )
+        throw new LookupError()
+      else Sequent(ct,replacelist(n,st,fm))
   }
 
+  def lookup(p: Position, s: Sequent): Formula = (p,s) match {
+    case (Left(n), Sequent(ct,st)) => 
+      if(n >= ct.length || n < 0 )
+        throw new   LookupError()
+      else ct.slice(n,n+1).head
+    case (Right(n), Sequent(ct,st)) => 
+      if(n >= st.length || n < 0 )
+        throw new LookupError()
+      else st.slice(n,n+1).head
+  }
+
+
+
+/*
   def optionbind[A](op:Option[Option[A]]): Option[A] = op match {
     case Some(Some(x)) => Some(x)
     case Some(None) => None
@@ -50,17 +58,37 @@ object Rules {
                  f: Formula => Option[Formula]): Option[Sequent] 
    = optionbind(extract(p,s).map(f1 => replacesequent(p,s,f(f1))))
 
+*/
 
 
   val seq : ProofRule =
     p => sq => {
-      val mbesq = extractmap(p,sq, 
-                   {case Box(Seq(h1,h2), fm) => 
-                        Some(Box(h1,Box(h2,fm)))
-                    case _ => None})
-      mbesq.map(s => (List(s), Nil))
+      val fm  = lookup(p,sq)
+      fm match {
+        case  Box(Seq(h1,h2), phi) => 
+           val fm1 = Box(h1,Box(h2,fm))
+           val sq1 = replace(p,sq,fm1)
+           Some( List(sq1),Nil)
+        case _ => None
+      }
     }
 
+  val chooseRight : ProofRule =
+    p => sq => (p,sq) match {
+      case (Right(n), Sequent(c,s)) =>
+        val fm = lookup(p,sq)
+        fm match {
+          case Box(Choose(h1,h2), fm) => 
+            val fm1 = Box(h1,fm) 
+            val fm2 = Box(h2,fm)
+            val sq1 = replace(p,sq,fm1)
+            val sq2 = replace(p,sq,fm2)
+            Some( (List(sq1,sq2),Nil))
+          case _ => 
+            None
+        }
+      case _ => None
+    }
 
 }
 
