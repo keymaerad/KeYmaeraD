@@ -7,6 +7,7 @@ object Rules {
   abstract class Position 
   case class Left(n: Int) extends Position
   case class Right(n: Int) extends Position
+//  case object Outer extends Position
 
   type ProofRule = 
     (Position) => (Sequent) => Option[(List[Sequent], List[String])]
