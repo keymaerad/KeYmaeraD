@@ -52,6 +52,19 @@ object Nodes {
       println("schemavars = " + schemavars)
 
     }
+
+   override def toString : String = {
+      val sb = new StringBuilder()
+      sb.append(Printing.stringOfSequent(goal) + "\n")
+      sb.append("AndNode\n")
+      sb.append("rule = " + rule + "\n")
+      sb.append("nodeID = " + nodeID + "\n")
+      sb.append("status = " + status + "\n")
+      sb.append("children = " + children + "\n")
+      sb.append("schemavars = " + schemavars + "\n")
+      sb.toString
+   }
+
   }
 
   class OrNode (rule: String, 
@@ -63,6 +76,17 @@ object Nodes {
       println("status = " + status)
       println("children = " + children)
     }
+
+   override def toString : String = {
+      val sb = new StringBuilder()
+      sb.append(Printing.stringOfSequent(goal) + "\n")
+      sb.append("AndNode\n")
+      sb.append("rule = " + rule + "\n")
+      sb.append("nodeID = " + nodeID + "\n")
+      sb.append("status = " + status + "\n")
+      sb.append("children = " + children + "\n")
+      sb.toString
+   }
 
   }
 

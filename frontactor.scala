@@ -21,6 +21,7 @@ class FrontActor extends Actor {
                  ("orLeft", Rules.orLeft),
                  ("seq", Rules.seq),
                  ("chooseRight", Rules.chooseRight),
+                 ("checkRight", Rules.checkRight),
                  ("assignRight", Rules.assignRight),
                  ("assignAnyRight", Rules.assignAnyRight))
 
@@ -64,9 +65,7 @@ class FrontActor extends Actor {
   def shownode(ndID: NodeID) : Unit = 
     nodeTable.get(ndID) match {
       case Some(nd) =>
-        Printing.printSequent(nd.goal)
-        println()
-        nd.print
+        println(nd.toString)
       case None =>
         println ("node " + ndID + " does not exist.")
     }

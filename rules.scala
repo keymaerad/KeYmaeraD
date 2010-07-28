@@ -175,6 +175,21 @@ object Rules {
       case _ => None
     }
 
+  val checkRight : ProofRule =
+    p => sq => (p,sq) match {
+      case (Right(n), Sequent(c,s)) =>
+        val fm = lookup(p,sq)
+        fm match {
+          case Box(Check(fm1), phi) => 
+            val Sequent(c1,s1) = replace(p,sq, phi)
+            val sq1 = Sequent(fm::c1,s1)
+            Some( (List(sq1),Nil))
+          case _ => 
+            None
+        }
+      case _ => None
+    }
+
 
  val assignRight : ProofRule = 
    p => sq => (p,sq) match {

@@ -16,6 +16,16 @@ object Printing {
   }
 
 
+  def stringOfSequent(sq: Sequent): String = {
+    val sw = new java.io.StringWriter()
+    val d = docOfSequent(sq)
+    d.format(70, sw)
+    sw.toString
+  }
+
+
+
+
 
   def docOfList(lst:List[Document], sep: Document) : Document = lst match {
     case Nil => DocNil
@@ -78,6 +88,8 @@ object Printing {
       bracket("[","]", docOfHP(h)) :: docOfFormula(fm)
     case Diamond(h,fm) =>
       bracket("<",">", docOfHP(h)) :: docOfFormula(fm)
+    case SchemaVar(g) =>
+      text(g)
   }
 
 
@@ -91,8 +103,9 @@ object Printing {
     case Seq(h1,h2) =>
       docOfHP(h1) :: text(";") :/: docOfHP(h2)
     case Choose(h1,h2) =>
-      text("(") :: docOfHP(h1) :: text(")") :: 
-          text("++") :/: text("(") :: docOfHP(h2) :: text(")")
+      bracket("(",")", docOfHP(h1)) ::
+          text("++") :/: 
+          bracket("(",")",docOfHP(h2))
     case Repeat(h, inv, hnts) =>
       bracket("{","}", docOfHP(h)):: text("*")
     case Evolve(derivs, reg, hnts, sols) =>
