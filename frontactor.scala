@@ -15,7 +15,8 @@ class FrontActor extends Actor {
 
 
   val rules = new scala.collection.mutable.HashMap[String,Rules.ProofRule]()
-  rules ++= List(("andLeft", Rules.andLeft),
+  rules ++= List(("close", Rules.close),
+                 ("andLeft", Rules.andLeft),
                  ("andRight", Rules.andRight),
                  ("orRight", Rules.orRight),
                  ("orLeft", Rules.orLeft),

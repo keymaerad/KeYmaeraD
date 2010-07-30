@@ -9,6 +9,8 @@ object Rules {
   case class Right(n: Int) extends Position
 //  case object Outer extends Position
 
+
+  // the list of strings holds the free variables introduced here
   type ProofRule = 
     (Position) => (Sequent) => Option[(List[Sequent], List[String])]
 
@@ -86,6 +88,27 @@ object Rules {
    = optionbind(extract(p,s).map(f1 => replacesequent(p,s,f(f1))))
 
 */
+
+  val close : ProofRule =
+    p => sq => {
+      val fm = lookup(p,sq)
+      (p,fm) match {
+        case (Left(_), False) => 
+          Some((Nil,Nil)) // proved!
+        case (Right(_), True) => 
+          Some((Nil,Nil)) // proved!
+        case (Left(n), fm) =>
+          if(sq.scdts.contains(fm) )
+            Some((Nil,Nil)) // proved!
+          else None
+        case (Right(n), fm) =>
+          if(sq.ctxt.contains(fm) )
+            Some((Nil,Nil)) // proved!
+          else None
+      }
+
+    }
+
 
 
   val andLeft : ProofRule = 
