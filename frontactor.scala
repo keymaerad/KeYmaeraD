@@ -48,7 +48,12 @@ class FrontActor extends Actor {
           gotonode(nd)
           sender ! ()
         case ('apply, pos: Rules.Position, rule: String) =>
-          applyrule(pos,rule)
+          hereNode match {
+            case AndNode(_,_,_) =>
+              println("cannot apply rule to an AndNode")
+            case ornd@OrNode(_,_) =>
+              applyrule(ornd,pos,rule)
+          }
           sender ! ()
         case msg =>
           println("got message: " + msg)
@@ -103,17 +108,19 @@ class FrontActor extends Actor {
 
   }
 
-  def applyrule(p: Rules.Position, r: String): Unit = rules.get(r) match {
+  
+
+  def applyrule(hn: OrNode, p: Rules.Position, r: String): Unit = rules.get(r) match {
     case Some(rl) =>
-          rl(p)(hereNode.goal) match {
+          rl(p)(hn.goal) match {
             case Some( (sqs, fvs)  ) =>
-              val andnd = new AndNode(r, hereNode.goal, Nil)
+              val andnd = new AndNode(r, hn.goal, Nil)
               register(andnd)
               val subname = r + " subgoal"
               val ornds = sqs.map(s => new OrNode(subname, s))
               ornds.map(register _)
               val orndIDs = ornds.map( _.nodeID)
-              hereNode.children = andnd.nodeID :: hereNode.children 
+              hn.children = andnd.nodeID :: hn.children 
               andnd.children = orndIDs
               println("success")
             case None => 
@@ -124,7 +131,11 @@ class FrontActor extends Actor {
   }
     
 
+  val running = new scala.collection.mutable.HashMap[NodeID,Jobs.JobID]()
 
+  def runprocedure(hn: OrNode, p: String): Unit = {
+    ()
+  }
 
 
 

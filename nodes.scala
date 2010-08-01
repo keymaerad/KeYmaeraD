@@ -2,9 +2,6 @@ package DLBanyan
 
 
 
-
-
-
 object Nodes {
 
   type NodeID = Int
@@ -18,10 +15,6 @@ object Nodes {
   }
 
 
-
-
-
-
   abstract class Status
   case object Proved extends Status
   case object Disproved extends Status
@@ -29,29 +22,18 @@ object Nodes {
   case object Irrelevant extends Status
 
 
-  abstract class ProofNode(r: String, g: Sequent) {
+  abstract class ProofNode() {
     //val nodeType : NodeType = t
-    val rule = r
-    val goal = g
     val nodeID = nextNodeID 
     var children : List[NodeID] = Nil
     var status = Open
-    def print: Unit
   }
 
-  class AndNode(rule: String, 
-                goal:Sequent,
-                svs: List[String]) extends ProofNode(rule,goal) {
-    val schemavars = svs
-    def print : Unit = {
-      println("AndNode")
-      println("rule = " + rule)
-      println("nodeID = " + nodeID)
-      println("status = " + status)
-      println("children = " + children)
-      println("schemavars = " + schemavars)
 
-    }
+  case class AndNode(rule: String, 
+                     goal:Sequent,
+                     svs: List[String]) extends ProofNode() {
+    val schemavars = svs
 
    override def toString : String = {
       val sb = new StringBuilder()
@@ -67,15 +49,9 @@ object Nodes {
 
   }
 
-  class OrNode (rule: String, 
-                goal: Sequent) extends ProofNode(rule,goal) {
-    def print : Unit = {
-      println("OrNode")
-      println("rule = " + rule)
-      println("nodeID = " + nodeID)
-      println("status = " + status)
-      println("children = " + children)
-    }
+
+  case class OrNode (rule: String, 
+                goal: Sequent) extends ProofNode() {
 
    override def toString : String = {
       val sb = new StringBuilder()
@@ -89,8 +65,6 @@ object Nodes {
    }
 
   }
-
-
 
 
 
