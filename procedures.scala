@@ -20,7 +20,7 @@ object Procedures {
  
 
 
-  object CohenHormanderProcedure extends Procedure {
+  object CohenHormander extends Procedure {
 
     def applies(sq: Sequent) : Boolean = sq match {
       case Sequent(c,s) =>
