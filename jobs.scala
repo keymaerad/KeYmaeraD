@@ -7,8 +7,9 @@ import scala.actors.Futures._
 import Procedures._
 
 object Jobs {
-  type JobID = Int
+  type JobID = Nodes.NodeID
 
+/*
   private var nextID = 0
 
   def nextJobID : JobID = {
@@ -16,7 +17,7 @@ object Jobs {
     nextID += 1;
     res
   }
-
+*/
 
 
   val procs = new scala.collection.mutable.HashMap[String,Procedure]()
@@ -35,7 +36,8 @@ object Jobs {
     val jobs = new scala.collection.mutable.HashMap[JobID,JobData ]()
 
     val localworker = new JobWorker()
-
+    localworker.start()
+  
 
     def act(): Unit = {
       println("jobmaster acting")
@@ -44,25 +46,24 @@ object Jobs {
         react {
           case 'quit =>
             println("jobmaster quitting")
-            localworker ! 'quit
+            localworker !? 'quit
             sender ! ()
             exit
-          case ('job, p: String, sq: Sequent) =>
-            val jid = nextJobID
+
+          case ('job, p: String, sq: Sequent, jid: JobID) =>
+//            val jid = nextJobID
             val t = System.currentTimeMillis
             jobs.put(jid, JobData(sender, t, localworker))
-            localworker !? ( ('job, p, sq, jid) )
-            sender ! ()
+            localworker ! ( ('job, p, sq, jid) )
 
          case 'list =>
            println(jobs)
-           sender ! ()
           
 
          case ('jobdone, jid: JobID, res: Sequent) =>
            jobs.get(jid) match {
              case Some(JobData(s,t,w)) =>
-               s ! ('done, jid, t, res)
+               s ! ('jobdone, jid,res)
              case None =>
                throw new Error("invalid jobID")
            }
@@ -71,7 +72,7 @@ object Jobs {
          case ('jobdone, jid: JobID) =>
            jobs.get(jid) match {
              case Some(JobData(s,t,w)) =>
-               s ! ('done, jid, t)
+               s ! ('jobdone, jid)
              case None =>
                throw new Error("invalid jobID")
            }
@@ -80,7 +81,7 @@ object Jobs {
          case ('abort, jid: JobID) =>
            jobs.get(jid) match {
              case Some(JobData(s,t,w)) =>
-               w !? 'abort
+               w ! 'abort
              case None =>
                
            }
@@ -131,7 +132,6 @@ object Jobs {
               case None =>
                 
             }
-            sender ! ()
 
 
          case ('done, jid:JobID, res: Sequent) =>
@@ -147,7 +147,6 @@ object Jobs {
              case None => 
                println("got abort when nothing was running")
            }
-           sender ! ()
               
         }
       )

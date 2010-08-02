@@ -14,6 +14,7 @@ class FrontActor extends Actor {
   var hereNode: ProofNode = nullNode
 
   val jobmaster = new Jobs.JobMaster()
+  jobmaster.start()
 
 
   val rules = new scala.collection.mutable.HashMap[String,Rules.ProofRule]()
@@ -29,12 +30,15 @@ class FrontActor extends Actor {
                  ("assignAnyRight", Rules.assignAnyRight))
 
 
+//  val jobs = new scala.collection.mutable.HashMap[Jobs.JobID, NodeID]()
+
   def act(): Unit = {
     println("acting")
 
     loop (
       react {
         case 'quit =>
+          println("frontactor quitting")
           jobmaster !? 'quit
           sender ! ()
           exit
@@ -58,14 +62,23 @@ class FrontActor extends Actor {
               applyrule(ornd,pos,rule)
           }
           sender ! ()
-        case ('doproc, proc: String) => 
+        case ('job, proc: String) => 
           hereNode match {
             case AndNode(_,_,_) =>
               println("cannot do a procedure on an AndNode")
             case ornd@OrNode(r,sq) =>
-              jobmaster !? ('job, proc,sq)
+              jobmaster ! (('job, proc, sq, ornd.nodeID))
+              
           }
           sender ! ()
+
+        case ('jobdone, ndID: NodeID, sq: Sequent) =>
+
+
+        case ('jobdone, ndID: NodeID) =>
+
+
+
         case msg =>
           println("got message: " + msg)
           sender ! ()
