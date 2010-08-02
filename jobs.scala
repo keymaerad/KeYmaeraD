@@ -85,7 +85,10 @@ object Jobs {
              case None =>
                
            }
-           sender ! ()
+
+          
+          case msg =>
+            println ("jobserver got message: " + msg)
 
         }
       )
@@ -127,10 +130,9 @@ object Jobs {
                       case None =>
                         sf ! ('done, jid)
                     }
-                  }
-                else sf ! ('done, jid)
-
-                })
+                  })
+                }  else  sf ! ('doesnotapply, jid) 
+                
 
               case None =>
                 
