@@ -116,16 +116,19 @@ object Jobs {
             procs.get(p) match {
               case Some(pr) =>
                 val sf = self
-                proc = Some(pr)
-                future ({
-                  val res = pr.proceed(sq)
-                  proc = None
-                  res match {
-                    case Some(r) =>
-                      sf ! ('done, jid, r)
-                    case None =>
-                      sf ! ('done, jid)
+                if(pr.applies(sq)) {
+                  proc = Some(pr)
+                  future ({
+                    val res = pr.proceed(sq)
+                    proc = None
+                    res match {
+                      case Some(r) =>
+                        sf ! ('done, jid, r)
+                      case None =>
+                        sf ! ('done, jid)
+                    }
                   }
+                else sf ! ('done, jid)
 
                 })
 

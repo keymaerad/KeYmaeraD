@@ -90,6 +90,10 @@ class FrontActor extends Actor {
           jobs.remove(ndID)
 
 
+        case 'jobs =>
+          println(jobs.toList)
+          sender ! ()
+
         case msg =>
           println("got message: " + msg)
           sender ! ()
