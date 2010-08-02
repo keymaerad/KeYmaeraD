@@ -20,8 +20,6 @@ object Jobs {
 */
 
 
-  val procs = new scala.collection.mutable.HashMap[String,Procedure]()
-  procs ++= List(("ch", CohenHormander))
 
 
 

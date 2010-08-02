@@ -60,7 +60,7 @@ object Nodes {
    override def toString : String = {
       val sb = new StringBuilder()
       sb.append(Printing.stringOfSequent(goal) + "\n")
-      sb.append("AndNode\n")
+      sb.append("OrNode\n")
       sb.append("rule = " + rule + "\n")
       sb.append("nodeID = " + nodeID + "\n")
       sb.append("status = " + status + "\n")

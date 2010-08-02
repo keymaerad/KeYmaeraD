@@ -63,13 +63,19 @@ class FrontActor extends Actor {
           }
           sender ! ()
         case ('job, proc: String) => 
-          hereNode match {
-            case AndNode(_,_,_) =>
+          (Procedures.procs.get(proc), hereNode) match {
+            case (_,AndNode(_,_,_)) =>
               println("cannot do a procedure on an AndNode")
-            case ornd@OrNode(r,sq) =>
-              jobmaster ! (('job, proc, sq, ornd.nodeID))
-              val t = System.currentTimeMillis
-              jobs.put(ornd.nodeID, t)
+            case (None, _ ) =>
+              println("not a defined procedure: " + proc)
+            case (Some(pr), ornd@OrNode(r,sq)) =>
+              if(pr.applies(sq)) {
+                jobmaster ! (('job, proc, sq, ornd.nodeID))
+                val t = System.currentTimeMillis
+                jobs.put(ornd.nodeID, t)
+              } else {
+                println("procedure " + proc + " does not apply here.")
+              }
               
           }
           sender ! ()
@@ -78,7 +84,7 @@ class FrontActor extends Actor {
           jobs.remove(ndID)
           nodeTable.get(ndID) match {
             case Some(nd) => 
-              val nd1 = OrNode("quantifier elimination", sq)
+              val nd1 = BackendNode("quantifier elimination", sq)
               register(nd1)
               nd.addchild(nd1.nodeID)
             case None => 

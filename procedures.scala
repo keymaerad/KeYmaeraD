@@ -3,6 +3,11 @@ package DLBanyan
 object Procedures {
   import Prover._
 
+
+  val procs = new scala.collection.mutable.HashMap[String,Procedure]()
+  procs ++= List(("ch", CohenHormander))
+
+
 // for now, these things only close or disprove a goal.
 
 
@@ -24,7 +29,7 @@ object Procedures {
 
     def applies(sq: Sequent) : Boolean = sq match {
       case Sequent(c,s) =>
-        !(c.exists(x => ! firstclass(x)) ||  c.exists(x => ! firstclass(x)) )
+        !(c.exists(x => ! firstclass(x)) ||  s.exists(x => ! firstclass(x)) )
     }
 
 
