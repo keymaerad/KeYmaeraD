@@ -26,7 +26,11 @@ object Nodes {
     //val nodeType : NodeType = t
     val nodeID = nextNodeID 
     var children : List[NodeID] = Nil
-    var status = Open
+    var status: Status  = Open
+
+    def addchild(c: NodeID): Unit = {
+      children = c :: children
+    }
   }
 
 
@@ -61,6 +65,21 @@ object Nodes {
       sb.append("nodeID = " + nodeID + "\n")
       sb.append("status = " + status + "\n")
       sb.append("children = " + children + "\n")
+      sb.toString
+   }
+
+  }
+
+  case class BackendNode (rule: String, 
+                          goal: Sequent) extends ProofNode() {
+   status = Proved
+    
+   override def toString : String = {
+      val sb = new StringBuilder()
+      sb.append(Printing.stringOfSequent(goal) + "\n")
+      sb.append("BackendNode\n")
+      sb.append("rule = " + rule + "\n")
+      sb.append("nodeID = " + nodeID + "\n")
       sb.toString
    }
 

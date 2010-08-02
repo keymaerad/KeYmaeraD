@@ -30,7 +30,7 @@ class FrontActor extends Actor {
                  ("assignAnyRight", Rules.assignAnyRight))
 
 
-//  val jobs = new scala.collection.mutable.HashMap[Jobs.JobID, NodeID]()
+  val jobs = new scala.collection.mutable.HashMap[NodeID, Long]()
 
   def act(): Unit = {
     println("acting")
@@ -68,15 +68,26 @@ class FrontActor extends Actor {
               println("cannot do a procedure on an AndNode")
             case ornd@OrNode(r,sq) =>
               jobmaster ! (('job, proc, sq, ornd.nodeID))
+              val t = System.currentTimeMillis
+              jobs.put(ornd.nodeID, t)
               
           }
           sender ! ()
 
         case ('jobdone, ndID: NodeID, sq: Sequent) =>
+          jobs.remove(ndID)
+          nodeTable.get(ndID) match {
+            case Some(nd) => 
+              val nd1 = OrNode("quantifier elimination", sq)
+              register(nd1)
+              nd.addchild(nd1.nodeID)
+            case None => 
+              throw new Error("node not in nodeTable")
+          }
 
 
         case ('jobdone, ndID: NodeID) =>
-
+          jobs.remove(ndID)
 
 
         case msg =>
@@ -155,15 +166,6 @@ class FrontActor extends Actor {
       println("rule " + r + " not found.")
   }
     
-
-  val running = new scala.collection.mutable.HashMap[NodeID,Jobs.JobID]()
-
-  def runprocedure(hn: OrNode, p: String): Unit = {
-    ()
-  }
-
-
-
 
 }
 
