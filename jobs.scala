@@ -30,7 +30,7 @@ object Jobs {
                       w: scala.actors.AbstractActor)
 
 
-  class JobServer extends Actor {
+  class JobMaster extends Actor {
 
     val jobs = new scala.collection.mutable.HashMap[JobID,JobData ]()
 
@@ -38,11 +38,13 @@ object Jobs {
 
 
     def act(): Unit = {
-      println("jobserver acting")
+      println("jobmaster acting")
 
       loop (
         react {
           case 'quit =>
+            println("jobmaster quitting")
+            localworker ! 'quit
             sender ! ()
             exit
           case ('job, p: String, sq: Sequent) =>
@@ -58,11 +60,32 @@ object Jobs {
           
 
          case ('jobdone, jid: JobID, res: Sequent) =>
+           jobs.get(jid) match {
+             case Some(JobData(s,t,w)) =>
+               s ! ('done, jid, t, res)
+             case None =>
+               throw new Error("invalid jobID")
+           }
+           jobs.remove(jid)
 
          case ('jobdone, jid: JobID) =>
+           jobs.get(jid) match {
+             case Some(JobData(s,t,w)) =>
+               s ! ('done, jid, t)
+             case None =>
+               throw new Error("invalid jobID")
+           }
+           jobs.remove(jid)
 
          case ('abort, jid: JobID) =>
-              
+           jobs.get(jid) match {
+             case Some(JobData(s,t,w)) =>
+               w !? 'abort
+             case None =>
+               
+           }
+           sender ! ()
+
         }
       )
     }
