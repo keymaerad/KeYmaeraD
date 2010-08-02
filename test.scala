@@ -1,10 +1,28 @@
 
-object Test {
+import DLBanyan.FrontEnd._
+dl('load, "examples/simple.dl")
+dl('here)
 
-def f(x: Int) : Int = 
-  if (x < 1) 1 else g(x) + g(x - 1)
+dl('apply, DLBanyan.Rules.Right(0), "seq")
+ dl('goto, 3)
 
-def g(x: Int) : Int = 
-  if (x < 1) 1 else f(x-1) + f(x-2)
+dl('here)
 
-}
+dl('apply, DLBanyan.Rules.Right(0), "assignRight")
+
+ dl('goto, 5)
+ dl('here)
+
+ dl('apply, DLBanyan.Rules.Right(0), "chooseRight")
+ dl('goto, 7)
+dl('here)
+dl('apply, DLBanyan.Rules.Right(0), "assignRight")
+
+dl('here)
+
+ dl('goto, 9)
+dl('goto, 10)
+
+
+dl('here)
+dl('job, "ch")
