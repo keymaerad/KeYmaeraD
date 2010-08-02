@@ -110,7 +110,8 @@ class FrontActor extends Actor {
 
   
 
-  def applyrule(hn: OrNode, p: Rules.Position, r: String): Unit = rules.get(r) match {
+  def applyrule(hn: OrNode, 
+                p: Rules.Position, r: String): Unit = rules.get(r) match {
     case Some(rl) =>
           rl(p)(hn.goal) match {
             case Some( (sqs, fvs)  ) =>
