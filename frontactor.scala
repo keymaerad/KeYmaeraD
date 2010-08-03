@@ -85,6 +85,7 @@ class FrontActor extends Actor {
           nodeTable.get(ndID) match {
             case Some(nd) => 
               val nd1 = BackendNode("quantifier elimination", sq)
+              nd1.parent = Some(nd.nodeID)
               register(nd1)
               nd.addchild(nd1.nodeID)
             case None => 
@@ -161,10 +162,12 @@ class FrontActor extends Actor {
           rl(p)(hn.goal) match {
             case Some( (sqs, fvs)  ) =>
               val andnd = new AndNode(r, hn.goal, Nil)
+              andnd.parent = Some(hn.nodeID)
               register(andnd)
               val subname = r + " subgoal"
               val ornds = sqs.map(s => new OrNode(subname, s))
               ornds.map(register _)
+              ornds.map(x => x.parent = Some(andnd.nodeID))
               val orndIDs = ornds.map( _.nodeID)
               hn.children = andnd.nodeID :: hn.children 
               andnd.children = orndIDs
