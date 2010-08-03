@@ -680,7 +680,7 @@ final object AM {
         for(i <- 0 until djs.length){ print("\u0008");}
         val djs2 = djs.map(p1 => qelim(qfn(vars), x, p1));
         val r = list_disj(djs2)
-        println("");
+        println("]");
         r
 //        list_disj(Parallel.pmap(djs, ((p1:Formula) => qelim(qfn(vars), x, p1))))
       case _ => fm
