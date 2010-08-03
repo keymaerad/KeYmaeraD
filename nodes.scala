@@ -19,7 +19,7 @@ object Nodes {
   case object Proved extends Status
   case object Disproved extends Status
   case object Open extends Status
-  case object Irrelevant extends Status
+  case class Irrelevant(old: Status) extends Status
 
 
   abstract class ProofNode() {
@@ -78,14 +78,14 @@ object Nodes {
 
   }
 
-  case class BackendNode (rule: String, 
-                          goal: Sequent) extends ProofNode() {
+  case class DoneNode (rule: String, 
+                       goal: Sequent) extends ProofNode() {
    status = Proved
     
    override def toString : String = {
       val sb = new StringBuilder()
       sb.append(Printing.stringOfSequent(goal) + "\n")
-      sb.append("BackendNode\n")
+      sb.append("DoneNode\n")
       sb.append("rule = " + rule + "\n")
       sb.append(super.toString)
       sb.toString
@@ -105,6 +105,14 @@ object Nodes {
   val nullNode = new OrNode("null", Sequent(Nil,Nil))
   register(nullNode)
   
+
+  def getnode(ndID: NodeID) : ProofNode = nodeTable.get(ndID) match {
+    case Some(nd) =>
+      nd
+    case None =>
+      throw new Error("node does not exist: " + ndID) 
+    
+  }
 
 }
 
