@@ -167,6 +167,11 @@ class FrontActor extends Actor {
               register(pnd)
               hn.children = pnd.nodeID :: hn.children
               propagateProvedUp(hn.nodeID, pnd.nodeID)
+            case Some((List(sq), Nil)) => 
+              val ornd = new OrNode(r, sq)
+              ornd.parent = Some(hn.nodeID)
+              register(ornd)
+              hn.children = ornd.nodeID :: hn.children
             case Some( (sqs, fvs)  ) =>
               val andnd = new AndNode(r, hn.goal, Nil)
               andnd.parent = Some(hn.nodeID)

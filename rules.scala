@@ -226,6 +226,8 @@ object Rules {
           val fm1 = Atom(R("=",List(Var(vr1),tm)))
           val Sequent(c1,s1) = replace(p,sq, phi1)
           Some((List(Sequent(fm1::c1,s1)),Nil))
+        case _ =>
+          None
       }
      case _ => None
    }
@@ -243,10 +245,39 @@ object Rules {
           val phi1 = Prover.rename_Formula(vr,vr1,phi)
           val sq1 = replace(p,sq, phi1)
           Some((List(sq1),Nil))
+        case _ =>
+          None
       }
      case _ => None
    }
 
+/*
+  val loopInduction : ProofRule = 
+    pos => sq => (pos, sq) match {
+      case (Right(n), Sequent(c,s)) =>
+        val fm = lookup(pos,sq)
+        fm match {
+          case Box(Repeat()) //... hmmmm
+        }
+      case _ => None
+    }
+  
+  def applyRule(sq: Sequent): List[TreeNode] = sq match {
+    case Sequent(ctxt, Box(Repeat(p1, True(), inv_hints), fm)) => 
+      val loop_rule: Formula => AndNode = inv =>
+        new AndNode(
+                    "loop induction", 
+                    sq,
+                    BreadthFirst(),	
+                    List(Sequent(ctxt, NoModality(inv)),
+                         Sequent(List(inv), 
+                                 Box(p1, NoModality(inv))),
+                         Sequent(List(inv), 
+                                 fm)))
+      inv_hints.map(loop_rule)
+    case _ => Nil
+  }
+*/
 
 }
 
