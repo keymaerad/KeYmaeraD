@@ -55,13 +55,16 @@ class FrontActor extends Actor {
           gotonode(nd)
           sender ! ()
         case ('apply, pos: Rules.Position, rule: String) =>
-          hereNode match {
-            case AndNode(_,_,_) =>
-              println("cannot apply rule to an AndNode")
-            case ornd@OrNode(_,_) =>
-              applyrule(ornd,pos,rule)
+          (hereNode, rules.get(rule))  match {
+            case (_,None) =>
+              println("rule not found")
+            case (ornd@OrNode(_,_), Some(rl)) =>
+              applyrule(ornd,pos,rl)
+            case _ => 
+              println("cannot apply rule here")
           }
           sender ! ()
+
         case ('job, proc: String) => 
           (Procedures.procs.get(proc), hereNode) match {
             case (_,AndNode(_,_,_)) =>
@@ -158,37 +161,33 @@ class FrontActor extends Actor {
   
 
   def applyrule(hn: OrNode, 
-                p: Rules.Position, r: String): Unit = rules.get(r) match {
-    case Some(rl) =>
-          rl(p)(hn.goal) match {
-            case Some((Nil, _)) => //proved
-              val pnd = new DoneNode(r, hn.goal)
-              pnd.parent = Some(hn.nodeID)
-              register(pnd)
-              hn.children = pnd.nodeID :: hn.children
-              propagateProvedUp(hn.nodeID, pnd.nodeID)
-            case Some((List(sq), Nil)) => 
-              val ornd = new OrNode(r, sq)
-              ornd.parent = Some(hn.nodeID)
-              register(ornd)
-              hn.children = ornd.nodeID :: hn.children
-            case Some( (sqs, fvs)  ) =>
-              val andnd = new AndNode(r, hn.goal, Nil)
-              andnd.parent = Some(hn.nodeID)
-              register(andnd)
-              val subname = r + " subgoal"
-              val ornds = sqs.map(s => new OrNode(subname, s))
-              ornds.map(register _)
-              ornds.map(x => x.parent = Some(andnd.nodeID))
-              val orndIDs = ornds.map( _.nodeID)
-              hn.children = andnd.nodeID :: hn.children 
-              andnd.children = orndIDs
-              println("success")
-            case None => 
-              println("rule cannot be applied there")    
-          }
-    case None =>
-      println("rule " + r + " not found.")
+                p: Rules.Position, 
+                rl: Rules.ProofRule): Unit = rl(p)(hn.goal) match {
+    case Some((Nil, _)) => //proved
+      val pnd = new DoneNode(rl.toString, hn.goal)
+      pnd.parent = Some(hn.nodeID)
+      register(pnd)
+      hn.children = pnd.nodeID :: hn.children
+      propagateProvedUp(hn.nodeID, pnd.nodeID)
+    case Some((List(sq), Nil)) => 
+      val ornd = new OrNode(rl.toString, sq)
+      ornd.parent = Some(hn.nodeID)
+      register(ornd)
+      hn.children = ornd.nodeID :: hn.children
+    case Some( (sqs, fvs)  ) =>
+      val andnd = new AndNode(rl.toString, hn.goal, Nil)
+      andnd.parent = Some(hn.nodeID)
+      register(andnd)
+      val subname = rl.toString + " subgoal"
+      val ornds = sqs.map(s => new OrNode(subname, s))
+      ornds.map(register _)
+      ornds.map(x => x.parent = Some(andnd.nodeID))
+      val orndIDs = ornds.map( _.nodeID)
+      hn.children = andnd.nodeID :: hn.children 
+      andnd.children = orndIDs
+      println("success")
+    case None => 
+      println("rule cannot be applied there")    
   }
     
 

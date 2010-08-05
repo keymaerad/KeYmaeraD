@@ -12,12 +12,15 @@ object Rules {
 
   // A proof rule returns None if it does not apply.
   // Otherwise it returns a list of subgoals
-  // and a list of free schema variables, each of which
-  // may associated with hints.
-  type ProofRule = 
-    (Position) => 
-      (Sequent) => 
-        Option[(List[Sequent], List[(String,List[Formula])])]
+  // and a list of new free variables.
+  abstract class ProofRule(name: String) extends 
+    ((Position) =>   
+        (Sequent) =>  
+          Option[(List[Sequent], List[String])]) {
+            override def toString: String = {
+              name
+            }
+          }
   
 
   class LookupError() extends Exception()
@@ -95,8 +98,8 @@ object Rules {
 
 */
 
-  val close : ProofRule =
-    p => sq => {
+  val close = new ProofRule("close"){ 
+    def apply(p: Position) = sq => {
       val fm = lookup(p,sq)
       (p,fm) match {
         case (Left(_), False) => 
@@ -112,13 +115,13 @@ object Rules {
             Some((Nil,Nil)) // proved!
           else None
       }
+    } 
+  }
 
-    }
 
 
-
-  val andLeft : ProofRule = 
-    p => sq => (p,sq) match {
+  val andLeft  = new ProofRule("andleft") {
+    def apply(p:Position) = sq => (p,sq) match {
       case (Left(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
@@ -130,9 +133,10 @@ object Rules {
         }
       case _ => None
     }
+  }
 
-  val andRight : ProofRule = 
-    p => sq => (p,sq) match {
+  val andRight  = new  ProofRule("andright") {
+    def apply(p:Position) = sq => (p,sq) match { 
       case (Right(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
@@ -145,9 +149,10 @@ object Rules {
         }
       case _ => None
     }
+  }
 
-  val orRight : ProofRule = 
-    p => sq => (p,sq) match {
+  val orRight = new ProofRule("orright") { 
+    def apply(p:Position) = sq => (p,sq) match { 
       case (Right(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
@@ -159,9 +164,10 @@ object Rules {
         }
       case _ => None
     }
+  }
 
-  val orLeft : ProofRule = 
-    p => sq => (p,sq) match {
+  val orLeft = new  ProofRule("orleft") {
+    def apply(p:Position) = sq => (p,sq) match { 
       case (Left(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
@@ -174,10 +180,11 @@ object Rules {
         }
       case _ => None
     }
+  }
 
 
-  val seq : ProofRule =
-    p => sq => {
+  val seq = new ProofRule("seq") {
+    def apply(p: Position) = sq => {
       val fm  = lookup(p,sq)
       fm match {
         case  Box(Seq(h1,h2), phi) => 
@@ -187,9 +194,10 @@ object Rules {
         case _ => None
       }
     }
+  }
 
-  val chooseRight : ProofRule =
-    p => sq => (p,sq) match {
+  val chooseRight = new ProofRule("chooseright") {
+    def apply(p: Position) = sq => (p,sq) match {
       case (Right(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
@@ -204,9 +212,10 @@ object Rules {
         }
       case _ => None
     }
+  }
 
-  val checkRight : ProofRule =
-    p => sq => (p,sq) match {
+  val checkRight = new ProofRule("checkright") {
+    def apply(p: Position) = sq => (p,sq) match {
       case (Right(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
@@ -219,10 +228,11 @@ object Rules {
         }
       case _ => None
     }
+  }
 
 
- val assignRight : ProofRule = 
-   p => sq => (p,sq) match {
+ val assignRight = new ProofRule("assignright") {
+    def apply(p: Position) = sq => (p,sq) match {
      case (Right(n),Sequent(c,s)) => 
       val fm = lookup(p,sq)
       fm match {
@@ -237,12 +247,13 @@ object Rules {
       }
      case _ => None
    }
+ }
 
 
   /* this assumes that we don't have any
    *  free variables from existentials */
- val assignAnyRight : ProofRule = 
-   p => sq => (p,sq) match {
+ val assignAnyRight = new ProofRule("assignanyright") {
+    def apply(p: Position) = sq => (p,sq) match {
      case (Right(n),Sequent(c,s)) => 
       val fm = lookup(p,sq)
       fm match {
@@ -256,33 +267,34 @@ object Rules {
       }
      case _ => None
    }
+ }
 
 
-  val loopInduction : ProofRule = 
-    pos => sq => (pos, sq) match {
-      case (Right(n), Sequent(c,s)) =>
-        val fm = lookup(pos,sq)
-        fm match {
-          case Box(Repeat(hp, True, inv_hints), phi) =>
-            val nm = Prover.uniqify("X")
-            val inv = SchemaVar(nm)
-            val initiallyvalid = 
-              replace(pos, sq, inv)
-            val inductionstep = 
-              Sequent(List(inv), List(Box(hp, inv)))
-            val closestep = 
-              Sequent(List(inv), List(inv))
-            Some((List(initiallyvalid, inductionstep, closestep),
-                  List((nm, inv_hints))))
-          case _ => 
-            None
-        }
-      case _ => None
+  val loopInduction : Formula => ProofRule = 
+    inv => new ProofRule("loopinduction") {
+      def apply(pos: Position) = sq => (pos,sq) match {
+        case (Right(n), Sequent(c,s)) =>
+          val fm = lookup(pos,sq)
+          fm match {
+            case Box(Repeat(hp, True, inv_hints), phi) =>
+              val initiallyvalid = 
+                replace(pos, sq, inv)
+              val inductionstep = 
+                Sequent(List(inv), List(Box(hp, inv)))
+              val closestep = 
+                Sequent(List(inv), List(inv))
+              Some((List(initiallyvalid, inductionstep, closestep),
+                    Nil))
+            case _ => 
+              None
+          }
+        case _ => None
+      }
     }
 
 
-  val diffClose : ProofRule = 
-    pos => sq => (pos,sq) match {
+  val diffClose = new ProofRule("diffclose") {
+    def apply(pos: Position) = sq => (pos,sq) match { 
       case(Right(n), Sequent(c,s)) =>
         val fm = lookup(pos,sq)
         fm match {
@@ -293,7 +305,7 @@ object Rules {
         }
       case _ => None
     }
-  
+  }  
 
 
 }
