@@ -14,20 +14,20 @@ object TreeActions {
 
   def applyrule(hn: OrNode, 
                 p: Position, 
-                rl: ProofRule): Boolean = rl(p)(hn.goal) match {
+                rl: ProofRule): Option[List[NodeID]] = rl(p)(hn.goal) match {
     case Some((Nil, _)) => //proved
       val pnd = new DoneNode(rl.toString, hn.goal)
       pnd.parent = Some(hn.nodeID)
       register(pnd)
       hn.children = pnd.nodeID :: hn.children
       propagateProvedUp(hn.nodeID, pnd.nodeID)
-      true
+      Some(Nil)
     case Some((List(sq), _)) => 
       val ornd = new OrNode(rl.toString, sq)
       ornd.parent = Some(hn.nodeID)
       register(ornd)
       hn.children = ornd.nodeID :: hn.children
-      true
+      Some(List(ornd.nodeID))
     case Some( (sqs, fvs)  ) =>
       val andnd = new AndNode(rl.toString, hn.goal, Nil)
       andnd.parent = Some(hn.nodeID)
@@ -39,9 +39,9 @@ object TreeActions {
       val orndIDs = ornds.map( _.nodeID)
       hn.children = andnd.nodeID :: hn.children 
       andnd.children = orndIDs
-      true
+      Some(orndIDs)
     case None => 
-      false
+      None
   }
     
 
@@ -145,23 +145,16 @@ class FrontActor extends Actor {
         case ('goto, nd: NodeID) =>
           gotonode(nd)
           sender ! ()
-/*        case ('apply, pos: Position, rule: String) =>
-          (hereNode, rules.get(rule))  match {
-            case (_,None) =>
-              println("rule not found")
-            case (ornd@OrNode(_,_), Some(rl)) =>
-              applyrule(ornd,pos,rl)
-            case _ => 
-              println("cannot apply rule here")
-          }
-          sender ! ()
-*/
         case ('rule, pos: Position, rl: ProofRule) =>
           hereNode  match {
             case ornd@OrNode(_,_) =>
               val r = applyrule(ornd,pos,rl)
-              if(r) println("success")
-              else println("rule cannot be applied there")    
+              r match {
+                case Some(_) => 
+                   println("success")
+                case None => 
+                  println("rule cannot be applied there")    
+              }
 
             case _ => 
               println("cannot apply rule here")
