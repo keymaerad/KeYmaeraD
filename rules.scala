@@ -4,8 +4,8 @@ package DLBanyan
 object RulesUtil {
 
   abstract class Position 
-  case class Left(n: Int) extends Position
-  case class Right(n: Int) extends Position
+  case class LeftP(n: Int) extends Position
+  case class RightP(n: Int) extends Position
 //  case object Outer extends Position
 
 
@@ -48,22 +48,22 @@ object RulesUtil {
 
 
   def replace(p: Position, s: Sequent,fm : Formula): Sequent = (p,s) match {
-    case (Left(n), Sequent(ct,st)) => 
+    case (LeftP(n), Sequent(ct,st)) => 
       if(n >= ct.length || n < 0 )
         throw new  LookupError()
       else Sequent(replacelist(n,ct,fm),st)
-    case (Right(n), Sequent(ct,st)) => 
+    case (RightP(n), Sequent(ct,st)) => 
       if(n >= st.length || n < 0 )
         throw new LookupError()
       else Sequent(ct,replacelist(n,st,fm))
   }
 
   def lookup(p: Position, s: Sequent): Formula = (p,s) match {
-    case (Left(n), Sequent(ct,st)) => 
+    case (LeftP(n), Sequent(ct,st)) => 
       if(n >= ct.length || n < 0 )
         throw new   LookupError()
       else ct.slice(n,n+1).head
-    case (Right(n), Sequent(ct,st)) => 
+    case (RightP(n), Sequent(ct,st)) => 
       if(n >= st.length || n < 0 )
         throw new LookupError()
       else st.slice(n,n+1).head
@@ -71,11 +71,11 @@ object RulesUtil {
 
 
   def remove(p: Position, s: Sequent): Sequent = (p,s) match {
-    case (Left(n), Sequent(ct,st)) => 
+    case (LeftP(n), Sequent(ct,st)) => 
       if(n >= ct.length || n < 0 )
         throw new  LookupError()
       else Sequent(removelist(n,ct),st)
-    case (Right(n), Sequent(ct,st)) => 
+    case (RightP(n), Sequent(ct,st)) => 
       if(n >= st.length || n < 0 )
         throw new LookupError()
       else Sequent(ct,removelist(n,st))
@@ -107,15 +107,15 @@ object Rules {
     def apply(p: Position) = sq => {
       val fm = lookup(p,sq)
       (p,fm) match {
-        case (Left(_), False) => 
+        case (LeftP(_), False) => 
           Some((Nil,Nil)) // proved!
-        case (Right(_), True) => 
+        case (RightP(_), True) => 
           Some((Nil,Nil)) // proved!
-        case (Left(n), fm) =>
+        case (LeftP(n), fm) =>
           if(sq.scdts.contains(fm) )
             Some((Nil,Nil)) // proved!
           else None
-        case (Right(n), fm) =>
+        case (RightP(n), fm) =>
           if(sq.ctxt.contains(fm) )
             Some((Nil,Nil)) // proved!
           else None
@@ -127,7 +127,7 @@ object Rules {
 
   val andLeft  = new ProofRule("andleft") {
     def apply(p:Position) = sq => (p,sq) match {
-      case (Left(n), Sequent(c,s)) =>
+      case (LeftP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case And(f1,f2) => 
@@ -142,7 +142,7 @@ object Rules {
 
   val andRight  = new  ProofRule("andright") {
     def apply(p:Position) = sq => (p,sq) match { 
-      case (Right(n), Sequent(c,s)) =>
+      case (RightP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case And(f1,f2) => 
@@ -158,7 +158,7 @@ object Rules {
 
   val orRight = new ProofRule("orright") { 
     def apply(p:Position) = sq => (p,sq) match { 
-      case (Right(n), Sequent(c,s)) =>
+      case (RightP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case Or(f1,f2) => 
@@ -173,7 +173,7 @@ object Rules {
 
   val orLeft = new  ProofRule("orleft") {
     def apply(p:Position) = sq => (p,sq) match { 
-      case (Left(n), Sequent(c,s)) =>
+      case (LeftP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case Or(f1,f2) => 
@@ -203,7 +203,7 @@ object Rules {
 
   val chooseRight = new ProofRule("chooseright") {
     def apply(p: Position) = sq => (p,sq) match {
-      case (Right(n), Sequent(c,s)) =>
+      case (RightP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case Box(Choose(h1,h2), phi) => 
@@ -221,7 +221,7 @@ object Rules {
 
   val checkRight = new ProofRule("checkright") {
     def apply(p: Position) = sq => (p,sq) match {
-      case (Right(n), Sequent(c,s)) =>
+      case (RightP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case Box(Check(fm1), phi) => 
@@ -238,7 +238,7 @@ object Rules {
 
  val assignRight = new ProofRule("assignright") {
     def apply(p: Position) = sq => (p,sq) match {
-     case (Right(n),Sequent(c,s)) => 
+     case (RightP(n),Sequent(c,s)) => 
       val fm = lookup(p,sq)
       fm match {
         case Box(Assign(vr,tm),phi) =>
@@ -259,7 +259,7 @@ object Rules {
    *  free variables from existentials */
  val assignAnyRight = new ProofRule("assignanyright") {
     def apply(p: Position) = sq => (p,sq) match {
-     case (Right(n),Sequent(c,s)) => 
+     case (RightP(n),Sequent(c,s)) => 
       val fm = lookup(p,sq)
       fm match {
         case Box(AssignAny(vr),phi) =>
@@ -278,7 +278,7 @@ object Rules {
   val loopInduction : Formula => ProofRule = 
     inv => new ProofRule("loopinduction") {
       def apply(pos: Position) = sq => (pos,sq) match {
-        case (Right(n), Sequent(c,s)) =>
+        case (RightP(n), Sequent(c,s)) =>
           val fm = lookup(pos,sq)
           fm match {
             case Box(Repeat(hp, True, inv_hints), phi) =>
@@ -300,7 +300,7 @@ object Rules {
 
   val diffClose = new ProofRule("diffclose") {
     def apply(pos: Position) = sq => (pos,sq) match { 
-      case(Right(n), Sequent(c,s)) =>
+      case(RightP(n), Sequent(c,s)) =>
         val fm = lookup(pos,sq)
         fm match {
           case Box(Evolve(derivs,h,_,_), phi) =>
