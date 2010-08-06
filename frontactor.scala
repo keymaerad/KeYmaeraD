@@ -12,6 +12,29 @@ object TreeActions {
 
   import RulesUtil._
 
+  var hereNode: ProofNode = nullNode
+
+  def gotonode(ndID: NodeID) : Unit = 
+    nodeTable.get(ndID) match {
+      case Some(nd) =>
+        hereNode = nd
+        println("now at node " + ndID )
+        shownode(ndID)
+      case None =>
+        println ("node " + ndID + " does not exist.")
+    }
+
+  def shownode(ndID: NodeID) : Unit = 
+    nodeTable.get(ndID) match {
+      case Some(nd) =>
+        println(nd.toString)
+      case None =>
+        println ("node " + ndID + " does not exist.")
+    }
+
+
+
+
   def applyrule(hn: OrNode, 
                 p: Position, 
                 rl: ProofRule): Option[List[NodeID]] = rl(p)(hn.goal) match {
@@ -101,7 +124,7 @@ class FrontActor extends Actor {
 
   import Tactics._
 
-  var hereNode: ProofNode = nullNode
+
 
   val jobmaster = new Jobs.JobMaster()
   jobmaster.start()
@@ -224,24 +247,6 @@ class FrontActor extends Actor {
     shownode(hereNode.nodeID)
   }
 
-  def shownode(ndID: NodeID) : Unit = 
-    nodeTable.get(ndID) match {
-      case Some(nd) =>
-        println(nd.toString)
-      case None =>
-        println ("node " + ndID + " does not exist.")
-    }
-
-
-  def gotonode(ndID: NodeID) : Unit = 
-    nodeTable.get(ndID) match {
-      case Some(nd) =>
-        hereNode = nd
-        println("now at node " + ndID )
-        shownode(ndID)
-      case None =>
-        println ("node " + ndID + " does not exist.")
-    }
 
 
 
