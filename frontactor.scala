@@ -65,6 +65,15 @@ class FrontActor extends Actor {
           }
           sender ! ()
 
+        case ('apply, pos: Rules.Position, rl: Rules.ProofRule) =>
+          hereNode  match {
+            case ornd@OrNode(_,_) =>
+              applyrule(ornd,pos,rl)
+            case _ => 
+              println("cannot apply rule here")
+          }
+          sender ! ()
+
         case ('job, proc: String) => 
           (Procedures.procs.get(proc), hereNode) match {
             case (_,AndNode(_,_,_)) =>
@@ -169,7 +178,7 @@ class FrontActor extends Actor {
       register(pnd)
       hn.children = pnd.nodeID :: hn.children
       propagateProvedUp(hn.nodeID, pnd.nodeID)
-    case Some((List(sq), Nil)) => 
+    case Some((List(sq), _)) => 
       val ornd = new OrNode(rl.toString, sq)
       ornd.parent = Some(hn.nodeID)
       register(ornd)
