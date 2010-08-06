@@ -168,7 +168,7 @@ class FrontActor extends Actor {
           }
           sender ! ()
 
-        case ('applyhere, tct: Tactic) =>
+        case ('tactic, tct: Tactic) =>
 
           hereNode  match {
             case ornd@OrNode(_,_) =>
@@ -245,6 +245,7 @@ class FrontActor extends Actor {
       case Some(nd) =>
         hereNode = nd
         println("now at node " + ndID )
+        shownode(ndID)
       case None =>
         println ("node " + ndID + " does not exist.")
     }

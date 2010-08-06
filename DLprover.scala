@@ -205,10 +205,10 @@ final object Prover {
       Seq(rename_HP(xold,xnew,p), rename_HP(xold,xnew,q))
     case Choose(p1,p2) => 
       Choose(rename_HP(xold,xnew,p1), rename_HP(xold,xnew,p2))
-    case Repeat(p,fm, inv_hints) =>
-      Repeat(rename_HP(xold,xnew,p), 
-             rename_Formula(xold,xnew,fm), 
-             inv_hints.map(f => rename_Formula(xold,xnew,f)))
+    case Loop(p,fm, inv_hints) =>
+      Loop(rename_HP(xold,xnew,p), 
+           rename_Formula(xold,xnew,fm), 
+           inv_hints.map(f => rename_Formula(xold,xnew,f)))
     case Evolve(derivs, fm, inv_hints, sols) =>
       val replace_deriv: ((String, Term)) => (String, Term) = vt => {
         val (v,t) = vt

@@ -32,9 +32,9 @@ case class AssignAny(s: String) extends HP
 case class Check(h: Formula) extends HP
 case class Seq(p1: HP, p2: HP) extends HP
 case class Choose(p1: HP, p2: HP) extends HP
-case class Repeat(p1: HP, 
-                  h: Formula,
-                  inv_hints: List[Formula]) extends HP
+case class Loop(p1: HP, 
+                h: Formula,
+                inv_hints: List[Formula]) extends HP
 case class Evolve(derivs: List[(String,Term)], 
                   h: Formula,
                   inv_hints: List[Formula],

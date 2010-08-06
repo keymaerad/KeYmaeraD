@@ -114,8 +114,8 @@ class DLParser(in: InputStream)
       ident <~ ":=" <~ "*" ^^ { x  => AssignAny(x)} |
       (ident <~ ":=") ~ term ^^ {case x ~ t => Assign(x,t)} |
      ("{" ~> hp  <~ "}" <~ "*") ~ annotation("invariant") ^^ 
-           { case x ~ invs => Repeat(x, True, invs)} | 
-//     "{" ~> hp  <~ "}" <~ "*" ^^ { x => Repeat(x, True, Nil)} | 
+           { case x ~ invs => Loop(x, True, invs)} | 
+//     "{" ~> hp  <~ "}" <~ "*" ^^ { x => Loop(x, True, Nil)} | 
      ("{" ~> rep1sep(diffeq, ",") <~ ";")  ~ 
          (formula <~ "}") ~ annotation("solution") ~  annotation("invariant") ^^
            {case dvs ~ f ~ invs ~ sols => Evolve(dvs,f,invs,sols)}
@@ -463,9 +463,9 @@ object Parser {
           val rest4 = parse_tok("(", rest3)
           val (invs, rest5) = parse_list(",",parse_formula0)(rest4)
           val rest6 = parse_tok(")", rest5)
-          (Repeat(body,True,invs), rest6)
+          (Loop(body,True,invs), rest6)
         case _ =>
-          (Repeat(body,True, Nil), rest2)
+          (Loop(body,True, Nil), rest2)
       }
     case _ => throw new ParseFailure("repeat", (), inp)
   }
@@ -824,7 +824,7 @@ object Parser {
       string_of_HP(p1) + "; " + string_of_HP(p2)
     case Choose(p1,p2) =>
       string_of_HP(p1) + " ++ " + string_of_HP(p2)
-    case Repeat(p1,h, inv_hints) =>
+    case Loop(p1,h, inv_hints) =>
       "{" + string_of_HP(p1) + "} * & " + string_of_FOFormula(h)
     case Evolve(d,h,inv_hints, sol_hints) =>
       val sb = new StringBuilder()

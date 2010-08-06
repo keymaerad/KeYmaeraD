@@ -23,6 +23,13 @@ object Printing {
     sw.toString
   }
 
+  def stringOfFormula(fm: Formula): String = {
+    val sw = new java.io.StringWriter()
+    val d = docOfFormula(fm)
+    d.format(70, sw)
+    sw.toString
+  }
+
 
 
 
@@ -106,7 +113,7 @@ object Printing {
       bracket("(",")", docOfHP(h1)) ::
           text(" ++") :/: 
           bracket("(",")",docOfHP(h2))
-    case Repeat(h, inv, hnts) =>
+    case Loop(h, inv, hnts) =>
       bracket("{","}", docOfHP(h)):: text("*")
     case Evolve(derivs, reg, hnts, sols) =>
       bracket("{","}",

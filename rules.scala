@@ -276,12 +276,13 @@ object Rules {
 
 
   val loopInduction : Formula => ProofRule = 
-    inv => new ProofRule("loopInduction") {
+    inv => new ProofRule("loopInduction[" 
+                         + Printing.stringOfFormula(inv) + "]") {
       def apply(pos: Position) = sq => (pos,sq) match {
         case (RightP(n), Sequent(c,s)) =>
           val fm = lookup(pos,sq)
           fm match {
-            case Box(Repeat(hp, True, inv_hints), phi) =>
+            case Box(Loop(hp, True, inv_hints), phi) =>
               val initiallyvalid = 
                 replace(pos, sq, inv)
               val inductionstep = 
@@ -313,63 +314,34 @@ object Rules {
   }  
 
   val diffStrengthen : Formula => ProofRule = 
-    inv => new ProofRule("diffStrengthen") {
+    inv => new ProofRule("diffStrengthen["
+                         + Printing.stringOfFormula(inv) + "]") {
       def apply(pos: Position) = sq => (pos,sq) match {
         case (RightP(n), Sequent(c,s)) =>
           val fm = lookup(pos,sq)
           fm match {
-            case Box(Evolve(derivs,h,_,_), phi) =>
-              None // XXXX
+            case Box(Evolve(derivs,h,inv_hints,sols), phi) =>
+              val (ind_asm, ind_cons) = 
+                if(Prover.openSet(inv)) 
+                  ( List(inv,h), 
+                    Prover.setClosure(Prover.totalDeriv(derivs,inv)))
+                else ( List(h), Prover.totalDeriv(derivs,inv))
+              val fm1 = Box(Evolve(derivs, And(h,inv),inv_hints, sols), phi) 
+              val iv = Sequent(h::c, List(inv))
+              val ind = Sequent(ind_asm, List(ind_cons))
+              val str = replace(pos,sq, fm1)
+              Some((List(iv,ind,str), Nil))
+
             case _ => None
           }
         case _ => None
       }
     }
-/*
-object PRDiffStrengthen extends ProofRule {
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, Box(Evolve(derivs, h, inv_hints,_), fm)) => 
-      val diff_strengthen: Formula => AndNode = inv => {
-        val (ind_asm,ind_cons) = 
-          { if(Prover.openSet(inv)) 
-              ( List(inv,h), Prover.setClosure(Prover.totalDeriv(derivs,inv)))
-           else
-              ( List(h), Prover.totalDeriv(derivs,inv))
-         }
-        new AndNode(
-                    "differential strengthening", 
-                    sq,
-                    DepthFirst(),
-                    List(Sequent(h::ctxt, NoModality(inv)),
-                         Sequent(ind_asm, 
-                                 NoModality(ind_cons)),
-                         Sequent(ctxt, 
-                                 Box(Evolve(derivs, 
-                                            And(h,inv),
-                                            inv_hints - inv,
-                                            Nil),fm))))
-      }
-      inv_hints.map(diff_strengthen)
-    case _ => Nil 
-  }
-}
-*/
 
 
 }
 
 
-/*
-abstract class ProofRule() {
-  val numInputs: Int
-  def applyRule(inputs: List[Formula], succ: Sequent): List[Nodes.ProofNode]
-}
-*/
-
-/*
-abstract class ProofRule
-case class 
-*/
 
 /*
 object PRArithmeticFV extends ProofRule{
@@ -422,81 +394,6 @@ object PRMathematica extends ProofRule {
 
 
 
-    
-object PRAssign extends ProofRule{
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, Box(Assign(vr, tm), fm)) => 
-      val vr1 = Prover.uniqify(vr)
-      val fm1 = Prover.rename_DLFormula(vr,vr1,fm)
-      val c = new AndNode(
-                           "assign", 
-                           sq,
-                           DepthFirst(),                           
-                           List(Sequent( Atom(R("=", 
-                                                List(Var(vr1), 
-                                                     tm) ))::ctxt, fm1)))
-      List(c)
-    case _ => Nil
-  }
-}
-
-object PRAssignAny extends ProofRule{
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, Box(AssignAny(vr), fm)) => 
-      val vr1 = Prover.uniqify(vr)
-      val fm1 = Prover.rename_DLFormula(vr,vr1,fm)
-      val c = new AndNode(
-                           "assignany", 
-                           sq,
-                           DepthFirst(),                           
-                           List(Sequent( ctxt, fm1)))
-      List(c)
-    case _ => Nil
-  }
-}
-
-
-
-object PRCond extends ProofRule {
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, Box(Check(h), fm)) =>
-      val c  = new AndNode("cond",
-                           sq,
-                           DepthFirst(),
-                           List(Sequent( h::ctxt, fm)))
-      List(c)
-    case _ => Nil
-  }
-}
-
-object PRSeq extends ProofRule {
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, Box(Seq(p1, p2), fm)) => 
-      val c  = new AndNode(
-                           "seq",
-                           sq,
-                           DepthFirst(),
-                           List(Sequent(ctxt, Box(p1, Box(p2, fm)))))
-      List(c)
-    case _ => Nil
-  }
-}
-      
-
-object PRChoose extends ProofRule {
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, Box(Choose(p1,p2), fm)) => 
-      val c  = new AndNode(
-                           "choose",
-                           sq,
-                           BreadthFirst(),
-	                   List(Sequent(ctxt, Box(p1,fm)),
-                                Sequent(ctxt, Box(p2,fm))))
-      List(c)
-    case _ => Nil
-  }
-}
-
 object PRLoopClose extends ProofRule {
   def applyRule(sq: Sequent): List[TreeNode] = sq match {
     case Sequent(ctxt, Box(Repeat(p1, h, inv_hints), fm)) => 
@@ -528,69 +425,6 @@ object PRLoopStrengthen extends ProofRule {
                                             inv_hints - inv),fm))))
       inv_hints.map(loop_strengthen)
     case _ => Nil
-  }
-}
-
-object PRLoopInduction extends ProofRule {
-  
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, Box(Repeat(p1, True(), inv_hints), fm)) => 
-      val loop_rule: Formula => AndNode = inv =>
-        new AndNode(
-                    "loop induction", 
-                    sq,
-                    BreadthFirst(),	
-                    List(Sequent(ctxt, NoModality(inv)),
-                         Sequent(List(inv), 
-                                 Box(p1, NoModality(inv))),
-                         Sequent(List(inv), 
-                                 fm)))
-      inv_hints.map(loop_rule)
-    case _ => Nil
-  }
-}
-
-
-
-object PRDiffClose extends ProofRule{
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, Box(Evolve(derivs, h, inv_hints, sols), fm)) => 
-      val pp = new AndNode(
-                           "diffclose",
-                           sq,
-                           DepthFirst(),
-                           List(  Sequent(List(h), fm)))
-      List(pp)
-    case _ => Nil
-  }
-}
-
-
-object PRDiffStrengthen extends ProofRule {
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, Box(Evolve(derivs, h, inv_hints,_), fm)) => 
-      val diff_strengthen: Formula => AndNode = inv => {
-        val (ind_asm,ind_cons) = 
-          { if(Prover.openSet(inv)) 
-              ( List(inv,h), Prover.setClosure(Prover.totalDeriv(derivs,inv)))
-           else
-              ( List(h), Prover.totalDeriv(derivs,inv))
-         }
-        new AndNode(
-                    "differential strengthening", 
-                    sq,
-                    DepthFirst(),
-                    List(Sequent(h::ctxt, NoModality(inv)),
-                         Sequent(ind_asm, 
-                                 NoModality(ind_cons)),
-                         Sequent(ctxt, 
-                                 Box(Evolve(derivs, 
-                                            And(h,inv),
-                                            inv_hints - inv,
-                                            Nil),fm))))
-      }
-      inv_hints.map(diff_strengthen)
-    case _ => Nil 
   }
 }
 
