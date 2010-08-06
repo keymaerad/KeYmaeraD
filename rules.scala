@@ -276,7 +276,7 @@ object Rules {
 
 
   val loopInduction : Formula => ProofRule = 
-    inv => new ProofRule("loopinduction") {
+    inv => new ProofRule("loopInduction") {
       def apply(pos: Position) = sq => (pos,sq) match {
         case (RightP(n), Sequent(c,s)) =>
           val fm = lookup(pos,sq)
@@ -298,7 +298,7 @@ object Rules {
     }
 
 
-  val diffClose = new ProofRule("diffclose") {
+  val diffClose = new ProofRule("diffClose") {
     def apply(pos: Position) = sq => (pos,sq) match { 
       case(RightP(n), Sequent(c,s)) =>
         val fm = lookup(pos,sq)
@@ -311,6 +311,49 @@ object Rules {
       case _ => None
     }
   }  
+
+  val diffStrengthen : Formula => ProofRule = 
+    inv => new ProofRule("diffStrengthen") {
+      def apply(pos: Position) = sq => (pos,sq) match {
+        case (RightP(n), Sequent(c,s)) =>
+          val fm = lookup(pos,sq)
+          fm match {
+            case Box(Evolve(derivs,h,_,_), phi) =>
+              None // XXXX
+            case _ => None
+          }
+        case _ => None
+      }
+    }
+/*
+object PRDiffStrengthen extends ProofRule {
+  def applyRule(sq: Sequent): List[TreeNode] = sq match {
+    case Sequent(ctxt, Box(Evolve(derivs, h, inv_hints,_), fm)) => 
+      val diff_strengthen: Formula => AndNode = inv => {
+        val (ind_asm,ind_cons) = 
+          { if(Prover.openSet(inv)) 
+              ( List(inv,h), Prover.setClosure(Prover.totalDeriv(derivs,inv)))
+           else
+              ( List(h), Prover.totalDeriv(derivs,inv))
+         }
+        new AndNode(
+                    "differential strengthening", 
+                    sq,
+                    DepthFirst(),
+                    List(Sequent(h::ctxt, NoModality(inv)),
+                         Sequent(ind_asm, 
+                                 NoModality(ind_cons)),
+                         Sequent(ctxt, 
+                                 Box(Evolve(derivs, 
+                                            And(h,inv),
+                                            inv_hints - inv,
+                                            Nil),fm))))
+      }
+      inv_hints.map(diff_strengthen)
+    case _ => Nil 
+  }
+}
+*/
 
 
 }
