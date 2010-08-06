@@ -1,8 +1,7 @@
 package DLBanyan
 
 
-
-object Rules {
+object RulesUtil {
 
   abstract class Position 
   case class Left(n: Int) extends Position
@@ -97,6 +96,12 @@ object Rules {
    = optionbind(extract(p,s).map(f1 => replacesequent(p,s,f(f1))))
 
 */
+
+}
+
+object Rules {
+
+  import RulesUtil._
 
   val close = new ProofRule("close"){ 
     def apply(p: Position) = sq => {

@@ -2,7 +2,7 @@ SCALAFILES= types.scala rational.scala  arithmetic.scala \
 	parse.scala  printing.scala nodes.scala \
 	rules.scala procedures.scala jobs.scala \
         frontend.scala frontactor.scala \
-	DLprover.scala  
+	DLprover.scala  tactics.scala
 
 
 LIBRARIES= .:./commons-cli-1.2/commons-cli-1.2.jar:$(JLINK)/JLink.jar

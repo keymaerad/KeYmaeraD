@@ -4,6 +4,7 @@ import scala.actors.Actor
 import scala.actors.Actor._
 
 
+
 object FrontEnd {
 
   var frontactor = new FrontActor;

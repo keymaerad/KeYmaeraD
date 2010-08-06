@@ -7,9 +7,95 @@ import scala.actors.Actor._
 import Nodes._
 
 
+object TreeActions {
+  
+
+  import RulesUtil._
+
+  def applyrule(hn: OrNode, 
+                p: Position, 
+                rl: ProofRule): Unit = rl(p)(hn.goal) match {
+    case Some((Nil, _)) => //proved
+      val pnd = new DoneNode(rl.toString, hn.goal)
+      pnd.parent = Some(hn.nodeID)
+      register(pnd)
+      hn.children = pnd.nodeID :: hn.children
+      propagateProvedUp(hn.nodeID, pnd.nodeID)
+    case Some((List(sq), _)) => 
+      val ornd = new OrNode(rl.toString, sq)
+      ornd.parent = Some(hn.nodeID)
+      register(ornd)
+      hn.children = ornd.nodeID :: hn.children
+    case Some( (sqs, fvs)  ) =>
+      val andnd = new AndNode(rl.toString, hn.goal, Nil)
+      andnd.parent = Some(hn.nodeID)
+      register(andnd)
+      val subname = rl.toString + " subgoal"
+      val ornds = sqs.map(s => new OrNode(subname, s))
+      ornds.map(register _)
+      ornds.map(x => x.parent = Some(andnd.nodeID))
+      val orndIDs = ornds.map( _.nodeID)
+      hn.children = andnd.nodeID :: hn.children 
+      andnd.children = orndIDs
+      println("success")
+    case None => 
+      println("rule cannot be applied there")    
+  }
+    
+
+/* crawl the tree to update statuses.
+ * propagateProvedUp is called on nd when a child of nd is proved.
+ */
+  def propagateProvedUp(ndID: NodeID, from: NodeID): Unit = {
+    val nd = getnode(ndID)
+    nd match {
+      case AndNode(r,g,svs) =>
+        val others = nd.children.filterNot( _ ==  from)
+        val os = others.map(getnode).map(_.status)
+        os.find( _ != Proved) match {
+           case None =>
+             nd.status = Proved
+             nd.parent match {
+               case Some(p) =>
+                 propagateProvedUp(p, ndID)
+               case None =>
+             }    
+           case Some(_) =>
+        }
+
+      case OrNode(r,g) =>
+        nd.status = Proved
+        val others = nd.children.filterNot( _ ==  from)
+        others.map(x => propagateIrrelevantDown(x))
+        nd.parent match {
+          case Some(p) =>
+            propagateProvedUp(p, ndID)
+          case None =>
+            
+        }
+      case DoneNode(r,g) =>
+        // shouldn't ever happen
+        throw new Error("bad call of propagateProvedUp")
+    }
+  }
+
+  // called when ndID becomes irrelevant.
+  def propagateIrrelevantDown(ndID: NodeID) : Unit = {
+    val nd = getnode(ndID)
+    nd.status = Irrelevant(nd.status)
+    nd.children.map( propagateIrrelevantDown)
+
+  }
+
+
+}
+
+
+
 class FrontActor extends Actor {
 
-  
+  import TreeActions._  
+  import RulesUtil._
 
   var hereNode: ProofNode = nullNode
 
@@ -17,7 +103,7 @@ class FrontActor extends Actor {
   jobmaster.start()
 
 
-  val rules = new scala.collection.mutable.HashMap[String,Rules.ProofRule]()
+  val rules = new scala.collection.mutable.HashMap[String,ProofRule]()
   rules ++= List(("close", Rules.close),
                  ("andLeft", Rules.andLeft),
                  ("andRight", Rules.andRight),
@@ -54,7 +140,7 @@ class FrontActor extends Actor {
         case ('goto, nd: NodeID) =>
           gotonode(nd)
           sender ! ()
-        case ('apply, pos: Rules.Position, rule: String) =>
+        case ('apply, pos: Position, rule: String) =>
           (hereNode, rules.get(rule))  match {
             case (_,None) =>
               println("rule not found")
@@ -65,7 +151,7 @@ class FrontActor extends Actor {
           }
           sender ! ()
 
-        case ('apply, pos: Rules.Position, rl: Rules.ProofRule) =>
+        case ('apply, pos: Position, rl: ProofRule) =>
           hereNode  match {
             case ornd@OrNode(_,_) =>
               applyrule(ornd,pos,rl)
@@ -166,84 +252,7 @@ class FrontActor extends Actor {
     ()
 
   }
-
-  
-
-  def applyrule(hn: OrNode, 
-                p: Rules.Position, 
-                rl: Rules.ProofRule): Unit = rl(p)(hn.goal) match {
-    case Some((Nil, _)) => //proved
-      val pnd = new DoneNode(rl.toString, hn.goal)
-      pnd.parent = Some(hn.nodeID)
-      register(pnd)
-      hn.children = pnd.nodeID :: hn.children
-      propagateProvedUp(hn.nodeID, pnd.nodeID)
-    case Some((List(sq), _)) => 
-      val ornd = new OrNode(rl.toString, sq)
-      ornd.parent = Some(hn.nodeID)
-      register(ornd)
-      hn.children = ornd.nodeID :: hn.children
-    case Some( (sqs, fvs)  ) =>
-      val andnd = new AndNode(rl.toString, hn.goal, Nil)
-      andnd.parent = Some(hn.nodeID)
-      register(andnd)
-      val subname = rl.toString + " subgoal"
-      val ornds = sqs.map(s => new OrNode(subname, s))
-      ornds.map(register _)
-      ornds.map(x => x.parent = Some(andnd.nodeID))
-      val orndIDs = ornds.map( _.nodeID)
-      hn.children = andnd.nodeID :: hn.children 
-      andnd.children = orndIDs
-      println("success")
-    case None => 
-      println("rule cannot be applied there")    
-  }
-    
-
-/* crawl the tree to update statuses.
- * propagateProvedUp is called on nd when a child of nd is proved.
- */
-  def propagateProvedUp(ndID: NodeID, from: NodeID): Unit = {
-    val nd = getnode(ndID)
-    nd match {
-      case AndNode(r,g,svs) =>
-        val others = nd.children.filterNot( _ ==  from)
-        val os = others.map(getnode).map(_.status)
-        os.find( _ != Proved) match {
-           case None =>
-             nd.status = Proved
-             nd.parent match {
-               case Some(p) =>
-                 propagateProvedUp(p, ndID)
-               case None =>
-             }    
-           case Some(_) =>
-        }
-
-      case OrNode(r,g) =>
-        nd.status = Proved
-        val others = nd.children.filterNot( _ ==  from)
-        others.map(x => propagateIrrelevantDown(x))
-        nd.parent match {
-          case Some(p) =>
-            propagateProvedUp(p, ndID)
-          case None =>
-            
-        }
-      case DoneNode(r,g) =>
-        // shouldn't ever happen
-        throw new Error("bad call of propagateProvedUp")
-    }
-  }
-
-  // called when ndID becomes irrelevant.
-  def propagateIrrelevantDown(ndID: NodeID) : Unit = {
-    val nd = getnode(ndID)
-    nd.status = Irrelevant(nd.status)
-    nd.children.map( propagateIrrelevantDown)
-
-  }
-
-
 }
+
+
 
