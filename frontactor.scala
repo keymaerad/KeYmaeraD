@@ -132,6 +132,7 @@ object TreeActions {
   def propagateIrrelevantDown(ndID: NodeID) : Unit = {
     val nd = getnode(ndID)
     nd.status = Irrelevant(nd.status)
+    // TODO check if we have any pending jobs. cancel them.
     nd.children.map( propagateIrrelevantDown)
 
   }

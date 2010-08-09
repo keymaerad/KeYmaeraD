@@ -1,5 +1,6 @@
 SCALAFILES= types.scala rational.scala  arithmetic.scala \
 	parse.scala  printing.scala nodes.scala \
+	mathematicautil.scala \
 	rules.scala procedures.scala jobs.scala \
         frontend.scala frontactor.scala \
 	DLprover.scala  tactics.scala
