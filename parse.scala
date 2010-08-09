@@ -117,7 +117,7 @@ class DLParser(in: InputStream)
            { case x ~ invs => Loop(x, True, invs)} | 
 //     "{" ~> hp  <~ "}" <~ "*" ^^ { x => Loop(x, True, Nil)} | 
      ("{" ~> rep1sep(diffeq, ",") <~ ";")  ~ 
-         (formula <~ "}") ~ annotation("solution") ~  annotation("invariant") ^^
+         (formula <~ "}") ~ annotation("invariant") ~  annotation("solution") ^^
            {case dvs ~ f ~ invs ~ sols => Evolve(dvs,f,invs,sols)}
 
 

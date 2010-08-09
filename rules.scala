@@ -226,7 +226,7 @@ object Rules {
         fm match {
           case Box(Check(fm1), phi) => 
             val Sequent(c1,s1) = replace(p,sq, phi)
-            val sq1 = Sequent(fm::c1,s1)
+            val sq1 = Sequent(fm1::c1,s1)
             Some( (List(sq1),Nil))
           case _ => 
             None
@@ -327,7 +327,8 @@ object Rules {
                   ( List(inv,h), 
                     Prover.setClosure(Prover.totalDeriv(derivs,inv)))
                 else ( List(h), Prover.totalDeriv(derivs,inv))
-              val fm1 = Box(Evolve(derivs, And(h,inv),inv_hints, sols), phi) 
+              val inv_hints1 = inv_hints.filter( inv != _)
+              val fm1 = Box(Evolve(derivs, And(h,inv),inv_hints1, sols), phi) 
               val iv = Sequent(h::c, List(inv))
               val ind = Sequent(ind_asm, List(ind_cons))
               val str = replace(pos,sq, fm1)

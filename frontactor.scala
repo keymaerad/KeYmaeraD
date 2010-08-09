@@ -19,26 +19,31 @@ object TreeActions {
 
   var hereNode: ProofNode = nullNode
 
-  def gotonode(ndID: NodeID) : Unit = 
+  def indirect(ndID: NodeID, f: (ProofNode) => Unit ): Unit = 
     nodeTable.get(ndID) match {
-      case Some(nd) =>
+      case Some(nd) => f(nd)
+      case None =>
+        println ("node " + ndID + " does not exist.")
+    }
+
+  def gotonode(nd: ProofNode) : Unit = {
         hereNode = nd
-        println("now at node " + ndID )
-        shownode(ndID)
-      case None =>
-        println ("node " + ndID + " does not exist.")
+        println("now at node " + nd.nodeID )
+        shownode(nd)
     }
 
-  def shownode(ndID: NodeID) : Unit = 
-    nodeTable.get(ndID) match {
-      case Some(nd) =>
+  def shownode(nd: ProofNode) : Unit = 
         println(nd.toString)
-      case None =>
-        println ("node " + ndID + " does not exist.")
+
+/*
+  def showhints(nd: ProofNode, pos: Position): Unit = {
+    val fm = lookup(pos, nd.goal)
+    fm match {
+      case ...
     }
-
-
-
+  }
+  
+*/
 
   def applyrule(hn: OrNode, 
                 p: Position, 
@@ -179,10 +184,10 @@ class FrontActor extends Actor {
           loadfile(filename)
           sender ! ()
         case ('show, nd: NodeID) =>
-          shownode(nd)
+          indirect(nd, shownode _)
           sender ! ()
         case ('goto, nd: NodeID) =>
-          gotonode(nd)
+          indirect(nd, gotonode _)
           sender ! ()
         case ('rule, pos: Position, rl: ProofRule) =>
           hereNode  match {
@@ -254,7 +259,7 @@ class FrontActor extends Actor {
 
 
   def displayThisNode : Unit = {
-    shownode(hereNode.nodeID)
+    shownode(hereNode)
   }
 
 
