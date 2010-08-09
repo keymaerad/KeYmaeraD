@@ -90,7 +90,7 @@ object Tactics {
 
   def arithT : Tactic = new Tactic("arithmetic") {
     def apply(nd: OrNode): List[NodeID] = {
-      submitproc(nd, "ch")
+      submitproc(nd, "math")
       Nil
     }
 

@@ -113,11 +113,15 @@ object Procedures {
                   List(mfm, 
                        new Expr(Expr.SYMBOL, "Reals")).toArray)
 
+      
         val mfm_tmt = 
-         new Expr(new Expr(Expr.SYMBOL, "TimeConstrained"),
-                  List(mfm_red, 
-                       new Expr(Expr.REAL, 
-                                (tm / 1000.0).toString)).toArray)
+          if(tm > 0){
+            new Expr(new Expr(Expr.SYMBOL, "TimeConstrained"),
+                     List(mfm_red, 
+                          new Expr(Expr.REAL, 
+                                   (tm / 1000.0).toString)).toArray)
+          }
+          else mfm_red
 
         val check = new Expr(new Expr(Expr.SYMBOL, "Check"), 
                             List(mfm_red, 
@@ -216,7 +220,7 @@ object Procedures {
 
 // TODO
     def proceed(sq: Sequent): Option[Sequent] = {
-      None
+      proceed(sq, -1)
     }
 
 
