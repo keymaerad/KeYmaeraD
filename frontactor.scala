@@ -11,6 +11,11 @@ object TreeActions {
   
 
   import RulesUtil._
+  import Procedures._
+
+  val jobs = new scala.collection.mutable.HashMap[NodeID, Long]()
+  val jobmaster = new Jobs.JobMaster()
+  jobmaster.start
 
   var hereNode: ProofNode = nullNode
 
@@ -65,6 +70,20 @@ object TreeActions {
       Some(orndIDs)
     case None => 
       None
+  }
+
+  def submitproc(ornd: OrNode, proc: String): Boolean
+  = procs.get(proc) match {
+    case None => false
+    case Some(pr) => 
+      if(pr.applies(ornd.goal)) {
+        jobmaster ! (('job, proc, ornd.goal, ornd.nodeID))
+        val t = System.currentTimeMillis
+        jobs.put(ornd.nodeID, t)
+        true
+      } else {
+        false
+      }
   }
     
 
@@ -122,12 +141,9 @@ class FrontActor extends Actor {
   import TreeActions._  
   import RulesUtil._
 
-  import Tactics._
+  import Tactics.Tactic
 
 
-
-  val jobmaster = new Jobs.JobMaster()
-  jobmaster.start()
 
 /*
   val rules = new scala.collection.mutable.HashMap[String,ProofRule]()
@@ -144,7 +160,7 @@ class FrontActor extends Actor {
                  */
 
 
-  val jobs = new scala.collection.mutable.HashMap[NodeID, Long]()
+
 
   def act(): Unit = {
     println("acting")
@@ -185,7 +201,6 @@ class FrontActor extends Actor {
           sender ! ()
 
         case ('tactic, tct: Tactic) =>
-
           hereNode  match {
             case ornd@OrNode(_,_) =>
               tct(ornd)
@@ -194,20 +209,15 @@ class FrontActor extends Actor {
           }
           sender ! ()
 
+
         case ('job, proc: String) => 
-          (Procedures.procs.get(proc), hereNode) match {
-            case (_,AndNode(_,_,_)) =>
-              println("cannot do a procedure on an AndNode")
-            case (None, _ ) =>
-              println("not a defined procedure: " + proc)
-            case (Some(pr), ornd@OrNode(r,sq)) =>
-              if(pr.applies(sq)) {
-                jobmaster ! (('job, proc, sq, ornd.nodeID))
-                val t = System.currentTimeMillis
-                jobs.put(ornd.nodeID, t)
-              } else {
-                println("procedure " + proc + " does not apply here.")
-              }
+          hereNode match {
+            case ornd@OrNode(r,sq) =>
+              val res = submitproc(ornd, proc)
+              if(res) ()
+              else println("procedure " + proc + " does not apply here.")
+            case _ =>
+              println("can only do a procedure on a ornode")
               
           }
           sender ! ()
@@ -250,7 +260,7 @@ class FrontActor extends Actor {
 
 
 
-  def loadfile(filename: String) : Unit = {
+  def loadfile(filename: String) : Unit = try {
     val fi = 
       new java.io.FileInputStream(filename)
 
@@ -262,12 +272,14 @@ class FrontActor extends Actor {
         register(nd)
         hereNode = nd
       case None =>
-        println("failed to load file")
+        println("failed to parse file")
 
     }
 
     ()
 
+  } catch {
+    case e => println("failed to load file")
   }
 }
 

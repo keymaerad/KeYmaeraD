@@ -39,16 +39,22 @@ object Tactics {
 
   val needhints = List(loopInduction, diffStrengthen)
 
-/*
+
   def composeT(t1: Tactic, t2: Tactic) : Tactic = 
     new Tactic("compose " + t1.toString + "," + t2.toString) {
       def apply(nd: OrNode) = {
         val newnds = t1(nd)
-        newnds.map(c => t2(c)).flatten // need to make them ornodes
+        newnds.map(c => 
+          {gotonode(c);
+           hereNode match {
+                case ornd@OrNode(_,_) =>
+                  t2(ornd)
+                case _ => Nil
+              }}).flatten 
       }
 
     }
-  */
+
 
   val hpeasyT : Tactic = new Tactic("hpeasy") {
     def apply(nd: OrNode) = nd.goal match {
@@ -81,5 +87,13 @@ object Tactics {
 
   }
 
+
+  def arithT : Tactic = new Tactic("arithmetic") {
+    def apply(nd: OrNode): List[NodeID] = {
+      submitproc(nd, "ch")
+      Nil
+    }
+
+  }
 
 }

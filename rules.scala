@@ -318,6 +318,7 @@ object Rules {
                          + Printing.stringOfFormula(inv) + "]") {
       def apply(pos: Position) = sq => (pos,sq) match {
         case (RightP(n), Sequent(c,s)) =>
+          println("checking diffstrengthen")
           val fm = lookup(pos,sq)
           fm match {
             case Box(Evolve(derivs,h,inv_hints,sols), phi) =>

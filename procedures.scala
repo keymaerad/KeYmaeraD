@@ -10,7 +10,7 @@ object Procedures {
 
 // for now, these things only close or disprove a goal.
 
-
+  @serializable
   abstract class Procedure {
     def applies(sq: Sequent): Boolean
 
