@@ -100,51 +100,67 @@ object Jobs {
 
   class JobWorker extends Actor {
 
+    case class JobData(proc:String, 
+                       sq:Sequent,
+                       jid: JobID,
+                       sender:scala.actors.OutputChannel[Any])
 
-    var jobsender: scala.actors.OutputChannel[Any] = self
-    var proc: Option[Procedure] = None
+    var working: Option[Procedure]  = None
+
+    val procqueue = 
+      new scala.collection.mutable.Queue[JobData]()
+
+
+    def tryworking : Unit = {
+      if (working == None  && ! procqueue.isEmpty) {
+        val jd@JobData(p,sq,jid,sender) = procqueue.dequeue
+        procs.get(p) match {
+          case Some(pr) =>
+            val sf = self
+            if(pr.applies(sq)) {
+              working = Some(pr)
+              future ({
+                val res = pr.proceed(sq)
+                res match {
+                  case Some(r) =>
+                    sf ! ('done, jd, r)
+                  case None =>
+                    sf ! ('done, jd)
+                }
+              })
+            }  else  sf ! ('doesnotapply, jid) // should not happen
+                
+
+          case None =>
+            // should not happen
+        }
+      }
+    }
+
+
 
     def act(): Unit = {
       println("jobworker acting")
 
-      loop (
-        react {
+      while(true){
+        tryworking
+        receive {
           case 'quit =>
             sender ! ()
             exit
           case ('job, p: String, sq: Sequent, jid: JobID) =>
-            jobsender = sender
-            procs.get(p) match {
-              case Some(pr) =>
-                val sf = self
-                if(pr.applies(sq)) {
-                  proc = Some(pr)
-                  future ({
-                    val res = pr.proceed(sq)
-                    proc = None
-                    res match {
-                      case Some(r) =>
-                        sf ! ('done, jid, r)
-                      case None =>
-                        sf ! ('done, jid)
-                    }
-                  })
-                }  else  sf ! ('doesnotapply, jid) 
-                
+           procqueue.enqueue(JobData(p,sq,jid, sender))
 
-              case None =>
-                
-            }
-
-
-         case ('done, jid:JobID, res: Sequent) =>
+         case ('done, JobData(p,sq,jid,jobsender), res: Sequent) =>
+           working = None
            jobsender ! ('jobdone, jid, res)
           
-         case ('done, jid: JobID) =>
+         case ('done, JobData(p,sq,jid,jobsender)) =>
+           working = None
            jobsender ! ('jobdone, jid)
          
          case 'abort => 
-           proc match {
+           working match {
              case Some(pr) =>
                pr.abort
              case None => 
@@ -152,7 +168,7 @@ object Jobs {
            }
               
         }
-      )
+      }
     }
   }
 

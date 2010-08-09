@@ -3,7 +3,6 @@ package DLBanyan
 object MathematicaUtil {
   import com.wolfram.jlink._
 
-  class Lock() extends Object()
 
   
   val mathkernel = 

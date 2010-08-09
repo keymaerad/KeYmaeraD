@@ -9,11 +9,13 @@ SCALAFILES= types.scala rational.scala  arithmetic.scala \
 LIBRARIES= .:./commons-cli-1.2/commons-cli-1.2.jar:$(JLINK)/JLink.jar
 
 ifndef SCALAC
-SCALAC = fsc
+SCALAC= fsc
 endif
+
 
 all : $(SCALAFILES)
 	$(SCALAC)  -classpath $(LIBRARIES) $(SCALAFILES) -deprecation -unchecked
 
 clean :
 	rm -rf DLBanyan/
+	fsc -shutdown -verbose

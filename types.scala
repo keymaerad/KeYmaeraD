@@ -48,6 +48,7 @@ case class Sequent(ctxt: List[Formula],
                    scdts: List[Formula]) // extends Goal
 //case class FOGoal(fm: Formula) extends Goal
 
+class Lock() extends Object()
 
 
 /*
