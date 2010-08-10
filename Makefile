@@ -3,7 +3,8 @@ SCALAFILES= types.scala rational.scala  arithmetic.scala \
 	mathematicautil.scala \
 	rules.scala procedures.scala jobs.scala \
         frontend.scala frontactor.scala \
-	DLprover.scala  tactics.scala
+	DLprover.scala  tactics.scala \
+	GUI/guifrontend.scala
 
 
 LIBRARIES= .:./commons-cli-1.2/commons-cli-1.2.jar:$(JLINK)/JLink.jar

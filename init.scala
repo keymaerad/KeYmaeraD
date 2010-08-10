@@ -1,5 +1,5 @@
 
-import DLBanyan.FrontEnd._
+import DLBanyan.CommandLine._
 import DLBanyan.Rules._
 import DLBanyan.RulesUtil.RightP
 import DLBanyan.RulesUtil.LeftP

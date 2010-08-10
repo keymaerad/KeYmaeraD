@@ -5,7 +5,7 @@ import scala.actors.Actor._
 
 
 
-object FrontEnd {
+object CommandLine {
 
   var frontactor = new FrontActor;
 
