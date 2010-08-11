@@ -6,7 +6,7 @@ SCALAFILES= types.scala rational.scala arithmetic.scala \
 	DLprover.scala tactics.scala GUI/guifrontend.scala
 
 
-LIBRARIES= $(JLINK)/JLink.jar:$(JGRAPH)/lib/jgraphx.jar:.
+LIBRARIES= $(JLINK)/JLink.jar:$(JGRAPH):.
 
 ifndef SCALAC
 SCALAC= fsc
