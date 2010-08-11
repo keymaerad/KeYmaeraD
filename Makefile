@@ -1,5 +1,6 @@
 SCALAFILES= types.scala rational.scala  arithmetic.scala \
-	parse.scala  printing.scala nodes.scala \
+	parse.scala  printing.scala \ 
+	nodes.scala \
 	mathematicautil.scala \
 	rules.scala procedures.scala jobs.scala \
         frontend.scala frontactor.scala \
@@ -7,7 +8,7 @@ SCALAFILES= types.scala rational.scala  arithmetic.scala \
 	GUI/guifrontend.scala
 
 
-LIBRARIES= .:./commons-cli-1.2/commons-cli-1.2.jar:$(JLINK)/JLink.jar
+LIBRARIES= .:$(JLINK)/JLink.jar:$(JGRAPH)/lib/jgraphx.jar
 
 ifndef SCALAC
 SCALAC= fsc
