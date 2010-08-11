@@ -9,9 +9,14 @@ import javax.swing._
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
 
+import scala.actors.Actor
+import scala.actors.Actor._
 
-class FrontEnd extends JFrame("PROVER")  {
+class FrontEnd(fa: Actor) extends JFrame("PROVER")  {
   
+  val frontactor = fa
+  fa ! 'registergui
+
   final val graph : mxGraph = new mxGraph()
   val gparent : Object  = graph.getDefaultParent()
 
@@ -32,8 +37,8 @@ class FrontEnd extends JFrame("PROVER")  {
 object FE {
 
 
-  def main : Unit = {
-    val w = new FrontEnd 
+  def start(fa: Actor) : Unit = {
+    val w = new FrontEnd(fa)
            
     w.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     w.setSize(840, 600)
