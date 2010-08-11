@@ -20,6 +20,27 @@ class FrontEnd(fa: Actor) extends JFrame("PROVER")  {
   final val graph : mxGraph = new mxGraph()
   val gparent : Object  = graph.getDefaultParent()
 
+  graph.setCellsEditable(false)
+  graph.setCellsMovable(false)
+  graph.setCellsCloneable(false)
+  graph.getModel().beginUpdate()
+  try{
+    val v1 = graph.insertVertex(gparent, null, "Hello", 20, 20, 80, 30)
+    val v2 = graph.insertVertex(gparent, null, "World!", 240, 150, 80, 30)
+    graph.insertEdge(gparent, null, "Edge", v1, v2)
+  }
+  finally
+  {
+    graph.getModel().endUpdate()
+  }
+		
+
+  final val  graphComponent : mxGraphComponent = new mxGraphComponent(graph)
+  getContentPane().add(graphComponent)
+
+
+
+
   def test : Unit = {
     println("hello world")
   }
