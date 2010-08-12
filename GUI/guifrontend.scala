@@ -18,7 +18,7 @@ import DLBanyan.Nodes._
 class FrontEnd(fa: Actor) extends JFrame("PROVER")  {
   
   val frontactor = fa
-  fa ! 'registergui
+//  fa ! 'registergui
 
   final val graph : mxGraph = new mxGraph()
   val gparent : Object  = graph.getDefaultParent()
@@ -89,6 +89,14 @@ class FrontEnd(fa: Actor) extends JFrame("PROVER")  {
           }
         }
       case None => 
+    }
+  }
+
+  def drawNodes(nt: scala.collection.mutable.HashMap[NodeID, ProofNode]): Unit = {
+    graph.selectAll()
+    graph.clearSelection()
+    for( (ndID, nd) <- nt) {
+      ()
     }
   }
 

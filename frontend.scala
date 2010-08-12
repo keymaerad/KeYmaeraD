@@ -17,9 +17,6 @@ object CommandLine {
 //  }
 
 
-  def gui : Unit = {
-    DLBanyan.GUI.FE.start(frontactor)
-  }
 
   def dl(cmd: Symbol): Unit = {
     frontactor !? cmd

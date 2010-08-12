@@ -151,33 +151,20 @@ class FrontActor extends Actor {
 
 
 
-/*
-  val rules = new scala.collection.mutable.HashMap[String,ProofRule]()
-  rules ++= List(("close", Rules.close),
-                 ("andLeft", Rules.andLeft),
-                 ("andRight", Rules.andRight),
-                 ("orRight", Rules.orRight),
-                 ("orLeft", Rules.orLeft),
-                 ("seq", Rules.seq),
-                 ("chooseRight", Rules.chooseRight),
-                 ("checkRight", Rules.checkRight),
-                 ("assignRight", Rules.assignRight),
-                 ("assignAnyRight", Rules.assignAnyRight))
-                 */
-
-
-
 
   def act(): Unit = {
     println("acting")
 
-    loop (
-      react {
+    while(true){
+      receive {
         case 'quit =>
           println("frontactor quitting")
           jobmaster !? 'quit
           sender ! ()
           exit
+        case 'gui => 
+          DLBanyan.GUI.FE.start(self)
+          sender ! ()
         case 'here =>
           displayThisNode
           sender ! ()
@@ -254,7 +241,7 @@ class FrontActor extends Actor {
           println("got message: " + msg)
           sender ! ()
       }
-    )
+    }
     
   }
 
