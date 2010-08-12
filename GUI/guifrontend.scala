@@ -181,7 +181,7 @@ class TreeDemo extends JPanel(new GridLayout(1,0)) with TreeSelectionListener {
   val htmlView = new JScrollPane(htmlPane);
 
   //Add the scroll panes to a split pane.
-  val splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT)
+  val splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT)
   splitPane.setTopComponent(treeView)
   splitPane.setBottomComponent(htmlView)
 
