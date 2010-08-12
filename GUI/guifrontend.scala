@@ -5,6 +5,10 @@ import java.awt.event.MouseEvent
 
 //import scala.swing._
 import javax.swing._
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeSelectionModel;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 
 import com.mxgraph.swing.mxGraphComponent
 import com.mxgraph.view._
@@ -14,6 +18,7 @@ import scala.actors.Actor
 import scala.actors.Actor._
 
 import DLBanyan.Nodes._
+
 
 class FrontEnd(fa: Actor) extends JFrame("PROVER")  {
   
@@ -131,10 +136,200 @@ class FrontEnd(fa: Actor) extends JFrame("PROVER")  {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+import java.net.URL
+import java.io.IOException
+import java.awt.Dimension
+import java.awt.GridLayout
+
+
+class TreeDemo extends JPanel(new GridLayout(1,0)) with TreeSelectionListener {
+    var  htmlPane :JEditorPane = null 
+    var tree : JTree = null
+
+        //Create the nodes.
+  val top :DefaultMutableTreeNode =
+    new DefaultMutableTreeNode("The Java Series")
+  createNodes(top)
+
+  //Create a tree that allows one selection at a time.
+  tree = new JTree(top)
+  tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION)
+
+  //Listen for when the selection changes.
+  tree.addTreeSelectionListener(this)
+
+
+  //Create the scroll pane and add the tree to it. 
+  val treeView = new JScrollPane(tree)
+  
+  //Create the HTML viewing pane.
+  htmlPane = new JEditorPane()
+  htmlPane.setEditable(false)
+  initHelp()
+  val htmlView = new JScrollPane(htmlPane);
+
+  //Add the scroll panes to a split pane.
+  val splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT)
+  splitPane.setTopComponent(treeView)
+  splitPane.setBottomComponent(htmlView)
+
+  override val minimumSize = new Dimension(100, 50)
+  htmlView.setMinimumSize(minimumSize)
+  treeView.setMinimumSize(minimumSize)
+  splitPane.setDividerLocation(100)
+  splitPane.setPreferredSize(new Dimension(500, 300))
+
+  //Add the split pane to this panel.
+  add(splitPane)
+
+
+    /** Required by TreeSelectionListener interface. */
+    def valueChanged(e: TreeSelectionEvent) : Unit = {
+        val node  = tree.getLastSelectedPathComponent()
+
+    }
+
+    class BookInfo(book : String, filename: String)  {
+        val bookName = book
+        val bookURL = getClass().getResource(filename)
+
+        override def toString : String = {
+            bookName
+        }
+    }
+
+    def initHelp() : Unit = {
+        val s = "TreeDemoHelp.html"
+        val helpURL = getClass().getResource(s)
+        if (helpURL == null) {
+            System.err.println("Couldn't open help file: " + s)
+        } 
+        displayURL(helpURL)
+    }
+
+    def displayURL(url: URL): Unit = {
+        try {
+            if (url != null) {
+                htmlPane.setPage(url)
+            } else { //null url
+		htmlPane.setText("File Not Found")
+
+            }
+        } catch {
+          case (e: IOException) => 
+            System.err.println("Attempted to read a bad URL: " + url)
+        }
+    }
+
+    def createNodes( top :DefaultMutableTreeNode): Unit = {
+        var category : DefaultMutableTreeNode  = null
+        var book : DefaultMutableTreeNode = null;
+
+        category = new DefaultMutableTreeNode("Books for Java Programmers")
+        top.add(category)
+
+        //original Tutorial
+        book = new DefaultMutableTreeNode(new BookInfo
+            ("The Java Tutorial: A Short Course on the Basics",
+            "tutorial.html"))
+        category.add(book)
+
+        //Tutorial Continued
+        book = new DefaultMutableTreeNode(new BookInfo
+            ("The Java Tutorial Continued: The Rest of the JDK",
+            "tutorialcont.html"));
+        category.add(book);
+
+        //JFC Swing Tutorial
+        book = new DefaultMutableTreeNode(new BookInfo
+            ("The JFC Swing Tutorial: A Guide to Constructing GUIs",
+            "swingtutorial.html"));
+        category.add(book);
+
+        //Bloch
+        book = new DefaultMutableTreeNode(new BookInfo
+            ("Effective Java Programming Language Guide",
+	     "bloch.html"));
+        category.add(book);
+
+        //Arnold/Gosling
+        book = new DefaultMutableTreeNode(new BookInfo
+            ("The Java Programming Language", "arnold.html"));
+        category.add(book);
+
+        //Chan
+        book = new DefaultMutableTreeNode(new BookInfo
+            ("The Java Developers Almanac",
+             "chan.html"));
+        category.add(book);
+
+        category = new DefaultMutableTreeNode("Books for Java Implementers");
+        top.add(category);
+
+        //VM
+        book = new DefaultMutableTreeNode(new BookInfo
+            ("The Java Virtual Machine Specification",
+             "vm.html"));
+        category.add(book);
+
+        //Language Spec
+        book = new DefaultMutableTreeNode(new BookInfo
+            ("The Java Language Specification",
+             "jls.html"));
+        category.add(book);
+
+
+        book = new DefaultMutableTreeNode(new BookInfo
+            ("I ADDED THIS!!!!11!!!",
+             "jls.html"));
+        category.add(book);
+    }
+        
+
+}
+
+
+
 object FE {
 
+  def createAndShowGUI : Unit =  {
 
-  def start(fa: Actor) : FrontEnd = {
+    //Create and set up the window.
+    val frame = new JFrame("PROVER")
+    frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
+
+    //Add content to the window.
+    frame.add(new TreeDemo())
+
+    //Display the window.
+    frame.pack()
+    frame.setVisible(true)
+  }
+
+
+
+  def start : Unit = {
+    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+      def run() {
+        createAndShowGUI
+      }
+    });    
+  }
+
+
+  def start1(fa: Actor) : FrontEnd = {
     val w = new FrontEnd(fa)
            
     w.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -147,5 +342,3 @@ object FE {
   }
 
 }
-
-

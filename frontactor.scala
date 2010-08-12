@@ -164,8 +164,8 @@ class FrontActor extends Actor {
           sender ! ()
           exit
         case 'gui => 
-          val fe = DLBanyan.GUI.FE.start(self)
-          gui = Some(fe)
+          val fe = DLBanyan.GUI.FE.start
+//          gui = Some(fe)
           sender ! ()
         case 'guiupdate =>
           gui match {
