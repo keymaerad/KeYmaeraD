@@ -96,4 +96,7 @@ object Tactics {
 
   }
 
+  val alleasyT: Tactic = composeT(repeatT(hpeasyT),arithT)
+
+
 }

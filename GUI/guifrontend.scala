@@ -93,11 +93,27 @@ class FrontEnd(fa: Actor) extends JFrame("PROVER")  {
   }
 
   def drawNodes(nt: scala.collection.mutable.HashMap[NodeID, ProofNode]): Unit = {
+    nodeMap.clear
+    graph.getModel().beginUpdate()
     graph.selectAll()
     graph.clearSelection()
-    for( (ndID, nd) <- nt) {
-      ()
+
+    try{
+      for( (ndID, nd) <- nt) {
+        addProofNode(nd)
+      }
+      for( (ndID, nd) <- nt) {
+        addEdges(nd)
+      }
+          
+      val glayout = new hierarchical.mxHierarchicalLayout(graph)
+      glayout.execute(gparent)
     }
+    finally
+    {
+      graph.getModel().endUpdate()
+    }
+    
   }
 
 
@@ -122,7 +138,7 @@ object FE {
     val w = new FrontEnd(fa)
            
     w.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-    w.setSize(100, 100)
+    w.setSize(800, 640)
 //    w.centerOnScreen
     w.setVisible(true)
     println(w)
