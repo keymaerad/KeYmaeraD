@@ -13,6 +13,7 @@ object TreeActions {
   import RulesUtil._
   import Procedures._
 
+
   val jobs = new scala.collection.mutable.HashMap[NodeID, Long]()
   val jobmaster = new Jobs.JobMaster()
   jobmaster.start
@@ -150,7 +151,7 @@ class FrontActor extends Actor {
   import Tactics.Tactic
 
 
-
+  var gui: Option[DLBanyan.GUI.FrontEnd] = None
 
   def act(): Unit = {
     println("acting")
@@ -163,7 +164,8 @@ class FrontActor extends Actor {
           sender ! ()
           exit
         case 'gui => 
-          DLBanyan.GUI.FE.start(self)
+          val fe = DLBanyan.GUI.FE.start(self)
+          gui = Some(fe)
           sender ! ()
         case 'here =>
           displayThisNode

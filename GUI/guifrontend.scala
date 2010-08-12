@@ -118,7 +118,7 @@ class FrontEnd(fa: Actor) extends JFrame("PROVER")  {
 object FE {
 
 
-  def start(fa: Actor) : Unit = {
+  def start(fa: Actor) : FrontEnd = {
     val w = new FrontEnd(fa)
            
     w.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -126,6 +126,7 @@ object FE {
 //    w.centerOnScreen
     w.setVisible(true)
     println(w)
+    w
 
   }
 
