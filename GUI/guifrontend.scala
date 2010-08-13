@@ -144,10 +144,6 @@ class FrontEnd(fa: Actor) extends JFrame("PROVER")  {
 
 
 
-
-
-
-
 import java.net.URL
 import java.io.IOException
 import java.awt.Dimension
@@ -188,8 +184,8 @@ class TreeDemo extends JPanel(new GridLayout(1,0)) with TreeSelectionListener {
   override val minimumSize = new Dimension(100, 50)
   htmlView.setMinimumSize(minimumSize)
   treeView.setMinimumSize(minimumSize)
-  splitPane.setDividerLocation(100)
-  splitPane.setPreferredSize(new Dimension(500, 300))
+  splitPane.setDividerLocation(300)
+  splitPane.setPreferredSize(new Dimension(800, 640))
 
   //Add the split pane to this panel.
   add(splitPane)
