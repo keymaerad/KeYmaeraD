@@ -35,6 +35,10 @@ object Nodes {
     }
 
     override def toString: String = {
+      "ProofNode " + nodeID.toString
+    }
+
+    def toPrettyString: String = {
       val sb = new StringBuilder()
       sb.append("nodeID = " + nodeID + "\n")
       sb.append("status = " + status + "\n")
@@ -51,13 +55,17 @@ object Nodes {
                      svs: List[String]) extends ProofNode() {
     val schemavars = svs
 
-   override def toString : String = {
+    override def toString: String = {
+      "AndNode " + nodeID.toString
+    }
+
+   override def toPrettyString : String = {
       val sb = new StringBuilder()
       sb.append(Printing.stringOfSequent(goal) + "\n")
       sb.append("AndNode\n")
       sb.append("rule = " + rule + "\n")
       sb.append("schemavars = " + schemavars + "\n")
-      sb.append(super.toString)
+      sb.append(super.toPrettyString)
       sb.toString
    }
 
@@ -67,12 +75,16 @@ object Nodes {
   case class OrNode (rule: String, 
                 goal: Sequent) extends ProofNode() {
 
-   override def toString : String = {
+    override def toString: String = {
+      "OrNode " + nodeID.toString
+    }
+
+   override def toPrettyString : String = {
       val sb = new StringBuilder()
       sb.append(Printing.stringOfSequent(goal) + "\n")
       sb.append("OrNode\n")
       sb.append("rule = " + rule + "\n")
-      sb.append(super.toString)
+      sb.append(super.toPrettyString)
       sb.toString
    }
 
@@ -82,12 +94,16 @@ object Nodes {
                        goal: Sequent) extends ProofNode() {
    status = Proved
     
-   override def toString : String = {
+    override def toString: String = {
+      "DoneNode " + nodeID.toString
+    }
+
+   override def toPrettyString : String = {
       val sb = new StringBuilder()
       sb.append(Printing.stringOfSequent(goal) + "\n")
       sb.append("DoneNode\n")
       sb.append("rule = " + rule + "\n")
-      sb.append(super.toString)
+      sb.append(super.toPrettyString)
       sb.toString
    }
 

@@ -51,6 +51,8 @@ class TreeModel extends javax.swing.tree.TreeModel {
         treeModelListeners.remove(l)
   }
 
+//  def fireEvent(e: 
+
   def getIndexOfChild(parent: Any, child: Any): Int = {
     3
   }
@@ -59,8 +61,11 @@ class TreeModel extends javax.swing.tree.TreeModel {
     null
   }
 
-  def getChildCount(parent: Any): Int = {
-    3
+  def getChildCount(parent: Any): Int = parent match {
+    case (pnw: ProofNodeWrapper) =>
+      pnw.node.children.length
+    case _ => 
+      0
   }
   
   def getRoot(): Object = {

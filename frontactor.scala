@@ -34,7 +34,7 @@ object TreeActions {
     }
 
   def shownode(nd: ProofNode) : Unit = 
-        println(nd.toString)
+        println(nd.toPrettyString)
 
 /*
   def showhints(nd: ProofNode, pos: Position): Unit = {
