@@ -20,6 +20,13 @@ import scala.actors.Actor._
 import DLBanyan.Nodes._
 
 
+import java.net.URL
+import java.io.IOException
+import java.awt.Dimension
+import java.awt.GridLayout
+
+
+
 
 class ProofNodeWrapper(nd: ProofNode) {
   val node = nd
@@ -29,11 +36,46 @@ class ProofNodeWrapper(nd: ProofNode) {
 }
 
 
+class TreeModel extends javax.swing.tree.TreeModel {
+  import javax.swing.event.TreeModelEvent
+  import javax.swing.event.TreeModelListener
 
-import java.net.URL
-import java.io.IOException
-import java.awt.Dimension
-import java.awt.GridLayout
+
+  val treeModelListeners =  new scala.collection.mutable.HashSet[TreeModelListener]()
+
+  def addTreeModelListener(l: TreeModelListener): Unit =  {
+        treeModelListeners.add(l)
+  }
+
+  def removeTreeModelListener(l: TreeModelListener): Unit =  {
+        treeModelListeners.remove(l)
+  }
+
+  def getIndexOfChild(parent: Any, child: Any): Int = {
+    3
+  }
+
+  def getChild(parent: Any, Index: Int): Object = {
+    null
+  }
+
+  def getChildCount(parent: Any): Int = {
+    3
+  }
+  
+  def getRoot(): Object = {
+    null
+  }
+
+  def isLeaf(node: Any): Boolean = {
+    false
+  }
+  
+  def valueForPathChanged(path: javax.swing.tree.TreePath, newValue: Any): Unit = {
+    ()
+  }
+
+}
 
 
 
