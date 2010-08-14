@@ -138,21 +138,13 @@ class FrontEnd(fa: Actor)
 
     /** Required by TreeSelectionListener interface. */
     def valueChanged(e: TreeSelectionEvent) : Unit = {
-        val node : DefaultMutableTreeNode = 
+        val node : ProofNode = 
           tree.getLastSelectedPathComponent() match {
-            case (nd : DefaultMutableTreeNode) => nd
+            case (nd : ProofNode) => nd
             case _ => null
           }
 
-        if (node == null) return;
-
-        node.getUserObject() match {
-            case (book : BookInfo) =>
-              displayURL(book.bookURL)
-            case (nd : ProofNode) => 
-              println(nd.toPrettyString)
-            case _ => 
-        }
+      htmlPane.setText(node.toPrettyString)
     }
 
     class BookInfo(book : String, filename: String)  {
@@ -170,7 +162,6 @@ class FrontEnd(fa: Actor)
         if (helpURL == null) {
             System.err.println("Couldn't open help file: " + s)
         } 
-        displayURL(helpURL)
     }
 
     def displayURL(url: URL): Unit = {
@@ -189,7 +180,7 @@ class FrontEnd(fa: Actor)
 
     def displayProofNode(nd: ProofNode): Unit = {
         try {
-          htmlPane.setText(nd.toString)
+          htmlPane.setText(nd.toPrettyString)
         } catch {
           case (e: IOException) => 
             System.err.println("could not display proof node")
