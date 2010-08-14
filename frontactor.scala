@@ -167,13 +167,6 @@ class FrontActor extends Actor {
           val fe = DLBanyan.GUI.FE.start(self)
 //          gui = Some(fe)
           sender ! ()
-        case 'guiupdate =>
-          gui match {
-            case Some(fe) =>
-              fe.drawNodes(nodeTable)
-            case None =>
-          }
-          sender ! ()
         case 'here =>
           displayThisNode
           sender ! ()

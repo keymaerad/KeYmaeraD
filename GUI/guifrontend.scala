@@ -96,13 +96,6 @@ class FrontEnd(fa: Actor)
     var  htmlPane :JEditorPane = null 
     var tree : JTree = null
 
-        //Create the nodes.
-  val top :DefaultMutableTreeNode =
-    new DefaultMutableTreeNode("The Java Series")
-  createNodes(top)
-
-  //Create a tree that allows one selection at a time.
-//  tree = new JTree(top)
 
   val tm = new TreeModel()
   tree = new JTree(tm)
@@ -118,7 +111,6 @@ class FrontEnd(fa: Actor)
   //Create the HTML viewing pane.
   htmlPane = new JEditorPane()
   htmlPane.setEditable(false)
-  initHelp()
   val htmlView = new JScrollPane(htmlPane);
 
   //Add the scroll panes to a split pane.
@@ -138,160 +130,14 @@ class FrontEnd(fa: Actor)
 
     /** Required by TreeSelectionListener interface. */
     def valueChanged(e: TreeSelectionEvent) : Unit = {
-        val node : ProofNode = 
           tree.getLastSelectedPathComponent() match {
-            case (nd : ProofNode) => nd
+            case (nd : ProofNode) => 
+              htmlPane.setText(nd.toPrettyString)
             case _ => null
           }
 
-      htmlPane.setText(node.toPrettyString)
     }
 
-    class BookInfo(book : String, filename: String)  {
-        val bookName = book
-        val bookURL = getClass().getResource(filename)
-
-        override def toString : String = {
-            bookName
-        }
-    }
-
-    def initHelp() : Unit = {
-        val s = "TreeDemoHelp.html"
-        val helpURL = getClass().getResource(s)
-        if (helpURL == null) {
-            System.err.println("Couldn't open help file: " + s)
-        } 
-    }
-
-    def displayURL(url: URL): Unit = {
-        try {
-            if (url != null) {
-                htmlPane.setPage(url)
-            } else { //null url
-		htmlPane.setText("File Not Found")
-
-            }
-        } catch {
-          case (e: IOException) => 
-            System.err.println("Attempted to read a bad URL: " + url)
-        }
-    }
-
-    def displayProofNode(nd: ProofNode): Unit = {
-        try {
-          htmlPane.setText(nd.toPrettyString)
-        } catch {
-          case (e: IOException) => 
-            System.err.println("could not display proof node")
-        }
-    }
-
-    def createNodes( top :DefaultMutableTreeNode): Unit = {
-        var category : DefaultMutableTreeNode  = null
-        var book : DefaultMutableTreeNode = null;
-
-        category = new DefaultMutableTreeNode("Books for Java Programmers")
-        top.add(category)
-
-        //original Tutorial
-        book = new DefaultMutableTreeNode(new BookInfo
-            ("The Java Tutorial: A Short Course on the Basics",
-            "tutorial.html"))
-        category.add(book)
-
-        //Tutorial Continued
-        book = new DefaultMutableTreeNode(new BookInfo
-            ("The Java Tutorial Continued: The Rest of the JDK",
-            "tutorialcont.html"));
-        category.add(book);
-
-        //JFC Swing Tutorial
-        book = new DefaultMutableTreeNode(new BookInfo
-            ("The JFC Swing Tutorial: A Guide to Constructing GUIs",
-            "swingtutorial.html"));
-        category.add(book);
-
-        //Bloch
-        book = new DefaultMutableTreeNode(new BookInfo
-            ("Effective Java Programming Language Guide",
-	     "bloch.html"));
-        category.add(book);
-
-        //Arnold/Gosling
-        book = new DefaultMutableTreeNode(new BookInfo
-            ("The Java Programming Language", "arnold.html"));
-        category.add(book);
-
-        //Chan
-        book = new DefaultMutableTreeNode(new BookInfo
-            ("The Java Developers Almanac",
-             "chan.html"));
-        category.add(book);
-
-        category = new DefaultMutableTreeNode("Books for Java Implementers");
-        top.add(category);
-
-        //VM
-        book = new DefaultMutableTreeNode(new BookInfo
-            ("The Java Virtual Machine Specification",
-             "vm.html"));
-        category.add(book);
-
-        //Language Spec
-        book = new DefaultMutableTreeNode(new BookInfo
-            ("The Java Language Specification",
-             "jls.html"));
-        category.add(book);
-
-
-        book = new DefaultMutableTreeNode(new BookInfo
-            ("I ADDED THIS!!!!11!!!",
-             "jls.html"));
-        category.add(book);
-    }
-
-  def drawNodes(nt: scala.collection.mutable.HashMap[NodeID, ProofNode]): Unit = {
-    top.removeAllChildren()
-
-    /*
-      for( (ndID, nd) <- nt) {
-        addProofNode(nd)
-      }
-      for( (ndID, nd) <- nt) {
-        addEdges(nd)
-      }
-      */    
-  }
-
-
-
-/*
-  val nodeMap = new scala.collection.mutable.HashMap[NodeID,Object]()
-
-  def addProofNode(nd: ProofNode): Unit = {
-    val v = graph.insertVertex(gparent, null, nd.nodeID.toString, 0,0,50,20)
-    nodeMap.put(nd.nodeID, v)
-//    for(c <- nd.children) {
-//      graph.insertEdge(gparent, null, null,)
-//    }
-  }
-
-  def addEdges(nd: ProofNode): Unit = {
-    nodeMap.get(nd.nodeID) match {
-      case Some(v) => 
-        for(c <- nd.children) {
-          nodeMap.get(c) match {
-            case Some(v1) => 
-              graph.insertEdge(gparent, null, "", v, v1)
-            case None => 
-          }
-        }
-      case None => 
-    }
-  }
-        
-*/
 }
 
 
