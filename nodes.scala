@@ -112,8 +112,7 @@ object Nodes {
 
 
   val nodeTable = new scala.collection.mutable.HashMap[NodeID, ProofNode]
-
-
+  
   def register(nd: ProofNode): Unit = {
     nodeTable.put(nd.nodeID, nd)
   }
@@ -121,6 +120,7 @@ object Nodes {
   val nullNode = new OrNode("null", Sequent(Nil,Nil))
   register(nullNode)
   
+  var rootNode = nullNode
 
   def getnode(ndID: NodeID) : ProofNode = nodeTable.get(ndID) match {
     case Some(nd) =>

@@ -26,20 +26,11 @@ import java.awt.Dimension
 import java.awt.GridLayout
 
 
-
-
-class ProofNodeWrapper(nd: ProofNode) {
-  val node = nd
-  override def toString : String = {
-    node.nodeID.toString
-  }
-}
-
-
 class TreeModel extends javax.swing.tree.TreeModel {
   import javax.swing.event.TreeModelEvent
   import javax.swing.event.TreeModelListener
 
+  import DLBanyan.Nodes._
 
   val treeModelListeners =  new scala.collection.mutable.HashSet[TreeModelListener]()
 
@@ -53,29 +44,42 @@ class TreeModel extends javax.swing.tree.TreeModel {
 
 //  def fireEvent(e: 
 
-  def getIndexOfChild(parent: Any, child: Any): Int = {
-    3
+
+  def getIndexOfChild(parent: Any, child: Any): Int = (parent,child) match {
+    case (p: ProofNode, c: ProofNode) =>
+      p.children.indexOf(c.nodeID)
+    case _ => 
+      0
   }
 
-  def getChild(parent: Any, Index: Int): Object = {
-    null
+  def getChild(parent: Any, index: Int): Object = parent match {
+    case (pn: ProofNode) =>
+      getnode(pn.children(index))
+    case _ => 
+      null
   }
 
   def getChildCount(parent: Any): Int = parent match {
-    case (pnw: ProofNodeWrapper) =>
-      pnw.node.children.length
+    case (pn: ProofNode) =>
+      pn.children.length
     case _ => 
       0
   }
   
   def getRoot(): Object = {
-    null
+    rootNode
   }
 
-  def isLeaf(node: Any): Boolean = {
-    false
+  def isLeaf(node: Any): Boolean = node match {
+    case (pn: ProofNode) =>
+      pn.children.isEmpty
+    case _ => 
+      true
   }
   
+
+  // I think this would get used if the user could make changes
+  // through the gui.
   def valueForPathChanged(path: javax.swing.tree.TreePath, newValue: Any): Unit = {
     ()
   }
@@ -98,7 +102,10 @@ class FrontEnd(fa: Actor)
   createNodes(top)
 
   //Create a tree that allows one selection at a time.
-  tree = new JTree(top)
+//  tree = new JTree(top)
+
+  val tm = new TreeModel()
+  tree = new JTree(tm)
   tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION)
 
   //Listen for when the selection changes.
@@ -142,8 +149,8 @@ class FrontEnd(fa: Actor)
         node.getUserObject() match {
             case (book : BookInfo) =>
               displayURL(book.bookURL)
-            case (ndw : ProofNodeWrapper) => 
-              println(ndw.node.toString)
+            case (nd : ProofNode) => 
+              println(nd.toPrettyString)
             case _ => 
         }
     }

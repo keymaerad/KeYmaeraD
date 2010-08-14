@@ -273,6 +273,7 @@ class FrontActor extends Actor {
         val nd = new OrNode("loaded from " + filename, g)
         register(nd)
         hereNode = nd
+        rootNode = nd
       case None =>
         println("failed to parse file")
 
