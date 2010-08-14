@@ -45,7 +45,7 @@ object Tactics {
       def apply(nd: OrNode) = {
         val newnds = t1(nd)
         newnds.map(c => 
-          {indirect(c,gotonode _);
+          {getnodethen(c,gotonode _);
            hereNode match {
                 case ornd@OrNode(_,_) =>
                   t2(ornd)
@@ -75,7 +75,7 @@ object Tactics {
       val newnds = t(nd)
       if (newnds.length == 0) List(nd.nodeID)
       else newnds.map( 
-        c => {indirect(c,gotonode _);
+        c => {getnodethen(c,gotonode _);
               hereNode match {
                 case ornd@OrNode(_,_) =>
                   apply(ornd)

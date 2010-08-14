@@ -163,7 +163,7 @@ object Jobs {
            working match {
              case Some(pr) =>
                pr.abort
-             case None => 
+             case None => // XXX need to look through the queue
                println("got abort when nothing was running")
            }
               

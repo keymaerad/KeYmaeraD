@@ -20,7 +20,7 @@ object TreeActions {
 
   var hereNode: ProofNode = nullNode
 
-  def indirect(ndID: NodeID, f: (ProofNode) => Unit ): Unit = 
+  def getnodethen(ndID: NodeID, f: (ProofNode) => Unit ): Unit = 
     nodeTable.get(ndID) match {
       case Some(nd) => f(nd)
       case None =>
@@ -30,7 +30,6 @@ object TreeActions {
   def gotonode(nd: ProofNode) : Unit = {
         hereNode = nd
         println("now at node " + nd.nodeID )
-        shownode(nd)
     }
 
   def shownode(nd: ProofNode) : Unit = 
@@ -174,10 +173,11 @@ class FrontActor extends Actor {
           loadfile(filename)
           sender ! ()
         case ('show, nd: NodeID) =>
-          indirect(nd, shownode _)
+          getnodethen(nd, shownode _)
           sender ! ()
         case ('goto, nd: NodeID) =>
-          indirect(nd, gotonode _)
+          getnodethen(nd, gotonode _)
+          getnodethen(nd, shownode _)
           sender ! ()
         case ('rule, pos: Position, rl: ProofRule) =>
           hereNode  match {
