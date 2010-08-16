@@ -26,11 +26,15 @@ import java.awt.Dimension
 import java.awt.GridLayout
 
 
-class TreeModel extends javax.swing.tree.TreeModel {
+class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
   import javax.swing.event.TreeModelEvent
   import javax.swing.event.TreeModelListener
 
+  
+
   import DLBanyan.Nodes._
+
+  val frontend = fe
 
   val treeModelListeners =  new scala.collection.mutable.HashSet[TreeModelListener]()
 
@@ -49,6 +53,9 @@ class TreeModel extends javax.swing.tree.TreeModel {
     for(l <- treeModelListeners){
       l.treeNodesInserted(e)
     }
+    
+    frontend.fireNodesInserted(path)
+    
 
   }
 
@@ -143,7 +150,7 @@ class FrontEnd(fa: Actor)
     var tree : JTree = null
 
 
-  val tm = new TreeModel()
+  val tm = new TreeModel(this)
   fa ! ('registergui, tm)
 
   tree = new JTree(tm)
@@ -184,6 +191,12 @@ class FrontEnd(fa: Actor)
             case _ => null
           }
 
+    }
+
+
+    def fireNodesInserted(path: Array[Object]): Unit = {
+      val tpath = new javax.swing.tree.TreePath(path)
+      tree.expandPath(tpath)
     }
 
 }

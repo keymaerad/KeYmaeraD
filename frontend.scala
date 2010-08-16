@@ -16,6 +16,7 @@ object CommandLine {
     
 //  }
 
+  def ex = "examples/simple.dl"
 
 
   def dl(cmd: Symbol): Unit = {
