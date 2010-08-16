@@ -46,9 +46,12 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
   def fireNodesInserted(pt: ProofNode): Unit = {
     val path = getPath(pt)
-    val e = new TreeModelEvent(this,path)
+    val c: Array[Object] = pt.getchildren.map(x => getnode(x)).toArray
+    val ci: Array[Int] = c.indices.toArray
+    val e = new TreeModelEvent(this,path, ci, c)
     for(l <- treeModelListeners){
       l.treeNodesInserted(e)
+//      l.treeStructureChanged(e)
     }
     
     frontend.fireNodesInserted(path)
