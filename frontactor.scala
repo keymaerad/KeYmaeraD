@@ -105,7 +105,7 @@ object TreeActions {
         os.find( _ != Proved) match {
            case None =>
              nd.status = Proved
-             treemodel.map(_.fireChanged(nd))
+             treemodel.map(_.fireChanged(nd)) // GUI
              nd.parent match {
                case Some(p) =>
                  propagateProvedUp(p, ndID)
@@ -116,7 +116,7 @@ object TreeActions {
 
       case OrNode(r,g) =>
         nd.status = Proved
-        treemodel.map(_.fireChanged(nd))
+        treemodel.map(_.fireChanged(nd)) // GUI
         val others = nd.children.filterNot( _ ==  from)
         others.map(x => propagateIrrelevantDown(x))
         nd.parent match {
@@ -135,7 +135,7 @@ object TreeActions {
   def propagateIrrelevantDown(ndID: NodeID) : Unit = {
     val nd = getnode(ndID)
     nd.status = Irrelevant(nd.status)
-    treemodel.map(_.fireChanged(nd))
+    treemodel.map(_.fireChanged(nd)) //GUI
     // TODO check if we have any pending jobs. cancel them.
     nd.children.map( propagateIrrelevantDown)
 
