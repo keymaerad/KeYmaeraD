@@ -30,8 +30,12 @@ object Nodes {
 
     var status: Status  = Open
 
-    def addchild(c: NodeID): Unit = {
+    def addchild(c: NodeID): Unit = synchronized{
       children = c :: children
+    }
+
+    def getchildren : List[NodeID] = synchronized{
+      children
     }
 
     override def toString: String = {
@@ -110,8 +114,14 @@ object Nodes {
   }
 
 
+  // do I need the synchronization?
+  class SyncHashMap extends
+    scala.collection.mutable.HashMap[NodeID, ProofNode] with
+    scala.collection.mutable.SynchronizedMap[NodeID, ProofNode]
 
-  val nodeTable = new scala.collection.mutable.HashMap[NodeID, ProofNode]
+  
+  val nodeTable = 
+    new SyncHashMap
   
   def register(nd: ProofNode): Unit = {
     nodeTable.put(nd.nodeID, nd)

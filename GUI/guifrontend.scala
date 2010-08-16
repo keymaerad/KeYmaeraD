@@ -32,7 +32,8 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
   val frontend = fe
 
-  val treeModelListeners =  new scala.collection.mutable.HashSet[TreeModelListener]()
+  val treeModelListeners =  
+    new scala.collection.mutable.HashSet[TreeModelListener]()
 
   def addTreeModelListener(l: TreeModelListener): Unit =  {
         treeModelListeners.add(l)
@@ -94,21 +95,21 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
   def getIndexOfChild(parent: Any, child: Any): Int = (parent,child) match {
     case (p: ProofNode, c: ProofNode) =>
-      p.children.indexOf(c.nodeID)
+      p.getchildren.indexOf(c.nodeID)
     case _ => 
       0
   }
 
   def getChild(parent: Any, index: Int): Object = parent match {
     case (pn: ProofNode) =>
-      getnode(pn.children(index))
+      getnode(pn.getchildren(index))
     case _ => 
       null
   }
 
   def getChildCount(parent: Any): Int = parent match {
     case (pn: ProofNode) =>
-      pn.children.length
+      pn.getchildren.length
     case _ => 
       0
   }
@@ -119,7 +120,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
   def isLeaf(node: Any): Boolean = node match {
     case (pn: ProofNode) =>
-      pn.children.isEmpty
+      pn.getchildren.isEmpty
     case _ => 
       true
   }

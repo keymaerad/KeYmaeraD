@@ -48,11 +48,18 @@ object TreeActions {
   
 */
 
-  def attachnode(pt: ProofNode, newnd: ProofNode): Unit = {
-    newnd.parent = Some(pt.nodeID)
-    register(newnd)
-    pt.children = newnd.nodeID :: pt.children
+  def attachnodes(pt: ProofNode, newnds: List[ProofNode]): Unit = {
+    for (newnd <- newnds){
+      newnd.parent = Some(pt.nodeID)
+      register(newnd)
+      pt.addchild(newnd.nodeID)
+    }
     treemodel.map(_.fireNodesInserted(pt)) // GUI
+    treemodel.map(_.fireChanged(pt)) // GUI
+  }
+
+  def attachnode(pt: ProofNode, newnd: ProofNode): Unit = {
+    attachnodes(pt,List(newnd))
   }
 
   def applyrule(hn: OrNode, 
@@ -72,7 +79,7 @@ object TreeActions {
       attachnode(hn,andnd)
       val subname = rl.toString + " subgoal"
       val ornds = sqs.map(s => new OrNode(subname, s))
-      ornds.map(x => attachnode(andnd, x))
+      attachnodes(andnd, ornds) 
       Some(ornds.map(_.nodeID))
     case None => 
       None
@@ -100,7 +107,7 @@ object TreeActions {
     val nd = getnode(ndID)
     nd match {
       case AndNode(r,g,svs) =>
-        val others = nd.children.filterNot( _ ==  from)
+        val others = nd.getchildren.filterNot( _ ==  from)
         val os = others.map(getnode).map(_.status)
         os.find( _ != Proved) match {
            case None =>
@@ -117,7 +124,7 @@ object TreeActions {
       case OrNode(r,g) =>
         nd.status = Proved
         treemodel.map(_.fireChanged(nd)) // GUI
-        val others = nd.children.filterNot( _ ==  from)
+        val others = nd.getchildren.filterNot( _ ==  from)
         others.map(x => propagateIrrelevantDown(x))
         nd.parent match {
           case Some(p) =>
@@ -137,7 +144,7 @@ object TreeActions {
     nd.status = Irrelevant(nd.status)
     treemodel.map(_.fireChanged(nd)) //GUI
     // TODO check if we have any pending jobs. cancel them.
-    nd.children.map( propagateIrrelevantDown)
+    nd.getchildren.map( propagateIrrelevantDown)
 
   }
 
