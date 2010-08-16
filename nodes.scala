@@ -31,7 +31,7 @@ object Nodes {
     var status: Status  = Open
 
     def addchild(c: NodeID): Unit = synchronized{
-      children = c :: children
+      children = children ++ List(c)
     }
 
     def getchildren : List[NodeID] = synchronized{
