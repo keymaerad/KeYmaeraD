@@ -42,7 +42,51 @@ class TreeModel extends javax.swing.tree.TreeModel {
         treeModelListeners.remove(l)
   }
 
-//  def fireEvent(e: 
+
+  def fireNodesInserted(pt: ProofNode): Unit = {
+    val path = getPath(pt)
+    val e = new TreeModelEvent(this,path)
+    for(l <- treeModelListeners){
+      l.treeNodesInserted(e)
+    }
+
+  }
+
+  def fireChanged(nd: ProofNode): Unit = {
+    val path = getPath(nd)
+    val e = new TreeModelEvent(this,path)
+    for(l <- treeModelListeners){
+      l.treeNodesChanged(e)
+    }
+
+  }
+
+  def fireNewRoot(nd: ProofNode): Unit = {
+    val path:Array[Object] = List(nd).toArray
+    val e = new TreeModelEvent(this, path)
+    for(l <- treeModelListeners){
+      l.treeStructureChanged(e)
+    }
+
+  }
+
+
+  def getPathAux(nd: ProofNode): List[Object] = nd.parent match {
+    case None =>
+      if (nd == rootNode) {
+        List(nd)
+      } else {
+        throw new Error("path did not lead to rootNode")
+      }
+    case Some(pt) =>
+      val ptnd = getnode(pt)
+      nd :: getPathAux(ptnd)
+  }
+
+  def getPath(nd: ProofNode): Array[Object] = {
+    val p = getPathAux(nd)
+    p.reverse.toArray
+  }
 
 
   def getIndexOfChild(parent: Any, child: Any): Int = (parent,child) match {
@@ -88,16 +132,20 @@ class TreeModel extends javax.swing.tree.TreeModel {
 
 
 
+
 class FrontEnd(fa: Actor) 
   extends JPanel(new GridLayout(1,0)) with TreeSelectionListener {
 
     val frontactor = fa
+
 
     var  htmlPane :JEditorPane = null 
     var tree : JTree = null
 
 
   val tm = new TreeModel()
+  fa ! ('registergui, tm)
+
   tree = new JTree(tm)
   tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION)
 

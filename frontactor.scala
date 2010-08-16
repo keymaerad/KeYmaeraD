@@ -20,6 +20,9 @@ object TreeActions {
 
   var hereNode: ProofNode = nullNode
 
+
+  var treemodel: Option[DLBanyan.GUI.TreeModel] = None
+
   def getnodethen(ndID: NodeID, f: (ProofNode) => Unit ): Unit = 
     nodeTable.get(ndID) match {
       case Some(nd) => f(nd)
@@ -45,34 +48,32 @@ object TreeActions {
   
 */
 
+  def attachnode(pt: ProofNode, newnd: ProofNode): Unit = {
+    newnd.parent = Some(pt.nodeID)
+    register(newnd)
+    pt.children = newnd.nodeID :: pt.children
+    treemodel.map(_.fireNodesInserted(pt)) // GUI
+  }
+
   def applyrule(hn: OrNode, 
                 p: Position, 
                 rl: ProofRule): Option[List[NodeID]] = rl(p)(hn.goal) match {
     case Some((Nil, _)) => //proved
       val pnd = new DoneNode(rl.toString, hn.goal)
-      pnd.parent = Some(hn.nodeID)
-      register(pnd)
-      hn.children = pnd.nodeID :: hn.children
+      attachnode(hn,pnd)
       propagateProvedUp(hn.nodeID, pnd.nodeID)
       Some(Nil)
     case Some((List(sq), _)) => 
       val ornd = new OrNode(rl.toString, sq)
-      ornd.parent = Some(hn.nodeID)
-      register(ornd)
-      hn.children = ornd.nodeID :: hn.children
+      attachnode(hn,ornd)
       Some(List(ornd.nodeID))
     case Some( (sqs, fvs)  ) =>
       val andnd = new AndNode(rl.toString, hn.goal, Nil)
-      andnd.parent = Some(hn.nodeID)
-      register(andnd)
+      attachnode(hn,andnd)
       val subname = rl.toString + " subgoal"
       val ornds = sqs.map(s => new OrNode(subname, s))
-      ornds.map(register _)
-      ornds.map(x => x.parent = Some(andnd.nodeID))
-      val orndIDs = ornds.map( _.nodeID)
-      hn.children = andnd.nodeID :: hn.children 
-      andnd.children = orndIDs
-      Some(orndIDs)
+      ornds.map(x => attachnode(andnd, x))
+      Some(ornds.map(_.nodeID))
     case None => 
       None
   }
@@ -104,6 +105,7 @@ object TreeActions {
         os.find( _ != Proved) match {
            case None =>
              nd.status = Proved
+             treemodel.map(_.fireChanged(nd))
              nd.parent match {
                case Some(p) =>
                  propagateProvedUp(p, ndID)
@@ -114,6 +116,7 @@ object TreeActions {
 
       case OrNode(r,g) =>
         nd.status = Proved
+        treemodel.map(_.fireChanged(nd))
         val others = nd.children.filterNot( _ ==  from)
         others.map(x => propagateIrrelevantDown(x))
         nd.parent match {
@@ -132,6 +135,7 @@ object TreeActions {
   def propagateIrrelevantDown(ndID: NodeID) : Unit = {
     val nd = getnode(ndID)
     nd.status = Irrelevant(nd.status)
+    treemodel.map(_.fireChanged(nd))
     // TODO check if we have any pending jobs. cancel them.
     nd.children.map( propagateIrrelevantDown)
 
@@ -150,7 +154,7 @@ class FrontActor extends Actor {
   import Tactics.Tactic
 
 
-  var gui: Option[DLBanyan.GUI.FrontEnd] = None
+
 
   def act(): Unit = {
     println("acting")
@@ -164,8 +168,9 @@ class FrontActor extends Actor {
           exit
         case 'gui => 
           val fe = DLBanyan.GUI.FE.start(self)
-//          gui = Some(fe)
           sender ! ()
+        case ('registergui, tm: DLBanyan.GUI.TreeModel) => 
+          treemodel = Some(tm)
         case 'here =>
           displayThisNode
           sender ! ()
@@ -222,9 +227,7 @@ class FrontActor extends Actor {
           nodeTable.get(ndID) match {
             case Some(nd) => 
               val nd1 = DoneNode("quantifier elimination", sq)
-              nd1.parent = Some(nd.nodeID)
-              register(nd1)
-              nd.addchild(nd1.nodeID)
+              attachnode(nd, nd1)
               propagateProvedUp(ndID, nd1.nodeID)
             case None => 
               throw new Error("node not in nodeTable")
@@ -266,7 +269,8 @@ class FrontActor extends Actor {
         val nd = new OrNode("loaded from " + filename, g)
         register(nd)
         hereNode = nd
-        rootNode = nd
+        rootNode = nd 
+        treemodel.map(_.fireNewRoot(nd))// GUI
       case None =>
         println("failed to parse file")
 
