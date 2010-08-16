@@ -10,10 +10,6 @@ import javax.swing.tree.TreeSelectionModel;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 
-import com.mxgraph.swing.mxGraphComponent
-import com.mxgraph.view._
-import com.mxgraph.layout._
-
 import scala.actors.Actor
 import scala.actors.Actor._
 
