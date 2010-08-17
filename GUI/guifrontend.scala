@@ -44,14 +44,17 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
   }
 
 
-  def fireNodesInserted(pt: ProofNode): Unit = {
+  def fireNodesInserted(pt: ProofNode, newnds: List[ProofNode]): Unit = {
     val path = getPath(pt)
-//    val c: Array[Object] = pt.getchildren.map(x => getnode(x)).toArray
-//    val ci: Array[Int] = c.indices.toArray
-    val e = new TreeModelEvent(this,path)
+//    println("path = " + path)
+    val c: Array[Object] = newnds.toArray
+    val newlength = pt.getchildren.length 
+    val oldlength = newlength - newnds.length
+    val ci: Array[Int] = Range(oldlength, newlength).toArray
+    val e = new TreeModelEvent(this,path,ci,c)
     for(l <- treeModelListeners){
-//      l.treeNodesInserted(e)
-      l.treeStructureChanged(e)
+      l.treeNodesInserted(e)
+//      l.treeStructureChanged(e)
     }
     
     frontend.fireNodesInserted(path)
@@ -105,14 +108,20 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
   def getChild(parent: Any, index: Int): Object = parent match {
     case (pn: ProofNode) =>
-      getnode(pn.getchildren(index))
+      val r = getnode(pn.getchildren.apply(index))
+//      println("getting child  " + index + " of " + pn)
+//      println("it is " + r)
+      r
     case _ => 
       null
   }
 
   def getChildCount(parent: Any): Int = parent match {
     case (pn: ProofNode) =>
-      pn.getchildren.length
+      val r = pn.getchildren.length
+//      println("getting child count of " + pn)
+//      println("it is " + r)
+      r
     case _ => 
       0
   }

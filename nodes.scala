@@ -92,6 +92,10 @@ object Nodes {
       sb.toString
    }
 
+    override def hashCode : Int = {
+      nodeID.hashCode
+    }
+
   }
 
   case class DoneNode (rule: String, 

@@ -54,7 +54,8 @@ object TreeActions {
       register(newnd)
       pt.addchild(newnd.nodeID)
     }
-    treemodel.map(_.fireNodesInserted(pt)) // GUI
+    println("treemodel : " + treemodel)
+    treemodel.map(_.fireNodesInserted(pt, newnds)) // GUI
     treemodel.map(_.fireChanged(pt)) // GUI
   }
 
