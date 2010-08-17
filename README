@@ -14,4 +14,6 @@ JLINK (=/Applications/Mathematica.app/SystemFiles/Links/JLink)
 MATHKERNEL (=/Applications/Mathematica.app/Contents/MacOS/MathKernel)
 
 
-to compile, navigate to the DLBanyan directory and type "make"
+To compile, navigate to the DLBanyan directory and type "make"
+
+To run, use the "runprover" script.
