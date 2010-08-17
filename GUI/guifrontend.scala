@@ -143,6 +143,9 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 class FrontEnd(fa: Actor) 
   extends JPanel(new GridLayout(1,0)) with TreeSelectionListener {
 
+    import javax.swing.tree.DefaultTreeCellRenderer
+    import java.awt.Component
+
     val frontactor = fa
 
 
@@ -154,6 +157,7 @@ class FrontEnd(fa: Actor)
   fa ! ('registergui, tm)
 
   tree = new JTree(tm)
+  tree.setCellRenderer(new MyRenderer)
   tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION)
 
   //Listen for when the selection changes.
@@ -198,6 +202,41 @@ class FrontEnd(fa: Actor)
       val tpath = new javax.swing.tree.TreePath(path)
       tree.expandPath(tpath)
     }
+
+
+
+    class MyRenderer extends DefaultTreeCellRenderer {
+
+      override def getTreeCellRendererComponent(tree: JTree,
+                                                value: Object,
+                                                sel: Boolean,
+                                                expanded: Boolean,
+                                                leaf: Boolean,
+                                                row: Int,
+                                                hasFocus: Boolean): Component =  {
+        super.getTreeCellRendererComponent(
+          tree, value, sel,
+          expanded, leaf, row,
+          hasFocus) 
+
+        value match {
+          case (nd: ProofNode) =>
+            nd.status match {
+              case Open => 
+                setIcon(openIcon)
+              case Irrelevant(_) => 
+                setIcon(leafIcon)
+              case Disproved => 
+                setIcon(closedIcon)
+              case Proved => 
+                setIcon(closedIcon)
+            }
+          case _ =>
+        }
+        this 
+      }
+    }
+
 
 }
 
