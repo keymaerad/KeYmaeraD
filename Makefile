@@ -12,9 +12,10 @@ ifndef SCALAC
 SCALAC= fsc
 endif
 
+OPTIONS = -deprecation -unchecked 
 
 all : $(SCALAFILES)
-	$(SCALAC)  -classpath $(LIBRARIES) $(SCALAFILES) -deprecation -unchecked
+	$(SCALAC)  -classpath $(LIBRARIES) $(SCALAFILES) $(OPTIONS)
 
 clean :
 	rm -rf DLBanyan/
