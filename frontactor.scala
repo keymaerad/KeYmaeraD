@@ -185,6 +185,9 @@ class FrontActor extends Actor {
         case ('load, filename:String) =>
           loadfile(filename)
           sender ! ()
+        case ('loadex, filename:String) =>
+          loadfile("examples/" + filename)
+          sender ! ()
         case ('show, nd: NodeID) =>
           getnodethen(nd, shownode _)
           sender ! ()
