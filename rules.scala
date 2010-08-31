@@ -340,6 +340,115 @@ object Rules {
       }
     }
 
+  val diffSolve : List[Formula] => ProofRule = 
+    fm_sols => new ProofRule("diffsolve[" 
+                          + fm_sols.map(Printing.stringOfFormula) 
+                          + "]") {
+
+      import Prover._
+
+      class BadSolution extends Exception 
+
+      def extract(sol: Formula): (String, (String, Term)) = sol match {
+        case Forall(t, Atom(R("=", 
+                              List(Fn(f, List(t1)),
+                              sol_tm)))) if Var(t) == t1 =>
+                                (t,(f,sol_tm))
+        case _ => 
+          println( sol)
+        throw new BadSolution
+      }
+
+      def time_var(t_sols: List[(String,(String,Term))])
+      : Option[String] = {
+        val ts = t_sols.map(_._1)
+        ts match {
+          case Nil => None
+          case (t ::rest ) =>
+            if( rest.exists(x => x != t)){
+              None
+            } else {
+              Some(t)
+            }
+        }
+      }
+
+      // TODO what if t is a variable in deriv?
+      // XXX TODO check inital values
+      def is_ok(t: String,
+                deriv: (String,Term),
+                sols: List[(String,Term)]  ) : Boolean  = deriv match {
+        case (x, tm) =>
+          println("testing if ok: " + x + "   " + tm)
+          println("t= " + t)
+          Prover.assoc(x,sols) match {
+            case Some(sol) =>
+              val dsol = totalDerivTerm(List((t,Num(Exact.one))), sol)
+              val tm_sub = simul_substitute_Term(sols, tm)
+     
+              if(  polynomial_equality(tm_sub, dsol)     ) {
+                println("it's ok")
+                true
+              } else {
+                println("it's not ok")
+                false
+              }
+            case None => 
+              println("no corresponding solution found in:")
+            println(sols)
+            false
+          }
+       }
+
+      def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
+        case (RightP(n), 
+              Sequent(c,s),
+              Box(Evolve(derivs, h, _, _ ), phi)) =>
+          val t_sols = fm_sols.map(extract)
+          val sols = t_sols.map(_._2)
+          time_var(t_sols) match {
+            case None => None
+            case Some(t) =>
+              val oks = derivs.map(d => is_ok(t, d, sols))
+            if(oks.contains(false))
+              None
+            else {
+              val t2 = uniqify(t)
+              val t_range = Atom(R(">=", List(Var(t), Num(Exact.zero))))
+              val t2_range = 
+                And(Atom(R(">=", List(Var(t2), Num(Exact.zero)))),
+                    Atom(R("<=", List(Var(t2), Var(t)))))
+              val endpoint_h = simul_substitute_Formula(sols, h)
+              val interm_h = 
+                rename_Formula(t,t2,simul_substitute_Formula(sols, h))
+              val new_xs = sols.map(x => uniqify(x._1))
+              val old_and_new_xs = 
+                sols.map(_._1).zip(new_xs)
+              val new_xs_and_sols = 
+                new_xs.zip(sols.map(_._2))
+              val assign_sols = 
+                new_xs_and_sols.map(xtm => Assign(xtm._1,xtm._2))
+              val phi1 = 
+                old_and_new_xs.foldRight(phi)( (xs ,phi1) =>
+                  rename_Formula(xs._1, xs._2, phi1))
+              val assign_hp = 
+                assign_sols.foldRight(Check(True):HP)((x,y) => Seq(x,y))
+              val phi2 = 
+                Box(assign_hp, phi1)
+              val stay_in_h = 
+                Forall(t2, Imp(t2_range, interm_h))
+              Some(List(
+                replace(pos,Sequent(stay_in_h ::t_range::c,s), phi2),
+                replace(pos,Sequent(endpoint_h ::t_range::c,s), phi2)), Nil)
+            }
+          }
+          
+        case _ => 
+          None
+      }
+                            
+                            
+    }
 
 
 
