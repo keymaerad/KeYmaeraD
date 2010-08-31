@@ -216,6 +216,26 @@ class FrontEnd(fa: Actor)
 
     class MyRenderer extends DefaultTreeCellRenderer {
 
+      import javax.swing.Icon
+
+      def loadicon(filename: String, default: Icon): Icon = {
+
+        val i = try {
+          new javax.swing.ImageIcon(filename)
+        }catch {
+          case e => 
+            println ("using default icon")
+            default
+          }
+        i
+      }
+
+      setOpenIcon(loadicon("icons/open.png", openIcon))
+      val provedIcon = loadicon("icons/proved.png", closedIcon)
+      val irrelevantIcon = loadicon("icons/irrelevant.png", leafIcon)
+      val disprovedIcon = loadicon("icons/disproved.png", closedIcon)
+
+
       override def getTreeCellRendererComponent(tree: JTree,
                                                 value: Object,
                                                 sel: Boolean,
@@ -234,11 +254,11 @@ class FrontEnd(fa: Actor)
               case Open => 
                 setIcon(openIcon)
               case Irrelevant(_) => 
-                setIcon(leafIcon)
+                setIcon(irrelevantIcon)
               case Disproved => 
-                setIcon(closedIcon)
+                setIcon(disprovedIcon)
               case Proved => 
-                setIcon(closedIcon)
+                setIcon(provedIcon)
             }
           case _ =>
         }
