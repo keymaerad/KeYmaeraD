@@ -103,10 +103,11 @@ class DLParser(in: InputStream)
 
 
    def hp : Parser[HP] =
-     hp1*("++" ^^^ {(p1,p2) => Choose(p1,p2)})
+     hp1*(";" ^^^ {(p1,p2) => Seq(p1,p2)})
 
    def hp1 : Parser[HP] = 
-     hp2*(";" ^^^ {(p1,p2) => Seq(p1,p2)})
+     hp2*("++" ^^^ {(p1,p2) => Choose(p1,p2)})
+
 
    def hp2 : Parser[HP] = 
      "(" ~> hp <~  ")" | 
