@@ -181,14 +181,23 @@ final object Prover {
       Imp(rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
     case Iff(f1,f2) => 
       Iff(rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
-    case Exists(v,f) if v != xold =>
-      Exists(v, rename_Formula(xold,xnew,f))
-    case Forall(v,f) if v != xold =>
+    case Exists(v,f) if v == xold =>
+      val v1 = uniqify(v)
+      val f1 = rename_Formula(v,v1,f)
+      Exists(v1, rename_Formula(xold, xnew, f1))
+    case Exists(v,f) =>
+      Exists(v, rename_Formula(xold,xnew,f))      
+    case Forall(v,f) if v == xold =>
+      val v1 = uniqify(v)
+      val f1 = rename_Formula(v,v1,f)
+      Forall(v1, rename_Formula(xold, xnew, f1))
+    case Forall(v,f) => 
       Forall(v, rename_Formula(xold,xnew,f))
     case Box(hp,phi) =>
       Box(rename_HP(xold,xnew,hp), rename_Formula(xold,xnew,phi))
     case Diamond(hp,phi) =>
       Diamond(rename_HP(xold,xnew,hp), rename_Formula(xold,xnew,phi))
+    case _ => throw new Unimplemented()
   }
 
   def rename_HP(xold:String,xnew:String,hp:HP):HP = hp match {

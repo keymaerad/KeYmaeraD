@@ -225,6 +225,8 @@ final object AM {
             else c
           case _ => 1
         }
+        case _ => 
+          throw new Error("nonfirstorder arithmetic")
       }
     }
 
@@ -437,6 +439,8 @@ final object AM {
     case Iff(p,q) => union(vari(p), vari(q))
     case Forall(x,p) => insert(x, vari(p))
     case Exists(x,p) => insert(x, vari(p))
+    case _ => 
+      throw new Error("nonfirstorder arithmetic")
   }
 
   def fv(fm: Formula): List[String] = fm match {
@@ -449,6 +453,8 @@ final object AM {
     case Iff(p,q) => union(fv(p), fv(q))
     case Forall(x,p) => subtract(fv(p) ,List(x))
     case Exists(x,p) => subtract(fv(p),List(x) )
+    case _ => 
+      throw new Error("nonfirstorder arithmetic")
   }
 
 //  def quantify_fvs(fm: Formula): Formula = 
@@ -562,6 +568,8 @@ final object AM {
     case Or(p,q) => eval(p,v) || eval(q,v)
     case Imp(p,q) => (eval(p,v) unary_! ) || eval(q,v)
     case Iff(p,q) => eval(p,v) == eval(q,v)
+    case _ => 
+      throw new Error("nonfirstorder arithmetic")
   }
 
   val operations: List[(String, (Exact.Num,Exact.Num) => Boolean)] = 
@@ -779,6 +787,7 @@ final object AM {
     case Fn("+",List(c,Fn("*",List(Var(x),p)))) =>
       Fn("+",List(poly_neg(c), Fn("*",List(Var(x), poly_neg(p)))))
     case Num(n) => Num(-n)
+    case _ => throw new Error("impossible")
   }
 
   def poly_sub(vars: List[String], p: Term, q: Term): Term = {
@@ -1199,6 +1208,8 @@ final object AM {
       val cont = (mat:List[List[Sign]]) => 
         if(mat.exists(m => testform(pols.zip(m),p))) True else False;
       casesplit(x::vars, Nil, pols, cont)(init_sgns)
+    case _ => 
+      throw new Error("impossible")
   }
 
 

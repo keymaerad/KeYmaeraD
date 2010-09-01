@@ -1,6 +1,6 @@
 package DLBanyan
 
-abstract class Term
+sealed abstract class Term
 case class Var(s: String) extends Term
 case class Fn(f: String, ps: List[Term]) extends Term
 case class Num(n: Exact.Num) extends Term
@@ -10,7 +10,7 @@ case class R(r: String, ps: List[Term]) extends Pred
 
 
 // first order formula
-abstract class Formula
+sealed abstract class Formula
 case object True extends Formula
 case object False extends Formula
 case class Atom(p: Pred) extends Formula
@@ -26,7 +26,7 @@ case class Diamond(hp: HP, rest: Formula) extends Formula
 case class SchemaVar(v: String) extends Formula
 
 
-abstract class HP
+sealed abstract class HP
 case class Assign(s: String, v: Term) extends HP
 case class AssignAny(s: String) extends HP
 case class Check(h: Formula) extends HP
@@ -50,6 +50,7 @@ case class Sequent(ctxt: List[Formula],
 
 class Lock() extends Object()
 
+class Unimplemented() extends Exception()
 
 /*
 case class ProofRule( name: String,
