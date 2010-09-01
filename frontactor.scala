@@ -252,6 +252,11 @@ class FrontActor extends Actor {
         case 'jobs =>
           println(jobs.toList)
           sender ! ()
+        
+        case ('abort, jb: NodeID) =>
+          println("aborting job")
+          jobmaster ! ('abort, jb)
+          sender ! ()
 
         case msg =>
           println("got message: " + msg)
