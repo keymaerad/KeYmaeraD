@@ -25,8 +25,15 @@ object Tactics {
         val rules = inv_hints.map(loopInduction)
         rules.map(r => applyrule(nd, pos, r)).flatten.flatten
       case Box(Evolve(derivs,h,inv_hints,sols), phi) =>
-        val rules = inv_hints.map(diffStrengthen)
-        rules.map(r => applyrule(nd, pos, r)).flatten.flatten
+        val inv_rules = inv_hints.map(diffStrengthen)
+        val inv_res = inv_rules.map(r => applyrule(nd, pos, r)).flatten.flatten
+        val sol_rule = diffSolve(sols)
+        val sol_res = applyrule(nd,pos,sol_rule) match {
+          case None => Nil
+          case Some(lst) => lst
+        }
+        sol_res ++ inv_res
+        
       case _ => Nil
     }
   }

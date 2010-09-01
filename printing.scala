@@ -69,6 +69,7 @@ object Printing {
   def docOfFormula(fm: Formula): Document = fm match {
     case True => text("true")
     case False => text("false")
+    case Not(fm) => text("~") :: docOfFormula(fm)
     case Atom(p) => docOfPred(p)
     case And(fm1,fm2) => 
       bracket("(",")", 

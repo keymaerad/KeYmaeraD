@@ -26,7 +26,7 @@ class DLParser(in: InputStream)
                              "=", "<", ">", ">=", "<=", "<>",
                               "+","-","*", "/", "^",
                              "++", ":=", "@", "?", "\'",
-                             "&", "|", "<=>", "==>", "|-", "."
+                             "&", "|", "<=>", "==>", "|-", ".", "~"
                             ).iterator
  
    lexical.reserved ++= List("forall", "exists",
@@ -94,6 +94,10 @@ class DLParser(in: InputStream)
      formula4*( "&" ^^^ {(f1,f2) => And(f1,f2)})
 
    def formula4 : Parser[Formula] = 
+     "~" ~> formula5 ^^ {fm => Not(fm)} | 
+     formula5
+
+   def formula5 : Parser[Formula] = 
      "(" ~> formula <~  ")" | 
      pred ^^ (x => Atom(x))  |
      "true" ^^^ True |
