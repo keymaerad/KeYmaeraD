@@ -51,6 +51,7 @@ object Jobs {
           case ('job, p: String, sq: Sequent, jid: JobID) =>
 //            val jid = nextJobID
             val t = System.currentTimeMillis
+            // TODO: easy filter.
             jobs.put(jid, JobData(sender, t, localworker))
             localworker ! ( ('job, p, sq, jid) )
 
