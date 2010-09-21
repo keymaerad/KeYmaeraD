@@ -91,9 +91,12 @@ object TreeActions {
     case None => false
     case Some(pr) => 
       if(pr.applies(ornd.goal)) {
-        jobmaster ! (('job, proc, ornd.goal, ornd.nodeID))
+        val wknd = new WorkingNode(proc,ornd.goal)
+        attachnode(ornd, wknd)
+
+        jobmaster ! (('job, proc, ornd.goal, wknd.nodeID))
         val t = System.currentTimeMillis
-        jobs.put(ornd.nodeID, t)
+        jobs.put(wknd.nodeID, t)
         true
       } else {
         false
@@ -236,10 +239,17 @@ class FrontActor extends Actor {
         case ('jobdone, ndID: NodeID, sq: Sequent) =>
           jobs.remove(ndID)
           nodeTable.get(ndID) match {
-            case Some(nd) => 
-              val nd1 = DoneNode("quantifier elimination", sq)
-              attachnode(nd, nd1)
-              propagateProvedUp(ndID, nd1.nodeID)
+            case Some(nd) =>
+              nd.parent match {
+                case Some(ptid) =>
+                  val pt = getnode(ptid)
+                  val nd1 = DoneNode("quantifier elimination", sq)
+                  attachnode(pt, nd1)
+                  propagateProvedUp(pt.nodeID, nd1.nodeID)
+                case None =>
+                  error("no parent")
+              }
+
             case None => 
               throw new Error("node not in nodeTable")
           }

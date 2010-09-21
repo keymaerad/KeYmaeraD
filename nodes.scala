@@ -15,7 +15,7 @@ object Nodes {
   }
 
 
-  abstract class Status
+  sealed abstract class Status
   case object Proved extends Status
   case object Disproved extends Status
   case object Open extends Status
@@ -97,6 +97,28 @@ object Nodes {
     }
 
   }
+
+  case class WorkingNode (rule: String, 
+                          goal: Sequent) extends ProofNode() {
+   status = Open
+    
+    override def toString: String = {
+      "WorkingNode " + nodeID.toString
+    }
+
+   override def toPrettyString : String = {
+      val sb = new StringBuilder()
+      sb.append(Printing.stringOfSequent(goal) + "\n")
+      sb.append("WorkingNode\n")
+      sb.append("rule = " + rule + "\n")
+      sb.append(super.toPrettyString)
+      sb.toString
+   }
+
+  }
+
+
+
 
   case class DoneNode (rule: String, 
                        goal: Sequent) extends ProofNode() {
