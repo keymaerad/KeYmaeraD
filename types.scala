@@ -44,6 +44,7 @@ case class Evolve(derivs: List[(String,Term)],
 
 
 //abstract class Goal
+@serializable
 case class Sequent(ctxt: List[Formula],
                    scdts: List[Formula]) // extends Goal
 //case class FOGoal(fm: Formula) extends Goal

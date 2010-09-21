@@ -15,7 +15,8 @@ object TreeActions {
 
   // TODO something smarter here
   val myPort = 50001
-
+  println("listening on port " + myPort)
+  
   val jobs = new scala.collection.mutable.HashMap[NodeID, Long]()
   val jobmaster = new Jobs.JobMaster(myPort)
   jobmaster.start

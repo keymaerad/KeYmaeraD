@@ -60,6 +60,8 @@ object Jobs {
     def act(): Unit = {
       println("jobmaster acting")
 
+      RemoteActor.classLoader = getClass().getClassLoader()
+
       alive(myPort)
       register('master, self)
 
@@ -75,7 +77,8 @@ object Jobs {
           jobs.put(jid,(jd, iw))
           ()
         };
-        
+
+//        println("jobmaster listening")
         receive {
           case 'quit =>
             println("jobmaster quitting")
@@ -85,6 +88,7 @@ object Jobs {
 
           // worker registration.
           case ('register, Node(ip,prt)) =>
+            println("got a registration.")
             sender ! ('registered)
             ()
             
@@ -155,7 +159,7 @@ object Jobs {
     val procqueue = 
       new scala.collection.mutable.Queue[JobData]()
 
-    val coor = select(masterNode, 'jobmaster)
+    val master = select(masterNode, 'master)
 
     def doRegistration(coorHost: Node, thisHost: Node) = {
 
@@ -164,16 +168,20 @@ object Jobs {
 
 
       println("this host: " + thisHost.toString)
-      coor ! ('registerWorker, thisHost)
+      master ! ('register, thisHost)
     
-      println("waiting for ack from coordinator")
+      println("waiting for ack from master")
       receive {
         case ('registered) =>
+          println("got ack.")
           ()
         case msg => 
           throw new Error("not an ack: " + msg)
       }
 
+
+
+      ()
 
 
   }
@@ -216,6 +224,8 @@ object Jobs {
       
       println("registered.")
 
+      master ! ('idling, myNode)
+
       while(true){
         tryworking
         receive {
@@ -228,10 +238,12 @@ object Jobs {
          case ('done, JobData(p,sq,jid,jobsender), res: Sequent) =>
            working = None
            jobsender ! ('jobdone, jid, res)
+          master ! ('idling, myNode)
           
          case ('done, JobData(p,sq,jid,jobsender)) =>
            working = None
            jobsender ! ('jobdone, jid)
+          master ! ('idling, myNode)
          
          case 'abort => 
            working match {
@@ -240,6 +252,8 @@ object Jobs {
              case None => // XXX need to look through the queue
                println("got abort when nothing was running")
            }
+          master ! ('idling, myNode)
+           
               
         }
       }
