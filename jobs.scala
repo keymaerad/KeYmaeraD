@@ -4,6 +4,11 @@ import scala.actors.Actor
 import scala.actors.Actor._
 import scala.actors.Futures._
 
+import scala.actors.remote.RemoteActor
+import scala.actors.remote.RemoteActor._
+import scala.actors.remote._
+
+
 import Procedures._
 
 object Jobs {
@@ -49,7 +54,8 @@ object Jobs {
             exit
 
           // worker registration.
-          case ('register, ) =>
+          case ('register, Node(ip,prt)) =>
+            ()
             
 
 
@@ -98,7 +104,6 @@ object Jobs {
       )
     }
   }
-
 
 
 
@@ -178,6 +183,68 @@ object Jobs {
     }
   }
 
+
+
+
+
+
+
+
+
+  private object Worker {
+  
+    import org.apache.commons.cli.Options
+    import org.apache.commons.cli.CommandLine
+    import java.net.InetAddress
+
+
+    def parse(args: Array[String]) : CommandLine = {
+
+      //use CLI to parse command line options
+      var opts = new org.apache.commons.cli.Options();
+      opts.addOption("c", true, "coordinator address");
+      opts.addOption("cp", true, "coordinator port (default = 9500)");
+      opts.addOption("p", true, "port this worker should run on");
+
+      //do parsing
+      var parser = new org.apache.commons.cli.GnuParser();
+      parser.parse( opts, args);
+
+    }
+
+    def main(args: Array[String]) : Unit = {
+      println("worker says: hello world.")
+
+      val cmd = parse(args)
+      
+      //process options
+      //coordinator address and port
+      if (!cmd.hasOption("c")) {
+        println("Forgot to supply coordinator address. (use -c). Quitting.")
+        System.exit(0);
+      }
+
+      val coorHost = 
+        new Node(cmd.getOptionValue("c"), 
+                 java.lang.Integer.parseInt(cmd.getOptionValue("cp", "9500")))
+      
+      println("coordinator at " + coorHost.toString)
+      
+      //get thisHost
+      //TBD: put in cheesy option bind workaround ... default to 9001 for now
+      val thisAddr = InetAddress.getLocalHost().getHostAddress()
+      val thisHost = 
+        Node(thisAddr, 
+             java.lang.Integer.parseInt(cmd.getOptionValue("p", "9001")))
+
+
+      
+      //val listenerActor = new ListenerActor(coorHost, thisHost)
+      //listenerActor.start
+      ()
+    }
+
+  }
 
 
 
