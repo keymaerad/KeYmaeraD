@@ -16,7 +16,6 @@ object Jobs {
 
 /*
   private var nextID = 0
-
   def nextJobID : JobID = {
     val res = nextID;
     nextID += 1;
@@ -29,9 +28,6 @@ object Jobs {
     extends scala.collection.mutable.HashMap[A, B]
     with scala.collection.mutable.SynchronizedMap[A,B]
     
-
-
-
 
   case class JobData( jid: JobID,
                       s: scala.actors.OutputChannel[Any],
@@ -94,7 +90,7 @@ object Jobs {
             
 
           case ('idling, nd@Node(ip,prt)) =>
-            idleworkers += nd
+            idleworkers.enqueue( nd)
             ()
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
