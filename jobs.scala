@@ -33,18 +33,25 @@ object Jobs {
 
 
 
-  case class JobData( s: scala.actors.OutputChannel[Any],
-                      t: Long, // start time
-                      nd : Node // where the job is being done.
+  case class JobData( jid: JobID,
+                      s: scala.actors.OutputChannel[Any],
+                      p: String, // the proc
+                      sq: Sequent, 
+                      t: Long // start time
                    )
 
   class JobMaster(myPort: Int) extends Actor {
 
+    // the jobs we've sent out to workers
+    val jobs = new scala.collection.mutable.HashMap[JobID, (JobData, Node)]()
 
-    val jobs = new scala.collection.mutable.HashMap[JobID,JobData ]()
 
+    /* Keep a queue of unstarted jobs and idling workers.
+     * At each loop, match them up and dispatch.
+     */
 
-//    val workers = new scala.collection.mutable.HashMap[Node, 
+    val newjobs = new scala.collection.mutable.Queue[JobData]()
+    val idleworkers = new scala.collection.mutable.Queue[Node]()
 
 //    val localworker = new JobWorker()
 //    localworker.start()
@@ -57,8 +64,19 @@ object Jobs {
       register('master, self)
 
 
-      loop (
-        react {
+      while(true){
+
+        // Assign jobs if we can.
+        while((! idleworkers.isEmpty) && (! newjobs.isEmpty) ){
+          val iw = idleworkers.dequeue()
+          val jd@JobData(jid, s,p,sq,t) = newjobs.dequeue()
+          val actr = select(iw, 'worker)
+          actr ! ( ('job, p, sq, jid) )
+          jobs.put(jid,(jd, iw))
+          ()
+        };
+        
+        receive {
           case 'quit =>
             println("jobmaster quitting")
 //            localworker !? 'quit
@@ -67,18 +85,19 @@ object Jobs {
 
           // worker registration.
           case ('register, Node(ip,prt)) =>
+            sender ! ('registered)
             ()
             
 
+          case ('idling, nd@Node(ip,prt)) =>
+            idleworkers += nd
+            ()
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
 //            val jid = nextJobID
             val t = System.currentTimeMillis
             // PERF: insert easy filter here.
-
-           // Determine where to send job.
-//            jobs.put(jid, JobData(sender, t, localworker))
-//            localworker ! ( ('job, p, sq, jid) )
+            newjobs += JobData(jid, sender, p, sq, t)
 
          case 'list =>
            println(jobs)
@@ -86,7 +105,7 @@ object Jobs {
 
          case ('jobdone, jid: JobID, res: Sequent) =>
            jobs.get(jid) match {
-             case Some(JobData(s,t,w)) =>
+             case Some((JobData(_,s,p,sq,t),w)) =>
                s ! ('jobdone, jid,res)
              case None =>
                throw new Error("invalid jobID")
@@ -95,7 +114,7 @@ object Jobs {
 
          case ('jobdone, jid: JobID) =>
            jobs.get(jid) match {
-             case Some(JobData(s,t,w)) =>
+             case Some((JobData(_,s,p,sq,t),w)) =>
                s ! ('jobdone, jid)
              case None =>
                throw new Error("invalid jobID")
@@ -104,7 +123,7 @@ object Jobs {
 
          case ('abort, jid: JobID) =>
            jobs.get(jid) match {
-             case Some(JobData(s,t,nd)) =>
+             case Some((JobData(_,s,p,sq,t), nd)) =>
                val actr = select(nd,'worker)
                actr ! 'abort
              case None =>
@@ -116,7 +135,7 @@ object Jobs {
             println ("jobserver got message: " + msg)
 
         }
-      )
+      }
     }
   }
 
@@ -193,7 +212,9 @@ object Jobs {
 
       println("registering...")
 
+      doRegistration(masterNode, myNode)
       
+      println("registered.")
 
       while(true){
         tryworking
@@ -226,18 +247,11 @@ object Jobs {
   }
 
 
-
-
-
-
-
-
-
-  
-
 }
 
 
+
+// Code entry point for workers.
  object WorkerMain {
    import Jobs._
   
