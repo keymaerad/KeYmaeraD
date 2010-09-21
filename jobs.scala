@@ -48,6 +48,11 @@ object Jobs {
             sender ! ()
             exit
 
+          // worker registration.
+          case ('register, ) =>
+            
+
+
           case ('job, p: String, sq: Sequent, jid: JobID) =>
 //            val jid = nextJobID
             val t = System.currentTimeMillis
