@@ -32,7 +32,7 @@ object Procedures {
 
     def applies(sq: Sequent) : Boolean = sq match {
       case Sequent(c,s) =>
-        !(c.exists(x => ! firstclass(x)) ||  s.exists(x => ! firstclass(x)) )
+        !(c.exists(x => ! firstorder(x)) ||  s.exists(x => ! firstorder(x)) )
     }
 
 
@@ -95,7 +95,7 @@ object Procedures {
 
     def applies(sq: Sequent) : Boolean = sq match {
       case Sequent(c,s) =>
-        !(c.exists(x => ! firstclass(x)) ||  s.exists(x => ! firstclass(x)) )
+        !(c.exists(x => ! firstorder(x)) ||  s.exists(x => ! firstorder(x)) )
     }
 
 

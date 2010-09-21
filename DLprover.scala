@@ -37,22 +37,22 @@ final object Prover {
   }
 
 
-  def firstclass(fm: Formula): Boolean = fm match {
+  def firstorder(fm: Formula): Boolean = fm match {
     case True | False => true
     case Atom(R(r,ps)) => true
-    case Not(f) => firstclass(f)
+    case Not(f) => firstorder(f)
     case And(f1,f2) => 
-      firstclass(f1) && firstclass(f2)
+      firstorder(f1) && firstorder(f2)
     case Or(f1,f2) => 
-      firstclass(f1) && firstclass(f2)
+      firstorder(f1) && firstorder(f2)
     case Imp(f1,f2) => 
-      firstclass(f1) && firstclass(f2)
+      firstorder(f1) && firstorder(f2)
     case Iff(f1,f2) => 
-      firstclass(f1) && firstclass(f2)
+      firstorder(f1) && firstorder(f2)
     case Exists(v,f) =>
-      firstclass(f)
+      firstorder(f)
     case Forall(v,f) =>
-      firstclass(f)
+      firstorder(f)
     case Box(_,_) => false
     case Diamond(_,_) => false
     case SchemaVar(_) => false

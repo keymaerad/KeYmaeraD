@@ -39,6 +39,7 @@ object RulesUtil {
       else x::splicelist(i-1,xs,a)      
   }
 
+  //remove the ith element
   def removelist[A](i: Int, lst: List[A]): List[A] = lst match {
     case Nil => Nil
     case x::xs =>
@@ -452,6 +453,28 @@ object Rules {
 
 
 
+
+  val Substitute = new ProofRule("substitute") {
+    import Prover._
+
+    def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
+      case (RightP(n), Sequent(ctxt,sc), Atom(R("=", List(Var(v),tm)))) 
+        if (ctxt ++ sc).forall(firstorder) =>
+          val tm_vars = varsOfTerm(tm)
+          val ctxt1 = removelist(n,ctxt)
+          val ctxt2 = 
+            ctxt1.map(x => substitute_Formula(v, tm, tm_vars, x))
+          val sc1 = sc.map(x => substitute_Formula(v,tm,tm_vars, x))
+          Some(List(  Sequent(ctxt2,sc1))    ,Nil)
+      case _ =>
+        None
+    }
+
+  }
+
+
+
+
 }
 
 
@@ -682,9 +705,6 @@ object PRSubstitute extends ProofRule {
            }
        }
                      
-
-
-
   def applyRule(sq: Sequent): List[TreeNode] = sq match {
     case Sequent(ctxt, NoModality(fo) ) => 
       val a = findAssignment(ctxt)
