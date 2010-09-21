@@ -25,31 +25,43 @@ object Jobs {
 */
 
 
+  class SyncMap[A,B] 
+    extends scala.collection.mutable.HashMap[A, B]
+    with scala.collection.mutable.SynchronizedMap[A,B]
+    
 
 
 
 
   case class JobData( s: scala.actors.OutputChannel[Any],
-                      t: Long,
-                      w: scala.actors.AbstractActor)
+                      t: Long, // start time
+                      nd : Node // where the job is being done.
+                   )
 
+  class JobMaster(myPort: Int) extends Actor {
 
-  class JobMaster extends Actor {
 
     val jobs = new scala.collection.mutable.HashMap[JobID,JobData ]()
 
-    val localworker = new JobWorker()
-    localworker.start()
+
+//    val workers = new scala.collection.mutable.HashMap[Node, 
+
+//    val localworker = new JobWorker()
+//    localworker.start()
   
 
     def act(): Unit = {
       println("jobmaster acting")
 
+      alive(myPort)
+      register('master, self)
+
+
       loop (
         react {
           case 'quit =>
             println("jobmaster quitting")
-            localworker !? 'quit
+//            localworker !? 'quit
             sender ! ()
             exit
 
@@ -62,9 +74,11 @@ object Jobs {
           case ('job, p: String, sq: Sequent, jid: JobID) =>
 //            val jid = nextJobID
             val t = System.currentTimeMillis
-            // TODO: easy filter.
-            jobs.put(jid, JobData(sender, t, localworker))
-            localworker ! ( ('job, p, sq, jid) )
+            // PERF: insert easy filter here.
+
+           // Determine where to send job.
+//            jobs.put(jid, JobData(sender, t, localworker))
+//            localworker ! ( ('job, p, sq, jid) )
 
          case 'list =>
            println(jobs)
@@ -90,8 +104,9 @@ object Jobs {
 
          case ('abort, jid: JobID) =>
            jobs.get(jid) match {
-             case Some(JobData(s,t,w)) =>
-               w ! 'abort
+             case Some(JobData(s,t,nd)) =>
+               val actr = select(nd,'worker)
+               actr ! 'abort
              case None =>
                
            }
@@ -109,7 +124,7 @@ object Jobs {
 
 
 
-  class JobWorker extends Actor {
+  class JobWorker(masterNode: Node, myNode: Node) extends Actor {
 
     case class JobData(proc:String, 
                        sq:Sequent,
@@ -120,6 +135,29 @@ object Jobs {
 
     val procqueue = 
       new scala.collection.mutable.Queue[JobData]()
+
+    val coor = select(masterNode, 'jobmaster)
+
+    def doRegistration(coorHost: Node, thisHost: Node) = {
+
+      alive(thisHost.port)
+      register('worker, self)
+
+
+      println("this host: " + thisHost.toString)
+      coor ! ('registerWorker, thisHost)
+    
+      println("waiting for ack from coordinator")
+      receive {
+        case ('registered) =>
+          ()
+        case msg => 
+          throw new Error("not an ack: " + msg)
+      }
+
+
+
+  }
 
 
     def tryworking : Unit = {
@@ -152,6 +190,10 @@ object Jobs {
 
     def act(): Unit = {
       println("jobworker acting")
+
+      println("registering...")
+
+      
 
       while(true){
         tryworking
@@ -191,7 +233,13 @@ object Jobs {
 
 
 
-  private object Worker {
+  
+
+}
+
+
+ object WorkerMain {
+   import Jobs._
   
     import org.apache.commons.cli.Options
     import org.apache.commons.cli.CommandLine
@@ -230,8 +278,6 @@ object Jobs {
       
       println("coordinator at " + coorHost.toString)
       
-      //get thisHost
-      //TBD: put in cheesy option bind workaround ... default to 9001 for now
       val thisAddr = InetAddress.getLocalHost().getHostAddress()
       val thisHost = 
         Node(thisAddr, 
@@ -239,13 +285,10 @@ object Jobs {
 
 
       
-      //val listenerActor = new ListenerActor(coorHost, thisHost)
-      //listenerActor.start
+      val jobWorker = new JobWorker(coorHost, thisHost)
+      jobWorker.start
       ()
     }
 
   }
 
-
-
-}

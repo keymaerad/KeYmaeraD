@@ -13,9 +13,11 @@ object TreeActions {
   import RulesUtil._
   import Procedures._
 
+  // TODO something smarter here
+  val myPort = 50001
 
   val jobs = new scala.collection.mutable.HashMap[NodeID, Long]()
-  val jobmaster = new Jobs.JobMaster()
+  val jobmaster = new Jobs.JobMaster(myPort)
   jobmaster.start
 
   var hereNode: ProofNode = nullNode
