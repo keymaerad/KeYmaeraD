@@ -454,11 +454,11 @@ object Rules {
 
 
 
-  val Substitute = new ProofRule("substitute") {
+  val substitute = new ProofRule("substitute") {
     import Prover._
 
     def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
-      case (RightP(n), Sequent(ctxt,sc), Atom(R("=", List(Var(v),tm)))) 
+      case (LeftP(n), Sequent(ctxt,sc), Atom(R("=", List(Var(v),tm)))) 
         if (ctxt ++ sc).forall(firstorder) =>
           val tm_vars = varsOfTerm(tm)
           val ctxt1 = removelist(n,ctxt)
