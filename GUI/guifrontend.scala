@@ -3,8 +3,12 @@ package DLBanyan.GUI
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 
-//import scala.swing._
-import javax.swing._
+import scala.swing._
+import javax.swing.JPanel
+import javax.swing.JTree
+import javax.swing.JScrollPane
+import javax.swing.JSplitPane
+import javax.swing.JEditorPane
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import javax.swing.event.TreeSelectionEvent;
@@ -14,9 +18,11 @@ import scala.actors.Actor
 import scala.actors.Actor._
 
 import DLBanyan.Nodes._
+import DLBanyan.Tactics._
 
 
 import java.net.URL
+import java.io.File
 import java.io.IOException
 import java.awt.Dimension
 import java.awt.GridLayout
@@ -150,7 +156,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
 
 class FrontEnd(fa: Actor) 
-  extends JPanel(new GridLayout(1,0)) with TreeSelectionListener {
+  extends GridPanel(1,0) with TreeSelectionListener {
 
     import javax.swing.tree.DefaultTreeCellRenderer
     import java.awt.Component
@@ -192,8 +198,9 @@ class FrontEnd(fa: Actor)
   splitPane.setDividerLocation(300)
   splitPane.setPreferredSize(new Dimension(800, 640))
 
-  //Add the split pane to this panel.
-  add(splitPane)
+  //@TODO Add the split pane to this panel.
+  //contents = splitPane
+  peer.add(splitPane)
 
 
     /** Required by TreeSelectionListener interface. */
@@ -276,17 +283,35 @@ object FE {
   def createAndShowGUI(fa: Actor) : Unit =  {
 
     //Create and set up the window.
-    val frame = new JFrame("PROVER")
-    frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
+    val frame = new MainFrame {
+	  title="PROVER";
+      //Add content to the window.
+	  contents = new FrontEnd(fa)
+	  menuBar = new MenuBar {
+		contents += new Menu("File") {
+			contents += new MenuItem(Action("Open") {
+				val chooser = new FileChooser(new File("."))
+				if (chooser.showOpenDialog(menuBar) == FileChooser.Result.Approve) {
+ 				    fa ! ('load, chooser.selectedFile.getCanonicalPath)
+ 				}
+			})
+			contents += new Separator
+			contents += new MenuItem(Action("Quit") {
+				visible = false
+				close
+				fa ! ('quit)
+			})
+		}
+		contents += new Menu("Prove") {
+			contents += new MenuItem(Action("All Easy") {fa ! ('tactic, alleasyT)})
+		}
+  	  }
+    //frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 
-    //Add content to the window.
-    frame.add(new FrontEnd(fa))
-
-    //Display the window.
-    frame.pack()
-    frame.setVisible(true)
+      pack()
+      visible =true
+	}
   }
-
 
 
   def start(fa: Actor) : Unit = {

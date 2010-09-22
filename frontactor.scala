@@ -179,6 +179,7 @@ class FrontActor extends Actor {
           println("frontactor quitting")
           jobmaster !? 'quit
           sender ! ()
+          System.exit(0)   //@TODO necessary?
           exit
         case 'gui => 
           val fe = DLBanyan.GUI.FE.start(self)
@@ -301,14 +302,14 @@ class FrontActor extends Actor {
         rootNode = nd 
         treemodel.map(_.fireNewRoot(nd))// GUI
       case None =>
-        println("failed to parse file")
+        println("failed to parse file " + filename)
 
     }
 
     ()
 
   } catch {
-    case e => println("failed to load file")
+    case e => println("failed to load file " + filename)
   }
 }
 

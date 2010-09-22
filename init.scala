@@ -7,3 +7,5 @@ import DLBanyan.Tactics._
 
 
 dl('load, "examples/simple.dl")
+dl('gui)
+

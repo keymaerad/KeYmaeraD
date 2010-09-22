@@ -17,3 +17,4 @@ MATHKERNEL (=/Applications/Mathematica.app/Contents/MacOS/MathKernel)
 To compile, navigate to the DLBanyan directory and type "make"
 
 To run, use the "runprover" script.
+./runworker -c 127.0.0.1 -cp 50001 -p <MAKEUPPORTHERE>
