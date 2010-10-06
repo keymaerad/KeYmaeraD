@@ -135,20 +135,20 @@ object Tactics {
 
   val beta = List(andRight, orLeft)
 
-/*
-  val betaT : Tactic = new Tactic("beta") {
+
+  val andRightT : Tactic = new Tactic("beta") {
     def apply(nd: OrNode) = nd.goal match {
-      case Sequent(c,s) =>
+      case sq@Sequent(c,s) =>
 
         var foundone = false;
         var res: List[NodeID] = Nil;
       
-        for (i <- c.indices) {
+        for (i <- s.indices) {
           if(foundone == false){
-            val pos = LeftP(i)
-            substitute.apply(pos)(sq) match {
+            val pos = RightP(i)
+            andRight.apply(pos)(sq) match {
               case Some(_) =>
-                res = applyrule(nd,pos,substitute) match { case Some(lst) => lst
+                res = applyrule(nd,pos,andRight) match { case Some(lst) => lst
                                                           case None => Nil};
                 foundone = true;
                 ()
@@ -160,20 +160,15 @@ object Tactics {
 
         res
 
-
-        // try all the  rules
-        val pos = RightP(0)
-        val nds1 = hpeasy.map(r => applyrule(nd,pos,r)).flatten.flatten
-        val nds2 = usehints(pos)(nd)
-        nds1 ++ nds2
       case _ => Nil
     }
   }
-*/
+
 
   val alleasyT: Tactic = composeT(repeatT(hpeasyT),
                                   composeT(repeatT(substT),
-                                           arithT))
+                                     composeT(repeatT(andRightT),
+                                           arithT)))
 
 
 }
