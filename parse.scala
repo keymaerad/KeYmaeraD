@@ -84,6 +84,7 @@ class DLParser(in: InputStream)
    def formula0 : Parser[Formula] = 
      formula1*( "<=>" ^^^ {(f1,f2) => Iff(f1,f2)})
 
+   // XXX This should be right-associative instead.
    def formula1 : Parser[Formula] = 
      formula2*( "==>" ^^^ {(f1,f2) => Imp(f1,f2)})
 

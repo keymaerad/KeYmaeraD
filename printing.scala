@@ -90,36 +90,52 @@ object Printing {
   }
 
 
-  def docOfFormula(fm: Formula): Document = fm match {
+  def docOfFormula(fm: Formula): Document = 
+    docOfFormulaAux(0)(fm)
+
+  def docOfFormulaAux(pr:Int)(fm: Formula): Document = fm match {
     case True => text("true")
     case False => text("false")
-    case Not(fm) => text("~") :: docOfFormula(fm)
+    case Not(fm) => 
+      val pr1 = 12;
+      text("~") :: docOfFormulaAux(pr1)(fm)
     case Atom(p) => docOfPred(p)
     case And(fm1,fm2) => 
-      bracket("(",")", 
-              docOfFormula(fm1) :: text("&") :: 
-              docOfFormula(fm2))
+      val pr1 = 10;
+      bracketp(pr>pr1)("(",")", 
+                       docOfFormulaAux(pr1)(fm1) :: text("&") :: 
+                       docOfFormulaAux(pr1+1)(fm2))
     case Or(fm1,fm2) => 
-      bracket("(",")",
-              docOfFormula(fm1) :: text("|") :: docOfFormula(fm2) )
+      val pr1 = 8;
+      bracketp(pr>pr1)("(",")",
+                       docOfFormulaAux(pr1)(fm1) :: text("|") :: 
+                       docOfFormulaAux(pr1+1)(fm2) )
     case Imp(fm1,fm2) =>
-      bracket("(",")", 
-         docOfFormula(fm1) :: text("==>") :: 
-            docOfFormula(fm2))
+      val pr1 = 6;
+      bracketp(pr>pr1)("(",")", 
+                       docOfFormulaAux(pr1)(fm1) :: text("==>") :: 
+                       docOfFormulaAux(pr1+1)(fm2))
     case Iff(fm1,fm2) => 
-      bracket("(",")",
-              docOfFormula(fm1) :: text("<=>") :: 
-              docOfFormula(fm2))
-    case Forall(x,fm) => 
-      text("forall ") :: text(x) :: text(".") ::
-          text("(") :: docOfFormula(fm) :: text(")")
+      val pr1 = 4;
+      bracketp(pr>pr1)("(",")",
+                       docOfFormulaAux(pr1)(fm1) :: text("<=>") :: 
+                       docOfFormulaAux(pr1+1)(fm2))
+    case Forall(x,fm) =>
+      val pr1 = 2;
+      bracketp(pr>pr1)("(",")",
+                       text("forall ") :: text(x) :: text(".") ::
+                       docOfFormulaAux(pr1)(fm))
     case Exists(x,fm) => 
-      text("exists ") :: text(x) :: text(".") ::
-          text("(") :: docOfFormula(fm) :: text(")")
+      val pr1 = 2;
+      bracketp(pr>pr1)("(",")",
+                       text("exists ") :: text(x) :: text(".") ::
+                       docOfFormulaAux(pr1)(fm))
     case Box(h,fm) =>
-      bracket("[","]", docOfHP(h)) :: docOfFormula(fm)
+      val pr1 = 14;
+      bracket("[","]", docOfHP(h)) :: docOfFormulaAux(pr1)(fm)
     case Diamond(h,fm) =>
-      bracket("<",">", docOfHP(h)) :: docOfFormula(fm)
+      val pr1 = 14;
+      bracket("<",">", docOfHP(h)) :: docOfFormulaAux(pr1)(fm)
     case SchemaVar(g) =>
       text(g)
   }
