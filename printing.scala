@@ -45,17 +45,41 @@ object Printing {
     text(b1) :: DocNest(b1.length, d) :: text(b2)
   }
 
-  def docOfTerm(tm: Term): Document = tm match {
+  def bracketp(b: Boolean)(b1:String, b2: String, d: Document): Document = {
+    if(b)  bracket(b1,b2,d) else    DocNest(b1.length, d) ;
+  }
+
+
+  def docOfTermAux(pr:Int)(tm: Term): Document = tm match {
     case Var(x) =>
       Document.text(x)
-    case Fn(f, List(x,y)) if List("+","-","*", "/", "^").contains(f) =>
-      bracket("(",")", docOfTerm(x) :: text(f) :: docOfTerm(y))
-    case Fn(f, args) =>
+    case Fn(f, List(x,y)) if List("+","-").contains(f) =>
+      val pr1 = 2;
+      bracketp(pr > pr1)("(",")", 
+                         docOfTermAux(pr1)(x) ::text(f):: docOfTermAux(pr1+1)(y))
+    case Fn(f, List(x,y)) if List("*","/").contains(f) =>
+      val pr1 = 4;
+      bracketp(pr > pr1)("(",")", 
+                         docOfTermAux(pr1)(x) ::text(f):: docOfTermAux(pr1+1)(y))
+    case Fn(f, List(x)) =>
+      val pr1 = 6;
+      bracketp(pr > pr1)("(",")", 
+                         docOfTermAux(pr1)(x))
+    case Fn(f, List(x,y)) if List("^").contains(f) =>
+      val pr1 = 8;
+      bracketp(pr > pr1)("(",")", 
+                         docOfTermAux(pr1)(x) ::text(f):: docOfTermAux(pr1+1)(y))
+    case Fn(f,args) =>
       bracket(f+"(",")",
         docOfList(args.map(docOfTerm), text(",") :: DocBreak))
     case Num(n) =>
       Document.text(n.toString)
   }
+
+  def docOfTerm(tm: Term): Document = 
+    docOfTermAux(0)(tm)
+
+
 
   def docOfPred(p: Pred): Document = p match {
     case R(r,List(t1,t2)) if List("=", "<", ">", "<=", ">=", "<>"). contains(r) =>
