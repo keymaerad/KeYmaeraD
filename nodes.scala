@@ -60,7 +60,7 @@ object Nodes {
     val schemavars = svs
 
     override def toString: String = {
-      "AndNode " + nodeID.toString
+      nodeID.toString + " & " + rule 
     }
 
    override def toPrettyString : String = {
@@ -80,7 +80,7 @@ object Nodes {
                 goal: Sequent) extends ProofNode() {
 
     override def toString: String = {
-      "OrNode " + nodeID.toString
+      nodeID.toString + " | " + rule
     }
 
    override def toPrettyString : String = {
