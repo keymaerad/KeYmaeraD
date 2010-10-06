@@ -164,11 +164,40 @@ object Tactics {
     }
   }
 
+  val andLeftT : Tactic = new Tactic("alpha") {
+    def apply(nd: OrNode) = nd.goal match {
+      case sq@Sequent(c,s) =>
+
+        var foundone = false;
+        var res: List[NodeID] = Nil;
+      
+        for (i <- c.indices) {
+          if(foundone == false){
+            val pos = LeftP(i)
+            andLeft.apply(pos)(sq) match {
+              case Some(_) =>
+                res = applyrule(nd,pos,andLeft) match { case Some(lst) => lst
+                                                          case None => Nil};
+                foundone = true;
+                ()
+              case None => 
+                ()
+            }
+          }
+        }
+
+        res
+
+      case _ => Nil
+    }
+  }
+
 
   val alleasyT: Tactic = composeT(repeatT(hpeasyT),
-                                  composeT(repeatT(substT),
+                            composeT(repeatT(andLeftT),
+                                composeT(repeatT(substT),
                                      composeT(repeatT(andRightT),
-                                           arithT)))
+                                           arithT))))
 
 
 }
