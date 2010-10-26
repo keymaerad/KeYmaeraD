@@ -159,6 +159,8 @@ object Jobs {
 
     val master = select(masterNode, 'master)
 
+    val lock = new Object()
+
     def doRegistration(coorHost: Node, thisHost: Node) = {
 
       alive(thisHost.port)
@@ -177,11 +179,7 @@ object Jobs {
           throw new Error("not an ack: " + msg)
       }
 
-
-
       ()
-
-
   }
 
 
@@ -193,7 +191,9 @@ object Jobs {
             val sf = self
             if(pr.applies(sq)) {
               println("working on jid " + jid)
-              working = Some(pr)
+              lock.synchronized{
+                working = Some(pr)
+              }
               future ({
                 val res = pr.proceed(sq)
                 res match {
@@ -235,17 +235,17 @@ object Jobs {
            procqueue.enqueue(JobData(p,sq,jid, sender))
 
          case ('done, JobData(p,sq,jid,jobsender), res: Sequent) =>
-           working = None
+           lock.synchronized {working = None}
            jobsender ! ('jobdone, jid, res)
           master ! ('idling, myNode)
           
          case ('done, JobData(p,sq,jid,jobsender)) =>
-           working = None
+           lock.synchronized  { working = None }
            jobsender ! ('jobdone, jid)
           master ! ('idling, myNode)
          
          case 'abort => 
-           working match {
+           lock.synchronized{ working } match {
              case Some(pr) =>
                pr.abort
              case None => // XXX need to look through the queue
