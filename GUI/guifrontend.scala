@@ -100,8 +100,15 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
   }
 
   def getPath(nd: ProofNode): Array[Object] = {
-    val p = getPathAux(nd)
-    p.reverse.toArray
+    try{
+      val p = getPathAux(nd)
+      p.reverse.toArray
+    } catch {
+      case e =>
+        println(e)
+        println("was starting at " + nd)
+        throw new Error()
+    }
   }
 
 

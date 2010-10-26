@@ -341,8 +341,12 @@ object Rules {
       }
     }
 
-  val diffSolve : List[Formula] => ProofRule = 
-    fm_sols => new ProofRule("diffsolve[" 
+  sealed abstract class DiffSolveMode
+  case object Standard extends DiffSolveMode
+  case object Endpoint extends DiffSolveMode
+
+  val diffSolve : DiffSolveMode => List[Formula] => ProofRule = 
+    mode => fm_sols => new ProofRule("diffsolve[" + mode.toString() + "][" 
                           + fm_sols.map(Printing.stringOfFormula) 
                           + "]") {
 
@@ -438,9 +442,13 @@ object Rules {
                 Box(assign_hp, phi1)
               val stay_in_h = 
                 Forall(t2, Imp(t2_range, interm_h))
-              Some(List(
-                replace(pos,Sequent(stay_in_h ::t_range::c,s), phi2),
-                replace(pos,Sequent(endpoint_h ::t_range::c,s), phi2)), Nil)
+              val newgoal = mode match {
+                case Standard =>
+                  replace(pos,Sequent(stay_in_h ::t_range::c,s), phi2)
+                case Endpoint =>
+                  replace(pos,Sequent(endpoint_h ::t_range::c,s), phi2)
+              }
+              Some(List(newgoal), Nil)
             }
           }
           

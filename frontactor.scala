@@ -289,6 +289,7 @@ class FrontActor extends Actor {
 
 
   def loadfile(filename: String) : Unit = try {
+    // TODO: kill pending jobs.
     val fi = 
       new java.io.FileInputStream(filename)
 
