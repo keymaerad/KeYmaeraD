@@ -124,9 +124,11 @@ object Jobs {
          case ('abort, jid: JobID) =>
            jobs.get(jid) match {
              case Some((JobData(_,s,p,sq,t), nd)) =>
+               println("jobmaster: aborting job " + jid)
                val actr = select(nd,'worker)
                actr ! 'abort
              case None =>
+               println("jobmaster: could not find job " + jid)
                
            }
 
@@ -190,6 +192,7 @@ object Jobs {
           case Some(pr) =>
             val sf = self
             if(pr.applies(sq)) {
+              println("working on jid " + jid)
               working = Some(pr)
               future ({
                 val res = pr.proceed(sq)

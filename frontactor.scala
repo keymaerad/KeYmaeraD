@@ -150,7 +150,13 @@ object TreeActions {
     val nd = getnode(ndID)
     nd.status = Irrelevant(nd.status)
     treemodel.map(_.fireChanged(nd)) //GUI
-    // TODO check if we have any pending jobs. cancel them.
+    jobs.get(ndID) match {
+      case Some(t) => 
+        jobs.remove(ndID)
+        jobmaster ! ('abort, ndID)
+      case None =>
+        
+    }
     nd.getchildren.map( propagateIrrelevantDown)
 
   }
@@ -241,9 +247,12 @@ class FrontActor extends Actor {
           sender ! ()
 
         case ('jobdone, ndID: NodeID, sq: Sequent) =>
-          jobs.remove(ndID)
-          nodeTable.get(ndID) match {
-            case Some(nd) =>
+
+          (jobs.get(ndID), nodeTable.get(ndID)) match {
+            case (None, _ ) =>
+              ()
+            case (Some(t), Some(nd)) =>
+              jobs.remove(ndID)
               nd.parent match {
                 case Some(ptid) =>
                   val pt = getnode(ptid)
@@ -254,7 +263,7 @@ class FrontActor extends Actor {
                   error("no parent")
               }
 
-            case None => 
+            case (Some(t),None) => 
               throw new Error("node not in nodeTable")
           }
 
@@ -289,7 +298,12 @@ class FrontActor extends Actor {
 
 
   def loadfile(filename: String) : Unit = try {
-    // TODO: kill pending jobs.
+    // kill pending jobs.
+    for( (ndID, t) <- jobs) {
+      jobmaster ! ('abort, ndID)
+    }
+    jobs.clear
+
     val fi = 
       new java.io.FileInputStream(filename)
 
