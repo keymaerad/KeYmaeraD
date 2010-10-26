@@ -125,6 +125,10 @@ object Rules {
   }
 
 
+  val hide = new ProofRule("hide") {
+    def apply(p:Position) = sq => 
+      Some( (List(remove(p,sq)   ), Nil )   )
+  }
 
   val andLeft  = new ProofRule("andleft") {
     def apply(p:Position) = sq => (p,sq) match {

@@ -185,6 +185,7 @@ object Jobs {
 
     def tryworking : Unit = {
       if (working == None  && ! procqueue.isEmpty) {
+        println("procqueue has length " + procqueue.length)
         val jd@JobData(p,sq,jid,sender) = procqueue.dequeue
         procs.get(p) match {
           case Some(pr) =>
@@ -242,16 +243,16 @@ object Jobs {
          case ('done, JobData(p,sq,jid,jobsender)) =>
            lock.synchronized  { working = None }
            jobsender ! ('jobdone, jid)
-          master ! ('idling, myNode)
+           master ! ('idling, myNode)
          
          case 'abort => 
            lock.synchronized{ working } match {
              case Some(pr) =>
                pr.abort
-             case None => // XXX need to look through the queue
+               case None => // XXX need to look through the queue
                println("got abort when nothing was running")
            }
-          master ! ('idling, myNode)
+
            
               
         }
