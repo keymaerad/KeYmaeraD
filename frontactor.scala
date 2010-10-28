@@ -295,7 +295,7 @@ class FrontActor extends Actor {
   }
 
 
-//  def parse
+//  def parseformula(fms : String) : Formula
 
   def loadfile(filename: String) : Unit = try {
     // kill pending jobs.

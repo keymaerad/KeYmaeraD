@@ -143,7 +143,6 @@ class DLParser(in: InputStream)
         {case c ~ s => Sequent(c,s)}
 
 
-
    def result : Option[Sequent] = {
      phrase(sequent)(new lexical.Scanner(ins)) match {
        case Success(r,next) if next.atEnd => 
@@ -158,7 +157,25 @@ class DLParser(in: InputStream)
          println(f)
          None
      }
+
    }
+
+
+   def fm_result : Option[Formula] = {
+     phrase(formula)(new lexical.Scanner(ins)) match {
+       case Success(r,next) if next.atEnd => 
+         Some(r)
+       case Success(r,next)  => 
+         println("failure! Left over input. only parsed: " )
+         println(r)
+         None
+       case f => 
+         println(f)
+         None
+     }
+
+   }
+
 
 } 
 
