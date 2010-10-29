@@ -281,6 +281,12 @@ class FrontActor extends Actor {
           jobmaster ! ('abort, jb)
           sender ! ()
 
+        case ('abortall) => 
+          for((jid,t) <- jobs){
+            jobmaster ! ('abort, jid)
+          }
+        sender ! ()
+
         case msg =>
           println("got message: " + msg)
           sender ! ()

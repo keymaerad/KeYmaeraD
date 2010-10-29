@@ -19,7 +19,7 @@ class DLLexical extends StdLexical {
 }
 
 
-class DLParser(in: InputStream) 
+class DLParser(ins : String) 
  extends StdTokenParsers { 
   type Tokens = StdLexical ; val lexical = new DLLexical
   lexical.delimiters ++= List(",", ";", "(", ")","[","]","{","}",
@@ -33,17 +33,30 @@ class DLParser(in: InputStream)
                              "true", "false",
                              "solution", "invariant"
                            ).iterator
+/*
+   val ins : String = ""
 
-   val br = new BufferedReader(new InputStreamReader(in))
-   var ins = ""
-   var ln = br.readLine()
-   while (ln != null){
-     println( ln)
-     ins = ins + ln
-     ln = br.readLine()
+   def this(ins1: String) = {
+     this()
+     ins = ins1
+   }
+*/
+   def this(in : InputStream) = {
+     this({
+     val br = new BufferedReader(new InputStreamReader(in))
+     var ins1 = ""
+     var ln = br.readLine()
+     while (ln != null){
+       println( ln)
+       ins1 = ins1 + ln
+       ln = br.readLine()
+     }
+     println("input = " + ins1)
+     ins1
+     })
    }
 
-   println("input = " + ins)
+
 
    def term: Parser[Term] = 
      prod*("+" ^^^ {(x:Term, y:Term) => Fn("+", List(x,y))} 

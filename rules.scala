@@ -487,11 +487,11 @@ object Rules {
 
 
   val directedCut : Formula => ProofRule = 
-    fm => new ProofRule("diretedCut["
+    fm => new ProofRule("directedCut["
                          + Printing.stringOfFormula(fm) + "]") 
   {
       def apply(pos: Position) = sq => (pos,sq) match {
-        case (RightP(n), Sequent(c,s)) =>
+        case (LeftP(n), Sequent(c,s)) =>
           val lem = Sequent(c, fm ::s)
           val rep = replace(pos, sq, fm)
           Some(List(lem,rep     ), Nil)
