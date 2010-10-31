@@ -9,6 +9,8 @@ object CommandLine {
 
   var frontactor = new FrontActor;
 
+
+
 //  def begin : Unit = {
   println ("Welcome to DLBanyan.")
   frontactor.start()
@@ -32,6 +34,19 @@ object CommandLine {
   }
 
 
+
+  def runworker(port : Int): Unit = {
+    val name = port.toString + ".out"
+    val pb = 
+      new ProcessBuilder("./runworker",
+                         "-c", 
+                         "localhost",
+                         "-cp", "50001", "-p ",  port.toString)
+    pb.redirectErrorStream
+    val p = pb.start
+//    val is = p.getInputStream
+    ()
+  }
 
 
 }
