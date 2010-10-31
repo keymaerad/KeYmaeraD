@@ -122,15 +122,22 @@ object Jobs {
            jobs.remove(jid)
 
          case ('abort, jid: JobID) =>
-           jobs.get(jid) match {
-             case Some((JobData(_,s,p,sq,t), nd)) =>
-               println("jobmaster: aborting job " + jid)
-               val actr = select(nd,'worker)
-               actr ! 'abort
-             case None =>
-               println("jobmaster: could not find job " + jid)
-               
-           }
+          val njs = newjobs.dequeueAll( {case JobData(x,_,_,_,_) => x == jid})
+          println("jobmaster: cancelling "+ njs.length +   " job(s) ")
+          for(JobData(jid1,s,p,sq,t) <- njs){
+            s ! ('jobdone,jid1) 
+          }
+          jobs.get(jid) match {
+            case Some((JobData(_,s,p,sq,t), nd)) =>
+              println("jobmaster: aborting job " + jid)
+              val actr = select(nd,'worker)
+              actr ! 'abort
+            case None =>
+              if (njs.length == 0)
+                println("jobmaster: could not find job " + jid)
+            
+          }
+
 
           
           case msg =>
