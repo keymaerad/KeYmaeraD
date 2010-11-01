@@ -1,0 +1,4 @@
+#!/bin/sh
+./runworker -c localhost -cp 50001 -p $1 > $2 &
+
+
