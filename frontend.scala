@@ -35,16 +35,6 @@ object CommandLine {
 
 
 
-  def runworker(port : Int): Unit = {
-    val name = port.toString + ".out"
-    val pb = 
-      new ProcessBuilder("./runworkerf",
-                         port.toString, name)
-//    pb.redirectErrorStream
-    val p = pb.start
-//    val is = p.getInputStream
-    ()
-  }
 
 
 }

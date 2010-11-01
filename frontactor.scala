@@ -17,6 +17,9 @@ object TreeActions {
   val myPort = 50001
   println("listening on port " + myPort)
   
+
+//  val workers = new scala.collection.mutable.HashSet[Process]()
+
   val jobs = new scala.collection.mutable.HashMap[NodeID, Long]()
   val jobmaster = new Jobs.JobMaster(myPort)
   jobmaster.start
@@ -182,6 +185,11 @@ class FrontActor extends Actor {
     while(true){
       receive {
         case 'quit =>
+//          for(p <- workers){
+//            println("destroying worker process")
+//            p.destroy
+//            p.waitFor
+//          }
           println("frontactor quitting")
           jobmaster !? 'quit
           sender ! ()
@@ -287,6 +295,16 @@ class FrontActor extends Actor {
           }
         sender ! ()
 
+/*        case ('runworker, port: Int) =>
+          val name = port.toString + ".out"
+          val pb = 
+            new ProcessBuilder("./runworkerf",
+                               port.toString, name)
+
+          val p = pb.start
+          workers += p
+          sender ! ()
+*/
         case msg =>
           println("got message: " + msg)
           sender ! ()

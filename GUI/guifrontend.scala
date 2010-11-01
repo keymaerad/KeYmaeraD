@@ -313,7 +313,7 @@ object FE {
 			contents += new MenuItem(Action("All Easy") {fa ! ('tactic, alleasyT)})
 		}
   	  }
-    //frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
+      //frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 
       pack()
       visible =true
