@@ -492,7 +492,7 @@ object Rules {
   {
       def apply(pos: Position) = sq => (pos,sq) match {
         case (LeftP(n), Sequent(c,s)) =>
-          val lem = Sequent(c, fm ::s)
+          val lem = Sequent(c, List(fm))
           val rep = replace(pos, sq, fm)
           Some(List(lem,rep     ), Nil)
         case  _ => None
