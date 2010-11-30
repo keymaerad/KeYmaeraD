@@ -291,7 +291,7 @@ object FE {
 
     //Create and set up the window.
     val frame = new MainFrame {
-	  title="Beyandle";
+	  title="Yandle";
       //Add content to the window.
 	  contents = new FrontEnd(fa)
 	  menuBar = new MenuBar {

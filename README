@@ -1,4 +1,4 @@
-Beyandle is a theorem prover for hybrid systems.
+Yandle is a theorem prover for hybrid systems.
 
 Requires: 
    - Scala 2.8.0 or higher
