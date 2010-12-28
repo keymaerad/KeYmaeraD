@@ -138,7 +138,7 @@ class DLParser(ins : String)
       (ident <~ ":=") ~ term ^^ {case x ~ t => Assign(x,t)} |
      (("forall" ~> ident <~  ":") ~ ident ~ function <~ ":=") ~ term ^^ 
                           {case (i ~ c ~ f ~ v) => 
-                              AssignQuantified(i,typ(c),f,v)} | 
+                              AssignQuantified(i,Tp(c),f,v)} | 
      ("{" ~> hp  <~ "}" <~ "*") ~ annotation("invariant") ^^ 
            { case x ~ invs => Loop(x, True, invs)} | 
 //     "{" ~> hp  <~ "}" <~ "*" ^^ { x => Loop(x, True, Nil)} | 

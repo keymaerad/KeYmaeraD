@@ -146,6 +146,9 @@ object Printing {
      text(x) :: text(":=") :: docOfTerm(tm)
     case AssignAny(x) =>
      text(x) :: text(":= *")
+    case AssignQuantified(i, c, f, theta) =>
+      text("forall ") :: text(i) :: text(":") :: docOfType(c) :: text(" ") ::
+          docOfTerm(f) :: text(":=") :: docOfTerm(theta)
     case Check(fm) =>
       text("?") :: docOfFormula(fm)
     case Seq(h1,h2) =>
@@ -163,7 +166,10 @@ object Printing {
        docOfFormula(reg))
   }
 
-
+  def docOfType(c: Type) : Document = c match {
+    case Tp(n) => text(n)
+  }
+  
   def docOfDeriv(pr: (String,Term )) : Document = {
     text(pr._1 +"'") :: text(" = ") :: docOfTerm(pr._2)
   }

@@ -10,7 +10,7 @@ case class R(r: String, ps: List[Term]) extends Pred
 
 
 sealed abstract class Type
-case class typ(nm: String) extends Type
+case class Tp(nm: String) extends Type
 
 // first order formula
 sealed abstract class Formula
