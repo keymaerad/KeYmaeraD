@@ -22,7 +22,7 @@ class DLLexical extends StdLexical {
 class DLParser(ins : String) 
  extends StdTokenParsers { 
   type Tokens = StdLexical ; val lexical = new DLLexical
-  lexical.delimiters ++= List(",", ";", "(", ")","[","]","{","}",
+  lexical.delimiters ++= List(",", ";",":", "(", ")","[","]","{","}",
                              "=", "<", ">", ">=", "<=", "<>",
                               "+","-","*", "/", "^",
                              "++", ":=", "@", "?", "\'",
@@ -75,11 +75,15 @@ class DLParser(ins : String)
                   Fn("^", List(x,Num(Exact.Integer(Integer.parseInt(y)))))} |
       atomicTerm
 
+   def function : Parser [Fn] = 
+      (ident <~ "(") ~ ( repsep(term, ",") <~ ")") ^^
+        {case f ~ xs => Fn(f, xs)} 
+
+
    def atomicTerm : Parser[Term] = 
       "(" ~> term <~  ")" | 
      numericLit ^^ (x => Num(Exact.Integer(Integer.parseInt(x)))) | 
-     (ident <~ "(") ~ ( repsep(term, ",") <~ ")") ^^
-        {case f ~ xs => Fn(f, xs)} |
+     function | 
      ident ^^ (x => Var(x))
 
 
@@ -132,9 +136,9 @@ class DLParser(ins : String)
       "?" ~> formula ^^ { x => Check(x)}  |
       ident <~ ":=" <~ "*" ^^ { x  => AssignAny(x)} |
       (ident <~ ":=") ~ term ^^ {case x ~ t => Assign(x,t)} |
-     (("forall" ~> ident <~  ":=") ~ ident ~ term <~ ":=") ~ term ^^ 
-                          {case (i ~ c ~ Fn(f,args) ~ v) => 
-                              AssignQuantified(i,typ(c),Fn(f,args),v)} | 
+     (("forall" ~> ident <~  ":") ~ ident ~ function <~ ":=") ~ term ^^ 
+                          {case (i ~ c ~ f ~ v) => 
+                              AssignQuantified(i,typ(c),f,v)} | 
      ("{" ~> hp  <~ "}" <~ "*") ~ annotation("invariant") ^^ 
            { case x ~ invs => Loop(x, True, invs)} | 
 //     "{" ~> hp  <~ "}" <~ "*" ^^ { x => Loop(x, True, Nil)} | 
