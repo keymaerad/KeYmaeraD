@@ -132,6 +132,9 @@ class DLParser(ins : String)
       "?" ~> formula ^^ { x => Check(x)}  |
       ident <~ ":=" <~ "*" ^^ { x  => AssignAny(x)} |
       (ident <~ ":=") ~ term ^^ {case x ~ t => Assign(x,t)} |
+     (("forall" ~> ident <~  ":=") ~ ident ~ term <~ ":=") ~ term ^^ 
+                          {case (i ~ c ~ Fn(f,args) ~ v) => 
+                              AssignQuantified(i,typ(c),Fn(f,args),v)} | 
      ("{" ~> hp  <~ "}" <~ "*") ~ annotation("invariant") ^^ 
            { case x ~ invs => Loop(x, True, invs)} | 
 //     "{" ~> hp  <~ "}" <~ "*" ^^ { x => Loop(x, True, Nil)} | 
@@ -163,7 +166,7 @@ class DLParser(ins : String)
          println(r)
          Some(r)
        case Success(r,next)  => 
-         println("failure! Left over input. only parsed: " )
+         println("failure! Leftover input. only parsed: " )
          println(r)
          None
        case f => 

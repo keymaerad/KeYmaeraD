@@ -32,7 +32,7 @@ case class SchemaVar(v: String) extends Formula
 sealed abstract class HP
 case class Assign(s: String, v: Term) extends HP
 case class AssignAny(s: String) extends HP
-case class AssignQuantified(i : String, c: Type, f : Fn, v: Term)
+case class AssignQuantified(i : String, c: Type, f : Fn, v: Term) extends HP
 case class Check(h: Formula) extends HP
 case class Seq(p1: HP, p2: HP) extends HP
 case class Choose(p1: HP, p2: HP) extends HP
