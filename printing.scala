@@ -61,10 +61,10 @@ object Printing {
       val pr1 = 4;
       bracketp(pr > pr1)("(",")", 
                          docOfTermAux(pr1)(x) ::text(f):: docOfTermAux(pr1+1)(y))
-    case Fn(f, List(x)) =>
-      val pr1 = 6;
-      bracketp(pr > pr1)("(",")", 
-                         docOfTermAux(pr1)(x))
+    case Fn("-", List(x)) =>
+     val pr1 = 6;
+      "-" :: bracketp(pr > pr1)("(",")", 
+                               docOfTermAux(pr1)(x))
     case Fn(f, List(x,y)) if List("^").contains(f) =>
       val pr1 = 8;
       bracketp(pr > pr1)("(",")", 
@@ -164,6 +164,9 @@ object Printing {
        docOfList(derivs.map(docOfDeriv), text(",")) ::
        text(";") ::
        docOfFormula(reg))
+    case EvolveQuantified(i, Tp(c), f,v,h) =>
+      text("forall ") :: text(i) :: text(":") :: text(c) :: text(" ") ::
+          docOfTerm(f) :: text("' =") :: docOfTerm(v) :: text("&") :: docOfFormula(h)
   }
 
   def docOfType(c: Type) : Document = c match {
