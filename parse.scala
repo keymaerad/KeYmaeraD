@@ -15,7 +15,7 @@ import scala.util.parsing.combinator._
 
 
 class DLLexical extends StdLexical {
-  override def identChar = letter | elem('_') //| elem('\'')
+  override def identChar = letter | elem('_') | elem('\'')
 }
 
 
@@ -148,17 +148,18 @@ class DLParser(ins : String)
           (formula <~ "}") ~ annotation("invariant") ~  annotation("solution") ^^
             {case dvs ~ f ~ invs ~ sols => Evolve(dvs,f,invs,sols)}  |
       // forall i : C  f(v)' = theta & h 
-      ((("forall" ~> ident <~ ":") ~ ident ~ function <~ "\'" <~ "=")  ~
+   // XXX  TODO figure out how to read apostrophes in a sane way
+      ((("forall" ~> ident <~ ":") ~ ident ~ function ~ ident <~ "=")  ~
            term <~ "&")  ~ formula ^^
-        { case i ~ c ~ f ~ v ~ h => EvolveQuantified(i,Tp(c),f,v,h) }
+        { case i ~ c ~ f ~ "\'" ~ v ~ h => EvolveQuantified(i,Tp(c),f,v,h) }
    
      
 
 
   def diffeq : Parser[(String,Term)] = 
-    ident ~ "'" ~ "=" ~ term ^?
-      {case s ~ "'" ~ "=" ~ tm  =>
-        (s, tm)}
+    (ident <~  "=") ~ term ^?
+      {case s  ~ tm  if s.endsWith("\'") 
+        => (s.substring(0,s.length - 1), tm)}
    
   def annotation(name: String) : Parser[List[Formula]] = 
     "@" ~> keyword(name) ~> "(" ~> repsep(formula, ",") <~ ")" |
@@ -172,7 +173,8 @@ class DLParser(ins : String)
 
 
    def result : Option[Sequent] = {
-     phrase(sequent)(new lexical.Scanner(ins)) match {
+     val ls = new lexical.Scanner(ins);
+     phrase(sequent)(ls) match {
        case Success(r,next) if next.atEnd => 
          println("success! ")
          println(r)
@@ -182,6 +184,7 @@ class DLParser(ins : String)
          println(r)
          None
        case f => 
+//         println("failure!")
          println(f)
          None
      }
@@ -198,6 +201,7 @@ class DLParser(ins : String)
          println(r)
          None
        case f => 
+//         println("failure!")
          println(f)
          None
      }
