@@ -9,7 +9,7 @@ object Tactics {
   import Rules._
 
   
-  // A tactic return a list of the new open leaves that it spawns.
+  // A tactic returns a list of the new open leaves that it spawns.
 
   abstract class Tactic(name: String) extends ((OrNode) =>  List[NodeID]) {
     override def toString: String = {
