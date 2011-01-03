@@ -120,15 +120,31 @@ object Printing {
       bracketp(pr>pr1)("(",")",
                        docOfFormulaAux(pr1)(fm1) :: text("<=>") :: 
                        docOfFormulaAux(pr1+1)(fm2))
-    case Forall(x,fm) =>
+    case Forall(x, fm) =>
       val pr1 = 2;
       bracketp(pr>pr1)("(",")",
-                       text("forall ") :: text(x) :: text(".") ::
+                       text("forall ") :: text(x) ::
+                       text(".") ::
                        docOfFormulaAux(pr1)(fm))
     case Exists(x,fm) => 
       val pr1 = 2;
       bracketp(pr>pr1)("(",")",
-                       text("exists ") :: text(x) :: text(".") ::
+                       text("exists ") :: text(x) :: 
+                       text(".") ::
+                       docOfFormulaAux(pr1)(fm))
+    case ForallOfSort(x,c, fm) =>
+      val pr1 = 2;
+      bracketp(pr>pr1)("(",")",
+                       text("forall ") :: text(x) ::
+                       text(":") :: docOfSort(c) ::
+                       text(".") ::
+                       docOfFormulaAux(pr1)(fm))
+    case ExistsOfSort(x,c,fm) => 
+      val pr1 = 2;
+      bracketp(pr>pr1)("(",")",
+                       text("exists ") :: text(x) :: 
+                       text(":") :: docOfSort(c) :: 
+                       text(".") ::
                        docOfFormulaAux(pr1)(fm))
     case Box(h,fm) =>
       val pr1 = 14;
@@ -164,13 +180,14 @@ object Printing {
        docOfList(derivs.map(docOfDeriv), text(",")) ::
        text(";") ::
        docOfFormula(reg))
-    case EvolveQuantified(i, St(c), f,v,h) =>
-      text("forall ") :: text(i) :: text(":") :: text(c) :: text(" ") ::
+    case EvolveQuantified(i, c, f,v,h) =>
+      text("forall ") :: text(i) :: text(":") :: docOfSort(c) :: text(" ") ::
           docOfTerm(f) :: text("' =") :: docOfTerm(v) :: text("&") :: docOfFormula(h)
   }
 
   def docOfSort(c: Sort) : Document = c match {
     case St(n) => text(n)
+    case Real => text("Real")
   }
   
   def docOfDeriv(pr: (String,Term )) : Document = {

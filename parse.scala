@@ -94,8 +94,10 @@ class DLParser(ins : String)
 
 
    def formula : Parser[Formula] = 
-     "forall" ~> ident ~ "."~ formula ^^ { case x ~ "." ~ f => Forall(x,f)} |
-     "exists" ~> ident ~ "."~ formula ^^ { case x ~ "." ~ f => Exists(x,f)} |
+     "forall" ~> ident ~ "."~ formula ^^ 
+               { case x ~ "." ~ f => Forall(x, f)} |
+     "exists" ~> ident ~ "."~ formula ^^ 
+               { case x ~ "." ~ f => Exists(x, f)} |
      formula0
 
    def formula0 : Parser[Formula] = 

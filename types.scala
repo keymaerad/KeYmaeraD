@@ -11,6 +11,7 @@ case class R(r: String, ps: List[Term]) extends Pred
 
 sealed abstract class Sort
 case class St(nm: String) extends Sort
+case object Real extends Sort
 
 // first order formula
 sealed abstract class Formula
@@ -24,6 +25,8 @@ case class Imp(f1: Formula, f2: Formula) extends Formula
 case class Iff(f1: Formula, f2: Formula) extends Formula
 case class Exists(v: String, f: Formula) extends Formula
 case class Forall(v: String, f: Formula) extends Formula
+case class ExistsOfSort(v: String, c: Sort, f: Formula) extends Formula
+case class ForallOfSort(v: String, c: Sort, f: Formula) extends Formula
 case class Box(hp: HP, rest: Formula) extends Formula
 case class Diamond(hp: HP, rest: Formula) extends Formula
 case class SchemaVar(v: String) extends Formula
