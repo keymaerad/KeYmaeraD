@@ -139,7 +139,7 @@ class DLParser(ins : String)
       // forall i : C f(v) := theta
       (("forall" ~> ident <~  ":") ~ 
        ident ~ function <~ ":=") ~ term ^^ 
-        {case i ~ c ~ f ~ v => AssignQuantified(i,Tp(c),f,v)} | 
+        {case i ~ c ~ f ~ v => AssignQuantified(i,St(c),f,v)} | 
       // { alpha }*
       ("{" ~> hp  <~ "}" <~ "*") ~ annotation("invariant") ^^ 
             { case x ~ invs => Loop(x, True, invs)} | 
@@ -151,7 +151,7 @@ class DLParser(ins : String)
    // XXX  TODO figure out how to read apostrophes in a sane way
       ((("forall" ~> ident <~ ":") ~ ident ~ function ~ ident <~ "=")  ~
            term <~ "&")  ~ formula ^^
-        { case i ~ c ~ f ~ "\'" ~ v ~ h => EvolveQuantified(i,Tp(c),f,v,h) }
+        { case i ~ c ~ f ~ "\'" ~ v ~ h => EvolveQuantified(i,St(c),f,v,h) }
    
      
 

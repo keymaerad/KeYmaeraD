@@ -1,5 +1,10 @@
 Yandle is a theorem prover for hybrid systems.
 
+Yandle has the following design goals:
+ -  
+ -
+
+
 Requires: 
    - Scala 2.8.0 or higher
    - Mathematica, if you want to use the good backend.
