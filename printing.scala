@@ -152,8 +152,6 @@ object Printing {
     case Diamond(h,fm) =>
       val pr1 = 14;
       bracket("<",">", docOfHP(h)) :: docOfFormulaAux(pr1)(fm)
-    case SchemaVar(g) =>
-      text(g)
   }
 
 

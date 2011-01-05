@@ -55,9 +55,45 @@ final object Prover {
       firstorder(f)
     case Box(_,_) => false
     case Diamond(_,_) => false
-    case SchemaVar(_) => false
     
   }
+
+  def plugin(fm : Formula, fmctxt: FormulaCtxt): Formula = fmctxt match {
+    case Hole => 
+      fm
+    case NotCtxt(f) =>
+      Not(plugin(fm, f))
+    case AndCtxt1(f1, f2) =>
+      And(plugin(fm, f1), f2)
+    case AndCtxt2(f1, f2) =>
+      And(f1,plugin(fm, f2))
+    case OrCtxt1(f1, f2) =>
+      Or(plugin(fm, f1), f2)
+    case OrCtxt2(f1, f2) =>
+      Or(f1,plugin(fm, f2))
+    case ImpCtxt1(f1, f2) =>
+      Imp(plugin(fm, f1), f2)
+    case ImpCtxt2(f1, f2) =>
+      Imp(f1,plugin(fm, f2))
+    case IffCtxt1(f1, f2) =>
+      Iff(plugin(fm, f1), f2)
+    case IffCtxt2(f1, f2) =>
+      Iff(f1,plugin(fm, f2))
+    case ExistsCtxt(v, f) =>
+      Exists(v, plugin(fm,f))
+    case ForallCtxt(v, f) =>
+      Forall(v, plugin(fm,f))
+    case ExistsOfSortCtxt(v, c, f) =>
+      ExistsOfSort(v, c, plugin(fm,f))
+    case ForallOfSortCtxt(v, c, f) =>
+      ForallOfSort(v, c, plugin(fm,f))
+    case BoxCtxt(hp, rest) =>
+      Box(hp, plugin(fm,rest))
+    case DiamondCtxt(hp, rest) =>
+      Diamond(hp, plugin(fm,rest))
+
+  }
+
 
   def totalDerivTerm(d: List[(String, Term)], tm: Term) : Term = tm match {
     case Var(s) =>  assoc(s,d) match {

@@ -29,7 +29,30 @@ case class ExistsOfSort(v: String, c: Sort, f: Formula) extends Formula
 case class ForallOfSort(v: String, c: Sort, f: Formula) extends Formula
 case class Box(hp: HP, rest: Formula) extends Formula
 case class Diamond(hp: HP, rest: Formula) extends Formula
-case class SchemaVar(v: String) extends Formula
+
+// formula with a hole in it.
+sealed abstract class FormulaCtxt
+case object Hole extends FormulaCtxt
+case class NotCtxt(f: FormulaCtxt) extends FormulaCtxt
+case class AndCtxt1(f1: FormulaCtxt, f2: Formula) extends FormulaCtxt
+case class AndCtxt2(f1: Formula, f2: FormulaCtxt) extends FormulaCtxt
+case class OrCtxt1(f1: FormulaCtxt, f2: Formula) extends FormulaCtxt
+case class OrCtxt2(f1: Formula, f2: FormulaCtxt) extends FormulaCtxt
+case class ImpCtxt1(f1: FormulaCtxt, f2: Formula) extends FormulaCtxt
+case class ImpCtxt2(f1: Formula, f2: FormulaCtxt) extends FormulaCtxt
+case class IffCtxt1(f1: FormulaCtxt, f2: Formula) extends FormulaCtxt
+case class IffCtxt2(f1: Formula, f2: FormulaCtxt) extends FormulaCtxt
+case class ExistsCtxt(v: String, f: FormulaCtxt) extends FormulaCtxt
+case class ForallCtxt(v: String, f: FormulaCtxt) extends FormulaCtxt
+case class ExistsOfSortCtxt(v: String, c: Sort, f: FormulaCtxt) 
+     extends FormulaCtxt
+case class ForallOfSortCtxt(v: String, c: Sort, f: FormulaCtxt) 
+     extends FormulaCtxt
+case class BoxCtxt(hp: HP, rest: FormulaCtxt) extends FormulaCtxt
+case class DiamondCtxt(hp: HP, rest: FormulaCtxt) extends FormulaCtxt
+
+
+
 
 
 sealed abstract class HP
