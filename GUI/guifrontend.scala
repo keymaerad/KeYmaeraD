@@ -287,6 +287,8 @@ class FrontEnd(fa: Actor)
 
 object FE {
 
+  var recentFiles : List[String] = Nil;
+
   def createAndShowGUI(fa: Actor) : Unit =  {
 
     //Create and set up the window.
@@ -294,30 +296,42 @@ object FE {
 	  title="Yandle";
       //Add content to the window.
 	  contents = new FrontEnd(fa)
-	  menuBar = new MenuBar {
-		contents += new Menu("File") {
-			contents += new MenuItem(Action("Open") {
-				val chooser = new FileChooser(new File("."))
-				if (chooser.showOpenDialog(menuBar) == FileChooser.Result.Approve) {
- 				    fa ! ('load, chooser.selectedFile.getCanonicalPath)
- 				}
-			})
-			contents += new Separator
-			contents += new MenuItem(Action("Quit") {
-				visible = false
-				close
-				fa ! ('quit)
-			})
-		}
-		contents += new Menu("Prove") {
-			contents += new MenuItem(Action("All Easy") {fa ! ('tactic, alleasyT)})
-		}
-  	  }
+          val recent = new Menu("Open Recent")
+          menuBar = new MenuBar {
+	      contents += new Menu("File") {
+		contents += new MenuItem(Action("Open") {
+		  val chooser = new FileChooser(new File("."))
+		    if (chooser.showOpenDialog(menuBar) == 
+                      FileChooser.Result.Approve) {
+                        val pth = chooser.selectedFile.getCanonicalPath
+                        recentFiles = pth :: recentFiles
+                        recent.contents += new MenuItem(Action(pth){
+ 		          fa ! ('load, pth)
+                        })
+ 		        fa ! ('load, pth)
+ 		    };
+		  })
+
+		contents += new Separator
+                contents += recent
+
+		contents += new Separator
+		contents += new MenuItem(Action("Quit") {
+		  visible = false
+		  close
+		  fa ! ('quit)
+		})
+	      }
+	    contents += new Menu("Prove") {
+	      contents += new MenuItem(Action("All Easy") 
+                                       {fa ! ('tactic, alleasyT)})
+	      }
+  	    }
       //frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 
       pack()
       visible =true
-	}
+    }
   }
 
 

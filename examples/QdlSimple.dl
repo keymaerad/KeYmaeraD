@@ -2,4 +2,6 @@ forall i : C .
 forall j : C .
 ~(i = j) ==> ~(x(i) = x(j))
 |-
-true
+( s >= 0)
+ ==> 
+  [forall i : C x(i) := - (1/2) *b * s^2 + v(i) * s + x(i)] true 
