@@ -197,7 +197,7 @@ final object Prover {
     case Var(x) if x == xold =>
       Var(xnew)
     case Fn(f, ps) =>
-      val fnew = if(f == xold) xnew else f
+      val fnew = f // if(f == xold) xnew else f
       Fn(fnew, ps.map(p => rename_Term(xold, xnew,p)))
     case _ => tm
   }
@@ -229,11 +229,19 @@ final object Prover {
       Forall(v1, rename_Formula(xold, xnew, f1))
     case Forall(v,f) => 
       Forall(v, rename_Formula(xold,xnew,f))
+/*    case ExistsOfSort(v,c,f) if v == xold =>
+      val v1 = uniqify(v)
+      val f1 = rename_Formula(v,v1,f)
+      ExistsOfSort(v1, c, rename_Formula(xold, xnew, f1))
+    case ExistsOfSort(v,c,f)  =>
+      val v1 = uniqify(v)
+      val f1 = rename_Formula(v,v1,f)
+      ExistsOfSort(v1, c, rename_Formula(xold, xnew, f1)) */
     case Box(hp,phi) =>
       Box(rename_HP(xold,xnew,hp), rename_Formula(xold,xnew,phi))
     case Diamond(hp,phi) =>
       Diamond(rename_HP(xold,xnew,hp), rename_Formula(xold,xnew,phi))
-    case _ => throw new Unimplemented()
+
   }
 
   def rename_HP(xold:String,xnew:String,hp:HP):HP = hp match {
