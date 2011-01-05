@@ -9,18 +9,22 @@ object RulesUtil {
 //  case object Outer extends Position
 
 
+  type ProofRuleResult =  Option[(List[Sequent], List[String])]
+
   // A proof rule returns None if it does not apply.
   // Otherwise it returns a list of subgoals
   // and a list of new free variables.
   abstract class ProofRule(name: String) extends 
     ((Position) =>   
         (Sequent) =>  
-          Option[(List[Sequent], List[String])]) {
+          ProofRuleResult) {
             override def toString: String = {
               name
             }
           }
   
+
+  type ProofRuleCtxt = Formula => FormulaCtxt => ProofRule
 
   class LookupError() extends Exception()
 

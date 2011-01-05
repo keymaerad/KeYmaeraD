@@ -98,6 +98,10 @@ class DLParser(ins : String)
                { case x ~ "." ~ f => Forall(x, f)} |
      "exists" ~> ident ~ "."~ formula ^^ 
                { case x ~ "." ~ f => Exists(x, f)} |
+     "forall" ~> ident ~ ":" ~ ident ~ "." ~ formula ^^ 
+               { case x ~ ":" ~ c ~ "." ~ f => ForallOfSort(x, St(c), f)} |
+     "exists" ~> ident ~ ":" ~ ident ~ "." ~ formula ^^ 
+               { case x ~ ":" ~ c ~ "." ~ f => ExistsOfSort(x, St(c), f)} |
      formula0
 
    def formula0 : Parser[Formula] = 

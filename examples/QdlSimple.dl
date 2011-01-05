@@ -1,0 +1,5 @@
+forall i : C .
+forall j : C .
+~(i = j) ==> ~(x(i) = x(j))
+|-
+true
