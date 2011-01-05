@@ -1,7 +1,11 @@
+
 forall i : C .
 forall j : C .
-~(i = j) ==> ~(x(i) = x(j))
+~(i = j) ==> 
+(  (x(i) <  x(j) & v(i) < v(j))
+ | (x(i) >  x(j) & v(i) > v(j)))
 |-
 ( s >= 0)
  ==> 
-  [forall i : C x(i) := - (1/2) *b * s^2 + v(i) * s + x(i)] true 
+  [forall i : C x(i) := - (1/2) *b * s^2 + v(i) * s + x(i)] 
+    (forall j : C . forall k : C . (~ (j = k) ==> (~ x(j) = x(k))  ))

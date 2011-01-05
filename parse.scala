@@ -126,6 +126,7 @@ class DLParser(ins : String)
      pred ^^ (x => Atom(x))  |
      "true" ^^^ True |
      "false" ^^^ False |
+     // XXX doesn't work right for e.g. "[hp] forall x . ..."
      ("[" ~> hp <~ "]") ~ formula4 ^^ {case a ~ f => Box(a,f)} |
      ("<" ~> hp <~ ">") ~ formula4 ^^ {case a ~ f => Diamond(a,f)} 
 

@@ -141,7 +141,7 @@ object Tactics {
   val beta = List(andRight, orLeft)
 
 
-  val andRightT : Tactic = new Tactic("beta") {
+  val betaT : Tactic = new Tactic("beta") {
     def apply(nd: OrNode) = nd.goal match {
       case sq@Sequent(c,s) =>
 
@@ -169,28 +169,32 @@ object Tactics {
     }
   }
 
-  val andLeftT : Tactic = new Tactic("alpha") {
+  val alpha = List(andLeft, impRight)
+
+  val alphaT : Tactic = new Tactic("alpha") {
     def apply(nd: OrNode) = nd.goal match {
       case sq@Sequent(c,s) =>
 
         var foundone = false;
         var res: List[NodeID] = Nil;
       
-        for (i <- c.indices) {
+        for (p <- positions(sq)) {
           if(foundone == false){
-            val pos = LeftP(i)
-            andLeft.apply(pos)(sq) match {
-              case Some(_) =>
-                res = applyrule(nd,pos,andLeft) match { case Some(lst) => lst
-                                                          case None => Nil};
-                foundone = true;
-                ()
-              case None => 
-                ()
+            for(r <- alpha) {
+              val res0 = r.apply(p)(sq);
+              res0 match {
+                case Some(_) =>
+                  res = applyrule(nd,p,r) match { case Some(lst) => lst
+                                                  case None => Nil};
+                  foundone = true;
+                  ()
+                case None => 
+                  ()
+              }
             }
           }
         }
-
+              
         res
 
       case _ => Nil
@@ -199,9 +203,9 @@ object Tactics {
 
 
   val alleasyT: Tactic = composeT(repeatT(hpeasyT),
-                            composeT(repeatT(andLeftT),
+                            composeT(repeatT(alphaT),
                                 composeT(repeatT(substT),
-                                     composeT(repeatT(andRightT),
+                                     composeT(repeatT(betaT),
                                            arithT))))
 
 

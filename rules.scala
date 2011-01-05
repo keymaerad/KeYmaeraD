@@ -29,6 +29,12 @@ object RulesUtil {
   class LookupError() extends Exception()
 
 
+  def positions(sq : Sequent) : List[Position] = sq match {
+    case Sequent(c,s) =>
+      c.indices.toList.map(i => LeftP(i)) ++ 
+       s.indices.toList.map(i => RightP(i))
+  }
+
   def replacelist[A](i: Int, lst: List[A], a: A): List[A] = lst match {
     case Nil => Nil
     case x::xs =>
@@ -158,6 +164,21 @@ object Rules {
             val sq1 = replace(p,sq,f1)
             val sq2 = replace(p,sq,f2)
             Some( (List(sq1,sq2),Nil))
+          case _ => 
+            None
+        }
+      case _ => None
+    }
+  }
+
+  val impRight  = new  ProofRule("impright") {
+    def apply(p:Position) = sq => (p,sq) match { 
+      case (RightP(n), Sequent(c,s)) =>
+        val fm = lookup(p,sq)
+        fm match {
+          case Imp(f1,f2) => 
+            val Sequent(c1,s1) = replace(p,sq,f2)
+            Some( (List(Sequent(f1::c1, s1)),Nil))
           case _ => 
             None
         }
@@ -509,317 +530,3 @@ object Rules {
 }
 
 
-
-/*
-object PRArithmeticFV extends ProofRule{
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, NoModality(fo) ) => 
-      val fm = Imp(AM.list_conj(ctxt), fo);
-      val c1 = new ArithmeticNode(fm)
-      List(c1)
-    case _ => 
-      Nil
-  }
-}
-
-object PRArithmetic extends ProofRule {
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, NoModality(fo) ) => 
-      val fm = Imp(AM.list_conj(ctxt), fo);
-      val fm1 = AM.univ_close(fm);
-      val c2 = new ArithmeticNode(fm1)
-      List(c2)
-    case _ => 
-      Nil
-  }
-}
-
-object PRRedlog extends ProofRule {
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, NoModality(fo) ) => 
-      val fm = Imp(AM.list_conj(ctxt.reverse), fo);
-      val fm1 = AM.univ_close(fm);
-      val c2 = new RedlogNode(fm1)
-      List(c2)
-    case _ => 
-      Nil
-  }
-}
-
-
-object PRMathematica extends ProofRule {
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, NoModality(fo) ) => 
-      val fm = Imp(AM.list_conj(ctxt.reverse), fo);
-      val fm1 = AM.univ_close(fm);
-      val c2 = new MathematicaNode(fm1)
-      List(c2)
-    case _ => 
-      Nil
-  }
-}
-
-
-
-object PRLoopClose extends ProofRule {
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, Box(Repeat(p1, h, inv_hints), fm)) => 
-      val pp = new AndNode("loop-close", 
-                           sq,
-                           BreadthFirst(),
-                           List(Sequent(List(h), fm)))
-      List(pp)
-    case _ => Nil
-  }
-}
-
-
-object PRLoopStrengthen extends ProofRule {
-  
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, Box(Repeat(p1, h, inv_hints), fm)) => 
-      val loop_strengthen: Formula => AndNode = inv =>
-        new AndNode(
-                    "loop strengthening", 
-                    sq,
-                    DepthFirst(),	
-                    List(Sequent(h::ctxt, NoModality(inv)),
-                         Sequent(inv::h::Nil, 
-                                 Box(p1, NoModality(Imp(h,inv)))),
-                         Sequent(ctxt, 
-                                 Box(Repeat(p1, 
-                                            And(h,inv),
-                                            inv_hints - inv),fm))))
-      inv_hints.map(loop_strengthen)
-    case _ => Nil
-  }
-}
-
-
-object PRDiffSolve extends ProofRule {
-
-  import Prover._
-
-  class BadSolution extends Exception 
-
-  def extract(sol: Formula): (String, (String, Term)) = sol match {
-    case Forall(t, Atom(R("=", List(Fn(f, List(t1)),
-                                    sol_tm)))) if Var(t) == t1 =>
-       (t,(f,sol_tm))
-    case _ => 
-      println( sol)
-      throw new BadSolution
-  }
-
-  def time_var(t_sols: List[(String,(String,Term))])
-     : Option[String] = {
-   val ts = t_sols.map(_._1)
-   ts match {
-      case Nil => None
-      case (t ::rest ) =>
-        if( rest.exists(x => x != t)){
-          None
-        } else {
-          Some(t)
-        }
-    }
-  }
-
-// TODO what if t is a variable in deriv?
-// TODO check inital values
-  def is_ok(t: String,
-            deriv: (String,Term),
-            sols: List[(String,Term)]  ) : Boolean  = deriv match {
-   case (x, tm) =>
-     println("testing if ok: " + x + "   " + tm)
-     println("t= " + t)
-     Prover.assoc(x,sols) match {
-       case Some(sol) =>
-         println("sol= " + P.string_of_Term(sol))
-         val dsol = totalDerivTerm(List((t,Num(ExactInt(1)))), sol)
-         val tm_sub = simul_substitute_Term(sols, tm)
-     
-         if(  polynomial_equality(tm_sub, dsol)     ) {
-           println("it's ok")
-           true
-         } else {
-           println("it's not ok")
-           false
-         }
-       case None => 
-         println("no corresponding solution found in:")
-         println(sols)
-         false
-     }
-  }
-
-
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, 
-                 Box(Evolve(derivs, h, invs, fm_sols), phi)) =>
-     val t_sols = fm_sols.map(extract)
-     val sols = t_sols.map(_._2)
-     time_var(t_sols) match {
-       case None => Nil
-       case Some(t) =>
-         val oks = derivs.map(d => is_ok(t, d, sols))
-         if(oks.contains(false))
-           Nil
-         else {
-//           val t1 = uniqify(t)
-           val t2 = uniqify(t)
-//           val t1_range = Atom(R(">=", List(Var(t1), Num(ExactInt(0)))))
-           val t_range = Atom(R(">=", List(Var(t), Num(ExactInt(0)))))
-           val t2_range = 
-             And(Atom(R(">=", List(Var(t2), Num(ExactInt(0))))),
-                 Atom(R("<=", List(Var(t2), Var(t)))))
-           val endpoint_h = simul_substitute_Formula(sols, h)
-           val interm_h = 
-             rename_Formula(t,t2,simul_substitute_Formula(sols, h))
-           val new_xs = sols.map(x => uniqify(x._1))
-           val old_and_new_xs = 
-             sols.map(_._1).zip(new_xs)
-           val new_xs_and_sols = 
-             new_xs.zip(sols.map(_._2))
-           val assign_sols = 
-             new_xs_and_sols.map(xtm => Assign(xtm._1,xtm._2))
-           val phi1 = 
-             old_and_new_xs.foldRight(phi)( (xs ,phi1) =>
-                                rename_DLFormula(xs._1, xs._2, phi1))
-           val assign_hp = 
-             assign_sols.foldRight(Check(True()):HP)((x,y) => Seq(x,y))
-           val phi2 = 
-             Box(assign_hp, phi1)
-           val stay_in_h = 
-             Forall(t2, Imp(t2_range, interm_h))
-           List(
-            new AndNode(
-                    "solve differential equation", 
-                    sq,
-                    DepthFirst(),
-                    List(Sequent(stay_in_h ::t_range::ctxt, 
-                                 phi2))),
-            new AndNode(
-                    "solve differential equation, endpoint", 
-                    sq,
-                    DepthFirst(),
-                    List(Sequent(endpoint_h ::t_range::ctxt, 
-                                 phi2))))
-         }
-     }
-
-    case _ => Nil 
-  }
-}
-
-
-object PRSubstitute extends ProofRule {
-
-  import Prover._
-/*
-  def isAssign(fm: Formula):Option[(String,Term)] = fm match {
-    case Atom(R("=", List(Var(v), tm))) => Some(v,tm)
-    case _ => None
-  }
-*/
-
-  def findAssignment(ctxt: List[Formula])
-       : Option[(String, Term, List[Formula])]  = ctxt match {
-         case Nil => None
-         case Atom(R("=", List(Var(v), tm))) :: rest =>
-           Some((v,tm,rest))
-         case fm::fms =>
-           findAssignment(fms) match {
-             case None => None
-             case Some((v,tm,rest)) =>
-               Some((v,tm,fm::rest))
-           }
-       }
-                     
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, NoModality(fo) ) => 
-      val a = findAssignment(ctxt)
-      a match {
-        case None => Nil
-        case Some((v,tm,ctxt1)) =>
-          val tm_vars = varsOfTerm(tm)
-          val ctxt2 = 
-            ctxt1.map(x => substitute_Formula(v, tm, tm_vars, x))
-          val fo2 = substitute_Formula(v,tm,tm_vars, fo)
-          List(new OrNode(Sequent(ctxt2,NoModality(fo2))))
-      }
-    case _ => Nil
-  }
-
-}
-
-
-object PRAlpha extends ProofRule {
-  
-  import Prover._
-
-  def matcher(fm: Formula): Option[List[Formula]] = fm match {
-    case And(fm1, fm2) => Some(List(fm1,fm2))
-    case True() => Some(Nil)
-    case _ => None
-  }
-
-
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, NoModality(Imp(fm1,fm2))) =>
-      val ctxt2 = fm1 :: ctxt
-      List(new OrNode(Sequent(ctxt2, NoModality(fm2))))
-    case Sequent(ctxt, phi) =>
-      matchAndSplice(ctxt, matcher) match {
-        case None => Nil
-        case Some(ctxt1) =>
-          List(new OrNode(Sequent(ctxt1,phi)))
-      }
-  }
-}
-
-
-object PRBeta extends ProofRule {
-  
-
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, NoModality(And(fm1,fm2))) =>
-      List(new AndNode(
-                  "Beta ",
-                  sq,
-                  BreadthFirst(),
-              List(Sequent(ctxt, NoModality(fm1)),
-                   Sequent(ctxt, NoModality(fm2)))))
-    case _ => Nil
-  }
-}
-
-
-
-// untested
-object PRAllLeft extends ProofRule {
-  
-  import Prover._
-
-  def matcher(v1: String)(fm: Formula): Option[List[Formula]] = fm match {
-    case Forall(v, fm) => 
-      Some(List(simul_substitute_Formula(List((v,Var(v1))), fm)))
-    case _ => None
-  }
-
-  def applyRule(sq: Sequent): List[TreeNode] = sq match {
-    case Sequent(ctxt, NoModality(fm)) =>
-      val fvs = (AM.fv(fm) :: ctxt.map(AM.fv)).flatten[String].removeDuplicates
-      fvs.map(x => matchAndSplice(ctxt, matcher(x)) match {
-                    case None => Nil
-                    case Some(ctxt1) =>
-                      List(new OrNode(Sequent(ctxt1, NoModality(fm))))
-                  }).flatten[TreeNode]
-  
-  }
-
-
-}
-
-
-*/

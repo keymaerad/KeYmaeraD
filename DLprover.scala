@@ -37,6 +37,7 @@ final object Prover {
   }
 
 
+  // Can we apply quantifier elimination?
   def firstorder(fm: Formula): Boolean = fm match {
     case True | False => true
     case Atom(R(r,ps)) => true
@@ -55,7 +56,7 @@ final object Prover {
       firstorder(f)
     case Box(_,_) => false
     case Diamond(_,_) => false
-    
+    case _ => false
   }
 
   def plugin(fm : Formula, fmctxt: FormulaCtxt): Formula = fmctxt match {
