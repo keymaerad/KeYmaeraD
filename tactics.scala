@@ -138,49 +138,15 @@ object Tactics {
   }
 
 
-  val beta = List(andRight, orLeft)
 
-
-  val betaT : Tactic = new Tactic("beta") {
-    def apply(nd: OrNode) = nd.goal match {
-      case sq@Sequent(c,s) =>
-
+  def trylistofrules(rs: List[ProofRule], nd: OrNode) : List[NodeID] = {
+        val sq = nd.goal;
         var foundone = false;
         var res: List[NodeID] = Nil;
-      
-        for (i <- s.indices) {
-          if(foundone == false){
-            val pos = RightP(i)
-            andRight.apply(pos)(sq) match {
-              case Some(_) =>
-                res = applyrule(nd,pos,andRight) match { case Some(lst) => lst
-                                                          case None => Nil};
-                foundone = true;
-                ()
-              case None => 
-                ()
-            }
-          }
-        }
-
-        res
-
-      case _ => Nil
-    }
-  }
-
-  val alpha = List(andLeft, impRight)
-
-  val alphaT : Tactic = new Tactic("alpha") {
-    def apply(nd: OrNode) = nd.goal match {
-      case sq@Sequent(c,s) =>
-
-        var foundone = false;
-        var res: List[NodeID] = Nil;
-      
+   
         for (p <- positions(sq)) {
           if(foundone == false){
-            for(r <- alpha) {
+            for(r <- rs) {
               val res0 = r.apply(p)(sq);
               res0 match {
                 case Some(_) =>
@@ -197,9 +163,23 @@ object Tactics {
               
         res
 
-      case _ => Nil
-    }
   }
+
+
+  val alpha = List(andLeft, impRight)
+
+  val alphaT : Tactic = new Tactic("alpha") {
+    def apply(nd: OrNode) = 
+      trylistofrules(alpha,nd)
+  }
+
+  val beta = List(andRight, orLeft)
+
+  val betaT : Tactic = new Tactic("beta") {
+    def apply(nd: OrNode) = 
+      trylistofrules(beta,nd)
+  }
+
 
 
   val alleasyT: Tactic = composeT(repeatT(hpeasyT),

@@ -16,7 +16,6 @@ import scala.collection.immutable.HashSet
 
 final object Prover {
 
-//  import BanyanPublic._
 
   // for fresh variable names
   var uniqid: Int = 0
@@ -37,7 +36,7 @@ final object Prover {
   }
 
 
-  // Can we apply quantifier elimination?
+  // Indicate whether we can apply quantifier elimination.
   def firstorder(fm: Formula): Boolean = fm match {
     case True | False => true
     case Atom(R(r,ps)) => true
