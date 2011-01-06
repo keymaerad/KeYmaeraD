@@ -1234,6 +1234,42 @@ final object AM {
   }
 
 
+  def unaryFns_Term(tm : Term): List[String] = tm match {
+    case Fn(f, Nil) => List(f)
+    case Fn(f, args) => 
+      args.map(unaryFns_Term).flatten
+    case _ => Nil
+  }
+  
+  def unaryFns_Pred(fol: Pred) : List[String] = fol match {
+    case R(r, args) => 
+      args.map(unaryFns_Term).flatten
+  }
+
+  def replaceUnaryFns_Term(tm : Term): Term = tm match {
+    case Fn(f, Nil) => Var(f)
+    case _ => tm
+  }
+  
+  def replaceUnaryFns_Pred(fol: Pred) : Pred = fol match {
+    case R(r, args) => 
+      R(r,args.map(replaceUnaryFns_Term))
+  }
+
+  // free variables are existentially quantified.
+  def makeQEable(fm : Formula) : Formula = {
+    val fvs = fv(fm);
+    val unary_fns = overatoms(fol => (lst: List[String]) 
+                            => unaryFns_Pred(fol)++lst  ,
+                              fm,Nil)
+    // XXX should uniqify
+    val fm0 = onatoms(
+      fol => Atom(replaceUnaryFns_Pred(fol)),fm)
+    val fm1 = unary_fns.foldRight(fm0)((v,f) => Forall(v,f))
+    fvs.foldRight(fm1) ((v,f) => Exists(v,f))
+  }
+
+
   def real_elim_goal(fm: Formula): Boolean = {
     val fm0 = real_elim(fm);
     fm0 match {

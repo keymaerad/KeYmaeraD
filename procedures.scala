@@ -11,6 +11,33 @@ object Procedures {
                  ("math", Mathematica))
 
 
+/*
+    // Indicate whether we can apply quantifier elimination.
+  def canQE_Term
+
+
+  def canQE(fm: Formula): Boolean = fm match {
+    case True | False => true
+    case Atom(R(r,ps)) => true
+    case Not(f) => firstorder(f)
+    case And(f1,f2) => 
+      firstorder(f1) && firstorder(f2)
+    case Or(f1,f2) => 
+      firstorder(f1) && firstorder(f2)
+    case Imp(f1,f2) => 
+      firstorder(f1) && firstorder(f2)
+    case Iff(f1,f2) => 
+      firstorder(f1) && firstorder(f2)
+    case Exists(v,f) =>
+      firstorder(f)
+    case Forall(v,f) =>
+      firstorder(f)
+    case Box(_,_) => false
+    case Diamond(_,_) => false
+    case _ => false
+  }
+*/
+
 // for now, these things only close or disprove a goal.
 
   @serializable
@@ -41,7 +68,8 @@ object Procedures {
 //       println("about to attempt quantifier elimination on:\n")
 //       P.print_Formula(fm)
       val fm = Imp(AM.list_conj(c), AM.list_disj(s));
-      val fm1 = AM.univ_close(fm);
+//      val fm1 = AM.univ_close(fm);
+      val fm1 = AM.makeQEable(fm);
        try{ 
  
         CV.start()
@@ -102,7 +130,8 @@ object Procedures {
     def proceed(sq: Sequent, tm: Long): Option[Sequent] = sq match {
       case Sequent(c,s) => 
         val fm0 = Imp(AM.list_conj(c), AM.list_disj(s));
-        val fm = AM.univ_close(fm0);
+//        val fm = AM.univ_close(fm0);
+        val fm = AM.makeQEable(fm0);
         println("about to attempt quantifier elimination on:")
         println(fm.toString)
         println()
