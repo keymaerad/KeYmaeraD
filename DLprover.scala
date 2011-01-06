@@ -100,6 +100,10 @@ final object Prover {
       case Some(x) => x
       case None => Num(Exact.Integer(0))
     }
+    case Fn(f,Nil) =>  assoc(f,d) match {
+      case Some(x) => x
+      case None => Num(Exact.Integer(0))
+    }
     case Fn("+", List(t1,t2)) =>
       Fn("+", List( totalDerivTerm(d,t1),  totalDerivTerm(d,t2)))
     case Fn("-", List(t1,t2)) =>
