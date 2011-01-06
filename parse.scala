@@ -93,14 +93,14 @@ class DLParser(ins : String)
           R(r, List(t1,t2))}
 
 
-   def formula : Parser[Formula] = 
-     "forall" ~> ident ~ "."~ formula ^^ 
+   def formula00 : Parser[Formula] = 
+     "forall" ~> ident ~ "."~ formula00 ^^ 
                { case x ~ "." ~ f => Forall(x, f)} |
-     "exists" ~> ident ~ "."~ formula ^^ 
+     "exists" ~> ident ~ "."~ formula00 ^^ 
                { case x ~ "." ~ f => Exists(x, f)} |
-     "forall" ~> ident ~ ":" ~ ident ~ "." ~ formula ^^ 
+     "forall" ~> ident ~ ":" ~ ident ~ "." ~ formula00 ^^ 
                { case x ~ ":" ~ c ~ "." ~ f => ForallOfSort(x, St(c), f)} |
-     "exists" ~> ident ~ ":" ~ ident ~ "." ~ formula ^^ 
+     "exists" ~> ident ~ ":" ~ ident ~ "." ~ formula00 ^^ 
                { case x ~ ":" ~ c ~ "." ~ f => ExistsOfSort(x, St(c), f)} |
      formula0
 
@@ -122,13 +122,87 @@ class DLParser(ins : String)
      formula5
 
    def formula5 : Parser[Formula] = 
-     "(" ~> formula <~  ")" | 
+     "(" ~> formula00 <~  ")" | 
      pred ^^ (x => Atom(x))  |
      "true" ^^^ True |
      "false" ^^^ False |
      // XXX doesn't work right for e.g. "[hp] forall x . ..."
      ("[" ~> hp <~ "]") ~ formula4 ^^ {case a ~ f => Box(a,f)} |
      ("<" ~> hp <~ ">") ~ formula4 ^^ {case a ~ f => Diamond(a,f)} 
+
+
+   /* Distinguish between logical variables
+    * and (unary) function symbols.
+    */
+
+   def freeVarsAreFns_Term(bndVars : List[String], tm : Term) : Term 
+     = tm match {
+       case Var(x) if ! (bndVars.contains(x)) =>
+         Fn(x,Nil)
+       case Fn(f, ps) =>
+         val fnew =  f //if(bndVars.contains(f) ) xnew else f
+         Fn(fnew, ps.map(p => freeVarsAreFns_Term(bndVars, p)))
+       case _ => tm
+     }
+
+   def freeVarsAreFns_HP(bndVars : List[String], hp: HP) : HP = hp match {
+     case Assign(x, t) =>
+      val t1 = freeVarsAreFns_Term(bndVars,t)
+      Assign(x,t1)
+    case AssignAny(x) => hp
+    case Check(fm) =>
+      Check(freeVarsAreFns(bndVars,fm))
+    case Seq(p,q) => 
+      Seq(freeVarsAreFns_HP(bndVars,p), freeVarsAreFns_HP(bndVars,q))
+    case Choose(p,q) => 
+      Choose(freeVarsAreFns_HP(bndVars,p), freeVarsAreFns_HP(bndVars,q))
+    case Loop(p,fm, inv_hints) =>
+      Loop(freeVarsAreFns_HP(bndVars,p), 
+           freeVarsAreFns(bndVars,fm), 
+           inv_hints.map(f => freeVarsAreFns(bndVars,f)))
+    case Evolve(derivs, fm, inv_hints, sols) =>
+      val replace_deriv: ((String, Term)) => (String, Term) = vt => {
+        val (v,t) = vt
+        val t1 = freeVarsAreFns_Term(bndVars,t)
+        (v,t1)
+      }
+      Evolve(derivs.map( replace_deriv), 
+             freeVarsAreFns(bndVars,fm),
+             inv_hints.map(f => freeVarsAreFns(bndVars,f)),
+             sols.map(f => freeVarsAreFns(bndVars,f)))
+   }
+
+   def freeVarsAreFns(bndVars : List[String], fm: Formula) : Formula 
+     = fm match {
+       case True | False => fm
+       case Atom(R(r,ps)) => 
+         Atom(R(r, ps.map(p => freeVarsAreFns_Term(bndVars, p))))
+       case Not(f) => Not(freeVarsAreFns(bndVars, f))
+       case And(f1,f2) => 
+         And(freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
+       case Or(f1,f2) => 
+         Or(freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
+       case Imp(f1,f2) => 
+         Imp(freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
+       case Iff(f1,f2) => 
+         Iff(freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
+       case Exists(v,f) =>
+         Exists(v, freeVarsAreFns(v :: bndVars, f))
+       case Forall(v,f) =>
+         Forall(v, freeVarsAreFns(v :: bndVars, f))
+       case ExistsOfSort(v,c,f) =>
+         ExistsOfSort(v, c, freeVarsAreFns(v :: bndVars, f))
+       case ForallOfSort(v,c,f) =>
+         ForallOfSort(v, c, freeVarsAreFns(v :: bndVars, f))
+       case Box(hp,phi) =>
+         Box(freeVarsAreFns_HP(bndVars, hp), freeVarsAreFns(bndVars, phi))
+       case Diamond(hp,phi) =>
+         Diamond(freeVarsAreFns_HP(bndVars, hp), freeVarsAreFns(bndVars, phi))
+     }
+
+
+   def formula : Parser[Formula] = 
+     formula00 ^^ {fm => freeVarsAreFns(Nil, fm) }
 
 
    def hp : Parser[HP] =
@@ -200,7 +274,8 @@ class DLParser(ins : String)
 
 
    def fm_result : Option[Formula] = {
-     phrase(formula)(new lexical.Scanner(ins)) match {
+     // don't infer var / fn distinction
+     phrase(formula00)(new lexical.Scanner(ins)) match {
        case Success(r,next) if next.atEnd => 
          Some(r)
        case Success(r,next)  => 
