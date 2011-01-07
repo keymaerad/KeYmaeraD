@@ -1247,17 +1247,18 @@ final object AM {
   def unaryFns_Term(tm : Term): List[String] = tm match {
     case Fn(f, Nil) => List(f)
     case Fn(f, args) => 
-      args.map(unaryFns_Term).flatten
+      args.map(unaryFns_Term).flatten.distinct
     case _ => Nil
   }
   
   def unaryFns_Pred(fol: Pred) : List[String] = fol match {
     case R(r, args) => 
-      args.map(unaryFns_Term).flatten
+      args.map(unaryFns_Term).flatten.distinct
   }
 
   def replaceUnaryFns_Term(tm : Term): Term = tm match {
     case Fn(f, Nil) => Var(f)
+    case Fn(f, args) => Fn(f, args.map(replaceUnaryFns_Term))
     case _ => tm
   }
   
@@ -1270,8 +1271,8 @@ final object AM {
   def makeQEable(fm : Formula) : Formula = {
     val fvs = fv(fm);
     val unary_fns = overatoms(fol => (lst: List[String]) 
-                            => unaryFns_Pred(fol)++lst  ,
-                              fm,Nil)
+                                 => unaryFns_Pred(fol)++lst  ,
+                                  fm,Nil).distinct
     // XXX should uniqify
     val fm0 = onatoms(
       fol => Atom(replaceUnaryFns_Pred(fol)),fm)
