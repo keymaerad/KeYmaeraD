@@ -374,8 +374,8 @@ object Rules {
   case object Standard extends DiffSolveMode
   case object Endpoint extends DiffSolveMode
 
-/*
 
+/*
   val diffSolve : DiffSolveMode => List[Formula] => ProofRule = 
     mode => fm_sols => new ProofRule("diffsolve[" + mode.toString() + "][" 
                           + fm_sols.map(Printing.stringOfFormula) 
@@ -489,8 +489,8 @@ object Rules {
                             
                             
     }
-
 */
+
 
 
   val substitute = new ProofRule("substitute") {
