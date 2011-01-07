@@ -156,10 +156,10 @@ object Printing {
 
 
   def docOfHP(h: HP) : Document = h match {
-    case Assign(x,tm) => 
-     text(x) :: text(":=") :: docOfTerm(tm)
+    case Assign(f,tm) => 
+     docOfTerm(f) :: text(":=") :: docOfTerm(tm)
     case AssignAny(x) =>
-     text(x) :: text(":= *")
+     docOfTerm(x) :: text(":= *")
     case AssignQuantified(i, c, f, theta) =>
       text("forall ") :: text(i) :: text(":") :: docOfSort(c) :: text(" ") ::
           docOfTerm(f) :: text(":=") :: docOfTerm(theta)
@@ -188,8 +188,8 @@ object Printing {
     case Real => text("Real")
   }
   
-  def docOfDeriv(pr: (String,Term )) : Document = {
-    text(pr._1 +"'") :: text(" = ") :: docOfTerm(pr._2)
+  def docOfDeriv(pr: (Fn,Term )) : Document = {
+    docOfTerm(pr._1) :: text("'") :: text(" = ") :: docOfTerm(pr._2)
   }
 
   def docOfSequent(sq: Sequent) : Document = sq match {

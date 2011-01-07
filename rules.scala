@@ -271,10 +271,10 @@ object Rules {
      case (RightP(n),Sequent(c,s)) => 
       val fm = lookup(p,sq)
       fm match {
-        case Box(Assign(vr,tm),phi) =>
+        case Box(Assign(Fn(vr,Nil),tm),phi) =>
           val vr1 = Prover.uniqify(vr)
-          val phi1 = Prover.rename_Formula(vr,vr1,phi)
-          val fm1 = Atom(R("=",List(Var(vr1),tm)))
+          val phi1 = Prover.renameFn(vr,vr1,phi)
+          val fm1 = Atom(R("=",List(Fn(vr1,Nil),tm)))
           val Sequent(c1,s1) = replace(p,sq, phi1)
           Some((List(Sequent(fm1::c1,s1)),Nil))
         case _ =>
@@ -292,9 +292,9 @@ object Rules {
      case (RightP(n),Sequent(c,s)) => 
       val fm = lookup(p,sq)
       fm match {
-        case Box(AssignAny(vr),phi) =>
+        case Box(AssignAny(Fn(vr, Nil)),phi) =>
           val vr1 = Prover.uniqify(vr)
-          val phi1 = Prover.rename_Formula(vr,vr1,phi)
+          val phi1 = Prover.renameFn(vr,vr1,phi)
           val sq1 = replace(p, sq, phi1)
           Some((List(sq1),Nil))
         case _ =>
@@ -374,6 +374,8 @@ object Rules {
   case object Standard extends DiffSolveMode
   case object Endpoint extends DiffSolveMode
 
+/*
+
   val diffSolve : DiffSolveMode => List[Formula] => ProofRule = 
     mode => fm_sols => new ProofRule("diffsolve[" + mode.toString() + "][" 
                           + fm_sols.map(Printing.stringOfFormula) 
@@ -410,7 +412,7 @@ object Rules {
       // TODO what if t is a variable in deriv?
       // XXX TODO check inital values
       def is_ok(t: String,
-                deriv: (String,Term),
+                deriv: (Fn,Term),
                 sols: List[(String,Term)]  ) : Boolean  = deriv match {
         case (x, tm) =>
           println("testing if ok: " + x + "   " + tm)
@@ -488,7 +490,7 @@ object Rules {
                             
     }
 
-
+*/
 
 
   val substitute = new ProofRule("substitute") {

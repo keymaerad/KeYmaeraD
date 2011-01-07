@@ -604,6 +604,12 @@ final object AM {
     case _ => List(fm)
   }
 
+  // XXX
+  def onatoms_HP(f : Pred => Formula, hp : HP) : HP = hp match {
+    case _ => hp
+  }
+
+
   def onatoms(f: Pred => Formula, fm: Formula): Formula  = fm match {
     case Atom(a) => f(a)
     case Not(p) => Not(onatoms(f,p))
@@ -613,6 +619,10 @@ final object AM {
     case Iff(p,q) => Iff(onatoms(f, p), onatoms(f,q))
     case Forall(x,p ) => Forall(x,onatoms(f,p))
     case Exists(x,p ) => Exists(x,onatoms(f,p))
+    case ForallOfSort(x,c,p ) => ForallOfSort(x,c,onatoms(f,p))
+    case ExistsOfSort(x,c,p ) => ExistsOfSort(x,c,onatoms(f,p))
+    case Box(hp, phi) => Box(onatoms_HP(f,hp), onatoms(f,phi))
+    case Diamond(hp, phi) => Diamond(onatoms_HP(f,hp), onatoms(f,phi))
     case _ => fm
   }
 

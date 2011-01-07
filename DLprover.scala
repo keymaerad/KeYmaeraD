@@ -95,12 +95,14 @@ final object Prover {
   }
 
 
-  def totalDerivTerm(d: List[(String, Term)], tm: Term) : Term = tm match {
-    case Var(s) =>  assoc(s,d) match {
-      case Some(x) => x
-      case None => Num(Exact.Integer(0))
-    }
-    case Fn(f,Nil) =>  assoc(f,d) match {
+  def totalDerivTerm(d: List[(Fn, Term)], tm: Term) : Term = tm match {
+    case Var(s) =>  
+      Num(Exact.Integer(0))
+      //assoc(s,d) match {
+      //case Some(x) => x
+      //case None => Num(Exact.Integer(0))
+    //}
+    case Fn(f,Nil) =>  assoc(tm,d) match {
       case Some(x) => x
       case None => Num(Exact.Integer(0))
     }
@@ -134,7 +136,7 @@ final object Prover {
 
 
   // TODO handle other cases
-  def totalDeriv(d: List[(String,Term)], fm: Formula) : Formula 
+  def totalDeriv(d: List[(Fn,Term)], fm: Formula) : Formula 
     = fm match {
       case True => True
       case False => False
@@ -194,7 +196,8 @@ final object Prover {
   }
 
 
-// alpha-renaming
+
+// alpha-renaming for logical variables.
   def rename_Term(xold: String,
                  xnew: String,
                  tm: Term): Term = tm match {
@@ -249,13 +252,13 @@ final object Prover {
   }
 
   def rename_HP(xold:String,xnew:String,hp:HP):HP = hp match {
-    case Assign(x, t) =>
-      val x1 = if(x == xold) xnew else x
+    case Assign(Fn(f,args), t) =>
+      val args1 = args.map(a => rename_Term(xold,xnew,a))
       val t1 = rename_Term(xold,xnew,t)
-      Assign(x1,t1)
-    case AssignAny(x) =>
-      val x1 = if(x == xold) xnew else x
-      AssignAny(x1)
+      Assign(Fn(f,args1),t1)
+    case AssignAny(Fn(f,args)) =>
+      val args1 = args.map(a => rename_Term(xold,xnew,a))
+      AssignAny(Fn(f,args1))
     case Check(fm) =>
       Check(rename_Formula(xold,xnew,fm))
     case Seq(p,q) => 
@@ -267,11 +270,11 @@ final object Prover {
            rename_Formula(xold,xnew,fm), 
            inv_hints.map(f => rename_Formula(xold,xnew,f)))
     case Evolve(derivs, fm, inv_hints, sols) =>
-      val replace_deriv: ((String, Term)) => (String, Term) = vt => {
-        val (v,t) = vt
-        val v1 =  if(v == xold) xnew else v
+      val replace_deriv: ((Fn, Term)) => (Fn, Term) = vt => {
+        val (Fn(f,args),t) = vt
+        val args1 =  args.map(a => rename_Term(xold,xnew,a))
         val t1 = rename_Term(xold,xnew,t)
-        (v1,t1)
+        (Fn(f,args1),t1)
       }
       Evolve(derivs.map( replace_deriv), 
              rename_Formula(xold,xnew,fm),
@@ -280,17 +283,85 @@ final object Prover {
       
   }
 
-/*
-  def rename_DLFormula(xold: String, 
-                      xnew: String, 
-                      dlfm: DLFormula): DLFormula = dlfm match {
-    case NoModality(fm) =>
-      NoModality(rename_Formula(xold, xnew, fm))
-    case Box(hp, dlfm1) => 
-      val hp1 = rename_HP(xold,xnew,hp)
-      Box(hp1, rename_DLFormula(xold,xnew,dlfm1))
+
+
+// do generic thing to terms
+
+  def onterms_Formula(g : Term => Term,
+                      fm: Formula): Formula = fm match {
+    case True | False => fm
+    case Atom(R(r,ps)) => 
+      Atom(R(r, ps.map(p => g(p))))
+    case Not(f1) => Not(onterms_Formula(g,f1))
+    case And(f1,f2) => 
+      And(onterms_Formula(g,f1),onterms_Formula(g,f2))
+    case Or(f1,f2) => 
+      Or(onterms_Formula(g,f1),onterms_Formula(g,f2))
+    case Imp(f1,f2) => 
+      Imp(onterms_Formula(g,f1),onterms_Formula(g,f2))
+    case Iff(f1,f2) => 
+      Iff(onterms_Formula(g,f1),onterms_Formula(g,f2))
+    case Exists(v,f) =>
+      Exists(v, onterms_Formula(g,f))      
+    case Forall(v,f) =>
+      Forall(v, onterms_Formula(g,f))      
+    case ExistsOfSort(v,c,f) =>
+      ExistsOfSort(v, c, onterms_Formula(g,f))      
+    case ForallOfSort(v,c,f) =>
+      ForallOfSort(v, c, onterms_Formula(g,f))      
+    case Box(hp,phi) =>
+      Box(onterms_HP(g,hp), onterms_Formula(g,phi))
+    case Diamond(hp,phi) =>
+      Diamond(onterms_HP(g,hp), onterms_Formula(g,phi))
+
   }
-*/
+
+  def onterms_HP(g : Term => Term,hp:HP):HP = hp match {
+    case Assign(x, t) =>
+      val Fn(f,args) = g(x) // error if g changes x to a nonfunction
+      val t1 = g(t)
+      Assign(Fn(f,args),t1)
+    case AssignAny(x) =>
+      val Fn(f,args) = g(x) // error if g changes x to a nonfunction
+      AssignAny(Fn(f,args))
+    case Check(fm) =>
+      Check(onterms_Formula(g,fm))
+    case Seq(p,q) => 
+      Seq(onterms_HP(g,p), onterms_HP(g,q))
+    case Choose(p,q) => 
+      Choose(onterms_HP(g,p), onterms_HP(g,q))
+    case Loop(p,fm, inv_hints) =>
+      Loop(onterms_HP(g,p), 
+           onterms_Formula(g,fm), 
+           inv_hints.map(f => onterms_Formula(g,f)))
+    case Evolve(derivs, fm, inv_hints, sols) =>
+      val replace_deriv: ((Fn, Term)) => (Fn, Term) = vt => {
+        val (v,t) = vt
+        val Fn(f,args) =  g(v)
+        val t1 = g(t)
+        (Fn(f,args),t1)
+      }
+      Evolve(derivs.map( replace_deriv), 
+             onterms_Formula(g,fm),
+             inv_hints.map(f => onterms_Formula(g,f)),
+             sols.map(f => onterms_Formula(g,f)))
+      
+  }
+
+// renaming functions
+  def renameFn_Term(fold: String, fnew: String, tm: Term): Term = tm match {
+    case Fn(f, ps) =>
+      val f1 =  if(f == fold) fnew else f
+      Fn(f1, ps.map(p => renameFn_Term(fold, fnew,p)))
+    case _ => tm
+  }
+
+  def renameFn(fold: String, fnew: String, fm : Formula) : Formula = 
+    onterms_Formula(t => renameFn_Term(fold,fnew,t),fm)
+
+
+
+//
 
   def matchAndSplice[A](lst: List[A],
                         f : A => Option[List[A]]): Option[List[A]]

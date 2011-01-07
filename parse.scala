@@ -161,7 +161,7 @@ class DLParser(ins : String)
            freeVarsAreFns(bndVars,fm), 
            inv_hints.map(f => freeVarsAreFns(bndVars,f)))
     case Evolve(derivs, fm, inv_hints, sols) =>
-      val replace_deriv: ((String, Term)) => (String, Term) = vt => {
+      val replace_deriv: ((Fn, Term)) => (Fn, Term) = vt => {
         val (v,t) = vt
         val t1 = freeVarsAreFns_Term(bndVars,t)
         (v,t1)
@@ -215,8 +215,8 @@ class DLParser(ins : String)
    def hp2 : Parser[HP] = 
      "(" ~> hp <~  ")" | 
       "?" ~> formula ^^ { x => Check(x)}  |
-      ident <~ ":=" <~ "*" ^^ { x  => AssignAny(x)} |
-      (ident <~ ":=") ~ term ^^ {case x ~ t => Assign(x,t)} |
+      ident <~ ":=" <~ "*" ^^ { x  => AssignAny(Fn(x,Nil))} |
+      (ident <~ ":=") ~ term ^^ {case x ~ t => Assign(Fn(x,Nil),t)} |
       // forall i : C f(v) := theta
       (("forall" ~> ident <~  ":") ~ 
        ident ~ function <~ ":=") ~ term ^^ 
@@ -237,10 +237,10 @@ class DLParser(ins : String)
      
 
 
-  def diffeq : Parser[(String,Term)] = 
+  def diffeq : Parser[(Fn,Term)] = 
     (ident <~  "=") ~ term ^?
       {case s  ~ tm  if s.endsWith("\'") 
-        => (s.substring(0,s.length - 1), tm)}
+        => (Fn(s.substring(0,s.length - 1), Nil), tm)}
    
   def annotation(name: String) : Parser[List[Formula]] = 
     "@" ~> keyword(name) ~> "(" ~> repsep(formula, ",") <~ ")" |

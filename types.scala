@@ -56,8 +56,8 @@ case class DiamondCtxt(hp: HP, rest: FormulaCtxt) extends FormulaCtxt
 
 
 sealed abstract class HP
-case class Assign(s: String, v: Term) extends HP
-case class AssignAny(s: String) extends HP
+case class Assign(x : Fn, v: Term) extends HP
+case class AssignAny(v: Fn) extends HP
 case class AssignQuantified(i : String, c: Sort, f : Fn, v: Term) extends HP
 case class Check(h: Formula) extends HP
 case class Seq(p1: HP, p2: HP) extends HP
@@ -65,7 +65,7 @@ case class Choose(p1: HP, p2: HP) extends HP
 case class Loop(p1: HP, 
                 h: Formula,
                 inv_hints: List[Formula]) extends HP
-case class Evolve(derivs: List[(String,Term)], 
+case class Evolve(derivs: List[(Fn,Term)], 
                   h: Formula,
                   inv_hints: List[Formula],
                   sols: List[Formula]) extends HP
