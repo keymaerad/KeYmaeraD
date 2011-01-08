@@ -271,13 +271,18 @@ object Rules {
      case (RightP(n),Sequent(c,s)) => 
       val fm = lookup(p,sq)
       fm match {
-// TODO general case
-        case Box(Assign(List((Fn(vr,Nil),tm))),phi) =>
-          val vr1 = Prover.uniqify(vr)
-          val phi1 = Prover.renameFn(vr,vr1,phi)
-          val fm1 = Atom(R("=",List(Fn(vr1,Nil),tm)))
-          val Sequent(c1,s1) = replace(p,sq, phi1)
-          Some((List(Sequent(fm1::c1,s1)),Nil))
+        case Box(Assign(vs),phi) =>
+          var phi1 = phi;
+          var c1 = c;
+          for( v <- vs) {
+              val (Fn(vr,Nil), tm) = v;
+              val vr1 = Prover.uniqify(vr);
+              phi1 = Prover.renameFn(vr,vr1,phi1);
+              val fm1 = Atom(R("=",List(Fn(vr1,Nil),tm)));
+              c1 = fm1::c1;
+          }
+          val sq1 = replace(p, Sequent(c1,s) , phi1)
+          Some((List(sq1),Nil))
         case _ =>
           None
       }
