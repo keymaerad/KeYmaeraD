@@ -271,7 +271,8 @@ object Rules {
      case (RightP(n),Sequent(c,s)) => 
       val fm = lookup(p,sq)
       fm match {
-        case Box(Assign(Fn(vr,Nil),tm),phi) =>
+// TODO general case
+        case Box(Assign(List((Fn(vr,Nil),tm))),phi) =>
           val vr1 = Prover.uniqify(vr)
           val phi1 = Prover.renameFn(vr,vr1,phi)
           val fm1 = Atom(R("=",List(Fn(vr1,Nil),tm)))

@@ -156,8 +156,11 @@ object Printing {
 
 
   def docOfHP(h: HP) : Document = h match {
-    case Assign(f,tm) => 
+    case Assign(List((f,tm))) => 
      docOfTerm(f) :: text(":=") :: docOfTerm(tm)
+    case Assign(vs) => 
+     bracket("{", "}", docOfList(vs.map(v => docOfTerm(v._1) :: text(":=") :: docOfTerm(v._2)), 
+                                 text(",")))
     case AssignAny(x) =>
      docOfTerm(x) :: text(":= *")
     case AssignQuantified(i, c, f, theta) =>

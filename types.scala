@@ -56,7 +56,7 @@ case class DiamondCtxt(hp: HP, rest: FormulaCtxt) extends FormulaCtxt
 
 
 sealed abstract class HP
-case class Assign(x : Fn, v: Term) extends HP
+case class Assign( vs : List[(Fn, Term)]) extends HP
 case class AssignAny(v: Fn) extends HP
 case class AssignQuantified(i : String, c: Sort, f : Fn, v: Term) extends HP
 case class Check(h: Formula) extends HP

@@ -252,10 +252,13 @@ final object Prover {
   }
 
   def rename_HP(xold:String,xnew:String,hp:HP):HP = hp match {
-    case Assign(Fn(f,args), t) =>
-      val args1 = args.map(a => rename_Term(xold,xnew,a))
-      val t1 = rename_Term(xold,xnew,t)
-      Assign(Fn(f,args1),t1)
+    case Assign(vs) =>
+      val vs1 = vs.map( v => {
+        val (Fn(f,args), t) = v;
+        val args1 = args.map(a => rename_Term(xold,xnew,a));
+        val t1 = rename_Term(xold,xnew,t);
+        (Fn(f,args1),t1)});
+      Assign(vs1)
     case AssignAny(Fn(f,args)) =>
       val args1 = args.map(a => rename_Term(xold,xnew,a))
       AssignAny(Fn(f,args1))
@@ -317,10 +320,13 @@ final object Prover {
   }
 
   def onterms_HP(g : Term => Term,hp:HP):HP = hp match {
-    case Assign(x, t) =>
-      val Fn(f,args) = g(x) // error if g changes x to a nonfunction
-      val t1 = g(t)
-      Assign(Fn(f,args),t1)
+    case Assign(vs) =>
+      val vs1 = vs.map( v => {
+        val (x,t) = v;
+        val Fn(f,args) = g(x) // error if g changes x to a nonfunction
+        val t1 = g(t)
+        (Fn(f,args),t1) });
+     Assign(vs1)
     case AssignAny(x) =>
       val Fn(f,args) = g(x) // error if g changes x to a nonfunction
       AssignAny(Fn(f,args))
