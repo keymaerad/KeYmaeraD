@@ -231,9 +231,8 @@ object Rules {
     }
   }
 
-  val chooseRight = new ProofRule("chooseright") {
-    def apply(p: Position) = sq => (p,sq) match {
-      case (RightP(n), Sequent(c,s)) =>
+  val choose = new ProofRule("choose") {
+    def apply(p: Position) = sq =>  {
         val fm = lookup(p,sq)
         fm match {
           case Box(Choose(h1,h2), phi) => 
@@ -245,23 +244,20 @@ object Rules {
           case _ => 
             None
         }
-      case _ => None
     }
   }
 
-  val checkRight = new ProofRule("checkright") {
-    def apply(p: Position) = sq => (p,sq) match {
-      case (RightP(n), Sequent(c,s)) =>
+  val check = new ProofRule("check") {
+    def apply(p: Position) = sq =>  {
         val fm = lookup(p,sq)
         fm match {
           case Box(Check(fm1), phi) => 
-            val Sequent(c1,s1) = replace(p,sq, phi)
-            val sq1 = Sequent(fm1::c1,s1)
+            val fm2 = Imp(fm1, phi)
+            val sq1 = replace(p,sq, fm2)
             Some( (List(sq1),Nil))
           case _ => 
             None
         }
-      case _ => None
     }
   }
 

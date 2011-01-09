@@ -45,7 +45,7 @@ object Tactics {
   }
 
 
-  val hpeasy = List(seq, chooseRight, checkRight, 
+  val hpeasy = List(seq, choose, check, 
                     assignRight, assignAnyRight,
                     diffClose
                   )
@@ -67,6 +67,23 @@ object Tactics {
       }
 
     }
+
+
+  // do t1. Then, if no new nodes, do t2.
+  def eitherT(t1: Tactic, t2: Tactic) : Tactic = 
+    new Tactic("either " + t1.toString + "," + t2.toString) {
+      def apply(nd: OrNode) = {
+        val nds = t1.apply(nd);
+        nds match {
+          case Nil => 
+            t2.apply(nd)
+          case rs => 
+            nds
+        }
+        
+      }
+    }
+
 
 
   val hpeasyT : Tactic = new Tactic("hpeasy") {
@@ -183,11 +200,10 @@ object Tactics {
 
 
 
-  val alleasyT: Tactic = composeT(repeatT(hpeasyT),
-                            composeT(repeatT(alphaT),
+  val alleasyT: Tactic = composeT(repeatT(eitherT(hpeasyT, alphaT)),
                                 //composeT(repeatT(substT),
                                      composeT(repeatT(betaT),
-                                           arithT))) //)
+                                           arithT))//) //)
 
 
 }

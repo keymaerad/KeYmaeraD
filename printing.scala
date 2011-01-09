@@ -69,6 +69,8 @@ object Printing {
       val pr1 = 8;
       bracketp(pr > pr1)("(",")", 
                          docOfTermAux(pr1)(x) ::text(f):: docOfTermAux(pr1+1)(y))
+    case Fn(f,Nil) =>
+      text(f+".")
     case Fn(f,args) =>
       bracket(f+"(",")",
         docOfList(args.map(docOfTerm), text(",") :: DocBreak))
