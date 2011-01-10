@@ -419,7 +419,7 @@ object Rules {
                 sols: List[(Fn,Term)]  ) : Boolean  = deriv match {
         case (x, tm) =>
           true
-/* TODO fix this
+/* TODO fix this. should it just be another subgoal? I think so...
           println("testing if ok: " + x + "   " + tm)
           println("t= " + t)
           Prover.assoc(x,sols) match {
@@ -509,11 +509,10 @@ object Rules {
     def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
       case (LeftP(n), Sequent(ctxt,sc), Atom(R("=", List(Var(v),tm)))) 
         if (ctxt ++ sc).forall(firstorder) =>
-          val tm_vars = varsOfTerm(tm)
           val ctxt1 = removelist(n,ctxt)
           val ctxt2 = 
-            ctxt1.map(x => substitute_Formula(v, tm, tm_vars, x))
-          val sc1 = sc.map(x => substitute_Formula(v,tm,tm_vars, x))
+            ctxt1.map(x => substitute_Formula(v, tm,  x))
+          val sc1 = sc.map(x => substitute_Formula(v,tm, x))
           Some(List(  Sequent(ctxt2,sc1))    ,Nil)
       case _ =>
         None

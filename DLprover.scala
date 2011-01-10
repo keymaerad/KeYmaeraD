@@ -413,7 +413,7 @@ final object Prover {
     case _ => tm
   }
 
-
+/*
   def substitute_HP(xold: String,
                     xnew: Term,
                     hp : HP) : HP = hp match {
@@ -424,50 +424,59 @@ final object Prover {
       Assign(vs1)
     // TODO other cases
   }
-                    
+  */
 
-  def substitute_Formula(xold: String,
+
+
+  def substitute_Formula1(xold: String,
                       xnew: Term,
                       xnew_fv: Set[String],
                       fm: Formula): Formula = fm match {
     case True | False => fm
     case Atom(R(r,ps)) => 
       Atom(R(r, ps.map(p => substitute_Term(xold,xnew,p))))
-    case Not(f) => Not(substitute_Formula(xold,xnew,xnew_fv,f))
+    case Not(f) => Not(substitute_Formula1(xold,xnew,xnew_fv,f))
     case And(f1,f2) => 
-      And(substitute_Formula(xold,xnew,xnew_fv,f1),
-          substitute_Formula(xold,xnew,xnew_fv,f2))
+      And(substitute_Formula1(xold,xnew,xnew_fv,f1),
+          substitute_Formula1(xold,xnew,xnew_fv,f2))
     case Or(f1,f2) => 
-      Or(substitute_Formula(xold,xnew,xnew_fv,f1),
-          substitute_Formula(xold,xnew,xnew_fv,f2))
+      Or(substitute_Formula1(xold,xnew,xnew_fv,f1),
+          substitute_Formula1(xold,xnew,xnew_fv,f2))
     case Imp(f1,f2) => 
-      Imp(substitute_Formula(xold,xnew,xnew_fv,f1),
-          substitute_Formula(xold,xnew,xnew_fv,f2))
+      Imp(substitute_Formula1(xold,xnew,xnew_fv,f1),
+          substitute_Formula1(xold,xnew,xnew_fv,f2))
     case Iff(f1,f2) => 
-      Iff(substitute_Formula(xold,xnew,xnew_fv,f1),
-          substitute_Formula(xold,xnew,xnew_fv,f2))
+      Iff(substitute_Formula1(xold,xnew,xnew_fv,f1),
+          substitute_Formula1(xold,xnew,xnew_fv,f2))
     case Exists(v,f) =>
       if( ! xnew_fv.contains(v)){
-        Exists(v, substitute_Formula(xold,xnew, xnew_fv, f))
+        Exists(v, substitute_Formula1(xold,xnew, xnew_fv, f))
       } else {
         val v1 = uniqify(v)
         val f1 = rename_Formula(v,v1,f)
-        Exists(v1,substitute_Formula(xold,xnew, xnew_fv, f1))
+        Exists(v1,substitute_Formula1(xold,xnew, xnew_fv, f1))
       }
     case Forall(v,f) =>
       if( ! xnew_fv.contains(v)){
-        Forall(v, substitute_Formula(xold,xnew, xnew_fv, f))
+        Forall(v, substitute_Formula1(xold,xnew, xnew_fv, f))
       } else {
         val v1 = uniqify(v)
         val f1 = rename_Formula(v,v1,f)
-        Forall(v1,substitute_Formula(xold,xnew, xnew_fv, f1))
+        Forall(v1,substitute_Formula1(xold,xnew, xnew_fv, f1))
       }
+/* let's just keep these unimplemented for now
     case Box(hp, f) =>
       Box(substitute_HP(xold,xnew,hp),
-          substitute_Formula(xold,xnew,xnew_fv,f))
+          substitute_Formula1(xold,xnew,xnew_fv,f))
     case Diamond(hp, f) =>
       Box(substitute_HP(xold,xnew,hp),
-          substitute_Formula(xold,xnew,xnew_fv,f))
+          substitute_Formula1(xold,xnew,xnew_fv,f))
+          */ 
+  }
+
+  def substitute_Formula(xold: String, xnew: Term, fm: Formula): Formula = {
+    val vs = varsOfTerm(xnew)
+    substitute_Formula1(xold,xnew, HashSet.empty ++ vs, fm)
   }
 
 
@@ -538,7 +547,6 @@ final object Prover {
     case Atom(R(r,args)) => 
       val argsfn = (tm1: Term) => args.map(a =>  extract_Term(a, tm_ex)(tm1))
       tm1 => Atom(R(r,argsfn(tm1)))
-
   }
 
 
