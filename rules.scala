@@ -145,7 +145,7 @@ object Rules {
       case (LeftP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
-          case And(f1,f2) => 
+          case Binop(And,f1,f2) => 
             val sq1 = Sequent(splicelist(n,c,List(f1,f2)),s)
             Some( (List(sq1),Nil))
           case _ => 
@@ -160,7 +160,7 @@ object Rules {
       case (RightP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
-          case And(f1,f2) => 
+          case Binop(And,f1,f2) => 
             val sq1 = replace(p,sq,f1)
             val sq2 = replace(p,sq,f2)
             Some( (List(sq1,sq2),Nil))
@@ -176,7 +176,7 @@ object Rules {
       case (RightP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
-          case Imp(f1,f2) => 
+          case Binop(Imp,f1,f2) => 
             val Sequent(c1,s1) = replace(p,sq,f2)
             Some( (List(Sequent(f1::c1, s1)),Nil))
           case _ => 
@@ -191,7 +191,7 @@ object Rules {
       case (RightP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
-          case Or(f1,f2) => 
+          case Binop(Or,f1,f2) => 
             val sq1 = Sequent(c,splicelist(n,s,List(f1,f2)))
             Some( (List(sq1),Nil))
           case _ => 
@@ -206,7 +206,7 @@ object Rules {
       case (LeftP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
-          case Or(f1,f2) => 
+          case Binop(Or,f1,f2) => 
             val sq1 = replace(p,sq,f1)
             val sq2 = replace(p,sq,f2)
             Some( (List(sq1,sq2),Nil))
@@ -252,7 +252,7 @@ object Rules {
         val fm = lookup(p,sq)
         fm match {
           case Box(Check(fm1), phi) => 
-            val fm2 = Imp(fm1, phi)
+            val fm2 = Binop(Imp,fm1, phi)
             val sq1 = replace(p,sq, fm2)
             Some( (List(sq1),Nil))
           case _ => 
@@ -361,7 +361,7 @@ object Rules {
                     Prover.setClosure(Prover.totalDeriv(derivs,inv)))
                 else ( List(h), Prover.totalDeriv(derivs,inv))
               val inv_hints1 = inv_hints.filter( inv != _)
-              val fm1 = Box(Evolve(derivs, And(h,inv),inv_hints1, sols), phi) 
+              val fm1 = Box(Evolve(derivs, Binop(And,h,inv),inv_hints1, sols), phi) 
               val iv = Sequent(h::c, List(inv))
               val ind = Sequent(ind_asm, List(ind_cons))
               val str = replace(pos,sq, fm1)
@@ -464,8 +464,8 @@ object Rules {
               val t2 = uniqify(t)
               val t_range = Atom(R(">=", List(Fn(t, Nil), Num(Exact.zero))))
               val t2_range = 
-                And(Atom(R(">=", List(Fn(t2,Nil), Num(Exact.zero)))),
-                    Atom(R("<=", List(Fn(t2,Nil), Fn(t,Nil)))))
+                Binop(And,Atom(R(">=", List(Fn(t2,Nil), Num(Exact.zero)))),
+                      Atom(R("<=", List(Fn(t2,Nil), Fn(t,Nil)))))
               val endpoint_h = Box(Assign(sols), h)
               val interm_h0 =  Box(Assign(sols),h)
               val interm_h =  renameFn(t,t2,interm_h0)
@@ -482,7 +482,7 @@ object Rules {
               val phi2 = 
                 Box(assign_hp, phi1)
               val stay_in_h = 
-                Forall(t2, Imp(t2_range, interm_h))
+                Forall(t2, Binop(Imp,t2_range, interm_h))
               val newgoal = mode match {
                 case Standard =>
                   replace(pos,Sequent(stay_in_h ::t_range::c,s), phi2)

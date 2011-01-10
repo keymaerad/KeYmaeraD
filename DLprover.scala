@@ -41,13 +41,7 @@ final object Prover {
     case True | False => true
     case Atom(R(r,ps)) => true
     case Not(f) => firstorder(f)
-    case And(f1,f2) => 
-      firstorder(f1) && firstorder(f2)
-    case Or(f1,f2) => 
-      firstorder(f1) && firstorder(f2)
-    case Imp(f1,f2) => 
-      firstorder(f1) && firstorder(f2)
-    case Iff(f1,f2) => 
+    case Binop(_,f1,f2) => 
       firstorder(f1) && firstorder(f2)
     case Exists(v,f) =>
       firstorder(f)
@@ -57,7 +51,7 @@ final object Prover {
     case Diamond(_,_) => false
     case _ => false
   }
-
+/*
   def plugin(fm : Formula, fmctxt: FormulaCtxt): Formula = fmctxt match {
     case Hole => 
       fm
@@ -93,7 +87,7 @@ final object Prover {
       Diamond(hp, plugin(fm,rest))
 
   }
-
+*/
 
   def totalDerivTerm(d: List[(Fn, Term)], tm: Term) : Term = tm match {
     case Var(s) =>  
@@ -144,10 +138,10 @@ final object Prover {
         val tms1 = tms.map( (t: Term) =>  totalDerivTerm(d, t ))
         Atom(R(r, tms1))
       //case Not(f) => Not(totalDeriv(d,f))
-      case And(f1,f2) => And(totalDeriv(d,f1), totalDeriv(d,f2))
+      case Binop(And,f1,f2) => Binop(And,totalDeriv(d,f1), totalDeriv(d,f2))
 
                        // not "Or" here!
-      case Or(f1,f2) => And(totalDeriv(d,f1), totalDeriv(d,f2))
+      case Binop(Or,f1,f2) => Binop(And,totalDeriv(d,f1), totalDeriv(d,f2))
       
       //case Imp(f1,f2) => Imp(totalDeriv(d,f1), totalDeriv(d,f2))
       //case Iff(f1,f2) => Iff(totalDeriv(d,f1), totalDeriv(d,f2))
@@ -182,16 +176,16 @@ final object Prover {
   def openSet(fm: Formula): Boolean = fm match {
     case Atom(R("<", _)) => true
     case Atom(R(">", _)) => true
-    case And(fm1,fm2)  => openSet(fm1) & openSet(fm2)
-    case Or(fm1,fm2)  => openSet(fm1) & openSet(fm2)
+    case Binop(And,fm1,fm2)  => openSet(fm1) & openSet(fm2)
+    case Binop(Or,fm1,fm2)  => openSet(fm1) & openSet(fm2)
     case _ => false
   }
 
   def setClosure(fm: Formula): Formula = fm match {
     case Atom(R("<", ts)) => Atom(R("<=", ts))
     case Atom(R(">", ts)) => Atom(R(">=", ts))
-    case And(fm1,fm2)  => And(setClosure(fm1), setClosure(fm2))
-    case Or(fm1,fm2)  => Or(setClosure(fm1),setClosure(fm2))
+    case Binop(And,fm1,fm2)  => Binop(And,setClosure(fm1), setClosure(fm2))
+    case Binop(Or,fm1,fm2)  => Binop(Or,setClosure(fm1),setClosure(fm2))
     case _ => throw new Error("unsupported setClosure")
   }
 
@@ -216,14 +210,8 @@ final object Prover {
     case Atom(R(r,ps)) => 
       Atom(R(r, ps.map(p => rename_Term(xold,xnew,p))))
     case Not(f) => Not(rename_Formula(xold,xnew,f))
-    case And(f1,f2) => 
-      And(rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
-    case Or(f1,f2) => 
-      Or(rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
-    case Imp(f1,f2) => 
-      Imp(rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
-    case Iff(f1,f2) => 
-      Iff(rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
+    case Binop(c,f1,f2) => 
+      Binop(c,rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
     case Exists(v,f) if v == xold =>
       val v1 = uniqify(v)
       val f1 = rename_Formula(v,v1,f)
@@ -296,14 +284,8 @@ final object Prover {
     case Atom(R(r,ps)) => 
       Atom(R(r, ps.map(p => g(p))))
     case Not(f1) => Not(onterms_Formula(g,f1))
-    case And(f1,f2) => 
-      And(onterms_Formula(g,f1),onterms_Formula(g,f2))
-    case Or(f1,f2) => 
-      Or(onterms_Formula(g,f1),onterms_Formula(g,f2))
-    case Imp(f1,f2) => 
-      Imp(onterms_Formula(g,f1),onterms_Formula(g,f2))
-    case Iff(f1,f2) => 
-      Iff(onterms_Formula(g,f1),onterms_Formula(g,f2))
+    case Binop(c,f1,f2) => 
+      Binop(c,onterms_Formula(g,f1),onterms_Formula(g,f2))
     case Exists(v,f) =>
       Exists(v, onterms_Formula(g,f))      
     case Forall(v,f) =>
@@ -436,17 +418,8 @@ final object Prover {
     case Atom(R(r,ps)) => 
       Atom(R(r, ps.map(p => substitute_Term(xold,xnew,p))))
     case Not(f) => Not(substitute_Formula1(xold,xnew,xnew_fv,f))
-    case And(f1,f2) => 
-      And(substitute_Formula1(xold,xnew,xnew_fv,f1),
-          substitute_Formula1(xold,xnew,xnew_fv,f2))
-    case Or(f1,f2) => 
-      Or(substitute_Formula1(xold,xnew,xnew_fv,f1),
-          substitute_Formula1(xold,xnew,xnew_fv,f2))
-    case Imp(f1,f2) => 
-      Imp(substitute_Formula1(xold,xnew,xnew_fv,f1),
-          substitute_Formula1(xold,xnew,xnew_fv,f2))
-    case Iff(f1,f2) => 
-      Iff(substitute_Formula1(xold,xnew,xnew_fv,f1),
+    case Binop(c,f1,f2) => 
+      Binop(c,substitute_Formula1(xold,xnew,xnew_fv,f1),
           substitute_Formula1(xold,xnew,xnew_fv,f2))
     case Exists(v,f) =>
       if( ! xnew_fv.contains(v)){
@@ -489,17 +462,8 @@ final object Prover {
       Atom(R(r, ps.map(p => simul_substitute_Term(subs,p))))
     case Not(f) => 
       Not(simul_substitute_Formula1(subs,new_fv,f))
-    case And(f1,f2) => 
-      And(simul_substitute_Formula1(subs,new_fv,f1),
-          simul_substitute_Formula1(subs,new_fv,f2))
-    case Or(f1,f2) => 
-      Or(simul_substitute_Formula1(subs,new_fv,f1),
-          simul_substitute_Formula1(subs,new_fv,f2))
-    case Imp(f1,f2) => 
-      Imp(simul_substitute_Formula1(subs,new_fv,f1),
-          simul_substitute_Formula1(subs,new_fv,f2))
-    case Iff(f1,f2) => 
-      Iff(simul_substitute_Formula1(subs,new_fv,f1),
+    case Binop(c,f1,f2) => 
+      Binop(c,simul_substitute_Formula1(subs,new_fv,f1),
           simul_substitute_Formula1(subs,new_fv,f2))
     case Exists(v,f) =>
       if( ! new_fv.contains(v)){

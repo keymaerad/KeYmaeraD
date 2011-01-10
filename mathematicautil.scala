@@ -142,14 +142,14 @@ object MathematicaUtil {
       case Atom(_) => throw new Error("non-binary relation")
       case Not(p) => 
         un_fun("Not", mathematica_of_formula(p))
-      case And(p,q) => 
+      case Binop(And,p,q) => 
         bin_fun("And", mathematica_of_formula(p),mathematica_of_formula(q))
-      case Or(p,q) => 
+      case Binop(Or,p,q) => 
         bin_fun("Or", mathematica_of_formula(p),mathematica_of_formula(q))
-      case Imp(p,q) => 
+      case Binop(Imp,p,q) => 
         bin_fun("Implies", mathematica_of_formula(p),
                            mathematica_of_formula(q))
-      case Iff(p,q) => 
+      case Binop(Iff,p,q) => 
         bin_fun("Equivalent", mathematica_of_formula(p),
                               mathematica_of_formula(q))
       case Forall(x,p) => 

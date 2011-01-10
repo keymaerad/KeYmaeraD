@@ -102,22 +102,22 @@ object Printing {
       val pr1 = 12;
       text("~") :: docOfFormulaAux(pr1)(fm)
     case Atom(p) => docOfPred(p)
-    case And(fm1,fm2) => 
+    case Binop(And,fm1,fm2) => 
       val pr1 = 10;
       bracketp(pr>pr1)("(",")", 
                        docOfFormulaAux(pr1)(fm1) :: text("&") :: 
                        docOfFormulaAux(pr1+1)(fm2))
-    case Or(fm1,fm2) => 
+    case Binop(Or,fm1,fm2) => 
       val pr1 = 8;
       bracketp(pr>pr1)("(",")",
                        docOfFormulaAux(pr1)(fm1) :: text("|") :: 
                        docOfFormulaAux(pr1+1)(fm2) )
-    case Imp(fm1,fm2) =>
+    case Binop(Imp,fm1,fm2) =>
       val pr1 = 6;
       bracketp(pr>pr1)("(",")", 
                        docOfFormulaAux(pr1)(fm1) :: text("==>") :: 
                        docOfFormulaAux(pr1+1)(fm2))
-    case Iff(fm1,fm2) => 
+    case Binop(Iff,fm1,fm2) => 
       val pr1 = 4;
       bracketp(pr>pr1)("(",")",
                        docOfFormulaAux(pr1)(fm1) :: text("<=>") :: 

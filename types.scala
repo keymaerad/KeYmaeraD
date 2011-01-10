@@ -13,16 +13,19 @@ sealed abstract class Sort
 case class St(nm: String) extends Sort
 case object Real extends Sort
 
+sealed abstract class Connective
+case object And extends Connective
+case object Or extends Connective
+case object Imp extends Connective
+case object Iff extends Connective
+
 // first order formula
 sealed abstract class Formula
 case object True extends Formula
 case object False extends Formula
 case class Atom(p: Pred) extends Formula
 case class Not(f: Formula) extends Formula
-case class And(f1: Formula, f2: Formula) extends Formula
-case class Or(f1: Formula, f2: Formula) extends Formula
-case class Imp(f1: Formula, f2: Formula) extends Formula
-case class Iff(f1: Formula, f2: Formula) extends Formula
+case class Binop(c: Connective, f1 : Formula, f2: Formula) extends Formula
 case class Exists(v: String, f: Formula) extends Formula
 case class Forall(v: String, f: Formula) extends Formula
 case class ExistsOfSort(v: String, c: Sort, f: Formula) extends Formula

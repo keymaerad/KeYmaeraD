@@ -156,6 +156,21 @@ final object AM {
     }
   }
 
+  implicit def connective2Orderd(c: Connective): Ordered[Connective] = 
+    new Ordered[Connective] {
+      def connectiveEnum(c1 : Connective): Int = c1 match {
+        case And => 0
+        case Or => 1
+        case Imp => 2
+        case Iff => 3
+      }
+
+      def compare(that: Connective): Int = {
+        connectiveEnum(c).compare(connectiveEnum(that))
+      }
+    }
+
+
   // yuck. Is there a better way to write this?
   implicit def formula2Ordered(f: Formula): Ordered[Formula] = 
     new Ordered[Formula] {
@@ -176,42 +191,21 @@ final object AM {
           case Not(f2) => f1 compare f2
           case _ => -1
         }
-        case And(f1,f2) => that match {
+        case Binop(c,f1,f2) => that match {
           case False | True | Atom(_) | Not(_) => 1
-          case And(g1,g2) =>
-            val c = f1 compare g1;
-            if(c == 0) f2 compare g2
-            else c
-          case _ => -1
-        }
-        case Or(f1,f2) => that match {
-          case False | True | Atom(_) | Not(_) | And(_,_) => 1
-          case Or(g1,g2) =>
-            val c = f1 compare g1;
-            if(c == 0) f2 compare g2
-            else c
-          case _ => -1
-        }
-        case Imp(f1,f2) => that match {
-          case False | True | Atom(_) | Not(_) | And(_,_) | Or(_,_) => 1
-          case Imp(g1,g2) =>
-            val c = f1 compare g1;
-            if(c == 0) f2 compare g2
-            else c
-          case _ => -1
-        }
-        case Iff(f1,f2) => that match {
-          case False | True | Atom(_) | Not(_) 
-             | And(_,_) | Or(_,_) | Imp(_,_) => 1
-          case Iff(g1,g2) =>
-            val c = f1 compare g1;
-            if(c == 0) f2 compare g2
-            else c
+          case Binop(d, g1,g2) =>
+            val c1 = c compare d;
+            if(c1 != 0)  c1
+            else {
+              val c2 = f1 compare g1;
+              if(c2 != 0) c2
+              else f2 compare g2
+            }
           case _ => -1
         }
         case Forall(x,f) => that match {
           case False | True | Atom(_) | Not(_) 
-             | And(_,_) | Or(_,_) | Imp(_,_) | Iff(_,_) => 1
+             | Binop(_,_,_) => 1
           case Forall(y,g) =>
             val c = x compare y;
             if(c == 0) f compare g
@@ -389,23 +383,23 @@ final object AM {
     case Not(False) => True
     case Not(True) => False
     case Not(Not(p)) => p
-    case And(p,False) => False
-    case And(False,p) => False
-    case And(p,True) => p
-    case And(True,p) => p
-    case Or(p,False) => p
-    case Or(False,p) => p
-    case Or(p,True) => True
-    case Or(True,p) => True
-    case Imp(False,p) => True
-    case Imp(p,True) => True
-    case Imp(True,p) => p
-    case Imp(p, False) => Not(p)
-    case Iff(p, True) => p
-    case Iff(True,p) => p
-    case Iff(False, False) => True
-    case Iff(p, False) => Not(p)
-    case Iff(False,p) => Not(p)
+    case Binop(And, p,False) => False
+    case Binop(And, False,p) => False
+    case Binop(And,p,True) => p
+    case Binop(And,True,p) => p
+    case Binop(Or,p,False) => p
+    case Binop(Or,False,p) => p
+    case Binop(Or,p,True) => True
+    case Binop(Or,True,p) => True
+    case Binop(Imp,False,p) => True
+    case Binop(Imp,p,True) => True
+    case Binop(Imp,True,p) => p
+    case Binop(Imp,p, False) => Not(p)
+    case Binop(Iff,p, True) => p
+    case Binop(Iff,True,p) => p
+    case Binop(Iff,False, False) => True
+    case Binop(Iff,p, False) => Not(p)
+    case Binop(Iff,False,p) => Not(p)
     case _ => fm
   }
 
@@ -413,10 +407,10 @@ final object AM {
 
   def psimplify(fm: Formula): Formula = fm match {
     case Not(p) => psimplify1(Not(psimplify(p)))
-    case And(p,q) => psimplify1(And(psimplify(p),psimplify(q)))
-    case Or(p,q) => psimplify1(Or(psimplify(p),psimplify(q)))
-    case Imp(p,q) => psimplify1(Imp(psimplify(p),psimplify(q)))
-    case Iff(p,q) => psimplify1(Iff(psimplify(p),psimplify(q)))
+    case Binop(And,p,q) => psimplify1(Binop(And,psimplify(p),psimplify(q)))
+    case Binop(Or,p,q) => psimplify1(Binop(Or,psimplify(p),psimplify(q)))
+    case Binop(Imp,p,q) => psimplify1(Binop(Imp,psimplify(p),psimplify(q)))
+    case Binop(Iff,p,q) => psimplify1(Binop(Iff,psimplify(p),psimplify(q)))
     case _ => fm
   }
 
@@ -433,10 +427,7 @@ final object AM {
     case False | True => Nil
     case Atom(R(p,args)) => unions(args.map(fvt))
     case Not(p) => vari(p)
-    case And(p,q) => union(vari(p), vari(q))
-    case Or(p,q) => union(vari(p), vari(q))
-    case Imp(p,q) => union(vari(p), vari(q))
-    case Iff(p,q) => union(vari(p), vari(q))
+    case Binop(_,p,q) => union(vari(p), vari(q))
     case Forall(x,p) => insert(x, vari(p))
     case Exists(x,p) => insert(x, vari(p))
     case _ => 
@@ -447,10 +438,7 @@ final object AM {
     case False | True => Nil
     case Atom(R(p,args)) => unions(args.map(fvt))
     case Not(p) => fv(p)
-    case And(p,q) => union(fv(p), fv(q))
-    case Or(p,q) => union(fv(p), fv(q))
-    case Imp(p,q) => union(fv(p), fv(q))
-    case Iff(p,q) => union(fv(p), fv(q))
+    case Binop(_,p,q) => union(fv(p), fv(q))
     case Forall(x,p) => subtract(fv(p) ,List(x))
     case Exists(x,p) => subtract(fv(p),List(x) )
     case _ => 
@@ -474,10 +462,7 @@ final object AM {
 
   def simplify(fm: Formula): Formula = fm match {
     case Not(p) => simplify1(Not(simplify(p)))
-    case And(p,q) => simplify1(And(simplify(p),simplify(q)))
-    case Or(p,q) => simplify1(Or(simplify(p),simplify(q)))
-    case Imp(p,q) => simplify1(Imp(simplify(p),simplify(q)))
-    case Iff(p,q) => simplify1(Iff(simplify(p),simplify(q)))
+    case Binop(c,p,q) => simplify1(Binop(c,simplify(p),simplify(q)))
     case Forall(x,p) => simplify1(Forall(x,simplify(p)))
     case Exists(x,p) => simplify1(Exists(x,simplify(p)))
     case _ => fm
@@ -491,8 +476,8 @@ final object AM {
   }
 
   def purednf(fm: Formula): List[List[Formula]] = fm match {
-    case And(p,q) => distrib(purednf(p),purednf(q))
-    case Or(p,q) => union(purednf(p),purednf(q))
+    case Binop(And,p,q) => distrib(purednf(p),purednf(q))
+    case Binop(Or,p,q) => union(purednf(p),purednf(q))
     case _ => List(List(fm))
   }
 
@@ -514,15 +499,17 @@ final object AM {
   }
 
   def nnf(fm: Formula): Formula = fm match {
-    case And(p,q) => And(nnf(p), nnf(q))
-    case Or(p,q) => Or(nnf(p), nnf(q))
-    case Imp(p,q) => Or(nnf(Not(p)), nnf(q))
-    case Iff(p,q) => Or(And(nnf(p), nnf(q)), And(nnf(Not(p)), nnf(Not(q))))
+    case Binop(And,p,q) => Binop(And,nnf(p), nnf(q))
+    case Binop(Or,p,q) => Binop(Or,nnf(p), nnf(q))
+    case Binop(Imp,p,q) => Binop(Or,nnf(Not(p)), nnf(q))
+    case Binop(Iff,p,q) => Binop(Or, Binop(And, nnf(p), nnf(q)), 
+                                     Binop(And,nnf(Not(p)), nnf(Not(q))))
     case Not(Not(p)) => p
-    case Not(And(p,q)) => Or(nnf(Not(p)),nnf(Not(q)))
-    case Not(Or(p,q)) => And(nnf(Not(p)), nnf(Not(q)))
-    case Not(Imp(p,q)) => And(nnf(p), nnf(Not(q)))
-    case Not(Iff(p,q)) => Or(And(nnf(p),nnf(Not(q))),And(nnf(Not(p)),nnf(q)))
+    case Not(Binop(And,p,q)) => Binop(Or,nnf(Not(p)),nnf(Not(q)))
+    case Not(Binop(Or,p,q)) => Binop(And,nnf(Not(p)), nnf(Not(q)))
+    case Not(Binop(Imp,p,q)) => Binop(And,nnf(p), nnf(Not(q)))
+    case Not(Binop(Iff,p,q)) => Binop(Or,Binop(And,nnf(p),nnf(Not(q))),
+                                      Binop(And,nnf(Not(p)),nnf(q)))
     case Forall(x,p) => Forall(x,nnf(p))
     case Exists(x,p) => Exists(x,nnf(p))
     case Not(Forall(x,p)) => Exists(x,nnf(Not(p)))
@@ -534,7 +521,7 @@ final object AM {
     val (yes,no) = cjs.partition(c => fv(c).contains(x));
     if(yes == Nil) list_conj(no) 
     else if(no == Nil) Exists(x,list_conj(yes))
-    else And(Exists(x,list_conj(yes)), list_conj(no))
+    else Binop(And,Exists(x,list_conj(yes)), list_conj(no))
   }
   
   def pushquant(x: String, p: Formula): Formula = {
@@ -549,8 +536,8 @@ final object AM {
   def miniscope(fm: Formula): Formula = {
     fm match {
     case Not(p) => Not(miniscope(p))
-    case And(p,q) => And(miniscope(p),miniscope(q))
-    case Or(p,q) => Or(miniscope(p),miniscope(q))
+    case Binop(And,p,q) => Binop(And,miniscope(p),miniscope(q))
+    case Binop(Or,p,q) => Binop(Or,miniscope(p),miniscope(q))
     case Forall(x,p) => Not(pushquant(x,Not(miniscope(p))))
     case Exists(x,p) => pushquant(x,miniscope(p))
     case _ => fm
@@ -564,10 +551,10 @@ final object AM {
     case True => true
     case Atom(x) => v(x)
     case Not(p) => eval(p,v) unary_!
-    case And(p,q) => eval(p,v) && eval(q,v)
-    case Or(p,q) => eval(p,v) || eval(q,v)
-    case Imp(p,q) => (eval(p,v) unary_! ) || eval(q,v)
-    case Iff(p,q) => eval(p,v) == eval(q,v)
+    case Binop(And,p,q) => eval(p,v) && eval(q,v)
+    case Binop(Or,p,q) => eval(p,v) || eval(q,v)
+    case Binop(Imp,p,q) => (eval(p,v) unary_! ) || eval(q,v)
+    case Binop(Iff,p,q) => eval(p,v) == eval(q,v)
     case _ => 
       throw new Error("nonfirstorder arithmetic")
   }
@@ -591,16 +578,16 @@ final object AM {
   }
 
 
-  def mk_and(p: Formula, q: Formula): Formula = And(p,q);
-  def mk_or(p: Formula, q: Formula): Formula = Or(p,q);
+  def mk_and(p: Formula, q: Formula): Formula = Binop(And,p,q);
+  def mk_or(p: Formula, q: Formula): Formula = Binop(Or,p,q);
 
   def conjuncts(fm: Formula): List[Formula] = fm match {
-    case And(p,q) => conjuncts(p) ++ conjuncts(q) 
+    case Binop(And,p,q) => conjuncts(p) ++ conjuncts(q) 
     case _ => List(fm)
   }
 
   def disjuncts(fm: Formula): List[Formula] = fm match {
-    case Or(p,q) => disjuncts(p) ++ disjuncts(q) 
+    case Binop(Or,p,q) => disjuncts(p) ++ disjuncts(q) 
     case _ => List(fm)
   }
 
@@ -613,10 +600,7 @@ final object AM {
   def onatoms(f: Pred => Formula, fm: Formula): Formula  = fm match {
     case Atom(a) => f(a)
     case Not(p) => Not(onatoms(f,p))
-    case And(p,q) => And(onatoms(f, p), onatoms(f,q))
-    case Or(p,q) => Or(onatoms(f, p), onatoms(f,q))
-    case Imp(p,q) => Imp(onatoms(f, p), onatoms(f,q))
-    case Iff(p,q) => Iff(onatoms(f, p), onatoms(f,q))
+    case Binop(c,p,q) => Binop(c,onatoms(f, p), onatoms(f,q))
     case Forall(x,p ) => Forall(x,onatoms(f,p))
     case Exists(x,p ) => Exists(x,onatoms(f,p))
     case ForallOfSort(x,c,p ) => ForallOfSort(x,c,onatoms(f,p))
@@ -636,10 +620,7 @@ final object AM {
   def overatoms[B](f: Pred => B => B, fm: Formula, b: B): B = fm match {
     case Atom(a) => f(a)(b)
     case Not(p) => overatoms(f,p,b)
-    case And(p,q) => overatoms(f, p, overatoms(f,q,b))
-    case Or(p,q) => overatoms(f, p, overatoms(f,q,b))
-    case Imp(p,q) => overatoms(f, p, overatoms(f,q,b))
-    case Iff(p,q) => overatoms(f, p, overatoms(f,q,b))
+    case Binop(_,p,q) => overatoms(f, p, overatoms(f,q,b))
     case Forall(x,p ) => overatoms(f, p, b)
     case Exists(x,p ) => overatoms(f, p, b)
     case _ => b
@@ -653,13 +634,13 @@ final object AM {
   def list_conj(l: List[Formula]) : Formula = l match {
     case Nil => True
     case f::Nil => f
-    case f::fs => And(f, list_conj(fs))
+    case f::fs => Binop(And,f, list_conj(fs))
   }
 
   def list_disj(l: List[Formula]) : Formula = l match {
     case Nil => False
     case f::Nil => f
-    case f::fs => Or(f, list_disj(fs))
+    case f::fs => Binop(Or,f, list_disj(fs))
   }
 
 
@@ -682,12 +663,8 @@ final object AM {
     def qelift(vars: List[String], fm: Formula): Formula = fm match {
       case Atom(R(_,_)) => afn(vars,fm)
       case Not(p) => Not(qelift(vars,p))
-      case And(p,q) => 
-        And(qelift(vars,p), qelift(vars,q))
-      case Or(p,q) => 
-        Or(qelift(vars,p), qelift(vars,q))
-      case Imp(p,q) => Imp(qelift(vars,p), qelift(vars,q))
-      case Iff(p,q) => Iff(qelift(vars,p), qelift(vars,q))
+      case Binop(c,p,q) => 
+        Binop(c,qelift(vars,p), qelift(vars,q))
       case Forall(x,p) => Not(qelift(vars,Exists(x,Not(p))))
       case Exists(x,p) => 
         val djs = disjuncts(nfn(qelift(x::vars,p)));
@@ -730,19 +707,19 @@ final object AM {
 
   def cnnf(lfn:  Formula => Formula ) : Formula => Formula  =  {
     def cnnf_aux(fm: Formula): Formula = fm match {
-      case And(p,q) => And(cnnf_aux(p), cnnf_aux(q))
-      case Or(p,q) => Or(cnnf_aux(p), cnnf_aux(q))
-      case Imp(p,q) => Or(cnnf_aux(Not(p)), cnnf_aux(q))
-      case Iff(p,q) => Or(And(cnnf_aux(p), cnnf_aux(q)),
-                          And(cnnf_aux(Not(p)), cnnf_aux(Not(q))))
+      case Binop(And,p,q) => Binop(And,cnnf_aux(p), cnnf_aux(q))
+      case Binop(Or,p,q) => Binop(Or,cnnf_aux(p), cnnf_aux(q))
+      case Binop(Imp,p,q) => Binop(Or,cnnf_aux(Not(p)), cnnf_aux(q))
+      case Binop(Iff,p,q) => Binop(Or,Binop(And,cnnf_aux(p), cnnf_aux(q)),
+                          Binop(And,cnnf_aux(Not(p)), cnnf_aux(Not(q))))
       case Not(Not(p)) => cnnf_aux(p)
-      case Not(And(p,q)) => Or(cnnf_aux(Not(p)), cnnf_aux(Not(q)))
-      case Not(Or(And(p,q),And(p_1,r))) if p_1 == negate(p) =>
-        Or(cnnf_aux(And(p,Not(q))), cnnf_aux(And(p_1,Not(r))))
-      case Not(Or(p,q)) => And(cnnf_aux(Not(p)),cnnf_aux(Not(q)))
-      case Not(Imp(p,q)) => And(cnnf_aux(p), cnnf_aux(Not(q)))
-      case Not(Iff(p,q)) => Or(And(cnnf_aux(p),cnnf_aux(Not(q))),
-                               And(cnnf_aux(Not(p)),cnnf_aux(q)))
+      case Not(Binop(And,p,q)) => Binop(Or,cnnf_aux(Not(p)), cnnf_aux(Not(q)))
+      case Not(Binop(Or,Binop(And,p,q),Binop(And,p_1,r))) if p_1 == negate(p) =>
+        Binop(Or,cnnf_aux(Binop(And,p,Not(q))), cnnf_aux(Binop(And,p_1,Not(r))))
+      case Not(Binop(Or,p,q)) => Binop(And,cnnf_aux(Not(p)),cnnf_aux(Not(q)))
+      case Not(Binop(Imp,p,q)) => Binop(And,cnnf_aux(p), cnnf_aux(Not(q)))
+      case Not(Binop(Iff,p,q)) => Binop(Or,Binop(And,cnnf_aux(p),cnnf_aux(Not(q))),
+                               Binop(And,cnnf_aux(Not(p)),cnnf_aux(q)))
       case _ => lfn(fm)
     }
     fm => simplify(cnnf_aux(simplify(fm)))
@@ -758,9 +735,6 @@ final object AM {
 
   val zero = Num(rZero)
   val one = Num(rOne)
-
-
-
 
 
 
@@ -1017,8 +991,8 @@ final object AM {
   } catch {
     case f: FindSignFailure => 
       val eq = Atom(R("=",List(pol,zero)));
-      Or(And(eq, cont_z(assertsign(sgns, (pol,Zero())))),
-         And(Not(eq), cont_n(assertsign(sgns,(pol,Nonzero())))))
+      Binop(Or,Binop(And,eq, cont_z(assertsign(sgns, (pol,Zero())))),
+         Binop(And,Not(eq), cont_n(assertsign(sgns,(pol,Nonzero())))))
   }
 
 
@@ -1114,8 +1088,8 @@ final object AM {
     findsign(sgns, pol) match {
       case Nonzero() => 
         val fm = Atom(R(">",List(pol,zero)));
-        Or(And(fm,cont(assertsign(sgns,(pol,Positive())))),
-           And(Not(fm),cont(assertsign(sgns,(pol,Negative())))))
+        Binop(Or,Binop(And,fm,cont(assertsign(sgns,(pol,Positive())))),
+           Binop(And,Not(fm),cont(assertsign(sgns,(pol,Negative())))))
       case _ => cont(sgns)
     }
 

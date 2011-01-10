@@ -105,17 +105,17 @@ class DLParser(ins : String)
      formula0
 
    def formula0 : Parser[Formula] = 
-     formula1*( "<=>" ^^^ {(f1,f2) => Iff(f1,f2)})
+     formula1*( "<=>" ^^^ {(f1:Formula,f2:Formula) => Binop(Iff,f1,f2)})
 
    // XXX This should be right-associative instead.
    def formula1 : Parser[Formula] = 
-     formula2*( "==>" ^^^ {(f1,f2) => Imp(f1,f2)})
+     formula2*( "==>" ^^^ {(f1:Formula,f2:Formula) => Binop(Imp,f1,f2)})
 
    def formula2 : Parser[Formula] = 
-     formula3*( "|" ^^^ {(f1,f2) => Or(f1,f2)})
+     formula3*( "|" ^^^ {(f1:Formula,f2:Formula) => Binop(Or,f1,f2)})
 
    def formula3 : Parser[Formula] = 
-     formula4*( "&" ^^^ {(f1,f2) => And(f1,f2)})
+     formula4*( "&" ^^^ {(f1:Formula,f2:Formula) => Binop(And,f1,f2)})
 
    def formula4 : Parser[Formula] = 
      "~" ~> formula5 ^^ {fm => Not(fm)} | 
@@ -178,14 +178,8 @@ class DLParser(ins : String)
        case Atom(R(r,ps)) => 
          Atom(R(r, ps.map(p => freeVarsAreFns_Term(bndVars, p))))
        case Not(f) => Not(freeVarsAreFns(bndVars, f))
-       case And(f1,f2) => 
-         And(freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
-       case Or(f1,f2) => 
-         Or(freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
-       case Imp(f1,f2) => 
-         Imp(freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
-       case Iff(f1,f2) => 
-         Iff(freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
+       case Binop(c,f1,f2) => 
+         Binop(c, freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
        case Exists(v,f) =>
          Exists(v, freeVarsAreFns(v :: bndVars, f))
        case Forall(v,f) =>
