@@ -518,6 +518,31 @@ final object Prover {
     simul_substitute_Formula1(subs, vs, fm)
   }
 
+
+// so we can write a formula as a substitution
+
+  def extract_Term(tm: Term,  tm_ex : Term) : Term => Term = tm match {
+    case Fn(f, args) =>
+      val argsfn = (tm1: Term) => args.map(a =>  extract_Term(a, tm_ex)(tm1))
+      tm1 => Fn(f,argsfn(tm1)  )
+    case _ if tm == tm_ex =>     
+       tm1 => tm1
+    case _ => 
+      tm1 => tm
+  }
+
+
+  def extract(fm: Formula, tm_ex : Term) : (Term => Formula) = fm match {
+    case True | False => 
+      tm1 => fm
+    case Atom(R(r,args)) => 
+      val argsfn = (tm1: Term) => args.map(a =>  extract_Term(a, tm_ex)(tm1))
+      tm1 => Atom(R(r,argsfn(tm1)))
+
+  }
+
+
+
 }
 
 
