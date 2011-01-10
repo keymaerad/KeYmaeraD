@@ -262,15 +262,10 @@ object Rules {
   }
  
 
-/*
-[a. := theta] phi
 
-[a1. := theta]  rename(phi)
-*/
-
- val assignRight = new ProofRule("assignright") {
-    def apply(p: Position) = sq => (p,sq) match {
-     case (RightP(n),Sequent(c,s)) => 
+ val assign = new ProofRule("assign") {
+    def apply(p: Position) = sq =>   {
+      val Sequent(c,s) = sq
       val fm = lookup(p,sq)
       fm match {
         case Box(Assign(vs),phi) =>
@@ -281,14 +276,14 @@ object Rules {
               val vr1 = Prover.uniqify(vr);
               phi1 = Prover.renameFn(vr,vr1,phi1);
               val fm1 = Atom(R("=",List(Fn(vr1,Nil),tm)));
-              c1 = fm1::c1;
+              c1 = c1 ++ List(fm1);
+                // order matters! we want p to still point to phi
           }
           val sq1 = replace(p, Sequent(c1,s) , phi1)
           Some((List(sq1),Nil))
         case _ =>
           None
       }
-     case _ => None
    }
  }
 

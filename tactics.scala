@@ -18,6 +18,31 @@ object Tactics {
   }
 
 
+  def trylistofrules(rs: List[ProofRule], nd: OrNode) : List[NodeID] = {
+        val sq = nd.goal;
+        var foundone = false;
+        var res: List[NodeID] = Nil;
+   
+        for (p <- positions(sq)) {
+          if(foundone == false){
+            for(r <- rs) {
+              val res0 = r.apply(p)(sq);
+              res0 match {
+                case Some(_) =>
+                  res = applyrule(nd,p,r) match { case Some(lst) => lst
+                                                  case None => Nil};
+                  foundone = true;
+                  ()
+                case None => 
+                  ()
+              }
+            }
+          }
+        }
+    res
+
+  }
+
 
   def usehints(pos: Position): Tactic = new Tactic("usehints") {
     def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
@@ -46,7 +71,7 @@ object Tactics {
 
 
   val hpeasy = List(seq, choose, check, 
-                    assignRight, assignAnyRight,
+                    assign, assignAnyRight,
                     diffClose
                   )
 
@@ -91,7 +116,7 @@ object Tactics {
       case Sequent(c,List(s)) =>
         // try all the box hp easy rules
         val pos = RightP(0)
-        val nds1 = hpeasy.map(r => applyrule(nd,pos,r)).flatten.flatten
+        val nds1 = trylistofrules(hpeasy, nd)
         val nds2 = usehints(pos)(nd)
         nds1 ++ nds2
       case _ => Nil
@@ -161,31 +186,6 @@ object Tactics {
 
 
 
-  def trylistofrules(rs: List[ProofRule], nd: OrNode) : List[NodeID] = {
-        val sq = nd.goal;
-        var foundone = false;
-        var res: List[NodeID] = Nil;
-   
-        for (p <- positions(sq)) {
-          if(foundone == false){
-            for(r <- rs) {
-              val res0 = r.apply(p)(sq);
-              res0 match {
-                case Some(_) =>
-                  res = applyrule(nd,p,r) match { case Some(lst) => lst
-                                                  case None => Nil};
-                  foundone = true;
-                  ()
-                case None => 
-                  ()
-              }
-            }
-          }
-        }
-              
-        res
-
-  }
 
 
   val alpha = List(andLeft, impRight)
