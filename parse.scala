@@ -95,13 +95,13 @@ class DLParser(ins : String)
 
    def formula00 : Parser[Formula] = 
      "forall" ~> ident ~ "."~ formula00 ^^ 
-               { case x ~ "." ~ f => Forall(x, f)} |
+               { case x ~ "." ~ f => Quantifier(Forall,x, f)} |
      "exists" ~> ident ~ "."~ formula00 ^^ 
-               { case x ~ "." ~ f => Exists(x, f)} |
+               { case x ~ "." ~ f => Quantifier(Exists,x, f)} |
      "forall" ~> ident ~ ":" ~ ident ~ "." ~ formula00 ^^ 
-               { case x ~ ":" ~ c ~ "." ~ f => ForallOfSort(x, St(c), f)} |
+               { case x ~ ":" ~ c ~ "." ~ f => Quantifier(ForallOfSort(St(c)), x, f)} |
      "exists" ~> ident ~ ":" ~ ident ~ "." ~ formula00 ^^ 
-               { case x ~ ":" ~ c ~ "." ~ f => ExistsOfSort(x, St(c), f)} |
+               { case x ~ ":" ~ c ~ "." ~ f => Quantifier(ExistsOfSort(St(c)),x, f)} |
      formula0
 
    def formula0 : Parser[Formula] = 
@@ -180,14 +180,8 @@ class DLParser(ins : String)
        case Not(f) => Not(freeVarsAreFns(bndVars, f))
        case Binop(c,f1,f2) => 
          Binop(c, freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
-       case Exists(v,f) =>
-         Exists(v, freeVarsAreFns(v :: bndVars, f))
-       case Forall(v,f) =>
-         Forall(v, freeVarsAreFns(v :: bndVars, f))
-       case ExistsOfSort(v,c,f) =>
-         ExistsOfSort(v, c, freeVarsAreFns(v :: bndVars, f))
-       case ForallOfSort(v,c,f) =>
-         ForallOfSort(v, c, freeVarsAreFns(v :: bndVars, f))
+       case Quantifier(c,v,f) =>
+         Quantifier(c,v, freeVarsAreFns(v :: bndVars, f))
        case Box(hp,phi) =>
          Box(freeVarsAreFns_HP(bndVars, hp), freeVarsAreFns(bndVars, phi))
        case Diamond(hp,phi) =>

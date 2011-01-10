@@ -43,9 +43,9 @@ final object Prover {
     case Not(f) => firstorder(f)
     case Binop(_,f1,f2) => 
       firstorder(f1) && firstorder(f2)
-    case Exists(v,f) =>
+    case Quantifier(Exists,v,f) =>
       firstorder(f)
-    case Forall(v,f) =>
+    case Quantifier(Forall,v,f) =>
       firstorder(f)
     case Box(_,_) => false
     case Diamond(_,_) => false
@@ -212,26 +212,12 @@ final object Prover {
     case Not(f) => Not(rename_Formula(xold,xnew,f))
     case Binop(c,f1,f2) => 
       Binop(c,rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
-    case Exists(v,f) if v == xold =>
+    case Quantifier(q,v,f) if v == xold =>
       val v1 = uniqify(v)
       val f1 = rename_Formula(v,v1,f)
-      Exists(v1, rename_Formula(xold, xnew, f1))
-    case Exists(v,f) =>
-      Exists(v, rename_Formula(xold,xnew,f))      
-    case Forall(v,f) if v == xold =>
-      val v1 = uniqify(v)
-      val f1 = rename_Formula(v,v1,f)
-      Forall(v1, rename_Formula(xold, xnew, f1))
-    case Forall(v,f) => 
-      Forall(v, rename_Formula(xold,xnew,f))
-/*    case ExistsOfSort(v,c,f) if v == xold =>
-      val v1 = uniqify(v)
-      val f1 = rename_Formula(v,v1,f)
-      ExistsOfSort(v1, c, rename_Formula(xold, xnew, f1))
-    case ExistsOfSort(v,c,f)  =>
-      val v1 = uniqify(v)
-      val f1 = rename_Formula(v,v1,f)
-      ExistsOfSort(v1, c, rename_Formula(xold, xnew, f1)) */
+      Quantifier(q, v1, rename_Formula(xold, xnew, f1))
+    case Quantifier(q,v,f) =>
+      Quantifier(q, v, rename_Formula(xold,xnew,f))      
     case Box(hp,phi) =>
       Box(rename_HP(xold,xnew,hp), rename_Formula(xold,xnew,phi))
     case Diamond(hp,phi) =>
@@ -286,14 +272,8 @@ final object Prover {
     case Not(f1) => Not(onterms_Formula(g,f1))
     case Binop(c,f1,f2) => 
       Binop(c,onterms_Formula(g,f1),onterms_Formula(g,f2))
-    case Exists(v,f) =>
-      Exists(v, onterms_Formula(g,f))      
-    case Forall(v,f) =>
-      Forall(v, onterms_Formula(g,f))      
-    case ExistsOfSort(v,c,f) =>
-      ExistsOfSort(v, c, onterms_Formula(g,f))      
-    case ForallOfSort(v,c,f) =>
-      ForallOfSort(v, c, onterms_Formula(g,f))      
+    case Quantifier(q,v,f) =>
+      Quantifier(q, v, onterms_Formula(g,f))      
     case Box(hp,phi) =>
       Box(onterms_HP(g,hp), onterms_Formula(g,phi))
     case Diamond(hp,phi) =>
@@ -421,21 +401,13 @@ final object Prover {
     case Binop(c,f1,f2) => 
       Binop(c,substitute_Formula1(xold,xnew,xnew_fv,f1),
           substitute_Formula1(xold,xnew,xnew_fv,f2))
-    case Exists(v,f) =>
+    case Quantifier(q,v,f) =>
       if( ! xnew_fv.contains(v)){
-        Exists(v, substitute_Formula1(xold,xnew, xnew_fv, f))
+        Quantifier(q,v, substitute_Formula1(xold,xnew, xnew_fv, f))
       } else {
         val v1 = uniqify(v)
         val f1 = rename_Formula(v,v1,f)
-        Exists(v1,substitute_Formula1(xold,xnew, xnew_fv, f1))
-      }
-    case Forall(v,f) =>
-      if( ! xnew_fv.contains(v)){
-        Forall(v, substitute_Formula1(xold,xnew, xnew_fv, f))
-      } else {
-        val v1 = uniqify(v)
-        val f1 = rename_Formula(v,v1,f)
-        Forall(v1,substitute_Formula1(xold,xnew, xnew_fv, f1))
+        Quantifier(q,v1,substitute_Formula1(xold,xnew, xnew_fv, f1))
       }
 /* let's just keep these unimplemented for now
     case Box(hp, f) =>
@@ -465,21 +437,13 @@ final object Prover {
     case Binop(c,f1,f2) => 
       Binop(c,simul_substitute_Formula1(subs,new_fv,f1),
           simul_substitute_Formula1(subs,new_fv,f2))
-    case Exists(v,f) =>
+    case Quantifier(q,v,f) =>
       if( ! new_fv.contains(v)){
-        Exists(v, simul_substitute_Formula1(subs, new_fv, f))
+        Quantifier(q,v, simul_substitute_Formula1(subs, new_fv, f))
       } else {
         val v1 = uniqify(v)
         val f1 = rename_Formula(v,v1,f)
-        Exists(v1,simul_substitute_Formula1(subs, new_fv, f1))
-      }
-    case Forall(v,f) =>
-      if( ! new_fv.contains(v)){
-        Exists(v, simul_substitute_Formula1(subs, new_fv, f))
-      } else {
-        val v1 = uniqify(v)
-        val f1 = rename_Formula(v,v1,f)
-        Forall(v1,simul_substitute_Formula1(subs, new_fv, f1))
+        Quantifier(q,v1,simul_substitute_Formula1(subs, new_fv, f1))
       }
   }
 

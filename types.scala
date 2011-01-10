@@ -19,6 +19,13 @@ case object Or extends Connective
 case object Imp extends Connective
 case object Iff extends Connective
 
+sealed abstract class QuantifierType
+case object Forall extends QuantifierType
+case object Exists extends QuantifierType
+case class ForallOfSort(c: Sort) extends QuantifierType
+case class ExistsOfSort(c: Sort) extends QuantifierType
+
+
 // first order formula
 sealed abstract class Formula
 case object True extends Formula
@@ -26,12 +33,11 @@ case object False extends Formula
 case class Atom(p: Pred) extends Formula
 case class Not(f: Formula) extends Formula
 case class Binop(c: Connective, f1 : Formula, f2: Formula) extends Formula
-case class Exists(v: String, f: Formula) extends Formula
-case class Forall(v: String, f: Formula) extends Formula
-case class ExistsOfSort(v: String, c: Sort, f: Formula) extends Formula
-case class ForallOfSort(v: String, c: Sort, f: Formula) extends Formula
+case class Quantifier(t: QuantifierType, v: String, f: Formula) extends Formula
 case class Box(hp: HP, rest: Formula) extends Formula
 case class Diamond(hp: HP, rest: Formula) extends Formula
+
+
 
 // formula with a hole in it.
 sealed abstract class FormulaCtxt
