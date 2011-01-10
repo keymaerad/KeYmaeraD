@@ -260,7 +260,13 @@ object Rules {
         }
     }
   }
+ 
 
+/*
+[a. := theta] phi
+
+[a1. := theta]  rename(phi)
+*/
 
  val assignRight = new ProofRule("assignright") {
     def apply(p: Position) = sq => (p,sq) match {

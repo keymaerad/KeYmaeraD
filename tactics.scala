@@ -147,6 +147,8 @@ object Tactics {
   }
 
 
+
+
   def arithT : Tactic = new Tactic("arithmetic") {
     def apply(nd: OrNode): List[NodeID] = {
       submitproc(nd, "math")
@@ -154,6 +156,8 @@ object Tactics {
     }
 
   }
+
+
 
 
 
@@ -199,11 +203,17 @@ object Tactics {
   }
 
 
+  val closeT : Tactic = new Tactic("close") {
+    def apply(nd: OrNode) = 
+      trylistofrules(List(close), nd)
+  }
+
+
 
   val alleasyT: Tactic = composeT(repeatT(eitherT(hpeasyT, alphaT)),
                                 //composeT(repeatT(substT),
                                      composeT(repeatT(betaT),
-                                           arithT))//) //)
+                                           eitherT(closeT,arithT)))
 
 
 }
