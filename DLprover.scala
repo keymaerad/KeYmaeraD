@@ -414,7 +414,17 @@ final object Prover {
   }
 
 
-  
+  def substitute_HP(xold: String,
+                    xnew: Term,
+                    hp : HP) : HP = hp match {
+    case Assign(vs) => 
+      val vs1 = vs.map(v => {
+                       val Fn(f,args) =  substitute_Term(xold,xnew,v._1);
+          (Fn(f,args), substitute_Term(xold,xnew,v._2))} )
+      Assign(vs1)
+    // TODO other cases
+  }
+                    
 
   def substitute_Formula(xold: String,
                       xnew: Term,
@@ -452,6 +462,12 @@ final object Prover {
         val f1 = rename_Formula(v,v1,f)
         Forall(v1,substitute_Formula(xold,xnew, xnew_fv, f1))
       }
+    case Box(hp, f) =>
+      Box(substitute_HP(xold,xnew,hp),
+          substitute_Formula(xold,xnew,xnew_fv,f))
+    case Diamond(hp, f) =>
+      Box(substitute_HP(xold,xnew,hp),
+          substitute_Formula(xold,xnew,xnew_fv,f))
   }
 
 

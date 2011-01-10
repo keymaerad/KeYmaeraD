@@ -448,22 +448,27 @@ object Rules {
               Sequent(c,s),
               Box(Evolve(derivs, h, _, _ ), phi)) =>
           val t_sols = fm_sols.map(extract)
-          val sols = t_sols.map(_._2)
+          val sols0 = t_sols.map(_._2)
+
           time_var(t_sols) match {
             case None => None
             case Some(t) =>
+              val sols = sols0.map(f => (f._1,
+                substitute_Term( t,Fn(t,Nil), 
+                                   f._2)) )
               val oks = derivs.map(d => is_ok(t, d, sols))
             if(oks.contains(false))
               None
             else {
+
               val t2 = uniqify(t)
-              val t_range = Atom(R(">=", List(Var(t), Num(Exact.zero))))
+              val t_range = Atom(R(">=", List(Fn(t, Nil), Num(Exact.zero))))
               val t2_range = 
-                And(Atom(R(">=", List(Var(t2), Num(Exact.zero)))),
-                    Atom(R("<=", List(Var(t2), Var(t)))))
+                And(Atom(R(">=", List(Fn(t2,Nil), Num(Exact.zero)))),
+                    Atom(R("<=", List(Fn(t2,Nil), Fn(t,Nil)))))
               val endpoint_h = Box(Assign(sols), h)
-              val interm_h = 
-                rename_Formula(t,t2,Box(Assign(sols),h))
+              val interm_h0 =  Box(Assign(sols),h)
+              val interm_h =  renameFn(t,t2,interm_h0)
               val new_xs = sols.map(x => Fn(uniqify(x._1.f), Nil))
               val old_and_new_xs = 
                 sols.map(_._1).zip(new_xs)
@@ -471,7 +476,6 @@ object Rules {
                 new_xs.zip(sols.map(_._2))
               val assign_hp = 
                 Assign(new_xs_and_sols);
-//                new_xs_and_sols.map(xtm => Assign(xtm._1,xtm._2))
               val phi1 = 
                 old_and_new_xs.foldRight(phi)( (xs ,phi1) =>
                   renameFn(xs._1.f, xs._2.f, phi1))
