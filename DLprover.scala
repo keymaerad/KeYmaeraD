@@ -469,6 +469,15 @@ final object Prover {
     case Atom(R(r,args)) => 
       val argsfn = (tm1: Term) => args.map(a =>  extract_Term(a, tm_ex)(tm1))
       tm1 => Atom(R(r,argsfn(tm1)))
+    case Not(f) =>
+      tm1 => Not(extract(f,tm_ex)(tm1))
+    case Binop(c, f1, f2) =>
+      tm1 => Binop(c, extract(f1,tm_ex)(tm1), extract(f2,tm_ex)(tm1))
+    case Quantifier(q,v,f) => 
+      // should we do some alpha renaming magic here?
+      tm1 => Quantifier(q,v, extract(f,tm_ex)(tm1))
+    case Modality(m, hp, f) =>
+      tm1 => Modality(m,hp, extract(f,tm_ex)(tm1))
   }
 
 
