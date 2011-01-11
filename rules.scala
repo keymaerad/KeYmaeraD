@@ -389,10 +389,11 @@ object Rules {
       class BadSolution extends Exception 
 
       def extract(sol: Formula): (String, (Fn, Term)) = sol match {
-        case Forall(t, Atom(R("=", 
-                              List(Fn(f, List(t1)),
-                              sol_tm)))) if Var(t) == t1 =>
-                                (t,(Fn(f, List()),sol_tm))
+        case Quantifier(Forall,
+                        t, Atom(R("=", 
+                                  List(Fn(f, List(t1)),
+                                       sol_tm)))) if Var(t) == t1 =>
+                                         (t,(Fn(f, List()),sol_tm))
         case _ => 
           println( sol)
         throw new BadSolution
@@ -482,7 +483,7 @@ object Rules {
               val phi2 = 
                 Box(assign_hp, phi1)
               val stay_in_h = 
-                Forall(t2, Binop(Imp,t2_range, interm_h))
+                Quantifier(Forall,t2, Binop(Imp,t2_range, interm_h))
               val newgoal = mode match {
                 case Standard =>
                   replace(pos,Sequent(stay_in_h ::t_range::c,s), phi2)

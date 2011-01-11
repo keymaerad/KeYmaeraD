@@ -121,14 +121,14 @@ object MathematicaUtil {
 
 
     def strip_quant: Formula => (List[String], Formula) = fm => fm match {
-      case Forall(x,yp@Forall(y,p))=> 
+      case Quantifier(Forall,x,yp@Quantifier(Forall,y,p))=> 
         val (xs,q) = strip_quant(yp);
         (x::xs,q)
-      case Exists(x,yp@Exists(y,p))=> 
+      case Quantifier(Exists,x,yp@Quantifier(Exists,y,p))=> 
         val (xs,q) = strip_quant(yp);
         (x::xs,q)
-      case Forall(x,p) => (List(x),p)
-      case Exists(x,p) => (List(x),p)
+      case Quantifier(Forall,x,p) => (List(x),p)
+      case Quantifier(Exists,x,p) => (List(x),p)
       case _ => (Nil, fm)
     }
 
@@ -152,12 +152,12 @@ object MathematicaUtil {
       case Binop(Iff,p,q) => 
         bin_fun("Equivalent", mathematica_of_formula(p),
                               mathematica_of_formula(q))
-      case Forall(x,p) => 
+      case Quantifier(Forall,x,p) => 
         val (bvs, p1) = strip_quant(fm)
         val math_bvs = bvs.map(math_sym)
         bin_fun("ForAll", new Expr(math_sym("List"), math_bvs.toArray),
                           mathematica_of_formula(p1))
-      case Exists(x,p) => 
+      case Quantifier(Exists,x,p) => 
         val (bvs, p1) = strip_quant(fm)
         val math_bvs = bvs.map(math_sym)
         bin_fun("Exists", new Expr(math_sym("List"), math_bvs.toArray),
