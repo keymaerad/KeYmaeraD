@@ -172,6 +172,7 @@ final object AM {
 
 
   // yuck. Is there a better way to write this?
+  // also: untested since some refactoring
   implicit def formula2Ordered(f: Formula): Ordered[Formula] = 
     new Ordered[Formula] {
       def compare(that: Formula): Int = f match {
@@ -597,8 +598,7 @@ final object AM {
     case Not(p) => Not(onatoms(f,p))
     case Binop(c,p,q) => Binop(c,onatoms(f, p), onatoms(f,q))
     case Quantifier(q,x,p ) => Quantifier(q,x,onatoms(f,p))
-    case Box(hp, phi) => Box(onatoms_HP(f,hp), onatoms(f,phi))
-    case Diamond(hp, phi) => Diamond(onatoms_HP(f,hp), onatoms(f,phi))
+    case Modality(m,hp, phi) => Modality(m,onatoms_HP(f,hp), onatoms(f,phi))
     case _ => fm
   }
 

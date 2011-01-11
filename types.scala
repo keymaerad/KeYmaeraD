@@ -26,6 +26,10 @@ case class ForallOfSort(c: Sort) extends QuantifierType
 case class ExistsOfSort(c: Sort) extends QuantifierType
 
 
+sealed abstract class ModalityType
+case object Box extends ModalityType
+case object Diamond extends ModalityType
+
 // first order formula
 sealed abstract class Formula
 case object True extends Formula
@@ -34,11 +38,10 @@ case class Atom(p: Pred) extends Formula
 case class Not(f: Formula) extends Formula
 case class Binop(c: Connective, f1 : Formula, f2: Formula) extends Formula
 case class Quantifier(t: QuantifierType, v: String, f: Formula) extends Formula
-case class Box(hp: HP, rest: Formula) extends Formula
-case class Diamond(hp: HP, rest: Formula) extends Formula
+case class Modality(m: ModalityType, hp: HP, rest: Formula) extends Formula
 
 
-
+/*
 // formula with a hole in it.
 sealed abstract class FormulaCtxt
 case object Hole extends FormulaCtxt
@@ -59,7 +62,7 @@ case class ForallOfSortCtxt(v: String, c: Sort, f: FormulaCtxt)
      extends FormulaCtxt
 case class BoxCtxt(hp: HP, rest: FormulaCtxt) extends FormulaCtxt
 case class DiamondCtxt(hp: HP, rest: FormulaCtxt) extends FormulaCtxt
-
+*/
 
 
 

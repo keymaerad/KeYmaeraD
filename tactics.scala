@@ -46,10 +46,10 @@ object Tactics {
 
   def usehints(pos: Position): Tactic = new Tactic("usehints") {
     def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
-      case Box(Loop(hp, True, inv_hints), phi) => 
+      case Modality(Box,Loop(hp, True, inv_hints), phi) => 
         val rules = inv_hints.map(loopInduction)
         rules.map(r => applyrule(nd, pos, r)).flatten.flatten
-      case Box(Evolve(derivs,h,inv_hints,sols), phi) =>
+      case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
         val inv_rules = inv_hints.map(diffStrengthen)
         val inv_res = inv_rules.map(r => applyrule(nd, pos, r)).flatten.flatten
         val sol_rule1 = diffSolve(Endpoint)(sols)

@@ -127,8 +127,8 @@ class DLParser(ins : String)
      "true" ^^^ True |
      "false" ^^^ False |
      // XXX doesn't work right for e.g. "[hp] forall x . ..."
-     ("[" ~> hp <~ "]") ~ formula4 ^^ {case a ~ f => Box(a,f)} |
-     ("<" ~> hp <~ ">") ~ formula4 ^^ {case a ~ f => Diamond(a,f)} 
+     ("[" ~> hp <~ "]") ~ formula4 ^^ {case a ~ f => Modality(Box,a,f)} |
+     ("<" ~> hp <~ ">") ~ formula4 ^^ {case a ~ f => Modality(Diamond,a,f)} 
 
 
    /* Distinguish between logical variables
@@ -182,10 +182,8 @@ class DLParser(ins : String)
          Binop(c, freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
        case Quantifier(c,v,f) =>
          Quantifier(c,v, freeVarsAreFns(v :: bndVars, f))
-       case Box(hp,phi) =>
-         Box(freeVarsAreFns_HP(bndVars, hp), freeVarsAreFns(bndVars, phi))
-       case Diamond(hp,phi) =>
-         Diamond(freeVarsAreFns_HP(bndVars, hp), freeVarsAreFns(bndVars, phi))
+       case Modality(m,hp,phi) =>
+         Modality(m,freeVarsAreFns_HP(bndVars, hp), freeVarsAreFns(bndVars, phi))
      }
 
 

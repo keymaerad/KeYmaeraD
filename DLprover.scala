@@ -47,8 +47,7 @@ final object Prover {
       firstorder(f)
     case Quantifier(Forall,v,f) =>
       firstorder(f)
-    case Box(_,_) => false
-    case Diamond(_,_) => false
+    case Modality(_,_,_) => false
     case _ => false
   }
 /*
@@ -218,10 +217,8 @@ final object Prover {
       Quantifier(q, v1, rename_Formula(xold, xnew, f1))
     case Quantifier(q,v,f) =>
       Quantifier(q, v, rename_Formula(xold,xnew,f))      
-    case Box(hp,phi) =>
-      Box(rename_HP(xold,xnew,hp), rename_Formula(xold,xnew,phi))
-    case Diamond(hp,phi) =>
-      Diamond(rename_HP(xold,xnew,hp), rename_Formula(xold,xnew,phi))
+    case Modality(m,hp,phi) =>
+      Modality(m,rename_HP(xold,xnew,hp), rename_Formula(xold,xnew,phi))
 
   }
 
@@ -274,11 +271,8 @@ final object Prover {
       Binop(c,onterms_Formula(g,f1),onterms_Formula(g,f2))
     case Quantifier(q,v,f) =>
       Quantifier(q, v, onterms_Formula(g,f))      
-    case Box(hp,phi) =>
-      Box(onterms_HP(g,hp), onterms_Formula(g,phi))
-    case Diamond(hp,phi) =>
-      Diamond(onterms_HP(g,hp), onterms_Formula(g,phi))
-
+    case Modality(m,hp,phi) =>
+      Modality(m,onterms_HP(g,hp), onterms_Formula(g,phi))
   }
 
   def onterms_HP(g : Term => Term,hp:HP):HP = hp match {

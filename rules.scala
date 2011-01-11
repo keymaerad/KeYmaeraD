@@ -24,7 +24,7 @@ object RulesUtil {
           }
   
 
-  type ProofRuleCtxt = Formula => FormulaCtxt => ProofRule
+//  type ProofRuleCtxt = Formula => FormulaCtxt => ProofRule
 
   class LookupError() extends Exception()
 
@@ -222,8 +222,8 @@ object Rules {
     def apply(p: Position) = sq => {
       val fm  = lookup(p,sq)
       fm match {
-        case  Box(Seq(h1,h2), phi) => 
-           val fm1 = Box(h1,Box(h2,phi))
+        case  Modality(Box,Seq(h1,h2), phi) => 
+           val fm1 = Modality(Box,h1,Modality(Box,h2,phi))
            val sq1 = replace(p,sq,fm1)
            Some( List(sq1),Nil)
         case _ => None
@@ -235,9 +235,9 @@ object Rules {
     def apply(p: Position) = sq =>  {
         val fm = lookup(p,sq)
         fm match {
-          case Box(Choose(h1,h2), phi) => 
-            val fm1 = Box(h1,phi) 
-            val fm2 = Box(h2,phi)
+          case Modality(Box,Choose(h1,h2), phi) => 
+            val fm1 = Modality(Box,h1,phi) 
+            val fm2 = Modality(Box,h2,phi)
             val sq1 = replace(p,sq,fm1)
             val sq2 = replace(p,sq,fm2)
             Some( (List(sq1,sq2),Nil))
@@ -251,7 +251,7 @@ object Rules {
     def apply(p: Position) = sq =>  {
         val fm = lookup(p,sq)
         fm match {
-          case Box(Check(fm1), phi) => 
+          case Modality(Box,Check(fm1), phi) => 
             val fm2 = Binop(Imp,fm1, phi)
             val sq1 = replace(p,sq, fm2)
             Some( (List(sq1),Nil))
@@ -268,7 +268,7 @@ object Rules {
       val Sequent(c,s) = sq
       val fm = lookup(p,sq)
       fm match {
-        case Box(Assign(vs),phi) =>
+        case Modality(Box,Assign(vs),phi) =>
           var phi1 = phi;
           var c1 = c;
           for( v <- vs) {
@@ -295,7 +295,7 @@ object Rules {
      case (RightP(n),Sequent(c,s)) => 
       val fm = lookup(p,sq)
       fm match {
-        case Box(AssignAny(Fn(vr, Nil)),phi) =>
+        case Modality(Box,AssignAny(Fn(vr, Nil)),phi) =>
           val vr1 = Prover.uniqify(vr)
           val phi1 = Prover.renameFn(vr,vr1,phi)
           val sq1 = replace(p, sq, phi1)
@@ -315,11 +315,11 @@ object Rules {
         case (RightP(n), Sequent(c,s)) =>
           val fm = lookup(pos,sq)
           fm match {
-            case Box(Loop(hp, True, inv_hints), phi) =>
+            case Modality(Box,Loop(hp, True, inv_hints), phi) =>
               val initiallyvalid = 
                 replace(pos, sq, inv)
               val inductionstep = 
-                Sequent(List(inv), List(Box(hp, inv)))
+                Sequent(List(inv), List(Modality(Box, hp, inv)))
               val closestep = 
                 Sequent(List(inv), List(inv))
               Some((List(initiallyvalid, inductionstep, closestep),
@@ -337,7 +337,7 @@ object Rules {
       case(RightP(n), Sequent(c,s)) =>
         val fm = lookup(pos,sq)
         fm match {
-          case Box(Evolve(derivs,h,_,_), phi) =>
+          case Modality(Box,Evolve(derivs,h,_,_), phi) =>
             val closed = Sequent(List(h), List(phi))
             Some((List(closed), Nil))
           case _ => None
@@ -354,14 +354,18 @@ object Rules {
           println("checking diffstrengthen")
           val fm = lookup(pos,sq)
           fm match {
-            case Box(Evolve(derivs,h,inv_hints,sols), phi) =>
+            case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
               val (ind_asm, ind_cons) = 
                 if(Prover.openSet(inv)) 
                   ( List(inv,h), 
                     Prover.setClosure(Prover.totalDeriv(derivs,inv)))
                 else ( List(h), Prover.totalDeriv(derivs,inv))
               val inv_hints1 = inv_hints.filter( inv != _)
-              val fm1 = Box(Evolve(derivs, Binop(And,h,inv),inv_hints1, sols), phi) 
+              val fm1 = Modality(Box,
+                                 Evolve(derivs, 
+                                        Binop(And,h,inv),
+                                        inv_hints1, 
+                                        sols), phi) 
               val iv = Sequent(h::c, List(inv))
               val ind = Sequent(ind_asm, List(ind_cons))
               val str = replace(pos,sq, fm1)
@@ -447,7 +451,7 @@ object Rules {
       def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
         case (RightP(n), 
               Sequent(c,s),
-              Box(Evolve(derivs, h, _, _ ), phi)) =>
+              Modality(Box,Evolve(derivs, h, _, _ ), phi)) =>
           val t_sols = fm_sols.map(extract)
           val sols0 = t_sols.map(_._2)
 
@@ -467,8 +471,8 @@ object Rules {
               val t2_range = 
                 Binop(And,Atom(R(">=", List(Fn(t2,Nil), Num(Exact.zero)))),
                       Atom(R("<=", List(Fn(t2,Nil), Fn(t,Nil)))))
-              val endpoint_h = Box(Assign(sols), h)
-              val interm_h0 =  Box(Assign(sols),h)
+              val endpoint_h = Modality(Box,Assign(sols), h)
+              val interm_h0 =  Modality(Box,Assign(sols),h)
               val interm_h =  renameFn(t,t2,interm_h0)
               val new_xs = sols.map(x => Fn(uniqify(x._1.f), Nil))
               val old_and_new_xs = 
@@ -481,7 +485,7 @@ object Rules {
                 old_and_new_xs.foldRight(phi)( (xs ,phi1) =>
                   renameFn(xs._1.f, xs._2.f, phi1))
               val phi2 = 
-                Box(assign_hp, phi1)
+                Modality(Box,assign_hp, phi1)
               val stay_in_h = 
                 Quantifier(Forall,t2, Binop(Imp,t2_range, interm_h))
               val newgoal = mode match {

@@ -148,10 +148,10 @@ object Printing {
                        text(":") :: docOfSort(c) :: 
                        text(".") ::
                        docOfFormulaAux(pr1)(fm))
-    case Box(h,fm) =>
+    case Modality(Box, h,fm) =>
       val pr1 = 14;
       bracket("[","]", docOfHP(h)) :: docOfFormulaAux(pr1)(fm)
-    case Diamond(h,fm) =>
+    case Modality(Diamond, h,fm) =>
       val pr1 = 14;
       bracket("<",">", docOfHP(h)) :: docOfFormulaAux(pr1)(fm)
   }
