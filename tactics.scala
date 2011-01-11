@@ -211,9 +211,9 @@ object Tactics {
 
 
   val alleasyT: Tactic = composeT(repeatT(eitherT(hpeasyT, alphaT)),
-                                //composeT(repeatT(substT),
+                                   composeT(repeatT(substT),
                                      composeT(repeatT(betaT),
-                                           eitherT(closeT,arithT)))
+                                           eitherT(closeT,arithT))))
 
 
 }

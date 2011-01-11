@@ -287,6 +287,17 @@ object P {
     new FileInputStream(f)
   }
 
+
+  def parseFormula(f:String) : Formula = {
+    val dlp = new DLParser(f)
+    dlp.fm_result match {
+      case Some(fm) => fm
+      case None => 
+        println("could not read a formula from " + f)
+        False
+    }
+  }
+
 }
 
 

@@ -507,17 +507,18 @@ object Rules {
 
 
 
-
+// XXX
   val substitute = new ProofRule("substitute") {
     import Prover._
 
     def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
-      case (LeftP(n), Sequent(ctxt,sc), Atom(R("=", List(Var(v),tm)))) 
+      case (LeftP(n), Sequent(ctxt,sc), Atom(R("=", List(Fn(v,Nil),tm)))) 
         if (ctxt ++ sc).forall(firstorder) =>
+//          println("applying substitute. tm = " + tm)
           val ctxt1 = removelist(n,ctxt)
           val ctxt2 = 
-            ctxt1.map(x => substitute_Formula(v, tm,  x))
-          val sc1 = sc.map(x => substitute_Formula(v,tm, x))
+            ctxt1.map(x => extract(Fn(v,Nil), x)(tm))
+          val sc1 = sc.map(x => extract(Fn(v,Nil), x)(tm))
           Some(List(  Sequent(ctxt2,sc1))    ,Nil)
       case _ =>
         None

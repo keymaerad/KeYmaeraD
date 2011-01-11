@@ -452,32 +452,32 @@ final object Prover {
 
 // so we can write a formula as a substitution
 
-  def extract_Term(tm: Term,  tm_ex : Term) : Term => Term = tm match {
-    case Fn(f, args) =>
-      val argsfn = (tm1: Term) => args.map(a =>  extract_Term(a, tm_ex)(tm1))
-      tm1 => Fn(f,argsfn(tm1)  )
+  def extract_Term(tm_ex: Term,  tm : Term) : Term => Term = tm match {
     case _ if tm == tm_ex =>     
        tm1 => tm1
+    case Fn(f, args) =>
+      val argsfn = (tm1: Term) => args.map(a =>  extract_Term(tm_ex,a)(tm1))
+      tm1 => Fn(f,argsfn(tm1)  )
     case _ => 
       tm1 => tm
   }
 
 
-  def extract(fm: Formula, tm_ex : Term) : (Term => Formula) = fm match {
+  def extract(tm_ex : Term, fm: Formula ) : (Term => Formula) = fm match {
     case True | False => 
       tm1 => fm
     case Atom(R(r,args)) => 
-      val argsfn = (tm1: Term) => args.map(a =>  extract_Term(a, tm_ex)(tm1))
+      val argsfn = (tm1: Term) => args.map(a =>  extract_Term(tm_ex,a)(tm1))
       tm1 => Atom(R(r,argsfn(tm1)))
     case Not(f) =>
-      tm1 => Not(extract(f,tm_ex)(tm1))
+      tm1 => Not(extract(tm_ex, f)(tm1))
     case Binop(c, f1, f2) =>
-      tm1 => Binop(c, extract(f1,tm_ex)(tm1), extract(f2,tm_ex)(tm1))
+      tm1 => Binop(c, extract(tm_ex,f1)(tm1), extract(tm_ex,f2)(tm1))
     case Quantifier(q,v,f) => 
       // should we do some alpha renaming magic here?
-      tm1 => Quantifier(q,v, extract(f,tm_ex)(tm1))
+      tm1 => Quantifier(q,v, extract(tm_ex,f)(tm1))
     case Modality(m, hp, f) =>
-      tm1 => Modality(m,hp, extract(f,tm_ex)(tm1))
+      tm1 => Modality(m,hp, extract(tm_ex,f)(tm1))
   }
 
 
