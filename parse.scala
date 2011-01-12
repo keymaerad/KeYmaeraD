@@ -146,10 +146,14 @@ class DLParser(ins : String)
      }
 
    def freeVarsAreFns_HP(bndVars : List[String], hp: HP) : HP = hp match {
-     case Assign(vs) =>
+    case Assign(vs) =>
       val vs1 = vs.map(vt => (vt._1, freeVarsAreFns_Term(bndVars,vt._2)))
       Assign(vs1)
     case AssignAny(x) => hp
+    case AssignQuantified(i,c,vs) =>
+      AssignQuantified(i,c,
+                       vs.map(v => (v._1, 
+                                    freeVarsAreFns_Term(i::bndVars, v._2))))
     case Check(fm) =>
       Check(freeVarsAreFns(bndVars,fm))
     case Seq(p,q) => 
@@ -170,6 +174,14 @@ class DLParser(ins : String)
              freeVarsAreFns(bndVars,fm),
              inv_hints.map(f => freeVarsAreFns(bndVars,f)),
              sols.map(f => freeVarsAreFns(bndVars,f)))
+     case EvolveQuantified(i,c,vs,h) =>
+      val replace_deriv: ((Fn, Term)) => (Fn, Term) = vt => {
+        val (v,t) = vt
+        val t1 = freeVarsAreFns_Term(bndVars,t)
+        (v,t1)
+      }
+      EvolveQuantified(i,c, vs.map(replace_deriv), freeVarsAreFns(bndVars,h))
+       
    }
 
    def freeVarsAreFns(bndVars : List[String], fm: Formula) : Formula 
@@ -206,7 +218,7 @@ class DLParser(ins : String)
       // forall i : C f(v) := theta
       (("forall" ~> ident <~  ":") ~ 
        ident ~ function <~ ":=") ~ term ^^ 
-        {case i ~ c ~ f ~ v => AssignQuantified(i,St(c),f,v)} | 
+        {case i ~ c ~ f ~ v => AssignQuantified(i,St(c),List((f,v)))} | 
       // { alpha }*
       ("{" ~> hp  <~ "}" <~ "*") ~ annotation("invariant") ^^ 
             { case x ~ invs => Loop(x, True, invs)} | 
@@ -216,9 +228,10 @@ class DLParser(ins : String)
             {case dvs ~ f ~ invs ~ sols => Evolve(dvs,f,invs,sols)}  |
       // forall i : C  f(v)' = theta & h 
    // XXX  TODO figure out how to read apostrophes in a sane way
-      ((("forall" ~> ident <~ ":") ~ ident ~ function ~ ident <~ "=")  ~
-           term <~ "&")  ~ formula ^^
-        { case i ~ c ~ f ~ "\'" ~ v ~ h => EvolveQuantified(i,St(c),f,v,h) }
+       ("forall" ~> ident <~ ":") ~ ident ~ 
+        ("{" ~> rep1sep(qdiffeq, ",") <~ ";") ~ (formula <~ "}") ^^
+        { case i ~ c ~ vs  ~ h => 
+          EvolveQuantified(i,St(c),vs,h) }
    
      
 
@@ -227,6 +240,12 @@ class DLParser(ins : String)
     (ident <~  "=") ~ term ^?
       {case s  ~ tm  if s.endsWith("\'") 
         => (Fn(s.substring(0,s.length - 1), Nil), tm)}
+
+  def qdiffeq : Parser[(Fn,Term)] = 
+    (function ~ ident <~  "=") ~ term ^?
+      {case f ~ "\'" ~ tm  => (f, tm)}
+
+
    
   def annotation(name: String) : Parser[List[Formula]] = 
     "@" ~> keyword(name) ~> "(" ~> repsep(formula, ",") <~ ")" |

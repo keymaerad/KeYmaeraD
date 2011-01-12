@@ -161,13 +161,19 @@ object Printing {
     case Assign(List((f,tm))) => 
      docOfTerm(f) :: text(":=") :: docOfTerm(tm)
     case Assign(vs) => 
-     bracket("{", "}", docOfList(vs.map(v => docOfTerm(v._1) :: text(":=") :: docOfTerm(v._2)), 
+     bracket("{", "}", 
+             docOfList(vs.map(v => docOfTerm(v._1)::text(":=")::docOfTerm(v._2)), 
                                  text(",")))
     case AssignAny(x) =>
      docOfTerm(x) :: text(":= *")
-    case AssignQuantified(i, c, f, theta) =>
+    case AssignQuantified(i, c, List((f, theta))) =>
       text("forall ") :: text(i) :: text(":") :: docOfSort(c) :: text(" ") ::
           docOfTerm(f) :: text(":=") :: docOfTerm(theta)
+    case AssignQuantified(i,c,vs) => 
+     text("forall ") :: text(i) :: text(":") :: docOfSort(c) :: text(" ") ::
+     bracket("{", "}", 
+             docOfList(vs.map(v => docOfTerm(v._1)::text(":=")::docOfTerm(v._2)), 
+                                 text(",")))
     case Check(fm) =>
       text("?") :: docOfFormula(fm)
     case Seq(h1,h2) =>
@@ -183,9 +189,11 @@ object Printing {
        docOfList(derivs.map(docOfDeriv), text(",")) ::
        text(";") ::
        docOfFormula(reg))
-    case EvolveQuantified(i, c, f,v,h) =>
+    case EvolveQuantified(i, c, vs,reg) =>
       text("forall ") :: text(i) :: text(":") :: docOfSort(c) :: text(" ") ::
-          docOfTerm(f) :: text("' =") :: docOfTerm(v) :: text("&") :: docOfFormula(h)
+          bracket("{", "}",
+                  docOfList(vs.map(docOfDeriv), text(",")) ::
+                    text(";") :: docOfFormula(reg))
   }
 
   def docOfSort(c: Sort) : Document = c match {

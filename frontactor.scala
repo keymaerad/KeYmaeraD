@@ -348,7 +348,9 @@ class FrontActor extends Actor {
     ()
 
   } catch {
-    case e => println("failed to load file " + filename)
+    case e => 
+      println("failed to load file " + filename)
+      println("due to " + e)
   }
 }
 
