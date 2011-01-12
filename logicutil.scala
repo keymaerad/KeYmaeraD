@@ -149,17 +149,17 @@ object Util {
             }
           case _ => -1
         }
-        case Quantifier(Forall,x,f) => that match {
+        case Quantifier(Forall,Real,x,f) => that match {
           case False | True | Atom(_) | Not(_) 
              | Binop(_,_,_) => 1
-          case Quantifier(Forall,y,g) =>
+          case Quantifier(Forall,Real,y,g) =>
             val c = x compare y;
             if(c == 0) f compare g
             else c
           case _ => -1
         }
-        case Quantifier(Exists,x,f) => that match {
-          case Quantifier(Exists,y,g) =>
+        case Quantifier(Exists,Real,x,f) => that match {
+          case Quantifier(Exists,Real,y,g) =>
             val c = x compare y;
             if(c == 0) f compare g
             else c
@@ -300,7 +300,7 @@ object Util {
     case Atom(R(p,args)) => unions(args.map(fv_Term))
     case Not(p) => vari(p)
     case Binop(_,p,q) => union(vari(p), vari(q))
-    case Quantifier(_,x,p) => insert(x, vari(p))
+    case Quantifier(_,_,x,p) => insert(x, vari(p))
     case _ => 
       throw new Error("nonfirstorder arithmetic")
   }
@@ -341,7 +341,7 @@ object Util {
     case Atom(R(p,args)) => unions(args.map(fv_Term))
     case Not(p) => fv(p)
     case Binop(_,p,q) => union(fv(p), fv(q))
-    case Quantifier(_,x,p) => subtract(fv(p) ,List(x))
+    case Quantifier(_,_,x,p) => subtract(fv(p) ,List(x))
     case Modality(m, hp, p) => union(fv_HP(hp), fv(p))
     case _ => 
       throw new Error("nonfirstorder arithmetic")

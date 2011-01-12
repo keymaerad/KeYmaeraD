@@ -224,11 +224,7 @@ object Rules {
         val fm = lookup(p,sq)
         val fvs = Util.fv(fm).map( x => Var(x))
         fm match {
-          case Quantifier(Forall, v, phi) =>
-            val phi1 = Prover.substitute_Formula(v, Fn(v,fvs), phi)
-            val sq1 = replace(p,sq, phi1)
-            Some( (List(sq1), Nil))
-          case Quantifier(ForallOfSort(c), v, phi) =>
+          case Quantifier(Forall, c, v, phi) =>
             val phi1 = Prover.substitute_Formula(v, Fn(v,fvs), phi)
             val sq1 = replace(p,sq, phi1)
             Some( (List(sq1), Nil))
@@ -242,6 +238,24 @@ object Rules {
   }
 
 
+/*
+  val allLeft : Term => ProofRule = tm => new ProofRule("allleft") {
+    // XXX should also check that that tm has the appropriate sort
+    def apply(p: Position) = sq => (p,sq) match {
+      case (LeftP(n), Sequent(c,s)) =>
+        val fm = lookup(p,sq)
+        fm match {
+          case Quantifier(Forall, c, v, phi) =>
+            // XXX this might be unsound if phi has a modality. argh!
+            val phi1 = Prover.substitute_Formula(v, tm, phi)
+          case _ =>
+            None
+        }
+      case _ =>
+        None
+    }
+  }
+*/
 
   val seq = new ProofRule("seq") {
     def apply(p: Position) = sq => {
@@ -325,7 +339,7 @@ object Rules {
               val (Fn(vr,args), tm) = v;
               val vr1 = Prover.uniqify(vr);
               phi1 = Prover.renameFn(vr,vr1,phi1);
-              val fm1 = Quantifier(ForallOfSort(srt), 
+              val fm1 = Quantifier(Forall,srt, 
                                    i, 
                                    Atom(R("=",List(Fn(vr1,args),tm))));
               c1 = c1 ++ List(fm1);
@@ -445,7 +459,7 @@ object Rules {
       class BadSolution extends Exception 
 
       def extract(sol: Formula): (String, (Fn, Term)) = sol match {
-        case Quantifier(Forall,
+        case Quantifier(Forall,Real,
                         t, Atom(R("=", 
                                   List(Fn(f, List(t1)),
                                        sol_tm)))) if Var(t) == t1 =>
@@ -539,7 +553,7 @@ object Rules {
               val phi2 = 
                 Modality(Box,assign_hp, phi1)
               val stay_in_h = 
-                Quantifier(Forall,t2, Binop(Imp,t2_range, interm_h))
+                Quantifier(Forall, Real, t2, Binop(Imp,t2_range, interm_h))
               val newgoal = mode match {
                 case Standard =>
                   replace(pos,Sequent(stay_in_h ::t_range::c,s), phi2)

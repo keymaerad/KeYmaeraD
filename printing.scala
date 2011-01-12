@@ -122,30 +122,13 @@ object Printing {
       bracketp(pr>pr1)("(",")",
                        docOfFormulaAux(pr1)(fm1) :: text("<=>") :: 
                        docOfFormulaAux(pr1+1)(fm2))
-    case Quantifier(Forall,x, fm) =>
+    case Quantifier(qt, c,x, fm) =>
       val pr1 = 2;
+      val dq = qt match { case Forall => text("forall ") 
+                          case Exists => text("exists ") }
       bracketp(pr>pr1)("(",")",
-                       text("forall ") :: text(x) ::
-                       text(".") ::
-                       docOfFormulaAux(pr1)(fm))
-    case Quantifier(Exists,x,fm) => 
-      val pr1 = 2;
-      bracketp(pr>pr1)("(",")",
-                       text("exists ") :: text(x) :: 
-                       text(".") ::
-                       docOfFormulaAux(pr1)(fm))
-    case Quantifier(ForallOfSort(c),x, fm) =>
-      val pr1 = 2;
-      bracketp(pr>pr1)("(",")",
-                       text("forall ") :: text(x) ::
+                       dq :: text(x) ::
                        text(":") :: docOfSort(c) ::
-                       text(".") ::
-                       docOfFormulaAux(pr1)(fm))
-    case Quantifier(ExistsOfSort(c),x,fm) => 
-      val pr1 = 2;
-      bracketp(pr>pr1)("(",")",
-                       text("exists ") :: text(x) :: 
-                       text(":") :: docOfSort(c) :: 
                        text(".") ::
                        docOfFormulaAux(pr1)(fm))
     case Modality(Box, h,fm) =>

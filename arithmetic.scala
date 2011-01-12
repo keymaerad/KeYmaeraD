@@ -107,7 +107,7 @@ final object AM {
 
  
   def simplify1(fm: Formula): Formula = fm match {
-    case Quantifier(_,x,p) => if( fv(p).contains(x) ) fm
+    case Quantifier(_,_,x,p) => if( fv(p).contains(x) ) fm
                               else p
     case _ => psimplify1(fm)
   }
@@ -118,7 +118,7 @@ final object AM {
   def simplify(fm: Formula): Formula = fm match {
     case Not(p) => simplify1(Not(simplify(p)))
     case Binop(c,p,q) => simplify1(Binop(c,simplify(p),simplify(q)))
-    case Quantifier(q,x,p) => simplify1(Quantifier(q,x,simplify(p)))
+    case Quantifier(q,c,x,p) => simplify1(Quantifier(q,c,x,simplify(p)))
     case _ => fm
   }
 
@@ -164,18 +164,18 @@ final object AM {
     case Not(Binop(Imp,p,q)) => Binop(And,nnf(p), nnf(Not(q)))
     case Not(Binop(Iff,p,q)) => Binop(Or,Binop(And,nnf(p),nnf(Not(q))),
                                       Binop(And,nnf(Not(p)),nnf(q)))
-    case Quantifier(Forall,x,p) => Quantifier(Forall,x,nnf(p))
-    case Quantifier(Exists,x,p) => Quantifier(Exists,x,nnf(p))
-    case Not(Quantifier(Forall,x,p)) => Quantifier(Exists,x,nnf(Not(p)))
-    case Not(Quantifier(Exists,x,p)) => Quantifier(Forall,x,nnf(Not(p)))
+    case Quantifier(Forall,c@Real,x,p) => Quantifier(Forall,c,x,nnf(p))
+    case Quantifier(Exists,c@Real,x,p) => Quantifier(Exists,c,x,nnf(p))
+    case Not(Quantifier(Forall,c@Real,x,p)) => Quantifier(Exists,c,x,nnf(Not(p)))
+    case Not(Quantifier(Exists,c@Real,x,p)) => Quantifier(Forall,c,x,nnf(Not(p)))
     case _ => fm
   }
 
   def separate(x: String, cjs: List[Formula]): Formula = {
     val (yes,no) = cjs.partition(c => fv(c).contains(x));
     if(yes == Nil) list_conj(no) 
-    else if(no == Nil) Quantifier(Exists,x,list_conj(yes))
-    else Binop(And,Quantifier(Exists,x,list_conj(yes)), list_conj(no))
+    else if(no == Nil) Quantifier(Exists,Real,x,list_conj(yes))
+    else Binop(And,Quantifier(Exists,Real,x,list_conj(yes)), list_conj(no))
   }
   
   def pushquant(x: String, p: Formula): Formula = {
@@ -192,8 +192,8 @@ final object AM {
     case Not(p) => Not(miniscope(p))
     case Binop(And,p,q) => Binop(And,miniscope(p),miniscope(q))
     case Binop(Or,p,q) => Binop(Or,miniscope(p),miniscope(q))
-    case Quantifier(Forall,x,p) => Not(pushquant(x,Not(miniscope(p))))
-    case Quantifier(Exists,x,p) => pushquant(x,miniscope(p))
+    case Quantifier(Forall,c,x,p) => Not(pushquant(x,Not(miniscope(p))))
+    case Quantifier(Exists,c,x,p) => pushquant(x,miniscope(p))
     case _ => fm
   }
   }
@@ -255,7 +255,7 @@ final object AM {
     case Atom(a) => f(a)
     case Not(p) => Not(onatoms(f,p))
     case Binop(c,p,q) => Binop(c,onatoms(f, p), onatoms(f,q))
-    case Quantifier(q,x,p ) => Quantifier(q,x,onatoms(f,p))
+    case Quantifier(q,c,x,p ) => Quantifier(q,c,x,onatoms(f,p))
     case Modality(m,hp, phi) => Modality(m,onatoms_HP(f,hp), onatoms(f,phi))
     case _ => fm
   }
@@ -271,7 +271,7 @@ final object AM {
     case Atom(a) => f(a)(b)
     case Not(p) => overatoms(f,p,b)
     case Binop(_,p,q) => overatoms(f, p, overatoms(f,q,b))
-    case Quantifier(q,x,p ) => overatoms(f, p, b)
+    case Quantifier(_,_,x,p ) => overatoms(f, p, b)
     case _ => b
   }
 
@@ -568,7 +568,7 @@ final object AM {
     val cjs = conjuncts(p);
     val (ycjs, ncjs) = cjs.partition(c => fv(c).contains(x));
     if(ycjs == Nil) p else {
-      val q = bfn(Quantifier(Exists,x, list_conj(ycjs)));
+      val q = bfn(Quantifier(Exists,Real, x, list_conj(ycjs)));
       val r = ncjs.foldLeft(q)(mk_and)
       print("|");
       r
@@ -585,8 +585,9 @@ final object AM {
       case Not(p) => Not(qelift(vars,p))
       case Binop(c,p,q) => 
         Binop(c,qelift(vars,p), qelift(vars,q))
-      case Quantifier(Forall,x,p) => Not(qelift(vars,Quantifier(Exists,x,Not(p))))
-      case Quantifier(Exists,x,p) => 
+      case Quantifier(Forall,Real,x,p) => 
+        Not(qelift(vars,Quantifier(Exists,Real,x,Not(p))))
+      case Quantifier(Exists,Real,x,p) => 
         val djs = disjuncts(nfn(qelift(x::vars,p)));
         println("In qelift.  Number of disjuncts = " + djs.length);
         print("["); 
@@ -839,7 +840,7 @@ final object AM {
 
   def basic_real_qelim(vars: List[String]): Formula => Formula 
   = fm => fm match {
-    case Quantifier(Exists,x,p) =>
+    case Quantifier(Exists,Real,x,p) =>
       val pols = atom_union(
         fm1 => fm1 match{case R(a,List(t,Num(n))) if n.is_zero => List(t)
                          case _ => Nil},
@@ -869,7 +870,7 @@ final object AM {
 
   def univ_close(fm: Formula): Formula = {
     val fvs = fv(fm);
-    fvs.foldRight(fm) ((v,fm1) => Quantifier(Forall,v,fm1))
+    fvs.foldRight(fm) ((v,fm1) => Quantifier(Forall,Real,v,fm1))
   }
 
 
@@ -905,8 +906,8 @@ final object AM {
     // XXX should uniqify
     val fm0 = onatoms(
       fol => Atom(replaceUnaryFns_Pred(fol)),fm)
-    val fm1 = unary_fns.foldRight(fm0)((v,f) => Quantifier(Forall,v,f))
-    fvs.foldRight(fm1) ((v,f) => Quantifier(Exists,v,f))
+    val fm1 = unary_fns.foldRight(fm0)((v,f) => Quantifier(Forall,Real,v,f))
+    fvs.foldRight(fm1) ((v,f) => Quantifier(Exists,Real,v,f))
   }
 
 

@@ -41,9 +41,9 @@ final object Prover {
     case Not(f) => firstorder(f)
     case Binop(_,f1,f2) => 
       firstorder(f1) && firstorder(f2)
-    case Quantifier(Exists,v,f) =>
+    case Quantifier(Exists,Real,v,f) =>
       firstorder(f)
-    case Quantifier(Forall,v,f) =>
+    case Quantifier(Forall,Real,v,f) =>
       firstorder(f)
     case Modality(_,_,_) => false
     case _ => false
@@ -209,12 +209,12 @@ final object Prover {
     case Not(f) => Not(rename_Formula(xold,xnew,f))
     case Binop(c,f1,f2) => 
       Binop(c,rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
-    case Quantifier(q,v,f) if v == xold =>
+    case Quantifier(q,c,v,f) if v == xold =>
       val v1 = uniqify(v)
       val f1 = rename_Formula(v,v1,f)
-      Quantifier(q, v1, rename_Formula(xold, xnew, f1))
-    case Quantifier(q,v,f) =>
-      Quantifier(q, v, rename_Formula(xold,xnew,f))      
+      Quantifier(q, c, v1, rename_Formula(xold, xnew, f1))
+    case Quantifier(q,c,v,f) =>
+      Quantifier(q, c, v, rename_Formula(xold,xnew,f))      
     case Modality(m,hp,phi) =>
       Modality(m,rename_HP(xold,xnew,hp), rename_Formula(xold,xnew,phi))
 
@@ -267,8 +267,8 @@ final object Prover {
     case Not(f1) => Not(onterms_Formula(g,f1))
     case Binop(c,f1,f2) => 
       Binop(c,onterms_Formula(g,f1),onterms_Formula(g,f2))
-    case Quantifier(q,v,f) =>
-      Quantifier(q, v, onterms_Formula(g,f))      
+    case Quantifier(q, c, v,f) =>
+      Quantifier(q, c, v, onterms_Formula(g,f))      
     case Modality(m,hp,phi) =>
       Modality(m,onterms_HP(g,hp), onterms_Formula(g,phi))
   }
@@ -393,13 +393,13 @@ final object Prover {
     case Binop(c,f1,f2) => 
       Binop(c,substitute_Formula1(xold,xnew,xnew_fv,f1),
           substitute_Formula1(xold,xnew,xnew_fv,f2))
-    case Quantifier(q,v,f) =>
+    case Quantifier(q,c,v,f) =>
       if( ! xnew_fv.contains(v)){
-        Quantifier(q,v, substitute_Formula1(xold,xnew, xnew_fv, f))
+        Quantifier(q,c,v, substitute_Formula1(xold,xnew, xnew_fv, f))
       } else {
         val v1 = uniqify(v)
         val f1 = rename_Formula(v,v1,f)
-        Quantifier(q,v1,substitute_Formula1(xold,xnew, xnew_fv, f1))
+        Quantifier(q,c,v1,substitute_Formula1(xold,xnew, xnew_fv, f1))
       }
 /* let's just keep these unimplemented for now
     case Box(hp, f) =>
@@ -429,13 +429,13 @@ final object Prover {
     case Binop(c,f1,f2) => 
       Binop(c,simul_substitute_Formula1(subs,new_fv,f1),
           simul_substitute_Formula1(subs,new_fv,f2))
-    case Quantifier(q,v,f) =>
+    case Quantifier(q,c,v,f) =>
       if( ! new_fv.contains(v)){
-        Quantifier(q,v, simul_substitute_Formula1(subs, new_fv, f))
+        Quantifier(q,c,v, simul_substitute_Formula1(subs, new_fv, f))
       } else {
         val v1 = uniqify(v)
         val f1 = rename_Formula(v,v1,f)
-        Quantifier(q,v1,simul_substitute_Formula1(subs, new_fv, f1))
+        Quantifier(q,c,v1,simul_substitute_Formula1(subs, new_fv, f1))
       }
   }
 
@@ -471,9 +471,9 @@ final object Prover {
       tm1 => Not(extract(tm_ex, f)(tm1))
     case Binop(c, f1, f2) =>
       tm1 => Binop(c, extract(tm_ex,f1)(tm1), extract(tm_ex,f2)(tm1))
-    case Quantifier(q,v,f) => 
+    case Quantifier(q, c, v,f) => 
       // should we do some alpha renaming magic here?
-      tm1 => Quantifier(q,v, extract(tm_ex,f)(tm1))
+      tm1 => Quantifier(q,c, v, extract(tm_ex,f)(tm1))
     case Modality(m, hp, f) =>
       tm1 => Modality(m,hp, extract(tm_ex,f)(tm1))
   }

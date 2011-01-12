@@ -22,8 +22,6 @@ case object Iff extends Connective
 sealed abstract class QuantifierType
 case object Forall extends QuantifierType
 case object Exists extends QuantifierType
-case class ForallOfSort(c: Sort) extends QuantifierType
-case class ExistsOfSort(c: Sort) extends QuantifierType
 
 
 sealed abstract class ModalityType
@@ -37,7 +35,8 @@ case object False extends Formula
 case class Atom(p: Pred) extends Formula
 case class Not(f: Formula) extends Formula
 case class Binop(c: Connective, f1 : Formula, f2: Formula) extends Formula
-case class Quantifier(t: QuantifierType, v: String, f: Formula) extends Formula
+case class Quantifier(t: QuantifierType, c: Sort,
+                      v: String, f: Formula) extends Formula
 case class Modality(m: ModalityType, hp: HP, rest: Formula) extends Formula
 
 
