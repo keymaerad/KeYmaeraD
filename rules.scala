@@ -128,7 +128,7 @@ object Rules {
           else None
         case (RightP(n), fm) =>
           if(sq.ctxt.contains(fm) )
-            Some((Nil,Nil)) // proved!
+            Some((List(Sequent(Nil,List(True))),Nil)) // proved!
           else None
       }
     } 
@@ -507,7 +507,7 @@ object Rules {
 
 
 
-// XXX
+// XXX ?
   val substitute = new ProofRule("substitute") {
     import Prover._
 

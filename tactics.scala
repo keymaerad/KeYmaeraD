@@ -18,28 +18,30 @@ object Tactics {
   }
 
 
-  def trylistofrules(rs: List[ProofRule], nd: OrNode) : List[NodeID] = {
+  def trylistofrules(rs: List[ProofRule], nd: OrNode) 
+         : (Boolean,List[NodeID]) = {
         val sq = nd.goal;
         var foundone = false;
         var res: List[NodeID] = Nil;
    
         for (p <- positions(sq)) {
-          if(foundone == false){
             for(r <- rs) {
-              val res0 = r.apply(p)(sq);
-              res0 match {
-                case Some(_) =>
-                  res = applyrule(nd,p,r) match { case Some(lst) => lst
-                                                  case None => Nil};
-                  foundone = true;
-                  ()
-                case None => 
-                  ()
+              if(foundone == false){
+            
+                val res0 = r.apply(p)(sq);
+                res0 match {
+                  case Some(_) =>
+                    res = applyrule(nd,p,r) match { case Some(lst) => lst
+                                                     case None => Nil};
+                    foundone = true;
+                    ()
+                  case None => 
+                    ()
+                }
               }
             }
           }
-        }
-    res
+      (foundone, res)
 
   }
 
@@ -116,7 +118,7 @@ object Tactics {
       case Sequent(c,List(s)) =>
         // try all the box hp easy rules
         val pos = RightP(0)
-        val nds1 = trylistofrules(hpeasy, nd)
+        val (_,nds1) = trylistofrules(hpeasy, nd)
         val nds2 = usehints(pos)(nd)
         nds1 ++ nds2
       case _ => Nil
@@ -192,20 +194,24 @@ object Tactics {
 
   val alphaT : Tactic = new Tactic("alpha") {
     def apply(nd: OrNode) = 
-      trylistofrules(alpha,nd)
+      trylistofrules(alpha,nd)._2
   }
 
   val beta = List(andRight, orLeft)
 
   val betaT : Tactic = new Tactic("beta") {
     def apply(nd: OrNode) = 
-      trylistofrules(beta,nd)
+      trylistofrules(beta,nd)._2
   }
 
 
-  val closeT : Tactic = new Tactic("close") {
-    def apply(nd: OrNode) = 
-      trylistofrules(List(close), nd)
+  val closeOrArithT : Tactic = new Tactic("close") {
+    def apply(nd: OrNode) = {
+      val (fo,r) = trylistofrules(List(close), nd)
+      if(fo) r 
+      else arithT.apply(nd)
+
+    }
   }
 
 
@@ -213,7 +219,7 @@ object Tactics {
   val alleasyT: Tactic = composeT(repeatT(eitherT(hpeasyT, alphaT)),
                                    composeT(repeatT(substT),
                                      composeT(repeatT(betaT),
-                                           eitherT(closeT,arithT))))
+                                           closeOrArithT)))
 
 
 }

@@ -60,7 +60,7 @@ object TreeActions {
       register(newnd)
       pt.addchild(newnd.nodeID)
     }
-    println("treemodel : " + treemodel)
+    println("treemodel attaching nodes: " + newnds)
     treemodel.map(_.fireNodesInserted(pt, newnds)) // GUI
     treemodel.map(_.fireChanged(pt)) // GUI
   }
@@ -72,7 +72,7 @@ object TreeActions {
   def applyrule(hn: OrNode, 
                 p: Position, 
                 rl: ProofRule): Option[List[NodeID]] = rl(p)(hn.goal) match {
-    case Some((Nil, _)) => //proved
+    case Some((Nil, _)) | Some((List(Sequent(Nil,List(True))),_)) => //proved
       val pnd = new DoneNode(rl.toString, hn.goal)
       attachnode(hn,pnd)
       propagateProvedUp(hn.nodeID, pnd.nodeID)
