@@ -145,15 +145,14 @@ class DLParser(ins : String)
        case _ => tm
      }
 
+
    def freeVarsAreFns_HP(bndVars : List[String], hp: HP) : HP = hp match {
     case Assign(vs) =>
       val vs1 = vs.map(vt => (vt._1, freeVarsAreFns_Term(bndVars,vt._2)))
       Assign(vs1)
     case AssignAny(x) => hp
     case AssignQuantified(i,c,vs) =>
-      AssignQuantified(i,c,
-                       vs.map(v => (v._1, 
-                                    freeVarsAreFns_Term(i::bndVars, v._2))))
+      AssignQuantified(i,c, vs.map(replace_asgn(i::bndVars)))
     case Check(fm) =>
       Check(freeVarsAreFns(bndVars,fm))
     case Seq(p,q) => 
@@ -165,24 +164,24 @@ class DLParser(ins : String)
            freeVarsAreFns(bndVars,fm), 
            inv_hints.map(f => freeVarsAreFns(bndVars,f)))
     case Evolve(derivs, fm, inv_hints, sols) =>
-      val replace_deriv: ((Fn, Term)) => (Fn, Term) = vt => {
-        val (v,t) = vt
-        val t1 = freeVarsAreFns_Term(bndVars,t)
-        (v,t1)
-      }
-      Evolve(derivs.map( replace_deriv), 
+      Evolve(derivs.map( replace_asgn(bndVars)), 
              freeVarsAreFns(bndVars,fm),
              inv_hints.map(f => freeVarsAreFns(bndVars,f)),
              sols.map(f => freeVarsAreFns(bndVars,f)))
      case EvolveQuantified(i,c,vs,h) =>
-      val replace_deriv: ((Fn, Term)) => (Fn, Term) = vt => {
-        val (v,t) = vt
-        val t1 = freeVarsAreFns_Term(bndVars,t)
-        (v,t1)
-      }
-      EvolveQuantified(i,c, vs.map(replace_deriv), freeVarsAreFns(bndVars,h))
+      EvolveQuantified(i,c, vs.map(replace_asgn(i::bndVars)), 
+                       freeVarsAreFns(bndVars,h))
        
    }
+
+   val replace_asgn: List[String] => ((Fn, Term)) => (Fn, Term) = 
+     bndVars => vt => {
+       val (v,t) = vt
+       val t1 = freeVarsAreFns_Term(bndVars,t)
+       val v1@Fn(_,_) = freeVarsAreFns_Term(bndVars,v)
+       (v1,t1)
+     }
+
 
    def freeVarsAreFns(bndVars : List[String], fm: Formula) : Formula 
      = fm match {

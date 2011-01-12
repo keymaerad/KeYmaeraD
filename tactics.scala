@@ -190,7 +190,7 @@ object Tactics {
 
 
 
-  val alpha = List(andLeft, impRight)
+  val alpha = List(andLeft, impRight, allRight)
 
   val alphaT : Tactic = new Tactic("alpha") {
     def apply(nd: OrNode) = 

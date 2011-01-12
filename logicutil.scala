@@ -292,16 +292,12 @@ object Util {
 
 
 
-  def fvt(tm: Term): List[String] = tm match {
-    case Var(x) => List(x)
-    case Fn(f,args) => unions(args.map(fvt))
-    case Num(_) => Nil
-  }
+
 
 
   def vari(fm: Formula): List[String] = fm match {
     case False | True => Nil
-    case Atom(R(p,args)) => unions(args.map(fvt))
+    case Atom(R(p,args)) => unions(args.map(fv_Term))
     case Not(p) => vari(p)
     case Binop(_,p,q) => union(vari(p), vari(q))
     case Quantifier(_,x,p) => insert(x, vari(p))
@@ -309,13 +305,44 @@ object Util {
       throw new Error("nonfirstorder arithmetic")
   }
 
+
+  def fv_Term(tm: Term): List[String] = tm match {
+    case Var(x) => List(x)
+    case Fn(f,args) => unions(args.map(fv_Term))
+    case Num(_) => Nil
+  }
+
+  def fv_HP(hp: HP) : List[String] = hp match {
+    case Assign(vs) =>
+      val fvs = vs.map(v => fv_Term(v._2))
+      unions(fvs)
+    case AssignAny(x) => Nil
+    case AssignQuantified(i,c,vs) =>
+      unions(vs.map(v => union(fv_Term(v._1),fv_Term(v._2))))
+    case Check(fm) =>
+      fv(fm)
+    case Seq(p,q) => 
+      union(fv_HP(p), fv_HP(q))
+    case Choose(p,q) => 
+      union(fv_HP(p), fv_HP(q))
+    case Loop(p,fm, inv_hints) =>
+      union(fv_HP(p), fv(fm))
+    case Evolve(derivs, fm, inv_hints, sols) =>
+      union(fv(fm),
+            unions(derivs.map(v => union(fv_Term(v._1),fv_Term(v._2)))))
+    case EvolveQuantified(i,c,vs,h) =>
+      val fvs = union(fv(h),
+                      unions(vs.map(v => union(fv_Term(v._1),fv_Term(v._2)))))
+      subtract(fvs, List(i))
+  }
+
   def fv(fm: Formula): List[String] = fm match {
     case False | True => Nil
-    case Atom(R(p,args)) => unions(args.map(fvt))
+    case Atom(R(p,args)) => unions(args.map(fv_Term))
     case Not(p) => fv(p)
     case Binop(_,p,q) => union(fv(p), fv(q))
     case Quantifier(_,x,p) => subtract(fv(p) ,List(x))
-//    case Modality(_, p) => 
+    case Modality(m, hp, p) => union(fv_HP(hp), fv(p))
     case _ => 
       throw new Error("nonfirstorder arithmetic")
   }

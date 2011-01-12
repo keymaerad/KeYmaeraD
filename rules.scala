@@ -217,15 +217,23 @@ object Rules {
     }
   }
 
-/*
-  val allright = new ProofRule("allright") {
+
+  val allRight = new ProofRule("allright") {
     def apply(p: Position) = sq => (p,sq) match {
       case (RightP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
+        val fvs = Util.fv(fm).map( x => Var(x))
         fm match {
           case Quantifier(Forall, v, phi) =>
-            val phi1 = substitute_Formula(v, Fn(v,Nil)
-            val sq1 = replace(p,sq, 
+            val phi1 = Prover.substitute_Formula(v, Fn(v,fvs), phi)
+            val sq1 = replace(p,sq, phi1)
+            Some( (List(sq1), Nil))
+          case Quantifier(ForallOfSort(c), v, phi) =>
+            val phi1 = Prover.substitute_Formula(v, Fn(v,fvs), phi)
+            val sq1 = replace(p,sq, phi1)
+            Some( (List(sq1), Nil))
+          case _ => 
+            None
         }
       case _ => 
         None
@@ -233,7 +241,7 @@ object Rules {
 
   }
 
-*/ 
+
 
   val seq = new ProofRule("seq") {
     def apply(p: Position) = sq => {
