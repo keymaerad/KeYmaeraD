@@ -1,4 +1,4 @@
-SCALAFILES= types.scala rational.scala arithmetic.scala \
+SCALAFILES= types.scala rational.scala logicutil.scala arithmetic.scala \
 	parse.scala printing.scala \
 	nodes.scala mathematicautil.scala \
 	rules.scala procedures.scala jobs.scala \

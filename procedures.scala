@@ -129,7 +129,7 @@ object Procedures {
 
     def proceed(sq: Sequent, tm: Long): Option[Sequent] = sq match {
       case Sequent(c,s) => 
-        val fm0 = Binop(Imp,AM.list_conj(c), AM.list_disj(s));
+        val fm0 = Binop(Imp, AM.list_conj(c), AM.list_disj(s));
 //        val fm = AM.univ_close(fm0);
         val fm = AM.makeQEable(fm0);
         println("about to attempt quantifier elimination on:")

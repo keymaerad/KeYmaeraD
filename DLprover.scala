@@ -10,9 +10,7 @@ import scala.collection.immutable.ListSet
 import scala.collection.immutable.HashSet
 
 
-//import ExactArith._
-
-
+import DLBanyan.Util._
 
 final object Prover {
 

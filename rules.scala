@@ -217,6 +217,23 @@ object Rules {
     }
   }
 
+/*
+  val allright = new ProofRule("allright") {
+    def apply(p: Position) = sq => (p,sq) match {
+      case (RightP(n), Sequent(c,s)) =>
+        val fm = lookup(p,sq)
+        fm match {
+          case Quantifier(Forall, v, phi) =>
+            val phi1 = substitute_Formula(v, Fn(v,Nil)
+            val sq1 = replace(p,sq, 
+        }
+      case _ => 
+        None
+    }
+
+  }
+
+*/ 
 
   val seq = new ProofRule("seq") {
     def apply(p: Position) = sq => {
@@ -276,6 +293,33 @@ object Rules {
               val vr1 = Prover.uniqify(vr);
               phi1 = Prover.renameFn(vr,vr1,phi1);
               val fm1 = Atom(R("=",List(Fn(vr1,Nil),tm)));
+              c1 = c1 ++ List(fm1);
+                // order matters! we want p to still point to phi
+          }
+          val sq1 = replace(p, Sequent(c1,s) , phi1)
+          Some((List(sq1),Nil))
+        case _ =>
+          None
+      }
+   }
+ }
+
+
+ val qassign = new ProofRule("qassign") {
+    def apply(p: Position) = sq =>   {
+      val Sequent(c,s) = sq
+      val fm = lookup(p,sq)
+      fm match {
+        case Modality(Box,AssignQuantified(i,srt,vs),phi) => 
+          var phi1 = phi;
+          var c1 = c;
+          for( v <- vs) {
+              val (Fn(vr,args), tm) = v;
+              val vr1 = Prover.uniqify(vr);
+              phi1 = Prover.renameFn(vr,vr1,phi1);
+              val fm1 = Quantifier(ForallOfSort(srt), 
+                                   i, 
+                                   Atom(R("=",List(Fn(vr1,args),tm))));
               c1 = c1 ++ List(fm1);
                 // order matters! we want p to still point to phi
           }
@@ -501,13 +545,11 @@ object Rules {
         case _ => 
           None
       }
-                            
-                            
+                                                        
     }
 
 
 
-// XXX ?
   val substitute = new ProofRule("substitute") {
     import Prover._
 

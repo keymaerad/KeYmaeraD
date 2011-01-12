@@ -73,7 +73,7 @@ object Tactics {
 
 
   val hpeasy = List(seq, choose, check, 
-                    assign, assignAnyRight,
+                    assign, assignAnyRight, qassign,
                     diffClose
                   )
 
