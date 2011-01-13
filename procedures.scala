@@ -12,6 +12,20 @@ object Procedures {
 
 
 
+  // Indicate whether, e.g.,  we can apply substitution safely. 
+  // XXX should walk the formula and see if any functions are nonnullary.
+  def canQE(fm: Formula): Boolean = fm match {
+    case True | False => true
+    case Atom(R(r,ps)) => true
+    case Not(f) => canQE(f)
+    case Binop(_,f1,f2) => 
+      canQE(f1) && canQE(f2)
+    case Quantifier(_,Real,v,f) =>
+      canQE(f)
+    case _ => false
+  }
+
+
 
 // for now, these things only close or disprove a goal.
 

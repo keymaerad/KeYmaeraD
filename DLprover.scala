@@ -47,17 +47,6 @@ final object Prover {
     case _ => false
   }
 
-  // Indicate whether, e.g.,  we can apply substitution safely. 
-  def canQE(fm: Formula): Boolean = fm match {
-    case True | False => true
-    case Atom(R(r,ps)) => true
-    case Not(f) => canQE(f)
-    case Binop(_,f1,f2) => 
-      canQE(f1) && canQE(f2)
-    case Quantifier(_,Real,v,f) =>
-      canQE(f)
-    case _ => false
-  }
 
   def totalDerivTerm(d: List[(Fn, Term)], tm: Term) : Term = tm match {
     case Var(s) =>  

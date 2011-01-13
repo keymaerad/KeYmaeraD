@@ -197,7 +197,7 @@ object Tactics {
       trylistofrules(alpha,nd)._2
   }
 
-  val beta = List(andRight, orLeft)
+  val beta = List(andRight, orLeft, impLeft)
 
   val betaT : Tactic = new Tactic("beta") {
     def apply(nd: OrNode) = 

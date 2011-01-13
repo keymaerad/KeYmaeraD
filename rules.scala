@@ -186,6 +186,22 @@ object Rules {
     }
   }
 
+  val impLeft  = new  ProofRule("impleft") {
+    def apply(p:Position) = sq => (p,sq) match { 
+      case (LeftP(n), Sequent(c,s)) =>
+        val fm = lookup(p,sq)
+        fm match {
+          case Binop(Imp,f1,f2) => 
+            val sq1 = replace(p,sq,f2)
+            val sq2 = Sequent(c,f1::s)
+            Some( (List(sq1,sq2),Nil))
+          case _ => 
+            None
+        }
+      case _ => None
+    }
+  }
+
   val orRight = new ProofRule("orright") { 
     def apply(p:Position) = sq => (p,sq) match { 
       case (RightP(n), Sequent(c,s)) =>
