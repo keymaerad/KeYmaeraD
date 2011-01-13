@@ -34,57 +34,30 @@ final object Prover {
   }
 
 
-  // Indicate whether we can apply quantifier elimination.
+  // Indicate whether, e.g.,  we can apply substitution safely. 
   def firstorder(fm: Formula): Boolean = fm match {
     case True | False => true
     case Atom(R(r,ps)) => true
     case Not(f) => firstorder(f)
     case Binop(_,f1,f2) => 
       firstorder(f1) && firstorder(f2)
-    case Quantifier(Exists,Real,v,f) =>
-      firstorder(f)
-    case Quantifier(Forall,Real,v,f) =>
+    case Quantifier(_,_,v,f) =>
       firstorder(f)
     case Modality(_,_,_) => false
     case _ => false
   }
-/*
-  def plugin(fm : Formula, fmctxt: FormulaCtxt): Formula = fmctxt match {
-    case Hole => 
-      fm
-    case NotCtxt(f) =>
-      Not(plugin(fm, f))
-    case AndCtxt1(f1, f2) =>
-      And(plugin(fm, f1), f2)
-    case AndCtxt2(f1, f2) =>
-      And(f1,plugin(fm, f2))
-    case OrCtxt1(f1, f2) =>
-      Or(plugin(fm, f1), f2)
-    case OrCtxt2(f1, f2) =>
-      Or(f1,plugin(fm, f2))
-    case ImpCtxt1(f1, f2) =>
-      Imp(plugin(fm, f1), f2)
-    case ImpCtxt2(f1, f2) =>
-      Imp(f1,plugin(fm, f2))
-    case IffCtxt1(f1, f2) =>
-      Iff(plugin(fm, f1), f2)
-    case IffCtxt2(f1, f2) =>
-      Iff(f1,plugin(fm, f2))
-    case ExistsCtxt(v, f) =>
-      Exists(v, plugin(fm,f))
-    case ForallCtxt(v, f) =>
-      Forall(v, plugin(fm,f))
-    case ExistsOfSortCtxt(v, c, f) =>
-      ExistsOfSort(v, c, plugin(fm,f))
-    case ForallOfSortCtxt(v, c, f) =>
-      ForallOfSort(v, c, plugin(fm,f))
-    case BoxCtxt(hp, rest) =>
-      Box(hp, plugin(fm,rest))
-    case DiamondCtxt(hp, rest) =>
-      Diamond(hp, plugin(fm,rest))
 
+  // Indicate whether, e.g.,  we can apply substitution safely. 
+  def canQE(fm: Formula): Boolean = fm match {
+    case True | False => true
+    case Atom(R(r,ps)) => true
+    case Not(f) => canQE(f)
+    case Binop(_,f1,f2) => 
+      canQE(f1) && canQE(f2)
+    case Quantifier(_,Real,v,f) =>
+      canQE(f)
+    case _ => false
   }
-*/
 
   def totalDerivTerm(d: List[(Fn, Term)], tm: Term) : Term = tm match {
     case Var(s) =>  
@@ -273,39 +246,40 @@ final object Prover {
       Modality(m,onterms_HP(g,hp), onterms_Formula(g,phi))
   }
 
-  def onterms_HP(g : Term => Term,hp:HP):HP = hp match {
-    case Assign(vs) =>
-      val vs1 = vs.map( v => {
-        val (x,t) = v;
+  def onterms_HP(g : Term => Term,hp:HP):HP = {
+    val replace: ((Fn, Term)) => (Fn, Term) = vt => {
+      val (v,t) = vt
+      val Fn(f,args) =  g(v)
+      val t1 = g(t)
+      (Fn(f,args),t1)
+    }    ;
+    hp match {
+      case Assign(vs) =>
+        Assign(vs.map(replace))
+      case AssignQuantified(i,c,vs) =>
+        AssignQuantified(i,c, vs.map(replace)  )
+      case AssignAny(x) =>
         val Fn(f,args) = g(x) // error if g changes x to a nonfunction
-        val t1 = g(t)
-        (Fn(f,args),t1) });
-     Assign(vs1)
-    case AssignAny(x) =>
-      val Fn(f,args) = g(x) // error if g changes x to a nonfunction
-      AssignAny(Fn(f,args))
-    case Check(fm) =>
-      Check(onterms_Formula(g,fm))
-    case Seq(p,q) => 
-      Seq(onterms_HP(g,p), onterms_HP(g,q))
-    case Choose(p,q) => 
-      Choose(onterms_HP(g,p), onterms_HP(g,q))
-    case Loop(p,fm, inv_hints) =>
-      Loop(onterms_HP(g,p), 
-           onterms_Formula(g,fm), 
-           inv_hints.map(f => onterms_Formula(g,f)))
-    case Evolve(derivs, fm, inv_hints, sols) =>
-      val replace_deriv: ((Fn, Term)) => (Fn, Term) = vt => {
-        val (v,t) = vt
-        val Fn(f,args) =  g(v)
-        val t1 = g(t)
-        (Fn(f,args),t1)
-      }
-      Evolve(derivs.map( replace_deriv), 
-             onterms_Formula(g,fm),
-             inv_hints.map(f => onterms_Formula(g,f)),
-             sols.map(f => onterms_Formula(g,f)))
+        AssignAny(Fn(f,args))
+      case Check(fm) =>
+        Check(onterms_Formula(g,fm))
+      case Seq(p,q) => 
+        Seq(onterms_HP(g,p), onterms_HP(g,q))
+      case Choose(p,q) => 
+        Choose(onterms_HP(g,p), onterms_HP(g,q))
+      case Loop(p,fm, inv_hints) =>
+          Loop(onterms_HP(g,p), 
+               onterms_Formula(g,fm), 
+               inv_hints.map(f => onterms_Formula(g,f)))
+      case Evolve(derivs, fm, inv_hints, sols) =>
+        Evolve(derivs.map( replace), 
+               onterms_Formula(g,fm),
+               inv_hints.map(f => onterms_Formula(g,f)),
+               sols.map(f => onterms_Formula(g,f)))
+      case EvolveQuantified(i,c, vs, h) =>
+        EvolveQuantified(i,c,vs.map(replace), h)
       
+    }
   }
 
 // renaming functions
@@ -367,18 +341,18 @@ final object Prover {
     case _ => tm
   }
 
-/*
+
+
   def substitute_HP(xold: String,
                     xnew: Term,
-                    hp : HP) : HP = hp match {
-    case Assign(vs) => 
-      val vs1 = vs.map(v => {
-                       val Fn(f,args) =  substitute_Term(xold,xnew,v._1);
-          (Fn(f,args), substitute_Term(xold,xnew,v._2))} )
-      Assign(vs1)
-    // TODO other cases
+                    hp : HP) : HP = {
+    val subst : Term => Term = tm => tm match{
+      case Var(x) if x == xold => xnew
+      case _ => tm
+    }
+    onterms_HP(subst, hp)
   }
-  */
+
 
 
 
@@ -401,14 +375,12 @@ final object Prover {
         val f1 = rename_Formula(v,v1,f)
         Quantifier(q,c,v1,substitute_Formula1(xold,xnew, xnew_fv, f1))
       }
-/* let's just keep these unimplemented for now
-    case Box(hp, f) =>
-      Box(substitute_HP(xold,xnew,hp),
-          substitute_Formula1(xold,xnew,xnew_fv,f))
-    case Diamond(hp, f) =>
-      Box(substitute_HP(xold,xnew,hp),
-          substitute_Formula1(xold,xnew,xnew_fv,f))
-          */ 
+    //XXX  we don't check for captured function symbols!
+    // This is okay if we uniqify function symbols in the
+    // xnew.
+    case Modality(m, hp, f) =>
+      Modality(m, substitute_HP(xold,xnew,hp),
+                 substitute_Formula1(xold,xnew,xnew_fv,f))
   }
 
   def substitute_Formula(xold: String, xnew: Term, fm: Formula): Formula = {

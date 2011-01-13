@@ -238,16 +238,19 @@ object Rules {
   }
 
 
-/*
+
   val allLeft : Term => ProofRule = tm => new ProofRule("allleft") {
     // XXX should also check that that tm has the appropriate sort
     def apply(p: Position) = sq => (p,sq) match {
       case (LeftP(n), Sequent(c,s)) =>
         val fm = lookup(p,sq)
         fm match {
-          case Quantifier(Forall, c, v, phi) =>
-            // XXX this might be unsound if phi has a modality. argh!
-            val phi1 = Prover.substitute_Formula(v, tm, phi)
+          case Quantifier(Forall, srt, v, phi) =>
+            val v1 = Prover.uniqify(v)
+            val fv1 = Fn(v1,Nil)
+            val phi1 = Prover.substitute_Formula(v, fv1, phi)
+            val fm1 = Atom(R("=", List(fv1, tm)))
+            Some( (List(Sequent(fm1::phi1::c,s)), Nil))
           case _ =>
             None
         }
@@ -255,7 +258,7 @@ object Rules {
         None
     }
   }
-*/
+
 
   val seq = new ProofRule("seq") {
     def apply(p: Position) = sq => {
