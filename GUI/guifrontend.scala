@@ -19,7 +19,7 @@ import scala.actors.Actor._
 
 import DLBanyan.Nodes._
 import DLBanyan.Tactics._
-
+import DLBanyan._
 
 import java.net.URL
 import java.io.File
@@ -180,7 +180,8 @@ class FrontEnd(fa: Actor)
 
   tree = new JTree(tm)
   tree.setCellRenderer(new MyRenderer)
-  tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION)
+  tree.getSelectionModel().setSelectionMode(
+    TreeSelectionModel.SINGLE_TREE_SELECTION)
 
   //Listen for when the selection changes.
   tree.addTreeSelectionListener(this)
@@ -215,6 +216,7 @@ class FrontEnd(fa: Actor)
           tree.getLastSelectedPathComponent() match {
             case (nd : ProofNode) => 
               htmlPane.setText(nd.toPrettyString)
+              TreeActions.gotonode(nd)
             case _ => null
           }
 
