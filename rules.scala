@@ -193,7 +193,8 @@ object Rules {
         fm match {
           case Binop(Imp,f1,f2) => 
             val sq1 = replace(p,sq,f2)
-            val sq2 = Sequent(c,f1::s)
+            val Sequent(c1,s1) = remove(p,sq)
+            val sq2 = Sequent(c1,f1::s1)
             Some( (List(sq1,sq2),Nil))
           case _ => 
             None
@@ -255,7 +256,8 @@ object Rules {
 
 
 
-  val allLeft : Term => ProofRule = tm => new ProofRule("allleft") {
+  val allLeft : Term => ProofRule = tm => 
+   new ProofRule("allleft") {
     // XXX should also check that that tm has the appropriate sort
     def apply(p: Position) = sq => (p,sq) match {
       case (LeftP(n), Sequent(c,s)) =>
