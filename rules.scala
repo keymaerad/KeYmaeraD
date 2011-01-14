@@ -629,6 +629,40 @@ object Rules {
       }
   }
 
+  val nullarize : String => ProofRule = 
+    f => new ProofRule("nullarize " + f) {
+    
+    import Prover._
+
+    def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
+      case (LeftP(n), Sequent(ctxt,sc), 
+            Not(Atom(R("=", List(Fn(i,Nil),Fn(j,Nil))))))
+        if (ctxt ++ sc).forall(firstorder) =>
+          val fi = uniqify(f)
+          val fj = uniqify(f)
+          val ctxt1 = 
+            ctxt.map(x => extract(Fn(f,List(Fn(i,Nil))), x)(Fn(fi,Nil)))
+          val sc1 = 
+            sc.map(x => extract(Fn(f,List(Fn(i,Nil))), x)(Fn(fi,Nil)))
+          val ctxt2 = 
+            ctxt1.map(x => extract(Fn(f,List(Fn(j,Nil))), x)(Fn(fj,Nil)))
+          val sc2 = 
+            sc1.map(x => extract(Fn(f,List(Fn(j,Nil))), x)(Fn(fj,Nil)))
+          val fms = ctxt2 ++ sc2
+          val fmsr = fms.map(fm1 => hasFn_Formula(f,fm1))
+          if(fmsr.exists(x => x))
+            None
+          else
+            Some(List(  Sequent(ctxt2,sc2))    ,Nil)
+      case _ =>
+        None
+    }
+
+  }
+
+  
+
+
 }
 
 

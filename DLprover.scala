@@ -271,6 +271,58 @@ final object Prover {
     }
   }
 
+// do generic fold over terms
+
+  def overterms_Formula[B](g : Term => B => B,
+                           fm: Formula, 
+                           b : B) : B = fm match {
+    case True | False => b
+    case Atom(R(r,ps)) => 
+      ps.foldRight(b)((x,y) => g(x)(y))
+    case Not(f1) => overterms_Formula(g,f1,b)
+    case Binop(c,f1,f2) => 
+      overterms_Formula(g,f1,
+                        overterms_Formula(g,f2,b))
+    case Quantifier(q, c, v,f) =>
+      overterms_Formula(g,f,b)
+    case Modality(m,hp,phi) =>
+      overterms_HP(g,hp,
+                   overterms_Formula(g,phi,b))
+  }
+
+  def overterms_HP[B](g : Term => B => B, hp:HP, b: B):B = {
+    val foldit: (List[(Fn, Term)]) => B => B = vs => b0 => {
+      val (fs,ts) = vs.unzip
+      val fsr = fs.foldRight(b0)((x,y) => g(x)(y))
+      val tsr = fs.foldRight(fsr)((x,y) => g(x)(y))
+      tsr
+    }    ;
+    hp match {
+      case Assign(vs) =>
+        foldit(vs)(b)
+      case AssignQuantified(i,c,vs) =>
+        foldit(vs)(b)
+      case AssignAny(x) =>
+        b
+      case Check(fm) =>
+        overterms_Formula(g,fm,b)
+      case Seq(p,q) => 
+        overterms_HP(g,p,
+                     overterms_HP(g,q,b))
+      case Choose(p,q) => 
+        overterms_HP(g,p,
+                     overterms_HP(g,q,b))
+      case Loop(p,fm, inv_hints) =>
+          overterms_HP(g,p, 
+                       overterms_Formula(g,fm,b))
+      case Evolve(derivs, fm, inv_hints, sols) =>
+        overterms_Formula(g,fm,foldit(derivs)( b))
+      case EvolveQuantified(i,c, vs, h) =>
+        overterms_Formula(g,h,foldit(vs)( b))
+      
+    }
+  }
+
 // renaming functions
   def renameFn_Term(fold: String, fnew: String, tm: Term): Term = tm match {
     case Fn(f, ps) =>
@@ -282,6 +334,24 @@ final object Prover {
   def renameFn(fold: String, fnew: String, fm : Formula) : Formula = 
     onterms_Formula(t => renameFn_Term(fold,fnew,t),fm)
 
+
+
+  def hasFn_Term(f: String, tm: Term) : Boolean = tm match {
+    case Fn(f1, ps) if f1 == f => true
+    case Fn(f1, ps) =>
+      val psr = ps.map(p => hasFn_Term(f,p))
+      psr.exists(x => x)
+    case _ => false
+  }
+
+  def hasFn_Formula(f: String, fm: Formula) : Boolean = 
+    AM.overatoms((a: Pred) => (r1: Boolean) => 
+      {
+        val R(r,ps) = a;
+        val psr = ps.map(p => hasFn_Term(f,p))
+        val res = psr.exists(x => x)
+        r1 && res
+      }, fm , true)
 
 
 //

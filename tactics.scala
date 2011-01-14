@@ -263,5 +263,31 @@ object Tactics {
        }
      }
 
+  val nullarizeT : Tactic = 
+    new Tactic("nullarize") {
+      
+
+      import Prover._
+
+      def getunaryfn(tm: Term) : List[String] = tm match {
+        case Fn(f, List(arg)) => List(f)
+        case _ => Nil
+      }
+
+
+      def apply(nd: OrNode): List[NodeID] = {
+        val Sequent(c,s) = nd.goal
+        val fms = c ++ s
+        val unaryfns = fms.map(fm => 
+                              overterms_Formula(tm => (b:List[String]) => 
+                                              getunaryfn(tm) ++ b,
+                                                fm, Nil)).flatten.distinct
+        println("unaryfns: " + unaryfns)
+        val rls = unaryfns.map(s => nullarize(s))
+        trylistofrules(rls,nd)._2        
+        
+      }
+    }
+
 
 }
