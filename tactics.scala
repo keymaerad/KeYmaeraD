@@ -42,8 +42,28 @@ object Tactics {
             }
           }
       (foundone, res)
-
   }
+
+  val trylistofrulesT : List[ProofRule] => Tactic = rls =>
+    new Tactic("trylist " + rls) {
+      def apply(nd: OrNode) : List[NodeID] = {
+        trylistofrules(rls, nd)._2
+      }
+    }
+
+  val tryruleatT : ProofRule => Position => Tactic = rl => pos =>
+    new Tactic("trylist " + rl +  " " + pos ) {
+      def apply(nd: OrNode) : List[NodeID] = {
+        val res0 = rl.apply(pos)(nd.goal)
+        res0 match {
+          case Some(_) =>
+            applyrule(nd,pos,rl) match { case Some(lst) => lst
+                                     case None => Nil};
+          case None =>
+            Nil
+        }
+      }
+    }
 
 
   def usehints(pos: Position): Tactic = new Tactic("usehints") {
@@ -220,6 +240,28 @@ object Tactics {
                                    composeT(repeatT(substT),
                                      composeT(repeatT(betaT),
                                            closeOrArithT)))
+
+  def getOpenLeaves(nd: ProofNode) : List[OrNode] = {
+    val kds = nd.children.map(getnode)
+    (kds, nd.status, nd) match {
+      case (Nil,Open, nd1@OrNode(_,_)) =>
+        List(nd1)
+      case _ =>
+        val lvs = kds.map(getOpenLeaves).flatten
+        lvs
+    }
+    
+  }
+
+
+  val applyToLeavesT : Tactic => Tactic = tct =>
+     new Tactic("applyToLeavesT " + tct) {
+       def apply(nd: OrNode): List[NodeID] = {
+         val lvs = getOpenLeaves(rootNode)
+         val rs = lvs.map(tct).flatten
+         rs
+       }
+     }
 
 
 }

@@ -216,6 +216,10 @@ class FrontActor extends Actor {
           getnodethen(nd, gotonode _)
           getnodethen(nd, shownode _)
           sender ! ()
+        case 'gotoroot =>
+          gotonode(rootNode)
+          shownode(rootNode)
+          sender ! ()
         case ('rule, pos: Position, rl: ProofRule) =>
           hereNode  match {
             case ornd@OrNode(_,_) =>
