@@ -559,7 +559,7 @@ object Rules {
               val endpoint_h = Modality(Box,Assign(sols), h)
               val interm_h0 =  Modality(Box,Assign(sols),h)
               val interm_h =  renameFn(t,t2,interm_h0)
-              val new_xs = sols.map(x => Fn(uniqify(x._1.f), Nil))
+              val new_xs = sols.map(x  => x._1)//=> Fn(uniqify(x._1.f), Nil))
               val old_and_new_xs = 
                 sols.map(_._1).zip(new_xs)
               val new_xs_and_sols = 
@@ -682,7 +682,7 @@ object Rules {
               val endpoint_h = Modality(Box,AssignQuantified(i,srt,sols), h)
               val interm_h0 =  Modality(Box,AssignQuantified(i,srt,sols),h)
               val interm_h =  renameFn(t,t2,interm_h0)
-              val new_xs = sols.map(x => Fn(uniqify(x._1.f), Nil))
+              val new_xs = sols.map(x => x._1) //Fn(uniqify(x._1.f), Nil))
               val old_and_new_xs = 
                 sols.map(_._1).zip(new_xs)
               val new_xs_and_sols = 
