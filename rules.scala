@@ -480,9 +480,9 @@ object Rules {
       def extract(sol: Formula): (String, (Fn, Term)) = sol match {
         case Quantifier(Forall,Real,
                         t, Atom(R("=", 
-                                  List(Fn(f, List(t1)),
-                                       sol_tm)))) if Var(t) == t1 =>
-                                         (t,(Fn(f, List()),sol_tm))
+                                  List(Fn(f,args),
+                                       sol_tm)))) if Var(t) == args.head =>
+                                         (t,(Fn(f, args.tail),sol_tm))
         case _ => 
           println( sol)
         throw new BadSolution
@@ -592,7 +592,7 @@ object Rules {
 
 
   val qDiffSolve : DiffSolveMode => List[Formula] => ProofRule = 
-    mode => fm_sols => new ProofRule("diffsolve[" + mode.toString() + "][" 
+    mode => fm_sols => new ProofRule("qDiffsolve[" + mode.toString() + "][" 
                           + fm_sols.map(Printing.stringOfFormula) 
                           + "]") {
 
@@ -603,9 +603,9 @@ object Rules {
       def extract(sol: Formula): (String, (Fn, Term)) = sol match {
         case Quantifier(Forall,Real,
                         t, Atom(R("=", 
-                                  List(Fn(f, List(t1)),
-                                       sol_tm)))) if Var(t) == t1 =>
-                                         (t,(Fn(f, List()),sol_tm))
+                                  List(Fn(f, args),
+                                       sol_tm)))) if Var(t) == args.head =>
+                                         (t,(Fn(f, args.tail),sol_tm))
         case _ => 
           println( sol)
         throw new BadSolution
@@ -659,7 +659,7 @@ object Rules {
       def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
         case (RightP(n), 
               Sequent(c,s),
-              Modality(Box,Evolve(derivs, h, _, _ ), phi)) =>
+              Modality(Box,EvolveQuantified(i,srt, derivs, h), phi)) =>
           val t_sols = fm_sols.map(extract)
           val sols0 = t_sols.map(_._2)
 
@@ -679,8 +679,8 @@ object Rules {
               val t2_range = 
                 Binop(And,Atom(R(">=", List(Fn(t2,Nil), Num(Exact.zero)))),
                       Atom(R("<=", List(Fn(t2,Nil), Fn(t,Nil)))))
-              val endpoint_h = Modality(Box,Assign(sols), h)
-              val interm_h0 =  Modality(Box,Assign(sols),h)
+              val endpoint_h = Modality(Box,AssignQuantified(i,srt,sols), h)
+              val interm_h0 =  Modality(Box,AssignQuantified(i,srt,sols),h)
               val interm_h =  renameFn(t,t2,interm_h0)
               val new_xs = sols.map(x => Fn(uniqify(x._1.f), Nil))
               val old_and_new_xs = 
@@ -688,7 +688,7 @@ object Rules {
               val new_xs_and_sols = 
                 new_xs.zip(sols.map(_._2))
               val assign_hp = 
-                Assign(new_xs_and_sols);
+                AssignQuantified(i,srt,new_xs_and_sols);
               val phi1 = 
                 old_and_new_xs.foldRight(phi)( (xs ,phi1) =>
                   renameFn(xs._1.f, xs._2.f, phi1))
