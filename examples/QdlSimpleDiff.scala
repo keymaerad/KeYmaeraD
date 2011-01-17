@@ -1,12 +1,12 @@
-dl('load, "examples/QdlSimple.dl")
+dl('load, "examples/QdlSimpleDiff.dl")
 val rl1 = allLeft(Fn("j", Nil));
 val rl2 = allLeft(Fn("k", Nil));
 dl('gotoroot)
-dl('tactic, alleasyT)
 dl('tactic, applyToLeavesT(trylistofrulesT(List(
   qDiffSolve(Endpoint)(List(
     parseFormula("forall t . x(t, i) = -(1/2) *b * t^2 + v(i) * t + x(i)"))) ))))
-dl('tactic, trylistofrulesT(List(rl1)))
+dl('tactic, applyToLeavesT(alleasyT))
+dl('tactic, applyToLeavesT(trylistofrulesT(List(rl1))))
 dl('tactic, applyToLeavesT(trylistofrulesT(List(rl2))))
 dl('tactic, applyToLeavesT(trylistofrulesT(List(substitute))))
 dl('tactic, applyToLeavesT(trylistofrulesT(List(substitute))))
