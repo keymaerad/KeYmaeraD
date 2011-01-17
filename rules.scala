@@ -468,8 +468,6 @@ object Rules {
   case object Standard extends DiffSolveMode
   case object Endpoint extends DiffSolveMode
 
-
-
   val diffSolve : DiffSolveMode => List[Formula] => ProofRule = 
     mode => fm_sols => new ProofRule("diffsolve[" + mode.toString() + "][" 
                           + fm_sols.map(Printing.stringOfFormula) 
@@ -511,13 +509,13 @@ object Rules {
                 sols: List[(Fn,Term)]  ) : Boolean  = deriv match {
         case (x, tm) =>
           true
-/* TODO fix this. should it just be another subgoal? I think so...
+           /* XXX TODO . Maybe just make a new subgoal to prove this
           println("testing if ok: " + x + "   " + tm)
           println("t= " + t)
           Prover.assoc(x,sols) match {
             case Some(sol) =>
               val dsol = totalDerivTerm(List((Fn(t,Nil),Num(Exact.one))), sol)
-              val tm_sub = simul_substitute_Term(sols, tm)
+              val tm_sub = Assign(sols,tm)
      
               if(  polynomial_equality(tm_sub, dsol)     ) {
                 println("it's ok")
@@ -532,7 +530,130 @@ object Rules {
             false
             
           }
-          */ 
+*/
+       }
+
+      def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
+        case (RightP(n), 
+              Sequent(c,s),
+              Modality(Box,Evolve(derivs, h, _, _ ), phi)) =>
+          val t_sols = fm_sols.map(extract)
+          val sols0 = t_sols.map(_._2)
+
+          time_var(t_sols) match {
+            case None => None
+            case Some(t) =>
+              val sols = sols0.map(f => (f._1,
+                substitute_Term( t,Fn(t,Nil), 
+                                   f._2)) )
+              val oks = derivs.map(d => is_ok(t, d, sols))
+            if(oks.contains(false))
+              None
+            else {
+
+              val t2 = uniqify(t)
+              val t_range = Atom(R(">=", List(Fn(t, Nil), Num(Exact.zero))))
+              val t2_range = 
+                Binop(And,Atom(R(">=", List(Fn(t2,Nil), Num(Exact.zero)))),
+                      Atom(R("<=", List(Fn(t2,Nil), Fn(t,Nil)))))
+              val endpoint_h = Modality(Box,Assign(sols), h)
+              val interm_h0 =  Modality(Box,Assign(sols),h)
+              val interm_h =  renameFn(t,t2,interm_h0)
+              val new_xs = sols.map(x => Fn(uniqify(x._1.f), Nil))
+              val old_and_new_xs = 
+                sols.map(_._1).zip(new_xs)
+              val new_xs_and_sols = 
+                new_xs.zip(sols.map(_._2))
+              val assign_hp = 
+                Assign(new_xs_and_sols);
+              val phi1 = 
+                old_and_new_xs.foldRight(phi)( (xs ,phi1) =>
+                  renameFn(xs._1.f, xs._2.f, phi1))
+              val phi2 = 
+                Modality(Box,assign_hp, phi1)
+              val stay_in_h = 
+                Quantifier(Forall, Real, t2, Binop(Imp,t2_range, interm_h))
+              val newgoal = mode match {
+                case Standard =>
+                  replace(pos,Sequent(stay_in_h ::t_range::c,s), phi2)
+                case Endpoint =>
+                  replace(pos,Sequent(endpoint_h ::t_range::c,s), phi2)
+              }
+              Some(List(newgoal), Nil)
+            }
+          }
+          
+        case _ => 
+          None
+      }
+                                                        
+    }
+
+
+
+  val qDiffSolve : DiffSolveMode => List[Formula] => ProofRule = 
+    mode => fm_sols => new ProofRule("diffsolve[" + mode.toString() + "][" 
+                          + fm_sols.map(Printing.stringOfFormula) 
+                          + "]") {
+
+      import Prover._
+
+      class BadSolution extends Exception 
+
+      def extract(sol: Formula): (String, (Fn, Term)) = sol match {
+        case Quantifier(Forall,Real,
+                        t, Atom(R("=", 
+                                  List(Fn(f, List(t1)),
+                                       sol_tm)))) if Var(t) == t1 =>
+                                         (t,(Fn(f, List()),sol_tm))
+        case _ => 
+          println( sol)
+        throw new BadSolution
+      }
+
+      def time_var(t_sols: List[(String,(Fn,Term))])
+      : Option[String] = {
+        val ts = t_sols.map(_._1)
+        ts match {
+          case Nil => None
+          case (t ::rest ) =>
+            if( rest.exists(x => x != t)){
+              None
+            } else {
+              Some(t)
+            }
+        }
+      }
+
+      // TODO what if t is a variable in deriv?
+      // XXX TODO check inital values
+      def is_ok(t: String,
+                deriv: (Fn,Term),
+                sols: List[(Fn,Term)]  ) : Boolean  = deriv match {
+        case (x, tm) =>
+          true
+           /* XXX TODO . Maybe just make a new subgoal to prove this
+          println("testing if ok: " + x + "   " + tm)
+          println("t= " + t)
+          Prover.assoc(x,sols) match {
+            case Some(sol) =>
+              val dsol = totalDerivTerm(List((Fn(t,Nil),Num(Exact.one))), sol)
+              val tm_sub = Assign(sols,tm)
+     
+              if(  polynomial_equality(tm_sub, dsol)     ) {
+                println("it's ok")
+                true
+              } else {
+                println("it's not ok")
+                false
+              }
+            case None => 
+              println("no corresponding solution found in:")
+            println(sols)
+            false
+            
+          }
+*/
        }
 
       def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
