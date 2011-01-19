@@ -30,7 +30,7 @@ object RulesUtil {
 
 
   def positions(sq : Sequent) : List[Position] = sq match {
-    case Sequent(c,s) =>
+    case Sequent(fs,c,s) =>
       c.indices.toList.map(i => LeftP(i)) ++ 
        s.indices.toList.map(i => RightP(i))
   }
@@ -59,22 +59,22 @@ object RulesUtil {
 
 
   def replace(p: Position, s: Sequent,fm : Formula): Sequent = (p,s) match {
-    case (LeftP(n), Sequent(ct,st)) => 
+    case (LeftP(n), Sequent(fs,ct,st)) => 
       if(n >= ct.length || n < 0 )
         throw new  LookupError()
-      else Sequent(replacelist(n,ct,fm),st)
-    case (RightP(n), Sequent(ct,st)) => 
+      else Sequent(fs,replacelist(n,ct,fm),st)
+    case (RightP(n), Sequent(fs,ct,st)) => 
       if(n >= st.length || n < 0 )
         throw new LookupError()
-      else Sequent(ct,replacelist(n,st,fm))
+      else Sequent(fs,ct,replacelist(n,st,fm))
   }
 
   def lookup(p: Position, s: Sequent): Formula = (p,s) match {
-    case (LeftP(n), Sequent(ct,st)) => 
+    case (LeftP(n), Sequent(fs,ct,st)) => 
       if(n >= ct.length || n < 0 )
         throw new   LookupError()
       else ct.slice(n,n+1).head
-    case (RightP(n), Sequent(ct,st)) => 
+    case (RightP(n), Sequent(fs,ct,st)) => 
       if(n >= st.length || n < 0 )
         throw new LookupError()
       else st.slice(n,n+1).head
@@ -82,14 +82,14 @@ object RulesUtil {
 
 
   def remove(p: Position, s: Sequent): Sequent = (p,s) match {
-    case (LeftP(n), Sequent(ct,st)) => 
+    case (LeftP(n), Sequent(fs,ct,st)) => 
       if(n >= ct.length || n < 0 )
         throw new  LookupError()
-      else Sequent(removelist(n,ct),st)
-    case (RightP(n), Sequent(ct,st)) => 
+      else Sequent(fs,removelist(n,ct),st)
+    case (RightP(n), Sequent(fs,ct,st)) => 
       if(n >= st.length || n < 0 )
         throw new LookupError()
-      else Sequent(ct,removelist(n,st))
+      else Sequent(fs,ct,removelist(n,st))
   }
 
 
@@ -116,6 +116,7 @@ object Rules {
 
   val close = new ProofRule("close"){ 
     def apply(p: Position) = sq => {
+      val Sequent(fs,_,_) = sq
       val fm = lookup(p,sq)
       (p,fm) match {
         case (LeftP(_), False) => 
@@ -128,7 +129,7 @@ object Rules {
           else None
         case (RightP(n), fm) =>
           if(sq.ctxt.contains(fm) )
-            Some((List(Sequent(Nil,List(True))),Nil)) // proved!
+            Some((List(Sequent(fs,Nil,List(True))),Nil)) // proved!
           else None
       }
     } 
@@ -142,11 +143,11 @@ object Rules {
 
   val andLeft  = new ProofRule("andleft") {
     def apply(p:Position) = sq => (p,sq) match {
-      case (LeftP(n), Sequent(c,s)) =>
+      case (LeftP(n), Sequent(fs,c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case Binop(And,f1,f2) => 
-            val sq1 = Sequent(splicelist(n,c,List(f1,f2)),s)
+            val sq1 = Sequent(fs,splicelist(n,c,List(f1,f2)),s)
             Some( (List(sq1),Nil))
           case _ => 
             None
@@ -157,7 +158,7 @@ object Rules {
 
   val andRight  = new  ProofRule("andright") {
     def apply(p:Position) = sq => (p,sq) match { 
-      case (RightP(n), Sequent(c,s)) =>
+      case (RightP(n), Sequent(fs,c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case Binop(And,f1,f2) => 
@@ -173,12 +174,12 @@ object Rules {
 
   val impRight  = new  ProofRule("impright") {
     def apply(p:Position) = sq => (p,sq) match { 
-      case (RightP(n), Sequent(c,s)) =>
+      case (RightP(n), Sequent(fs,c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case Binop(Imp,f1,f2) => 
-            val Sequent(c1,s1) = replace(p,sq,f2)
-            Some( (List(Sequent(f1::c1, s1)),Nil))
+            val Sequent(fs1,c1,s1) = replace(p,sq,f2)
+            Some( (List(Sequent(fs1,f1::c1, s1)),Nil))
           case _ => 
             None
         }
@@ -188,13 +189,13 @@ object Rules {
 
   val impLeft  = new  ProofRule("impleft") {
     def apply(p:Position) = sq => (p,sq) match { 
-      case (LeftP(n), Sequent(c,s)) =>
+      case (LeftP(n), Sequent(fs,c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case Binop(Imp,f1,f2) => 
             val sq1 = replace(p,sq,f2)
-            val Sequent(c1,s1) = remove(p,sq)
-            val sq2 = Sequent(c1,f1::s1)
+            val Sequent(fs1,c1,s1) = remove(p,sq)
+            val sq2 = Sequent(fs1,c1,f1::s1)
             Some( (List(sq1,sq2),Nil))
           case _ => 
             None
@@ -205,11 +206,11 @@ object Rules {
 
   val orRight = new ProofRule("orright") { 
     def apply(p:Position) = sq => (p,sq) match { 
-      case (RightP(n), Sequent(c,s)) =>
+      case (RightP(n), Sequent(fs,c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case Binop(Or,f1,f2) => 
-            val sq1 = Sequent(c,splicelist(n,s,List(f1,f2)))
+            val sq1 = Sequent(fs,c,splicelist(n,s,List(f1,f2)))
             Some( (List(sq1),Nil))
           case _ => 
             None
@@ -220,7 +221,7 @@ object Rules {
 
   val orLeft = new  ProofRule("orleft") {
     def apply(p:Position) = sq => (p,sq) match { 
-      case (LeftP(n), Sequent(c,s)) =>
+      case (LeftP(n), Sequent(fs,c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case Binop(Or,f1,f2) => 
@@ -237,14 +238,17 @@ object Rules {
 
   val allRight = new ProofRule("allright") {
     def apply(p: Position) = sq => (p,sq) match {
-      case (RightP(n), Sequent(c,s)) =>
+      case (RightP(n), Sequent(fs, c,s)) =>
         val fm = lookup(p,sq)
         val fvs = Util.fv(fm).map( x => Var(x))
-        fm match {
+        (fm) match {
           case Quantifier(Forall, c, v, phi) =>
-            val phi1 = Prover.substitute_Formula(v, Fn(v,fvs), phi)
-            val sq1 = replace(p,sq, phi1)
-            Some( (List(sq1), Nil))
+            val v1 = Prover.uniqify(v)
+            val phi1 = Prover.substitute_Formula(v, Fn(v1,fvs), phi)
+            val Sequent(fs1,c1,s1) = replace(p,sq, phi1)
+            val sq2 = Sequent(fs1.+((v1,(Nil, c) )),
+                              c1,s1 )// XXX add args of v1 to signature map
+            Some( (List(sq2), Nil))
           case _ => 
             None
         }
@@ -260,7 +264,7 @@ object Rules {
    new ProofRule("allleft") {
     // XXX should also check that that tm has the appropriate sort
     def apply(p: Position) = sq => (p,sq) match {
-      case (LeftP(n), Sequent(c,s)) =>
+      case (LeftP(n), Sequent(sig, c,s)) =>
         val fm = lookup(p,sq)
         fm match {
           case Quantifier(Forall, srt, v, phi) =>
@@ -268,7 +272,7 @@ object Rules {
             val fv1 = Fn(v1,Nil)
             val phi1 = Prover.substitute_Formula(v, fv1, phi)
             val fm1 = Atom(R("=", List(fv1, tm)))
-            Some( (List(Sequent(fm1::phi1::c,s)), Nil))
+            Some( (List(Sequent(sig, fm1::phi1::c,s)), Nil))
           case _ =>
             None
         }
@@ -325,21 +329,28 @@ object Rules {
 
  val assign = new ProofRule("assign") {
     def apply(p: Position) = sq =>   {
-      val Sequent(c,s) = sq
+      val Sequent(sig, c,s) = sq
       val fm = lookup(p,sq)
       fm match {
         case Modality(Box,Assign(vs),phi) =>
           var phi1 = phi;
+          var sig1 = sig;
           var c1 = c;
           for( v <- vs) {
               val (Fn(vr,Nil), tm) = v;
               val vr1 = Prover.uniqify(vr);
               phi1 = Prover.renameFn(vr,vr1,phi1);
+              sig1 = sig.get(vr) match {
+                case Some(sg ) =>
+                  sig1.+((vr1,sg))
+                case _ => 
+                  sig1
+              }
               val fm1 = Atom(R("=",List(Fn(vr1,Nil),tm)));
               c1 = c1 ++ List(fm1);
                 // order matters! we want p to still point to phi
           }
-          val sq1 = replace(p, Sequent(c1,s) , phi1)
+          val sq1 = replace(p, Sequent(sig1,c1,s) , phi1)
           Some((List(sq1),Nil))
         case _ =>
           None
@@ -350,23 +361,30 @@ object Rules {
 
  val qassign = new ProofRule("qassign") {
     def apply(p: Position) = sq =>   {
-      val Sequent(c,s) = sq
+      val Sequent(sig, c,s) = sq
       val fm = lookup(p,sq)
       fm match {
         case Modality(Box,AssignQuantified(i,srt,vs),phi) => 
           var phi1 = phi;
+          var sig1 = sig;
           var c1 = c;
           for( v <- vs) {
               val (Fn(vr,args), tm) = v;
               val vr1 = Prover.uniqify(vr);
               phi1 = Prover.renameFn(vr,vr1,phi1);
+              sig1 = sig.get(vr) match {
+                case Some(sg ) =>
+                  sig1.+((vr1,sg))
+                case _ => 
+                  sig1
+              }
               val fm1 = Quantifier(Forall,srt, 
                                    i, 
                                    Atom(R("=",List(Fn(vr1,args),tm))));
               c1 = c1 ++ List(fm1);
                 // order matters! we want p to still point to phi
           }
-          val sq1 = replace(p, Sequent(c1,s) , phi1)
+          val sq1 = replace(p, Sequent(sig1,c1,s) , phi1)
           Some((List(sq1),Nil))
         case _ =>
           None
@@ -379,18 +397,30 @@ object Rules {
    *  free variables from existentials */
  val assignAnyRight = new ProofRule("assignanyright") {
     def apply(p: Position) = sq => (p,sq) match {
-     case (RightP(n),Sequent(c,s)) => 
+     case (RightP(n),Sequent(sig, c,s)) => 
       val fm = lookup(p,sq)
       fm match {
         case Modality(Box,AssignAny(Fn(vr, Nil)),phi) =>
           val vr1 = Prover.uniqify(vr)
           val phi1 = Prover.renameFn(vr,vr1,phi)
-          val sq1 = replace(p, sq, phi1)
+          val sig1 = sig.get(vr) match {
+            case Some(sg ) =>
+              sig.+((vr1,sg))
+            case _ => 
+              sig
+          }
+          val sq1 = replace(p, Sequent(sig1 ,c,s), phi1)
           Some((List(sq1),Nil))
         case Modality(Box,AssignAny(f@Fn(vr, List(i))),phi) =>
           val vr1 = Prover.uniqify(vr)
           val f1 = Fn(vr1, List(i))
           val phi1 = Prover.renameFn(vr,vr1,phi)
+          val sig1 = sig.get(vr) match {
+            case Some(sg ) =>
+              sig.+((vr1,sg))
+            case _ => 
+              sig
+          }
           val j = Prover.uniqify("j")
           val asgn = Quantifier(Forall, AnySort, j,
                                 Binop(Imp, 
@@ -401,8 +431,8 @@ object Rules {
           val asgn0 = Atom(R("=", List(Fn(vr1, List(i)),
                                        Fn(vr, List(i)))))
                                                  
-          val Sequent(s1,c1) = replace(p, sq, phi1)
-          Some((List(Sequent(asgn0::asgn::s1,c1)),Nil))
+          val Sequent(sig2,s2,c2) = replace(p, Sequent(sig1,c,s), phi1)
+          Some((List(Sequent(sig2,asgn0::asgn::s2,c2)),Nil))
 
         case _ =>
           None
@@ -416,16 +446,16 @@ object Rules {
     inv => new ProofRule("loopInduction[" 
                          + Printing.stringOfFormula(inv) + "]") {
       def apply(pos: Position) = sq => (pos,sq) match {
-        case (RightP(n), Sequent(c,s)) =>
+        case (RightP(n), Sequent(sig, c,s)) =>
           val fm = lookup(pos,sq)
           fm match {
             case Modality(Box,Loop(hp, True, inv_hints), phi) =>
               val initiallyvalid = 
                 replace(pos, sq, inv)
               val inductionstep = 
-                Sequent(List(inv), List(Modality(Box, hp, inv)))
+                Sequent(sig, List(inv), List(Modality(Box, hp, inv)))
               val closestep = 
-                Sequent(List(inv), List(phi))
+                Sequent(sig, List(inv), List(phi))
               Some((List(initiallyvalid, inductionstep, closestep),
                     Nil))
             case _ => 
@@ -438,11 +468,11 @@ object Rules {
 
   val diffClose = new ProofRule("diffClose") {
     def apply(pos: Position) = sq => (pos,sq) match { 
-      case(RightP(n), Sequent(c,s)) =>
+      case(RightP(n), Sequent(sig, c,s)) =>
         val fm = lookup(pos,sq)
         fm match {
           case Modality(Box,Evolve(derivs,h,_,_), phi) =>
-            val closed = Sequent(List(h), List(phi))
+            val closed = Sequent(sig, List(h), List(phi))
             Some((List(closed), Nil))
           case _ => None
         }
@@ -454,7 +484,7 @@ object Rules {
     inv => new ProofRule("diffStrengthen["
                          + Printing.stringOfFormula(inv) + "]") {
       def apply(pos: Position) = sq => (pos,sq) match {
-        case (RightP(n), Sequent(c,s)) =>
+        case (RightP(n), Sequent(sig, c,s)) =>
           println("checking diffstrengthen")
           val fm = lookup(pos,sq)
           fm match {
@@ -470,8 +500,8 @@ object Rules {
                                         Binop(And,h,inv),
                                         inv_hints1, 
                                         sols), phi) 
-              val iv = Sequent(h::c, List(inv))
-              val ind = Sequent(ind_asm, List(ind_cons))
+              val iv = Sequent(sig, h::c, List(inv))
+              val ind = Sequent(sig, ind_asm, List(ind_cons))
               val str = replace(pos,sq, fm1)
               Some((List(iv,ind,str), Nil))
 
@@ -552,7 +582,7 @@ object Rules {
 
       def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
         case (RightP(n), 
-              Sequent(c,s),
+              Sequent(sig, c,s),
               Modality(Box,Evolve(derivs, h, _, _ ), phi)) =>
           val t_sols = fm_sols.map(extract)
           val sols0 = t_sols.map(_._2)
@@ -592,9 +622,9 @@ object Rules {
                 Quantifier(Forall, Real, t2, Binop(Imp,t2_range, interm_h))
               val newgoal = mode match {
                 case Standard =>
-                  replace(pos,Sequent(stay_in_h ::t_range::c,s), phi2)
+                  replace(pos,Sequent(sig, stay_in_h ::t_range::c,s), phi2)
                 case Endpoint =>
-                  replace(pos,Sequent(endpoint_h ::t_range::c,s), phi2)
+                  replace(pos,Sequent(sig, endpoint_h ::t_range::c,s), phi2)
               }
               Some(List(newgoal), Nil)
             }
@@ -675,7 +705,7 @@ object Rules {
 
       def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
         case (RightP(n), 
-              Sequent(c,s),
+              Sequent(sig, c,s),
               Modality(Box,EvolveQuantified(i,srt, derivs, h), phi)) =>
           val t_sols = fm_sols.map(extract)
           val sols0 = t_sols.map(_._2)
@@ -715,9 +745,9 @@ object Rules {
                 Quantifier(Forall, Real, t2, Binop(Imp,t2_range, interm_h))
               val newgoal = mode match {
                 case Standard =>
-                  replace(pos,Sequent(stay_in_h ::t_range::c,s), phi2)
+                  replace(pos,Sequent(sig, stay_in_h ::t_range::c,s), phi2)
                 case Endpoint =>
-                  replace(pos,Sequent(endpoint_h ::t_range::c,s), phi2)
+                  replace(pos,Sequent(sig, endpoint_h ::t_range::c,s), phi2)
               }
               Some(List(newgoal), Nil)
             }
@@ -735,14 +765,14 @@ object Rules {
     import Prover._
 
     def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
-      case (LeftP(n), Sequent(ctxt,sc), Atom(R("=", List(Fn(v,Nil),tm)))) 
+      case (LeftP(n), Sequent(sig, ctxt,sc), Atom(R("=", List(Fn(v,Nil),tm)))) 
         if (ctxt ++ sc).forall(firstorder) =>
 //          println("applying substitute. tm = " + tm)
           val ctxt1 = removelist(n,ctxt)
           val ctxt2 = 
             ctxt1.map(x => extract(Fn(v,Nil), x)(tm))
           val sc1 = sc.map(x => extract(Fn(v,Nil), x)(tm))
-          Some(List(  Sequent(ctxt2,sc1))    ,Nil)
+          Some(List(  Sequent(sig, ctxt2,sc1))    ,Nil)
       case _ =>
         None
     }
@@ -756,8 +786,8 @@ object Rules {
                          + Printing.stringOfFormula(fm) + "]") 
   {
       def apply(pos: Position) = sq => (pos,sq) match {
-        case (LeftP(n), Sequent(c,s)) =>
-          val lem = Sequent(c, List(fm))
+        case (LeftP(n), Sequent(sig, c,s)) =>
+          val lem = Sequent(sig, c, List(fm))
           val rep = replace(pos, sq, fm)
           Some(List(lem,rep     ), Nil)
         case  _ => None
@@ -773,7 +803,7 @@ object Rules {
     import Prover._
 
     def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
-      case (LeftP(n), Sequent(ctxt,sc), 
+      case (LeftP(n), Sequent(sig, ctxt,sc), 
             Not(Atom(R("=", List(Fn(i,Nil),Fn(j,Nil))))))
         if (ctxt ++ sc).forall(firstorder) =>
           val fi = uniqify(f)
@@ -788,10 +818,16 @@ object Rules {
             sc1.map(x => extract(Fn(f,List(Fn(j,Nil))), x)(Fn(fj,Nil)))
           val fms = ctxt2 ++ sc2
           val fmsr = fms.map(fm1 => hasFn_Formula(f,fm1))
+          val sig1 = sig.get(f) match {
+            case Some((args,rtn) ) =>
+              sig + ((fi,(Nil,rtn))) + ((fj, (Nil,rtn)))
+            case _ => 
+              sig
+          }
           if(fmsr.exists(x => x))
             None
           else
-            Some(List(  Sequent(ctxt2,sc2))    ,Nil)
+            Some((List(  Sequent(sig1, ctxt2,sc2))    ,Nil))
       case _ =>
         None
     }

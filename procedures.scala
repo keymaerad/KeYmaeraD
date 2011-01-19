@@ -54,13 +54,13 @@ object Procedures {
   object CohenHormander extends Procedure {
 
     def applies(sq: Sequent) : Boolean = sq match {
-      case Sequent(c,s) =>
+      case Sequent(sig, c,s) =>
         !(c.exists(x => ! canQE(x)) ||  s.exists(x => ! canQE(x)) )
     }
 
 
     def proceed(sq: Sequent): Option[Sequent] = sq match {
-      case Sequent(c,s) => 
+      case Sequent(sig, c,s) => 
 //       println("about to attempt quantifier elimination on:\n")
 //       P.print_Formula(fm)
       val fm = Binop(Imp,AM.list_conj(c), AM.list_disj(s));
@@ -73,12 +73,12 @@ object Procedures {
          val r = AM.real_elim(fm1)
          if(r == True) {
            //println("success!")
-           Some(Sequent(Nil,List(True)))
+           Some(Sequent(sig, Nil,List(True)))
          } else {
            // TODO this doesn't actually mean disproved
            //println("failure!")
            //println("returned: " + P.string_of_Formula(r))
-           Some(Sequent(Nil, List(r)))
+           Some(Sequent(sig, Nil, List(r)))
          }      
        } catch {
          case e: CHAbort => 
@@ -118,13 +118,13 @@ object Procedures {
 
 
     def applies(sq: Sequent) : Boolean = sq match {
-      case Sequent(c,s) =>
+      case Sequent(sig, c,s) =>
         !(c.exists(x => ! canQE(x)) ||  s.exists(x => ! canQE(x)) )
     }
 
 
     def proceed(sq: Sequent, tm: Long): Option[Sequent] = sq match {
-      case Sequent(c,s) => 
+      case Sequent(sig, c,s) => 
         val fm0 = Binop(Imp, AM.list_conj(c), AM.list_disj(s));
 //        val fm = AM.univ_close(fm0);
         val fm = AM.makeQEable(fm0);
@@ -222,7 +222,7 @@ object Procedures {
              println("success!")
              
              println("error code = " + link.error())
-             Some(Sequent(Nil,List(True)))
+             Some(Sequent(sig, Nil,List(True)))
            } else {
              // TODO this doesn't actually mean disproved or aborted.
              // should return the actual formula

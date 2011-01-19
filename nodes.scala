@@ -153,7 +153,9 @@ object Nodes {
     nodeTable.put(nd.nodeID, nd)
   }
 
-  val nullNode = new OrNode("null", Sequent(Nil,Nil))
+  val nullNode = new OrNode("null", 
+                            Sequent(scala.collection.immutable.HashMap.empty,
+                                    Nil,Nil))
   register(nullNode)
   
   var rootNode = nullNode

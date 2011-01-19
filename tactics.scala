@@ -135,7 +135,7 @@ object Tactics {
 
   val hpeasyT : Tactic = new Tactic("hpeasy") {
     def apply(nd: OrNode) = nd.goal match {
-      case Sequent(c,List(s)) =>
+      case Sequent(sig, c,List(s)) =>
         // try all the box hp easy rules
         val pos = RightP(0)
         val (_,nds1) = trylistofrules(hpeasy, nd)
@@ -167,7 +167,7 @@ object Tactics {
 
   val substT : Tactic = new Tactic("substitute") {
     def apply(nd: OrNode) = nd.goal match {
-      case sq@Sequent(c,s) =>
+      case sq@Sequent(sig, c,s) =>
 
         var foundone = false;
         var res: List[NodeID] = Nil;
@@ -276,7 +276,7 @@ object Tactics {
 
 
       def apply(nd: OrNode): List[NodeID] = {
-        val Sequent(c,s) = nd.goal
+        val Sequent(sig,c,s) = nd.goal
         val fms = c ++ s
         val unaryfns = fms.map(fm => 
                               overterms_Formula(tm => (b:List[String]) => 

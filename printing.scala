@@ -189,8 +189,10 @@ object Printing {
     docOfTerm(pr._1) :: text("'") :: text(" = ") :: docOfTerm(pr._2)
   }
 
+//  def docOfSig((List[Sort], Sort))
+
   def docOfSequent(sq: Sequent) : Document = sq match {
-    case Sequent(c,s) =>
+    case Sequent(fs, c,s) => //XXX print out fs as well
       docOfList(c.map(docOfFormula), DocCons(text(","), DocBreak)) :/:
        text("|-") :: DocNest(2,
         docOfList(s.map(docOfFormula), DocCons(text(","), DocBreak)))

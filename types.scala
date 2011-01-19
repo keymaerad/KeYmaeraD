@@ -70,7 +70,8 @@ case class EvolveQuantified(i:String,
 
 //abstract class Goal
 @serializable
-case class Sequent(ctxt: List[Formula],
+case class Sequent(fn_sorts: Map[String, (List[Sort],Sort)],
+                   ctxt: List[Formula],
                    scdts: List[Formula]) // extends Goal
 //case class FOGoal(fm: Formula) extends Goal
 

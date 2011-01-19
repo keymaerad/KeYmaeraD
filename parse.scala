@@ -26,7 +26,7 @@ class DLParser(ins : String)
                              "=", "<", ">", ">=", "<=", "<>",
                               "+","-","*", "/", "^",
                              "++", ":=", "@", "?", "\'",
-                             "&", "|", "<=>", "==>", "|-", ".", "~"
+                             "&", "|", "<=>", "==>", "|-", ".", "~", "->"
                             ).iterator
  
    lexical.reserved ++= List("forall", "exists",
@@ -254,10 +254,22 @@ class DLParser(ins : String)
     success(Nil)
        
 
+  def sort : Parser[Sort] = 
+    ident ^^ {case "Real" => Real
+              case s => St(s)}
+
+  def functionsort : Parser[(String,(List[Sort],Sort))] = 
+    (ident <~ ":" <~ "(") ~ (repsep(sort,",") <~ ")" <~ "->") ~ sort ^^
+      {case f ~ args ~ rtn => (f,(args,rtn))}
+
+  def functionsorts : Parser[Map[String,(List[Sort],Sort)]] = 
+    "{" ~> repsep(functionsort, ",") <~ "}" ^^ 
+       {case fnsrts => scala.collection.immutable.HashMap.empty ++ fnsrts }
+
 
    def sequent : Parser[Sequent] = 
-     repsep(formula, ",") ~ ("|-" ~> repsep(formula,",")) ^^ 
-        {case c ~ s => Sequent(c,s)}
+     functionsorts ~ repsep(formula, ",") ~ ("|-" ~> repsep(formula,",")) ^^ 
+        {case fns ~ c ~ s => Sequent(fns, c,s)}
 
 
    def result : Option[Sequent] = {
