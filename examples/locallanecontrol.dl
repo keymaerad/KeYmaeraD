@@ -1,3 +1,4 @@
+~(f = l),
 eps >= 0,
 (
 b * B * x(l) > b * B * x(f) + (1/2) * (B * v(f)^2  -  b * v(l)^2 ) &
@@ -7,12 +8,12 @@ v(l) >= 0
 ) |
  v(l) < x(f) | l = f
 |-
-[{(forall i : C a(l) := 3; ?( -B <= a(f) & a(f) <= -b  )) ;            
-   ( (forall i : C a(f) := 3; ?( -B <= a(f) & a(f) <= -b  ))  
+[{( a(l) := *; ?( -B <= a(f) & a(f) <= -b  )) ;            
+   ( ( a(f) := *; ?( -B <= a(f) & a(f) <= -b  ))  
        ++ (? b * B * x(l) > b * B * x(f) +  
                      (1/2) * (B * v(f)^2 -  b * v(l)^2) + 
                      B * (A + b) * ( (1/2) * A * eps^2 + eps * v(f));
-           forall i : C a(f) := 3; ?( -B <= a(f) & a(f) <= -b  ) )
+           a(f) := * ; ?( -B <= a(f) & a(f) <= -b  ) )
        ++ (?v(f) = 0; forall i : C a(f):= 0   ));
    t:= 0; forall i : C {x(i)' = v(i), 
                         v(i)' = a(i), 

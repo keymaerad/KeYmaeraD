@@ -387,6 +387,23 @@ object Rules {
           val phi1 = Prover.renameFn(vr,vr1,phi)
           val sq1 = replace(p, sq, phi1)
           Some((List(sq1),Nil))
+        case Modality(Box,AssignAny(f@Fn(vr, List(i))),phi) =>
+          val vr1 = Prover.uniqify(vr)
+          val f1 = Fn(vr1, List(i))
+          val phi1 = Prover.renameFn(vr,vr1,phi)
+          val j = Prover.uniqify("j")
+          val asgn = Quantifier(Forall, AnySort, j,
+                                Binop(Imp, 
+                                      Not(Atom(R("=", List(Var(j),i)))),
+                                      Atom(R("=",
+                                             List(Fn(vr1,List(Var(j))),
+                                                  Fn(vr,List(Var(j))))))))
+          val asgn0 = Atom(R("=", List(Fn(vr1, List(i)),
+                                       Fn(vr, List(i)))))
+                                                 
+          val Sequent(s1,c1) = replace(p, sq, phi1)
+          Some((List(Sequent(asgn0::asgn::s1,c1)),Nil))
+
         case _ =>
           None
       }

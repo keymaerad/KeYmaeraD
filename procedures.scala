@@ -12,11 +12,18 @@ object Procedures {
 
 
 
+  def canQE_Term(tm: Term) : Boolean = tm match {
+    case Fn(f, args) if List("+","-", "*", "/", "^").contains(f) =>
+      args.forall(canQE_Term)
+    case Fn(f, arg::args) => false
+    case _ => true
+  }
+
   // Indicate whether, e.g.,  we can apply substitution safely. 
-  // XXX should walk the formula and see if any functions are nonnullary.
   def canQE(fm: Formula): Boolean = fm match {
     case True | False => true
-    case Atom(R(r,ps)) => true
+    case Atom(R(r,ps)) if List("=","<", ">", ">=", "<=").contains(r) => 
+      ps.forall(canQE_Term)
     case Not(f) => canQE(f)
     case Binop(_,f1,f2) => 
       canQE(f1) && canQE(f2)

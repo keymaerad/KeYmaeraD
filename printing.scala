@@ -182,6 +182,7 @@ object Printing {
   def docOfSort(c: Sort) : Document = c match {
     case St(n) => text(n)
     case Real => text("Real")
+    case AnySort => text("Any")
   }
   
   def docOfDeriv(pr: (Fn,Term )) : Document = {
