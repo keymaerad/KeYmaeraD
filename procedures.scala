@@ -12,23 +12,31 @@ object Procedures {
 
 
 
-  def canQE_Term(tm: Term) : Boolean = tm match {
+  def canQE_Term(sig:Map[String,(List[Sort],Sort)]) : Term =>  Boolean 
+   = tm => tm match {
     case Fn(f, args) if List("+","-", "*", "/", "^").contains(f) =>
-      args.forall(canQE_Term)
+      args.forall(canQE_Term(sig))
     case Fn(f, arg::args) => false
+    case Fn(f, Nil) =>
+      sig.get(f) match {
+        case Some((_, Real)) => true
+        case None => true // assume that it's real-valued
+        case _ => false
+      }
     case _ => true
   }
 
   // Indicate whether, e.g.,  we can apply substitution safely. 
-  def canQE(fm: Formula): Boolean = fm match {
+  def canQE(fm: Formula, sig : Map[String,(List[Sort],Sort)]): Boolean 
+   = fm match {
     case True | False => true
     case Atom(R(r,ps)) if List("=","<", ">", ">=", "<=").contains(r) => 
-      ps.forall(canQE_Term)
-    case Not(f) => canQE(f)
+      ps.forall(canQE_Term(sig))
+    case Not(f) => canQE(f,sig)
     case Binop(_,f1,f2) => 
-      canQE(f1) && canQE(f2)
+      canQE(f1,sig) && canQE(f2,sig)
     case Quantifier(_,Real,v,f) =>
-      canQE(f)
+      canQE(f,sig)
     case _ => false
   }
 
@@ -55,7 +63,7 @@ object Procedures {
 
     def applies(sq: Sequent) : Boolean = sq match {
       case Sequent(sig, c,s) =>
-        !(c.exists(x => ! canQE(x)) ||  s.exists(x => ! canQE(x)) )
+        !(c.exists(x => ! canQE(x,sig)) ||  s.exists(x => ! canQE(x,sig)) )
     }
 
 
@@ -119,7 +127,7 @@ object Procedures {
 
     def applies(sq: Sequent) : Boolean = sq match {
       case Sequent(sig, c,s) =>
-        !(c.exists(x => ! canQE(x)) ||  s.exists(x => ! canQE(x)) )
+        !(c.exists(x => ! canQE(x,sig)) ||  s.exists(x => ! canQE(x,sig)) )
     }
 
 

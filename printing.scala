@@ -189,10 +189,21 @@ object Printing {
     docOfTerm(pr._1) :: text("'") :: text(" = ") :: docOfTerm(pr._2)
   }
 
-//  def docOfSig((List[Sort], Sort))
+  def docOfSig1(sig1 : (String, (List[Sort], Sort))) : Document = {
+    text(sig1._1) :: text(": (") :: 
+    docOfList(sig1._2._1.map(docOfSort), text(",")) ::
+    text(") ->") :: docOfSort(sig1._2._2)
+  }
+
+  def docOfSig(sig : Map[String, (List[Sort], Sort)]) : Document = {
+    text("{") :/:
+    docOfList(sig.toList.map(docOfSig1), DocCons(text(","), DocBreak)) :/:
+    text("}") 
+  }
 
   def docOfSequent(sq: Sequent) : Document = sq match {
-    case Sequent(fs, c,s) => //XXX print out fs as well
+    case Sequent(sig, c,s) => 
+      docOfSig(sig) :/: 
       docOfList(c.map(docOfFormula), DocCons(text(","), DocBreak)) :/:
        text("|-") :: DocNest(2,
         docOfList(s.map(docOfFormula), DocCons(text(","), DocBreak)))
