@@ -213,10 +213,10 @@ class DLParser(ins : String)
      "(" ~> hp <~  ")" | 
       "?" ~> formula ^^ { x => Check(x)}  |
       ident <~ ":=" <~ "*" ^^ { x  => AssignAny(Fn(x,Nil))} |
+      (("forall" ~> ident <~  ":") ~ 
+       ident ~ function <~ ":=" <~ "*") ^^ 
+        {case i ~ c ~ f  => AssignAnyQuantified(i,St(c),f)} | 
       (ident <~ ":=") ~ term ^^ {case x ~ t => Assign(List((Fn(x,Nil),t)))} |
-//       (function <~ ":=") ~ term ^^ 
-//        {case  f ~ v => Assign(List((f,v)))} | 
-      // forall i : C f(v) := theta
       (("forall" ~> ident <~  ":") ~ 
        ident ~ function <~ ":=") ~ term ^^ 
         {case i ~ c ~ f ~ v => AssignQuantified(i,St(c),List((f,v)))} | 
