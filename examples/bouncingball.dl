@@ -13,7 +13,7 @@ G > 0
 	         @invariant(C > 0 &
 			    C < 1 &
 			    H > 0 &
-			    G > 0,
+			    G > 0 &
                             y >= 0 & 
 			    v*v + 2 * G * y <= 2 * G * H )   ] y <= H
 

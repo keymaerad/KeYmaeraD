@@ -425,7 +425,7 @@ object Rules {
               val inductionstep = 
                 Sequent(List(inv), List(Modality(Box, hp, inv)))
               val closestep = 
-                Sequent(List(inv), List(inv))
+                Sequent(List(inv), List(phi))
               Some((List(initiallyvalid, inductionstep, closestep),
                     Nil))
             case _ => 
