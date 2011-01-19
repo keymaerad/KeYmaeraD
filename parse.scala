@@ -150,7 +150,9 @@ class DLParser(ins : String)
     case Assign(vs) =>
       val vs1 = vs.map(vt => (vt._1, freeVarsAreFns_Term(bndVars,vt._2)))
       Assign(vs1)
-    case AssignAny(x) => hp
+    case AssignAny(f) => 
+      val f1@Fn(_,_) = freeVarsAreFns_Term(bndVars,f)
+      AssignAny(f1)
     case AssignQuantified(i,c,vs) =>
       AssignQuantified(i,c, vs.map(replace_asgn(i::bndVars)))
     case Check(fm) =>

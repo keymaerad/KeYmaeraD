@@ -415,14 +415,14 @@ object Rules {
           val vr1 = Prover.uniqify(vr)
           val f1 = Fn(vr1, List(i))
           val phi1 = Prover.renameFn(vr,vr1,phi)
-          val sig1 = sig.get(vr) match {
-            case Some(sg ) =>
-              sig.+((vr1,sg))
+          val (srt1, sig1) = sig.get(vr) match {
+            case Some(sg@( List(srt1), rtn) ) =>
+              (srt1, sig.+((vr1,sg)))
             case _ => 
-              sig
+              (AnySort, sig)
           }
           val j = Prover.uniqify("j")
-          val asgn = Quantifier(Forall, AnySort, j,
+          val asgn = Quantifier(Forall, srt1, j,
                                 Binop(Imp, 
                                       Not(Atom(R("=", List(Var(j),i)))),
                                       Atom(R("=",
