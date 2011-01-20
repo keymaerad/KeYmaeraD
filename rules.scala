@@ -135,6 +135,20 @@ object Rules {
     } 
   }
 
+  val identity = new ProofRule("identity"){
+    def apply(p: Position) = sq => {
+      val Sequent(fs,_,_) = sq
+      val fm = lookup(p,sq)
+      (p,fm) match {
+        case (RightP(_), Atom(R("=", List(t1,t2)))) if t1 == t2 =>           
+          Some((List(Sequent(fs,Nil,List(True))),Nil)) // proved!
+        case _ => None
+      }
+    }
+  }
+
+  
+
 
   val hide = new ProofRule("hide") {
     def apply(p:Position) = sq => 

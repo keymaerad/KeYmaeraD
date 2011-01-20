@@ -210,7 +210,7 @@ object Tactics {
 
 
 
-  val alpha = List(andLeft, impRight, allRight)
+  val alpha = List(andLeft, impRight, allRight, orRight)
 
   val alphaT : Tactic = new Tactic("alpha") {
     def apply(nd: OrNode) = 
@@ -227,7 +227,7 @@ object Tactics {
 
   val closeOrArithT : Tactic = new Tactic("close") {
     def apply(nd: OrNode) = {
-      val (fo,r) = trylistofrules(List(close), nd)
+      val (fo,r) = trylistofrules(List(close, identity), nd)
       if(fo) r 
       else arithT.apply(nd)
 
