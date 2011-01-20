@@ -833,6 +833,7 @@ object Rules {
             sc1.map(x => extract(Fn(f,List(Fn(j,Nil))), x)(Fn(fj,Nil)))
           val fms = ctxt2 ++ sc2
           val fmsr = fms.map(fm1 => hasFn_Formula(f,fm1))
+          println("in nullarize. fmsr = " + fmsr)
           val sig1 = sig.get(f) match {
             case Some((args,rtn) ) =>
               sig + ((fi,(Nil,rtn))) + ((fj, (Nil,rtn)))
@@ -840,7 +841,9 @@ object Rules {
               sig
           }
           if(fmsr.exists(x => x))
-            None
+            {
+              None
+            }
           else
             Some((List(  Sequent(sig1, ctxt2,sc2))    ,Nil))
       case _ =>

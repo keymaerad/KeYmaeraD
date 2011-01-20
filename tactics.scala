@@ -52,7 +52,7 @@ object Tactics {
     }
 
   val tryruleatT : ProofRule => Position => Tactic = rl => pos =>
-    new Tactic("trylist " + rl +  " " + pos ) {
+    new Tactic("tryruleat " + rl +  " " + pos ) {
       def apply(nd: OrNode) : List[NodeID] = {
         val res0 = rl.apply(pos)(nd.goal)
         res0 match {
@@ -61,6 +61,26 @@ object Tactics {
                                      case None => Nil};
           case None =>
             Nil
+        }
+      }
+    }
+
+  val tryrulematchT : ProofRule => Formula => Tactic = rl => fm =>
+    new Tactic("tryrulematch " + rl +  " " + fm ) {
+      def apply(nd: OrNode) : List[NodeID] = {
+        val Sequent(sig, cs, ss) = nd.goal
+        val pnc = cs.indexOf(fm)
+        val pns = ss.indexOf(fm)
+        (pnc,pns) match { 
+          case (-1,-1) => Nil
+          case (-1, pn) => 
+            applyrule(nd,RightP(pn),rl) match { case Some(lst) => lst
+                                                 case None => Nil};
+          case (pn, _) => 
+            applyrule(nd,LeftP(pn),rl) match { case Some(lst) => lst
+                                               case None => Nil};
+
+
         }
       }
     }
@@ -115,6 +135,13 @@ object Tactics {
 
     }
 
+
+  val unitT : Tactic = 
+    new Tactic("unit") {
+      def apply(nd: OrNode) = {
+        List(nd.nodeID)
+      }
+    }
 
   // do t1. Then, if no new nodes, do t2.
   def eitherT(t1: Tactic, t2: Tactic) : Tactic = 
@@ -289,5 +316,60 @@ object Tactics {
       }
     }
 
+
+  val instantiateAuxT : Term => Formula => Tactic = tm => fm => 
+    new Tactic("instantiateAux") {
+      def apply(nd: OrNode): List[NodeID] = {
+        val Sequent(sig,cs,ss) = nd.goal
+        val pn = cs.indexOf(fm)
+        if(pn == -1) Nil
+        else applyrule(nd,LeftP(pn),allLeft(tm)) match { case Some(lst) => lst
+                                                        case None => Nil};
+
+      }
+      
+    }
+
+
+  def findunivs(sq: Sequent): List[Formula] = sq match {
+    case Sequent(sig,cs,ss) =>
+      var res: List[Formula] = Nil
+      for(c <- cs) {
+        c match {
+          case Quantifier(Forall,_,_,_) =>
+            res = c::res
+            ()
+          case _ =>
+            ()
+        }
+      }
+    res
+  }
+
+  val instantiateT : List[Term] => Tactic = tms => 
+    new Tactic("instantiate") {
+      def apply(nd: OrNode): List[NodeID] = {
+        val fms = findunivs(nd.goal)
+        var tct1 = unitT
+        for(tm <- tms) {
+          tct1 = 
+            fms.foldRight(tct1)((fm1,rt) => 
+              composeT(instantiateAuxT(tm)(fm1),rt))          
+        }
+        tct1(nd)
+      }
+    }
+
+
+  val hideunivsT : Tactic = new Tactic("hideunivs") {
+    def apply(nd: OrNode) : List[NodeID] = {
+      val fms = findunivs(nd.goal)
+      val tct1 =             
+        fms.foldRight(unitT)((fm1,rt) => 
+          composeT(tryrulematchT(hide)(fm1),rt))
+      tct1(nd)
+      
+    }
+  }
 
 }

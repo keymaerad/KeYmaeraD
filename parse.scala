@@ -172,7 +172,7 @@ class DLParser(ins : String)
              sols.map(f => freeVarsAreFns(bndVars,f)))
      case EvolveQuantified(i,c,vs,h) =>
       EvolveQuantified(i,c, vs.map(replace_asgn(i::bndVars)), 
-                       freeVarsAreFns(bndVars,h))
+                       freeVarsAreFns(i::bndVars,h))
        
    }
 
