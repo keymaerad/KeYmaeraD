@@ -294,6 +294,10 @@ object Rules {
       case (LeftP(n), Sequent(sig, c,s)) =>
         val fm = lookup(p,sq)
         fm match {
+          // first case is an optimization
+          case Quantifier(Forall, srt, v, phi) if Prover.firstorder(phi) =>
+            val phi1 = Prover.substitute_Formula(v, tm, phi)
+            Some( (List(Sequent(sig, phi1::c,s)), Nil))
           case Quantifier(Forall, srt, v, phi) =>
             val v1 = Prover.uniqify(v)
             val fv1 = Fn(v1,Nil)
@@ -871,6 +875,8 @@ object Rules {
   }
 
   
+
+//  val dedupT = new Tactic
 
 
 }
