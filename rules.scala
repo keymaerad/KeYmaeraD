@@ -400,6 +400,7 @@ object Rules {
           val sq1 = replace(p, sq , True)
           Some((List(sq1),Nil))
         case Modality(Box,AssignQuantified(i,srt,vs),phi) => 
+          // XXX there's a bug in here that creates a free variable.
           var phi1 = phi;
           var sig1 = sig;
           var c1 = c;
