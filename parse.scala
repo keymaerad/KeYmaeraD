@@ -171,8 +171,11 @@ class DLParser(ins : String)
              inv_hints.map(f => freeVarsAreFns(bndVars,f)),
              sols.map(f => freeVarsAreFns(bndVars,f)))
      case EvolveQuantified(i,c,vs,h) =>
-      EvolveQuantified(i,c, vs.map(replace_asgn(i::bndVars)), 
-                       freeVarsAreFns(bndVars,h))
+//       println("in freevars are fns. h = " + h);
+      EvolveQuantified(i,
+                       c, 
+                       vs.map(replace_asgn(i::bndVars)), 
+                       freeVarsAreFns(i::bndVars,h))
        
    }
 
@@ -213,7 +216,7 @@ class DLParser(ins : String)
 
    def hp2 : Parser[HP] = 
      "(" ~> hp <~  ")" | 
-      "?" ~> formula ^^ { x => Check(x)}  |
+      "?" ~> formula00 ^^ { x => Check(x)}  |
       ident <~ ":=" <~ "*" ^^ { x  => AssignAny(Fn(x,Nil))} |
       function <~ ":=" <~ "*" ^^ { f  => AssignAny(f)} |
 //      (("forall" ~> ident <~  ":") ~ 
@@ -228,12 +231,12 @@ class DLParser(ins : String)
             { case x ~ invs => Loop(x, True, invs)} | 
       // {x' = theta, ...; h}
       ("{" ~> rep1sep(diffeq, ",") <~ ";")  ~ 
-          (formula <~ "}") ~ annotation("invariant") ~  annotation("solution") ^^
+          (formula00 <~ "}") ~ annotation("invariant") ~ annotation("solution") ^^
             {case dvs ~ f ~ invs ~ sols => Evolve(dvs,f,invs,sols)}  |
       // forall i : C  f(v)' = theta & h 
    // XXX  TODO figure out how to read apostrophes in a sane way
        ("forall" ~> ident <~ ":") ~ ident ~ 
-        ("{" ~> rep1sep(qdiffeq, ",") <~ ";") ~ (formula <~ "}") ^^
+        ("{" ~> rep1sep(qdiffeq, ",") <~ ";") ~ (formula00 <~ "}") ^^
         { case i ~ c ~ vs  ~ h => 
           EvolveQuantified(i,St(c),vs,h) }
    
@@ -252,7 +255,7 @@ class DLParser(ins : String)
 
    
   def annotation(name: String) : Parser[List[Formula]] = 
-    "@" ~> keyword(name) ~> "(" ~> repsep(formula, ",") <~ ")" |
+    "@" ~> keyword(name) ~> "(" ~> repsep(formula00, ",") <~ ")" |
     success(Nil)
        
 

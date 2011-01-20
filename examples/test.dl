@@ -1,3 +1,4 @@
+{}      
 4 = r & 3 > s,
 [g:= 40] g > 30 | 5 < x + 1 + 2 +3 ,
 forall y. t + y > 3 | t < 10
@@ -22,9 +23,11 @@ r(3) = z(100,x),
 z = 1 + 2 + 3 + 4 + (5 + 6 *( 4 -r)) &
 zz = 4 / (4+ 3) * 3 + (4 - 5),
 [forall i : C   x(i) := i + 1; 
-forall j : D {f(j)' = 4 ; 4 + 5 = g(x)};
+forall j : D {f(j)' = 4 ; f(j) > 4 };
 ? true
-] 1 = 1
+] 1 = 1,
+[forall j : D {f(j)' = 4 ; f(j) > 0 }] 1 = 1,
+forall i : D . x(i) = x(i)
 
 
 

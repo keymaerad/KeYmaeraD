@@ -1,4 +1,7 @@
-
+{
+x : (C) -> Real,
+v : (C) -> Real
+}
 forall i : C .
 forall j : C .
 ~(i = j) ==> 
