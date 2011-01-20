@@ -413,11 +413,12 @@ object Rules {
           Some((List(sq1),Nil))
         case Modality(Box,AssignAny(f@Fn(vr, List(i))),phi) =>
           val vr1 = Prover.uniqify(vr)
+          val vr2 = Prover.uniqify(vr)
           val f1 = Fn(vr1, List(i))
           val phi1 = Prover.renameFn(vr,vr1,phi)
           val (srt1, sig1) = sig.get(vr) match {
             case Some(sg@( List(srt1), rtn) ) =>
-              (srt1, sig.+((vr1,sg)))
+              (srt1, sig + ((vr1,sg)) + ((vr2, (Nil,rtn)))  )
             case _ => 
               (AnySort, sig)
           }
@@ -428,8 +429,8 @@ object Rules {
                                       Atom(R("=",
                                              List(Fn(vr1,List(Var(j))),
                                                   Fn(vr,List(Var(j))))))))
-          val asgn0 = Atom(R("=", List(Fn(vr1, List(i)),
-                                       Fn(vr, List(i)))))
+          val asgn0 = Atom(R("=", List(Fn(vr2, Nil),
+                                       Fn(vr1, List(i)))))
                                                  
           val Sequent(sig2,s2,c2) = replace(p, Sequent(sig1,c,s), phi1)
           Some((List(Sequent(sig2,asgn0::asgn::s2,c2)),Nil))
@@ -838,5 +839,4 @@ object Rules {
 
 
 }
-
 
