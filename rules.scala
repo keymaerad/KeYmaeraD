@@ -669,7 +669,7 @@ object Rules {
                                        sol_tm)))) if Var(t) == args.head =>
                                          (t,(Fn(f, args.tail),sol_tm))
         case _ => 
-          println( sol)
+          println( "bad solution:" + sol)
         throw new BadSolution
       }
 

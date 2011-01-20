@@ -15,6 +15,7 @@ dl('tactic, applyToLeavesT(tryruleatT(close) (RightP(0))))
 dl('tactic, applyToLeavesT(repeatT(eitherT(hpeasyT,alphaT))))
 dl('tactic, applyToLeavesT(trylistofrulesT(List(
   qDiffSolve(Endpoint)(List(
-    parseFormula("forall t . x(t, i) = (1/2) *a(i) * t^2 + v(i) * t + x(i)"),
-    parseFormula("forall t . v(t, i) = a(i) * t + v(i)")
+    parseFormula("forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i)"),
+    parseFormula("forall s . v(s, i) = a(i) * s + v(i)"),
+    parseFormula("forall s . t(s) = t()  + s")
     ))))))
