@@ -854,20 +854,23 @@ object Rules {
             sc1.map(x => extract(Fn(f,List(Fn(j,Nil))), x)(Fn(fj,Nil)))
           val fms = ctxt2 ++ sc2
           val fmsr = fms.map(fm1 => hasFn_Formula(f,fm1))
-          println("in nullarize. fms = " + fms)
-          println("in nullarize. fmsr = " + fmsr)
+//          println("in nullarize. fms = " + fms)
+         
+          println("in nullarize. f = " + f + ".  fmsr = " + fmsr)
           val sig1 = sig.get(f) match {
             case Some((args,rtn) ) =>
               sig + ((fi,(Nil,rtn))) + ((fj, (Nil,rtn)))
             case _ => 
               sig
           }
-          if(fmsr.exists(x => x))
+          val sq2 = Sequent(sig1, ctxt2,sc2)
+         if((ctxt2 == ctxt && sc2 == sc) ||
+            fmsr.exists(x => x) )
             {
               None
             }
           else
-            Some((List(  Sequent(sig1, ctxt2,sc2))    ,Nil))
+            Some((List(sq2  )    ,Nil))
       case _ =>
         None
     }
