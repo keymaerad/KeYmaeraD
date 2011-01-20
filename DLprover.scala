@@ -351,7 +351,7 @@ final object Prover {
         val psr = ps.map(p => hasFn_Term(f,p))
         val res = psr.exists(x => x)
         r1 && res
-      }, fm , true)
+      }, fm , false)
 
 
 //

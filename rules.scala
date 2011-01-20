@@ -378,6 +378,10 @@ object Rules {
       val Sequent(sig, c,s) = sq
       val fm = lookup(p,sq)
       fm match {
+        case Modality(Box,AssignQuantified(i,srt,vs), True) =>        
+          // an optimization. can be generalized.
+          val sq1 = replace(p, sq , True)
+          Some((List(sq1),Nil))
         case Modality(Box,AssignQuantified(i,srt,vs),phi) => 
           var phi1 = phi;
           var sig1 = sig;
@@ -833,6 +837,7 @@ object Rules {
             sc1.map(x => extract(Fn(f,List(Fn(j,Nil))), x)(Fn(fj,Nil)))
           val fms = ctxt2 ++ sc2
           val fmsr = fms.map(fm1 => hasFn_Formula(f,fm1))
+          println("in nullarize. fms = " + fms)
           println("in nullarize. fmsr = " + fmsr)
           val sig1 = sig.get(f) match {
             case Some((args,rtn) ) =>

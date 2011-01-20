@@ -361,12 +361,38 @@ object Tactics {
     }
 
 
+  def findidx(sq: Sequent): List[(Term,Term)] = sq match {
+    case Sequent(sig,cs,ss) =>
+      var res: List[(Term,Term)] = Nil
+      for(c <- cs) {
+        c match {
+          case Not(Atom(R("=", List(t1,t2)))) => 
+            res = (t1,t2)::res
+            ()
+          case _ =>
+            ()
+        }
+      }
+    res
+  }
+
+  val instantiate0T : Tactic = new Tactic("instantiate0") {
+    def apply(nd: OrNode) : List[NodeID] = {
+      val idcs = findidx(nd.goal)
+      val tct1 =             
+        idcs.foldRight(unitT)((idx,rt) => 
+          composeT(instantiateT(List(idx._1,idx._2)),rt))
+      tct1(nd)
+    }
+  }
+
+
   val hideunivsT : Tactic = new Tactic("hideunivs") {
     def apply(nd: OrNode) : List[NodeID] = {
       val fms = findunivs(nd.goal)
       val tct1 =             
         fms.foldRight(unitT)((fm1,rt) => 
-          composeT(tryrulematchT(hide)(fm1),rt))
+          composeT(tryrulematchT(hide)(fm1),rt));
       tct1(nd)
       
     }
