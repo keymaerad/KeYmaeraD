@@ -147,6 +147,19 @@ object Rules {
     }
   }
 
+  val commuteEquals = new ProofRule("commuteequals"){
+    def apply(p: Position) = sq => {
+      val Sequent(fs,c,s) = sq
+      val fm = lookup(p,sq)
+      fm match {
+        case (Atom(R("=", List(t1,t2))))  =>           
+          val sq1 = replace(p,sq, Atom(R("=", List(t2,t1))))
+          Some((List(sq1),Nil)) // proved!
+        case _ => None
+      }
+    }
+  }
+
   
 
 
