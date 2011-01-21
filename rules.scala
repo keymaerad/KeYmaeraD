@@ -400,7 +400,6 @@ object Rules {
           val sq1 = replace(p, sq , True)
           Some((List(sq1),Nil))
         case Modality(Box,AssignQuantified(i,srt,vs),phi) => 
-          // XXX there's a bug in here that creates a free variable.
           var phi1 = phi;
           var sig1 = sig;
           var c1 = c;
@@ -761,30 +760,24 @@ object Rules {
               val t2 = uniqify(t)
               val t_range = Atom(R(">=", List(Fn(t, Nil), Num(Exact.zero))))
               val t2_range = 
-                Binop(And,Atom(R(">=", List(Fn(t2,Nil), Num(Exact.zero)))),
-                      Atom(R("<=", List(Fn(t2,Nil), Fn(t,Nil)))))
-              val endpoint_h = Modality(Box,AssignQuantified(i,srt,sols), h)
-              val interm_h0 =  Modality(Box,AssignQuantified(i,srt,sols),h)
+                Binop(And,Atom(R(">=", List(Var(t2), Num(Exact.zero)))),
+                      Atom(R("<=", List(Var(t2), Fn(t,Nil)))))
+              val qh = Quantifier(Forall, srt, i, h)
+              val assign_hp = AssignQuantified(i,srt,sols)
+              val interm_h0 =  Modality(Box,assign_hp,qh)
               val interm_h =  renameFn(t,t2,interm_h0)
-              val new_xs = sols.map(x => x._1) //Fn(uniqify(x._1.f), Nil))
-              val old_and_new_xs = 
-                sols.map(_._1).zip(new_xs)
-              val new_xs_and_sols = 
-                new_xs.zip(sols.map(_._2))
-              val assign_hp = 
-                AssignQuantified(i,srt,new_xs_and_sols);
               val phi1 = 
-                old_and_new_xs.foldRight(phi)( (xs ,phi1) =>
-                  renameFn(xs._1.f, xs._2.f, phi1))
-              val phi2 = 
-                Modality(Box,assign_hp, phi1)
+                Modality(Box,assign_hp, phi)
+              val endpointphi = Modality(Box,AssignQuantified(i,srt,sols), 
+                                         Binop(Imp, qh, phi))
+
               val stay_in_h = 
                 Quantifier(Forall, Real, t2, Binop(Imp,t2_range, interm_h))
               val newgoal = mode match {
-                case Standard =>
-                  replace(pos,Sequent(sig, stay_in_h ::t_range::c,s), phi2)
+                case Standard => //untested
+                  replace(pos,Sequent(sig, stay_in_h ::t_range::c,s), phi1)
                 case Endpoint =>
-                  replace(pos,Sequent(sig, endpoint_h ::t_range::c,s), phi2)
+                  replace(pos,Sequent(sig, t_range::c,s), endpointphi)
               }
               Some(List(newgoal), Nil)
             }
