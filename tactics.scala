@@ -298,6 +298,7 @@ object Tactics {
 
       def getunaryfn(tm: Term) : List[String] = tm match {
         case Fn(f, List(arg)) => List(f)
+        case Fn(f, args) => args.map(getunaryfn).flatten
         case _ => Nil
       }
 
