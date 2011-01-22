@@ -263,6 +263,26 @@ object Rules {
   }
 
 
+
+  val not = new ProofRule("not") { 
+    def apply(p:Position) = sq => {
+      val Sequent(fs,c,s) = sq
+      val fm = lookup(p,sq)
+      val Sequent(fs1,c1,s1) = remove(p,sq)
+      (fm,p) match {
+        case (Not(f1),RightP(_)) => 
+          Some( (List(Sequent(fs1,f1::c1,s1)),Nil))
+        case (Not(f1),LeftP(_)) => 
+          Some( (List(Sequent(fs1,c1,f1::s1)),Nil))
+        case _ => 
+          None
+      }
+    }
+  }
+
+
+
+
   val allRight = new ProofRule("allright") {
     def apply(p: Position) = sq => (p,sq) match {
       case (RightP(n), Sequent(fs, c,s)) =>
@@ -832,9 +852,9 @@ object Rules {
     
     import Prover._
 
-    def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
-      case (LeftP(n), Sequent(sig, ctxt,sc), 
-            Not(Atom(R("=", List(Fn(i,Nil),Fn(j,Nil))))))
+    def apply(pos: Position) = sq => (pos, sq, lookup(pos, sq)) match {
+      case (RightP(_), Sequent(sig, ctxt,sc), 
+            Atom(R("=", List(Fn(i,Nil),Fn(j,Nil)))))
         if (ctxt ++ sc).forall(firstorder) =>
           val fi = uniqify(f)
           val fj = uniqify(f)
