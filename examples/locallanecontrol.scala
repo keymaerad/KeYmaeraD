@@ -8,14 +8,26 @@ val rl = loopInduction(
     "v(f()) >= 0 &" +
     "v(l()) >= 0 ) | x(l()) < x(f()) | l() = f()))"))
 dl('gotoroot)
+val indtct =                           
+  repeatT(eitherT(hpalphaT,alphaT))
+dl('tactic, branchT(trylistofrulesT(List(rl))) 
+                    (List(tryruleatT(close)(RightP(0)),
+                          indtct,
+                          repeatT(eitherT(trylistofrulesT(List(andLeft)), 
+                                          tryruleatT(close)(RightP(0))))
+                        )
+                          ))
+
+/*
 dl('tactic, trylistofrulesT(List(rl)))
 dl('tactic, applyToLeavesT(tryruleatT(close) (RightP(0))))
 dl('tactic, applyToLeavesT(repeatT(alphaT)))
 dl('tactic, applyToLeavesT(tryruleatT(close) (RightP(0))))
-dl('tactic, applyToLeavesT(repeatT(eitherT(hpeasyT,alphaT))))
+dl('tactic, applyToLeavesT(repeatT(eitherT(hpalphaT,alphaT))))
 dl('tactic, applyToLeavesT(trylistofrulesT(List(
   qDiffSolve(Endpoint)(List(
     parseFormula("forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i)"),
     parseFormula("forall s . v(s, i) = a(i) * s + v(i)"),
     parseFormula("forall s . t(s) = t()  + s")
     ))))))
+*/

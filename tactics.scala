@@ -117,6 +117,11 @@ object Tactics {
                     diffClose
                   )
 
+  val hpalpha = List(seq, check, 
+                    assign, assignAnyRight, qassign,
+                    diffClose
+                  )
+
   val needhints = List(loopInduction, diffStrengthen)
 
 
@@ -242,6 +247,11 @@ object Tactics {
   val alphaT : Tactic = new Tactic("alpha") {
     def apply(nd: OrNode) = 
       trylistofrules(alpha,nd)._2
+  }
+
+  val hpalphaT : Tactic = new Tactic("hpalpha") {
+    def apply(nd: OrNode) = 
+      trylistofrules(hpalpha,nd)._2
   }
 
   val beta = List(andRight, orLeft, impLeft)
@@ -398,5 +408,28 @@ object Tactics {
       
     }
   }
+
+
+  val branchT : Tactic => List[Tactic] => Tactic = tct => tcts => 
+    new Tactic("branch " + tct + " " + tcts) {
+
+    
+
+    def apply(nd: OrNode) : List[NodeID] = {
+      val newnds = tct(nd).map(getnode)
+      
+      val ndstcts = tcts.zip(newnds)
+      val newnds1 = ndstcts.map(  x => 
+            x._2 match {
+              case ornd@OrNode(_,_) => (x._1)(ornd)
+              case _ => Nil } ) .flatten
+      
+      newnds1
+
+    }
+
+  }
+
+
 
 }
