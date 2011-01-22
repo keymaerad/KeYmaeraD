@@ -9,9 +9,16 @@ val rl = loopInduction(
     "v(l()) >= 0 ) | x(l()) < x(f()) | l() = f()))"))
 dl('gotoroot)
 val indtct =                           
-  repeatT(eitherT(hpalphaT,alphaT))
-dl('tactic, branchT(trylistofrulesT(List(rl))) 
-                    (List(tryruleatT(close)(RightP(0)),
+  composeT(
+   repeatT(eitherT(hpalphaT,alphaT)),
+   branchT(tryruleT(choose),
+           List( ) )
+    )
+
+
+
+dl('tactic,  branchT(tryruleT(rl),
+                     List(tryruleatT(close)(RightP(0)),
                           indtct,
                           repeatT(eitherT(trylistofrulesT(List(andLeft)), 
                                           tryruleatT(close)(RightP(0))))

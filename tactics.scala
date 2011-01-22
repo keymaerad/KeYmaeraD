@@ -51,6 +51,13 @@ object Tactics {
       }
     }
 
+  val tryruleT : ProofRule => Tactic = rl =>
+    new Tactic("tryrule " + rl) {
+      def apply(nd: OrNode) : List[NodeID] = {
+        trylistofrules(List(rl), nd)._2
+      }
+    }
+
   val tryruleatT : ProofRule => Position => Tactic = rl => pos =>
     new Tactic("tryruleat " + rl +  " " + pos ) {
       def apply(nd: OrNode) : List[NodeID] = {
@@ -410,7 +417,7 @@ object Tactics {
   }
 
 
-  val branchT : Tactic => List[Tactic] => Tactic = tct => tcts => 
+  def branchT(tct: Tactic, tcts: List[Tactic]) : Tactic = 
     new Tactic("branch " + tct + " " + tcts) {
 
     
