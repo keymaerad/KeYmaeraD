@@ -7,16 +7,35 @@ val rl = loopInduction(
     "x(l()) > x(f()) &" +
     "v(f()) >= 0 &" +
     "v(l()) >= 0 ) | x(l()) < x(f()) | l() = f()))"))
-dl('gotoroot)
+
+val qdsrT = 
+  tryruleT(
+    qDiffSolve(Endpoint)(List(
+    parseFormula("forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i)"),
+    parseFormula("forall s . v(s, i) = a(i) * s + v(i)"),
+    parseFormula("forall s . t(s) = t()  + s")
+    )))
+
+val ch_brake = 
+  composelistT(List(repeatT(hpalpha1T),
+                    qdsrT,
+                    repeatT(hpalpha1T)))
+
+
+val ch_whatev = repeatT(eitherT(hpalphaT,alphaT))
+val ch_stopped = repeatT(eitherT(hpalphaT,alphaT))
+
 val indtct =                           
   composeT(
    repeatT(eitherT(hpalphaT,alphaT)),
    branchT(tryruleT(choose),
-           List( ) )
-    )
+           List(branchT(tryruleT(choose), List(ch_brake,ch_whatev) ),
+                ch_stopped )))
+    
 
 
 
+dl('gotoroot)
 dl('tactic,  branchT(tryruleT(rl),
                      List(tryruleatT(close)(RightP(0)),
                           indtct,

@@ -147,13 +147,17 @@ object Tactics {
 
     }
 
-
   val unitT : Tactic = 
     new Tactic("unit") {
       def apply(nd: OrNode) = {
         List(nd.nodeID)
       }
     }
+
+  def composelistT(tcts : List[Tactic]) : Tactic = 
+    tcts.foldRight(unitT)( (t1,t2) => composeT(t1,t2)  )
+
+
 
   // do t1. Then, if no new nodes, do t2.
   def eitherT(t1: Tactic, t2: Tactic) : Tactic = 
@@ -258,8 +262,10 @@ object Tactics {
 
   val hpalphaT : Tactic = new Tactic("hpalpha") {
     def apply(nd: OrNode) = 
-      trylistofrules(hpalpha,nd)._2
+      trylistofrules(hpalpha ++ alpha,nd)._2
   }
+
+  val hpalpha1T = eitherT(hpalphaT, alphaT)
 
   val beta = List(andRight, orLeft, impLeft)
 
