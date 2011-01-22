@@ -1,12 +1,12 @@
 dl('load, "examples/llcsimple.dl")
 val rl = loopInduction(
   parseFormula(
-    "(b()>0 & B() > 0 & ~(f() = l()) & eps() >= 0) &" + 
+    "(b()>0 & B() > 0 & ~(f() = l()) & eps() > 0) &" + 
     "(((b()*B()*x(l()) > b()*B()*x(f()) + " + 
     "(1/2) * (B()*v(f())^2 -  b()*v(l())^2) & " +
     "x(l()) > x(f()) &" +
     "v(f()) >= 0 &" +
-    "v(l()) >= 0 ) | x(l()) < x(f()) | l() = f()))"))
+    "v(l()) >= 0 )    )   )"))
 
 val qdsrT = 
   tryruleT(
@@ -29,14 +29,13 @@ val ch_brake =
 
 
 val ch_whatev = repeatT(eitherT(hpalphaT,alphaT))
-val ch_stopped = repeatT(eitherT(hpalphaT,alphaT))
 
 val indtct =                           
   composeT(
    repeatT(eitherT(hpalphaT,alphaT)),
    branchT(tryruleT(choose),
-           List(branchT(tryruleT(choose), List(ch_brake,ch_whatev) ),
-                ch_stopped )))
+           List(ch_brake,ch_whatev)))
+
     
 
 
@@ -45,8 +44,9 @@ dl('gotoroot)
 dl('tactic,  branchT(tryruleT(rl),
                      List(tryruleatT(close)(RightP(0)),
                           indtct,
-                          repeatT(eitherT(trylistofrulesT(List(andLeft)), 
-                                          tryruleatT(close)(RightP(0))))
+                          repeatT(eitherT(tryruleatT(close)(RightP(0)),
+                                          trylistofrulesT(List(andLeft))
+                                            ))
                         )
                           ))
 
