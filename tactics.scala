@@ -445,4 +445,19 @@ object Tactics {
 
 
 
+  def hidecantqeT : Tactic = new Tactic("hidecantqe"){
+    def apply(nd: OrNode) : List[NodeID] = {
+      val sq@Sequent(sig, c,s) = nd.goal
+      var cantqe: List[Formula] = Nil
+      for(p <- positions(sq)) {
+        val fm = lookup(p,sq)
+        cantqe = if(Prover.canQE(fm, sig)) cantqe else fm::cantqe
+      }
+
+      val tct = cantqe.foldRight(unitT)((fm1,rt) => composeT(tryrulematchT(hide)(fm1),rt));
+      tct(nd)
+    }
+  }
+
+
 }
