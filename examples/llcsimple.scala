@@ -44,11 +44,9 @@ dl('gotoroot)
 dl('tactic,  branchT(tryruleT(rl),
                      List(tryruleatT(close)(RightP(0)),
                           indtct,
-                          repeatT(eitherT(tryruleatT(close)(RightP(0)),
-                                          trylistofrulesT(List(andLeft))
-                                            ))
-                        )
-                          ))
+                          repeatT(trylistofrulesT(List(close,andLeft)))
+                          )))
+
 
 /*
 dl('tactic, trylistofrulesT(List(rl)))
