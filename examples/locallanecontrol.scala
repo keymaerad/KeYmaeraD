@@ -19,7 +19,13 @@ val qdsrT =
 val ch_brake = 
   composelistT(List(repeatT(hpalpha1T),
                     qdsrT,
-                    repeatT(hpalpha1T)))
+                    repeatT(hpalpha1T),
+                    instantiate0T,
+                    repeatT(substT),
+                    hideunivsT,
+                    repeatT(nullarizeT),
+                    alleasyT
+                      ))
 
 
 val ch_whatev = repeatT(eitherT(hpalphaT,alphaT))
