@@ -397,6 +397,15 @@ object Tactics {
             ()
         }
       }
+      for(s <- ss) {
+        s match {
+          case Atom(R("=", List(t1,t2))) => 
+            res = (t1,t2)::res
+            ()
+          case _ =>
+            ()
+        }
+      }
     res
   }
 

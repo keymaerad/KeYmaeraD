@@ -1,7 +1,7 @@
 dl('load, "examples/locallanecontrol.dl")
 val rl = loopInduction(
   parseFormula(
-    "(~(f() = l()) & eps() >= 0) &" + 
+    "(b()>0 & B() > 0 & ~(f() = l()) & eps() >= 0) &" + 
     "(((b()*B()*x(l()) > b()*B()*x(f()) + " + 
     "(1/2) * (B()*v(f())^2 -  b()*v(l())^2) & " +
     "x(l()) > x(f()) &" +
