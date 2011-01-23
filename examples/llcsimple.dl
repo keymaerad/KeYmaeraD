@@ -4,8 +4,9 @@
  v : (C) -> Real,
  a : (C) -> Real}
 (
-b > 0 &
+b > 0 & 
 B > 0 & 
+B > b &
 ~(f = l) &
 eps > 0) &
 ((
@@ -15,8 +16,8 @@ v(f) >= 0 &
 v(l) >= 0)
 ) 
 |-
-[{(forall i : C a(l) := -B ) ;            
-   ( ( forall i : C a(f) := -b)
+[{( a(l) := -B ) ;           
+   ( (  a(f) := -b)
        ++ (? b * B * x(l) > b * B * x(f) +  
                      (1/2) * (B * v(f)^2 -  b * v(l)^2) + 
                      B * (A + b) * ( (1/2) * A * eps^2 + eps * v(f));

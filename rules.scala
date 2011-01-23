@@ -387,8 +387,8 @@ object Rules {
           var phi1 = phi;
           var sig1 = sig;
           var c1 = c;
-          for( v <- vs) {
-              val (Fn(vr,Nil), tm) = v;
+          for( v <- vs) v match {
+            case (Fn(vr,Nil), tm) =>
               val vr1 = Prover.uniqify(vr);
               phi1 = Prover.renameFn(vr,vr1,phi1);
               sig1 = sig.get(vr) match {
@@ -400,6 +400,26 @@ object Rules {
               val fm1 = Atom(R("=",List(Fn(vr1,Nil),tm)));
               c1 = c1 ++ List(fm1);
                 // order matters! we want p to still point to phi
+            case (Fn(vr,List(arg)), tm) =>
+              val vr1 = Prover.uniqify(vr)
+              phi1 = Prover.renameFn(vr,vr1,phi1);
+              val (srt1, sig2) = sig.get(vr) match {
+                case Some(sg@( List(srt1), rtn) ) =>
+                  (srt1, sig1 + ((vr1,sg))   )
+                case _ => 
+                    (AnySort, sig1)
+              }
+              sig1 = sig2
+              val j = Prover.uniqify("j")
+              val fm1 = Atom(R("=",List(Fn(vr1,List(arg)),tm)));
+              val fm2 = Quantifier(Forall,srt1, j, 
+                                   Binop(Imp,
+                                         Atom(R("=", List(Var(j), arg))),
+                                         Atom(R("=",List(Fn(vr1,List(Var(j))),
+                                                         Fn(vr, List(Var(j))))))));
+              c1 = c1 ++ List(fm1,fm2);
+                // order matters! we want p to still point to phi
+            case (Fn(vr,_), tm) => throw new Error("assigned to nonunary function")
           }
           val sq1 = replace(p, Sequent(sig1,c1,s) , phi1)
           Some((List(sq1),Nil))

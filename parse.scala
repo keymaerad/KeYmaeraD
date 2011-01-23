@@ -148,7 +148,9 @@ class DLParser(ins : String)
 
    def freeVarsAreFns_HP(bndVars : List[String], hp: HP) : HP = hp match {
     case Assign(vs) =>
-      val vs1 = vs.map(vt => (vt._1, freeVarsAreFns_Term(bndVars,vt._2)))
+      val vs1 = vs.map(vt => {
+        val f@Fn(_,_) = freeVarsAreFns_Term(bndVars, vt._1)
+        (f, freeVarsAreFns_Term(bndVars,vt._2)) })
       Assign(vs1)
     case AssignAny(f) => 
       val f1@Fn(_,_) = freeVarsAreFns_Term(bndVars,f)
@@ -220,10 +222,8 @@ class DLParser(ins : String)
       "?" ~> formula00 ^^ { x => Check(x)}  |
       ident <~ ":=" <~ "*" ^^ { x  => AssignAny(Fn(x,Nil))} |
       function <~ ":=" <~ "*" ^^ { f  => AssignAny(f)} |
-//      (("forall" ~> ident <~  ":") ~ 
-//       ident ~ function <~ ":=" <~ "*") ^^ 
-//        {case i ~ c ~ f  => AssignAnyQuantified(i,St(c),f)} | 
       (ident <~ ":=") ~ term ^^ {case x ~ t => Assign(List((Fn(x,Nil),t)))} |
+      (function <~ ":=") ~ term ^^ {case f ~ t => Assign(List((f,t)))} |
       (("forall" ~> ident <~  ":") ~ 
        ident ~ function <~ ":=") ~ term ^^ 
         {case i ~ c ~ f ~ v => AssignQuantified(i,St(c),List((f,v)))} | 
