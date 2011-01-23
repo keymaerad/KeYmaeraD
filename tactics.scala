@@ -481,36 +481,6 @@ object Tactics {
   }
 
 
-/*
-  val qdiffsolveT : List[Formula] => Position => Tactic = sols => pos => 
-    new Tactic("qdiffsolveT") {
-
-      def aux(sols0 : List[Formula], vs0: List[(Fn,Formula)]): List[Formula] 
-        = (sols0,vs0) match {
-        case (Nil, _) => Nil
-        case (_, Nil) => Nil
-        case 
-          (Quantifier(Forall,srt,i,Atom(R("=",List(Fn(f, args), _) ))):: rest,v:: )=>
-          val sol1 = Prover.renameFn(f, 
-      }
-      
-      def apply(nd: OrNode) : List[NodeID] = {
-        val sq@Sequent(sig,cs,ss) = nd.goal
-        val fm = lookup(pos,sq)
-        fm match {
-          case Modality(Box,EvolveQuantified(i,c,vs,h), phi) =>
-            val sols1 = aux(sols,vs)
-            trytuleatT(qdiffsolve(sols1))(pos)(nd)
-
-          case _ =>
-            Nil
-        }
-        
-      }
-        }
-
-
-    }
-*/
+  val hidethencloseT = composeT(hidecantqeT, closeOrArithT)
 
 }

@@ -414,7 +414,7 @@ object Rules {
               val fm1 = Atom(R("=",List(Fn(vr1,List(arg)),tm)));
               val fm2 = Quantifier(Forall,srt1, j, 
                                    Binop(Imp,
-                                         Atom(R("=", List(Var(j), arg))),
+                                         Not(Atom(R("=", List(Var(j), arg)))),
                                          Atom(R("=",List(Fn(vr1,List(Var(j))),
                                                          Fn(vr, List(Var(j))))))));
               c1 = c1 ++ List(fm1,fm2);

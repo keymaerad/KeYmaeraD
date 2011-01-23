@@ -327,6 +327,8 @@ object FE {
 	    contents += new Menu("Prove") {
 	      contents += new MenuItem(Action("All Easy") 
                                        {fa ! ('tactic, alleasyT)})
+	      contents += new MenuItem(Action("Hide Then Close") 
+                                       {fa ! ('tactic, hidethencloseT)})
 	      }
   	    }
       //frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
