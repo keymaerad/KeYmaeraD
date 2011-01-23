@@ -298,7 +298,7 @@ final object Prover {
                inv_hints.map(f => onterms_Formula(g,f)),
                sols.map(f => onterms_Formula(g,f)))
       case EvolveQuantified(i,c, vs, h) =>
-        EvolveQuantified(i,c,vs.map(replace), h)
+        EvolveQuantified(i,c,vs.map(replace), onterms_Formula(g,h))
       
     }
   }
