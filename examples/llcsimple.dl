@@ -24,7 +24,7 @@ v(l) >= 0)
        );
    t:= 0; forall i : C {x(i)' = v(i), 
                         v(i)' = a(i), 
-                        t()' = 1; v(i) >= 0 &  t<= eps}
+                        t()' = 1; v(i) >= 0 &  t() <= eps}
                         @solution( forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i),
                                    forall s . v(s, i) = a(i) * s + v(i),
                                    forall s . t(s) = t()  + s)

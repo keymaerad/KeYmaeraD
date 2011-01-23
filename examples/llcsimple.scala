@@ -16,7 +16,8 @@ val ch_brake =
                     repeatT(substT),
                     hideunivsT,
                     repeatT(nullarizeT),
-                    alleasyT
+                    alleasyT,
+                    hidecantqeT
                       ))
 
 

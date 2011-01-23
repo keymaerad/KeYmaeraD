@@ -21,9 +21,17 @@ final object Prover {
   
   def uniqify(s: String): String = {
 //    val s1 =   s + "$" + getShortName + "$" + uniqid
-    val s1 = s + "$" + uniqid
+    val uniqid0 = uniqid
     uniqid = uniqid + 1
-    s1
+    val dol = s.indexOf("$")
+    if(dol == -1){
+      val s1 = s + "$" + uniqid0
+      s1
+    } else {
+      val s0 = s.substring(0,dol)
+      val s1 = s0 + "$" + uniqid0
+      s1
+    }
   }
   
   def assoc[A,B](k: A, al: List[(A,B)]): Option[B] = al match {

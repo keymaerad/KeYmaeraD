@@ -298,10 +298,10 @@ object Tactics {
 
 
 
-  val alleasyT: Tactic = composeT(repeatT(eitherT(hpeasyT, alphaT)),
-                                   composeT(repeatT(substT),
-                                     composeT(repeatT(betaT),
-                                           closeOrArithT)))
+  val alleasyT: Tactic = composelistT(List(repeatT(eitherT(hpeasyT, alphaT)),
+                                           repeatT(substT),
+                                           repeatT(eitherT(alphaT,betaT)),                                      
+                                           closeOrArithT))
 
   def getOpenLeaves(nd: ProofNode) : List[OrNode] = {
     val kds = nd.children.map(getnode)
