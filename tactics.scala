@@ -93,7 +93,7 @@ object Tactics {
     }
 
 
-  def usehints(pos: Position): Tactic = new Tactic("usehints") {
+  def usehintsT(pos: Position): Tactic = new Tactic("usehints") {
     def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
       case Modality(Box,Loop(hp, True, inv_hints), phi) => 
         val rules = inv_hints.map(loopInduction)
@@ -112,6 +112,18 @@ object Tactics {
           case Some(lst) => lst
         } 
         sol_res1 ++ sol_res2 ++ inv_res
+      case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
+        val sol_rule1 = qDiffSolve(Endpoint)(sols)
+        val sol_rule2 = qDiffSolve(Standard)(sols)
+        val sol_res1 = applyrule(nd,pos,sol_rule1) match {
+          case None => Nil
+          case Some(lst) => lst
+        }
+        val sol_res2 = applyrule(nd,pos,sol_rule2) match {
+          case None => Nil
+          case Some(lst) => lst
+        } 
+        sol_res1 ++ sol_res2
 
         
       case _ => Nil
@@ -182,7 +194,7 @@ object Tactics {
         // try all the box hp easy rules
         val pos = RightP(0)
         val (_,nds1) = trylistofrules(hpeasy, nd)
-        val nds2 = usehints(pos)(nd)
+        val nds2 = usehintsT(pos)(nd)
         nds1 ++ nds2
       case _ => Nil
     }
@@ -468,5 +480,37 @@ object Tactics {
     }
   }
 
+
+/*
+  val qdiffsolveT : List[Formula] => Position => Tactic = sols => pos => 
+    new Tactic("qdiffsolveT") {
+
+      def aux(sols0 : List[Formula], vs0: List[(Fn,Formula)]): List[Formula] 
+        = (sols0,vs0) match {
+        case (Nil, _) => Nil
+        case (_, Nil) => Nil
+        case 
+          (Quantifier(Forall,srt,i,Atom(R("=",List(Fn(f, args), _) ))):: rest,v:: )=>
+          val sol1 = Prover.renameFn(f, 
+      }
+      
+      def apply(nd: OrNode) : List[NodeID] = {
+        val sq@Sequent(sig,cs,ss) = nd.goal
+        val fm = lookup(pos,sq)
+        fm match {
+          case Modality(Box,EvolveQuantified(i,c,vs,h), phi) =>
+            val sols1 = aux(sols,vs)
+            trytuleatT(qdiffsolve(sols1))(pos)(nd)
+
+          case _ =>
+            Nil
+        }
+        
+      }
+        }
+
+
+    }
+*/
 
 }

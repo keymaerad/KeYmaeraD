@@ -8,17 +8,9 @@ val rl = loopInduction(
     "v(f()) >= 0 &" +
     "v(l()) >= 0 )    )   )"))
 
-val qdsrT = 
-  tryruleT(
-    qDiffSolve(Endpoint)(List(
-    parseFormula("forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i)"),
-    parseFormula("forall s . v(s, i) = a(i) * s + v(i)"),
-    parseFormula("forall s . t(s) = t()  + s")
-    )))
-
 val ch_brake = 
   composelistT(List(repeatT(hpalpha1T),
-                    qdsrT,
+                    usehintsT(RightP(1)),
                     repeatT(hpalpha1T),
                     instantiate0T,
                     repeatT(substT),

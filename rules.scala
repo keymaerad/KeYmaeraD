@@ -762,7 +762,7 @@ object Rules {
       def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
         case (RightP(n), 
               Sequent(sig, c,s),
-              Modality(Box,EvolveQuantified(i,srt, derivs, h), phi)) =>
+              Modality(Box,EvolveQuantified(i,srt, derivs, h, _), phi)) =>
           val t_sols = fm_sols.map(extract)
           val sols0 = t_sols.map(_._2)
 

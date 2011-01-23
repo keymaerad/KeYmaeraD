@@ -297,8 +297,11 @@ final object Prover {
                onterms_Formula(g,fm),
                inv_hints.map(f => onterms_Formula(g,f)),
                sols.map(f => onterms_Formula(g,f)))
-      case EvolveQuantified(i,c, vs, h) =>
-        EvolveQuantified(i,c,vs.map(replace), onterms_Formula(g,h))
+      case EvolveQuantified(i,c, vs, h, sols) =>
+        EvolveQuantified(i,c,
+                         vs.map(replace),
+                         onterms_Formula(g,h),
+                         sols.map(f => onterms_Formula(g,f)))
       
     }
   }
@@ -349,8 +352,8 @@ final object Prover {
                        overterms_Formula(g,fm,b))
       case Evolve(derivs, fm, inv_hints, sols) =>
         overterms_Formula(g,fm,foldit(derivs)( b))
-      case EvolveQuantified(i,c, vs, h) =>
-        overterms_Formula(g,h,foldit(vs)( b))
+      case EvolveQuantified(i,c, vs, h, sols) =>
+        overterms_Formula(g,h,foldit(vs)(b))
       
     }
   }

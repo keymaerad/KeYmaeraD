@@ -172,7 +172,7 @@ object Printing {
        docOfList(derivs.map(docOfDeriv), text(",")) ::
        text(";") ::
        docOfFormula(reg))
-    case EvolveQuantified(i, c, vs,reg) =>
+    case EvolveQuantified(i, c, vs,reg,_) =>
       text("forall ") :: text(i) :: text(":") :: docOfSort(c) :: text(" ") ::
           bracket("{", "}",
                   docOfList(vs.map(docOfDeriv), text(",")) ::

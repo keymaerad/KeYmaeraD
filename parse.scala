@@ -170,12 +170,13 @@ class DLParser(ins : String)
              freeVarsAreFns(bndVars,fm),
              inv_hints.map(f => freeVarsAreFns(bndVars,f)),
              sols.map(f => freeVarsAreFns(bndVars,f)))
-     case EvolveQuantified(i,c,vs,h) =>
+     case EvolveQuantified(i,c,vs,h, sols) =>
 //       println("in freevars are fns. h = " + h);
       EvolveQuantified(i,
                        c, 
                        vs.map(replace_asgn(i::bndVars)), 
-                       freeVarsAreFns(i::bndVars,h))
+                       freeVarsAreFns(i::bndVars,h),
+                       sols.map(f => freeVarsAreFns(i::bndVars,f)))
        
    }
 
@@ -236,9 +237,9 @@ class DLParser(ins : String)
       // forall i : C  f(v)' = theta & h 
    // XXX  TODO figure out how to read apostrophes in a sane way
        ("forall" ~> ident <~ ":") ~ ident ~ 
-        ("{" ~> rep1sep(qdiffeq, ",") <~ ";") ~ (formula00 <~ "}") ^^
-        { case i ~ c ~ vs  ~ h => 
-          EvolveQuantified(i,St(c),vs,h) }
+        ("{" ~> rep1sep(qdiffeq, ",") <~ ";") ~ (formula00 <~ "}") ~ annotation("solution") ^^
+        { case i ~ c ~ vs  ~ h ~ sols => 
+          EvolveQuantified(i,St(c),vs,h, sols) }
    
      
 

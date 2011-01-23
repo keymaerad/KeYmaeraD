@@ -327,10 +327,10 @@ object Util {
       union(fv_HP(p), fv_HP(q))
     case Loop(p,fm, inv_hints) =>
       union(fv_HP(p), fv(fm))
-    case Evolve(derivs, fm, inv_hints, sols) =>
+    case Evolve(derivs, fm, _, _) =>
       union(fv(fm),
             unions(derivs.map(v => union(fv_Term(v._1),fv_Term(v._2)))))
-    case EvolveQuantified(i,c,vs,h) =>
+    case EvolveQuantified(i,c,vs,h, _ ) =>
       val fvs = union(fv(h),
                       unions(vs.map(v => union(fv_Term(v._1),fv_Term(v._2)))))
       subtract(fvs, List(i))

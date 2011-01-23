@@ -63,7 +63,8 @@ case class Evolve(derivs: List[(Fn,Term)],
 case class EvolveQuantified(i:String, 
                             c: Sort,
                             vs : List[(Fn, Term)],
-                            h : Formula
+                            h : Formula,
+                            sols: List[Formula]
                             ) extends HP
 
 
