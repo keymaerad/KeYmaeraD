@@ -553,6 +553,35 @@ final object Prover {
   }
 
 
+  def combine_mbe_maps[A,B](m1 : Option[Map[A,B]], m2 : Option[Map[A,B]]) : Option[Map[A,B]] =
+    (m1,m2) match {
+      case _ =>
+        None
+    }
+  
+
+    // tm1 is specific, tm2 has free variables.
+    // figure out what to associate to those free variables in to get tm1.
+  def unify(tm1 : Term, tm2 : Term) : Option[List[(String,Term)]] = (tm1,tm2) match {
+    case (Fn(f1,args1), Fn(f2,args2)) if f1 == f2 =>
+      None // XXX
+    case (tm1, Var(x)) =>
+      None
+    case _ => 
+      None
+  }
+
+    // fm1 is specific, fm2 has free variables.
+    // figure out what to associate to those free variables in to get fm1.
+  def unify(fm1 : Formula, fm2 : Formula) : Option[List[(String, Term)]] = (fm1,fm2) match {
+    case (True,True) | (False, False) => 
+      Some(Nil)
+    case (Atom(R(r1,args1)), Atom(R(r2,args2))) if r1 == r2 => 
+      None // XXX
+    case _ => 
+      None
+  }
+
 
 }
 
