@@ -114,16 +114,16 @@ object Tactics {
         sol_res1 ++ sol_res2 ++ inv_res
       case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
         val sol_rule1 = qDiffSolve(Endpoint)(sols)
-        val sol_rule2 = qDiffSolve(Standard)(sols)
+//        val sol_rule2 = qDiffSolve(Standard)(sols)
         val sol_res1 = applyrule(nd,pos,sol_rule1) match {
           case None => Nil
           case Some(lst) => lst
         }
-        val sol_res2 = applyrule(nd,pos,sol_rule2) match {
-          case None => Nil
-          case Some(lst) => lst
-        } 
-        sol_res1 ++ sol_res2
+//        val sol_res2 = applyrule(nd,pos,sol_rule2) match {
+//          case None => Nil
+//          case Some(lst) => lst
+//        } 
+        sol_res1 //++ sol_res2
 
         
       case _ => Nil
