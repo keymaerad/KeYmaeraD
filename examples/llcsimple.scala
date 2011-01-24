@@ -41,7 +41,8 @@ val ch_whatev =
                     repeatT(substT),
                     hideunivsT,
                     repeatT(nullarizeT),
-                    everythingT
+                    repeatT(alphaT)
+//                    everythingT
                       ))
 
 val indtct =                           
