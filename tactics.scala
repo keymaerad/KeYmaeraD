@@ -114,6 +114,36 @@ object Tactics {
         sol_res1 ++ sol_res2 ++ inv_res
       case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
         val sol_rule1 = qDiffSolve(Endpoint)(sols)
+        val sol_rule2 = qDiffSolve(Standard)(sols)
+        val sol_res1 = applyrule(nd,pos,sol_rule1) match {
+          case None => Nil
+          case Some(lst) => lst
+        }
+        val sol_res2 = applyrule(nd,pos,sol_rule2) match {
+          case None => Nil
+          case Some(lst) => lst
+        } 
+        sol_res1 ++ sol_res2
+
+        
+      case _ => Nil
+    }
+  }
+
+  def usehints0T(pos: Position): Tactic = new Tactic("usehints0") {
+    def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
+      case Modality(Box,Loop(hp, True, inv_hints), phi) => 
+        val rules = inv_hints.map(loopInduction)
+        rules.map(r => applyrule(nd, pos, r)).flatten.flatten
+      case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
+        val sol_rule1 = diffSolve(Endpoint)(sols)
+        val sol_res1 = applyrule(nd,pos,sol_rule1) match {
+          case None => Nil
+          case Some(lst) => lst
+        }
+        sol_res1
+      case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
+        val sol_rule1 = qDiffSolve(Endpoint)(sols)
 //        val sol_rule2 = qDiffSolve(Standard)(sols)
         val sol_res1 = applyrule(nd,pos,sol_rule1) match {
           case None => Nil
@@ -137,8 +167,7 @@ object Tactics {
                   )
 
   val hpalpha = List(seq, check, 
-                    assign, assignAnyRight, qassign,
-                    diffClose
+                    assign, assignAnyRight, qassign
                   )
 
   val needhints = List(loopInduction, diffStrengthen)

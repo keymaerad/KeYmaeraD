@@ -14,6 +14,7 @@ val everythingT: Tactic =
     repeatT(
       eitherlistT(List(hpalphaT, 
                        alphaT, 
+                       nonarithcloseT,
                        betaT, 
                        substT))),
     eitherT(nonarithcloseT, hidethencloseT))
@@ -22,7 +23,7 @@ val everythingT: Tactic =
 
 val ch_brake = 
   composelistT(List(repeatT(hpalpha1T),
-                    usehintsT(RightP(1)),
+                    usehints0T(RightP(1)),
                     repeatT(hpalpha1T),
                     instantiate0T,
                     repeatT(substT),
@@ -34,7 +35,7 @@ val ch_brake =
 
 val ch_whatev = 
   composelistT(List(repeatT(eitherT(hpalphaT,alphaT)),
-                    usehintsT(RightP(1)),
+                    usehints0T(RightP(1)),
                     repeatT(hpalpha1T),
                     instantiate0T,
                     repeatT(substT),
