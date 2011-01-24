@@ -166,6 +166,13 @@ object Tactics {
       }
     }
 
+  val nilT : Tactic = 
+    new Tactic("nil") {
+      def apply(nd: OrNode) = {
+        Nil
+      }
+    }
+
   def composelistT(tcts : List[Tactic]) : Tactic = 
     tcts.foldRight(unitT)( (t1,t2) => composeT(t1,t2)  )
 
@@ -186,6 +193,8 @@ object Tactics {
       }
     }
 
+  def eitherlistT(tcts : List[Tactic]) : Tactic = 
+    tcts.foldRight(nilT)( (t1,t2) => eitherT(t1,t2)  )
 
 
   val hpeasyT : Tactic = new Tactic("hpeasy") {
@@ -287,6 +296,9 @@ object Tactics {
   }
 
 
+  val nonarithcloseT = 
+    trylistofrulesT(List(close,identity))
+
   val closeOrArithT : Tactic = new Tactic("close") {
     def apply(nd: OrNode) = {
       val (fo,r) = trylistofrules(List(close, identity), nd)
@@ -300,7 +312,7 @@ object Tactics {
 
   val alleasyT: Tactic = composelistT(List(repeatT(eitherT(hpeasyT, alphaT)),
                                            repeatT(substT),
-                                           repeatT(eitherT(alphaT,betaT)),                                      
+                                           repeatT(eitherT(alphaT,betaT)),        
                                            closeOrArithT))
 
   def getOpenLeaves(nd: ProofNode) : List[OrNode] = {
@@ -475,7 +487,9 @@ object Tactics {
         cantqe = if(Prover.canQE(fm, sig)) cantqe else fm::cantqe
       }
 
-      val tct = cantqe.foldRight(unitT)((fm1,rt) => composeT(tryrulematchT(hide)(fm1),rt));
+      val tct = cantqe.foldRight(unitT)((fm1,rt) 
+                                        => composeT(tryrulematchT(hide)(fm1),
+                                                    rt));
       tct(nd)
     }
   }

@@ -8,6 +8,18 @@ val rl = loopInduction(
     "v(f()) >= 0 &" +
     "v(l()) >= 0 )    )   )"))
 
+
+val everythingT: Tactic = 
+  composeT(
+    repeatT(
+      eitherlistT(List(hpalphaT, 
+                       alphaT, 
+                       betaT, 
+                       substT))),
+    eitherT(nonarithcloseT, hidethencloseT))
+
+
+
 val ch_brake = 
   composelistT(List(repeatT(hpalpha1T),
                     usehintsT(RightP(1)),
@@ -16,13 +28,20 @@ val ch_brake =
                     repeatT(substT),
                     hideunivsT,
                     repeatT(nullarizeT),
-                    alleasyT,
-                    alleasyT,
-                    hidethenqeT
+                    everythingT
                       ))
 
 
-val ch_whatev = repeatT(eitherT(hpalphaT,alphaT))
+val ch_whatev = 
+  composelistT(List(repeatT(eitherT(hpalphaT,alphaT)),
+                    usehintsT(RightP(1)),
+                    repeatT(hpalpha1T),
+                    instantiate0T,
+                    repeatT(substT),
+                    hideunivsT,
+                    repeatT(nullarizeT),
+                    everythingT
+                      ))
 
 val indtct =                           
   composeT(
