@@ -560,24 +560,69 @@ final object Prover {
     }
   
 
+  type Subst = Map[String,Term] 
+
+  val nilmap = scala.collection.immutable.HashMap[String,Term]()
+
+  def unify_Terms(subs: Subst, tms1 : List[Term], tms2 : List[Term]) : Option[Subst] 
+      = (tms1, tms2) match {
+        case (Nil, Nil) => Some(subs)
+        case (tm1::rest1, tm2::rest2) =>
+          unify_Term(subs, tm1,tm2) match {
+            case None => None
+            case Some(subs1) => unify_Terms(subs1,rest1,rest2) 
+          }
+        case _ => None
+
+      }
+  
+
     // tm1 is specific, tm2 has free variables.
     // figure out what to associate to those free variables in to get tm1.
-  def unify(tm1 : Term, tm2 : Term) : Option[List[(String,Term)]] = (tm1,tm2) match {
+  def unify_Term(subs: Subst, tm1 : Term, tm2 : Term) : Option[Subst] = (tm1,tm2) match {
     case (Fn(f1,args1), Fn(f2,args2)) if f1 == f2 =>
-      None // XXX
+      unify_Terms(subs, args1,args2)
     case (tm1, Var(x)) =>
-      None
+      subs.get(x) match {
+        case None =>
+          Some(subs + ((x,tm1)))
+        case tm  if tm1 == tm =>
+          Some(subs)
+        case _ =>
+          None
+      }
     case _ => 
       None
   }
 
+  def unify_Formulas(subs: Subst, fms1 : List[Formula], fms2 : List[Formula]) : Option[Subst] 
+      = (fms1, fms2) match {
+        case (Nil, Nil) => Some(subs)
+        case (fm1::rest1, fm2::rest2) =>
+          unify_Formula(subs, fm1,fm2) match {
+            case None => None
+            case Some(subs1) => unify_Formulas(subs1,rest1,rest2) 
+          }
+        case _ => None
+
+      }
+
     // fm1 is specific, fm2 has free variables.
     // figure out what to associate to those free variables in to get fm1.
-  def unify(fm1 : Formula, fm2 : Formula) : Option[List[(String, Term)]] = (fm1,fm2) match {
+  def unify_Formula(subs: Subst, fm1 : Formula, fm2 : Formula) : Option[Subst] 
+  = (fm1,fm2) match {
     case (True,True) | (False, False) => 
-      Some(Nil)
+      Some(subs)
     case (Atom(R(r1,args1)), Atom(R(r2,args2))) if r1 == r2 => 
-      None // XXX
+      unify_Terms(subs,args1,args2)
+    case (Not(f1), Not(f2) )=>
+      unify_Formula(subs,f1,f2)
+    case (Binop(op1,f1,g1), Binop(op2, f2,g2)) if op1 == op2 => 
+      unify_Formulas(subs,List(f1,g1),List(f2,g2))
+    case (Quantifier(qt1, srt1, bv1, f1), Quantifier(qt2, srt2, bv2, f2)) 
+           if qt1 == qt2 && srt1 == srt2 =>
+             val f3 = rename_Formula(bv2, bv1, f2)
+             unify_Formula(subs, f1,f3)
     case _ => 
       None
   }
