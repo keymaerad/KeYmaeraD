@@ -857,6 +857,7 @@ object Rules {
   {
       def apply(pos: Position) = sq => (pos,sq) match {
         case (LeftP(n), Sequent(sig, c,s)) =>
+//          val lem = Sequent(sig, c, fm::s)
           val lem = Sequent(sig, c, List(fm))
           val rep = replace(pos, sq, fm)
           Some(List(lem,rep     ), Nil)

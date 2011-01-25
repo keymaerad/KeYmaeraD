@@ -53,6 +53,11 @@ val ch_whatev =
                     hideunivsT,
                     repeatT(nullarizeT),
                     repeatT(alphaT),
+                    repeatT(eitherlistT(List(hpalphaT, 
+                                             alphaT, 
+                                             nonarithcloseT,
+                                             betaT, 
+                                             substT))),
                     cuttct,                    
                     everythingT
                       ))

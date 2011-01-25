@@ -564,14 +564,10 @@ final object Prover {
         case (Nil, Nil) => Some(subs)
         case (tm1::rest1, tm2::rest2) =>
           unify_Term(subs, tm1,tm2) match {
-            case None => 
-              println("unification failed: " + tms1 + " " + tms2)
-              None
+            case None =>  None
             case Some(subs1) => unify_Terms(subs1,rest1,rest2) 
           }
-        case _ => 
-          println("unification failed: " + tms1 + " " + tms2)
-        None
+        case _ => None
 
       }
 
@@ -593,9 +589,7 @@ final object Prover {
       }
     case (Num(n), Num(m)) if n.==(m) =>
       Some(subs)
-    case _ => 
-      println("unification failed: " + tm1 + " " + tm2)
-      None
+    case _ =>  None
   }
 
   def unify_Formulas(subs: Subst, 
@@ -628,9 +622,7 @@ final object Prover {
            if qt1 == qt2 && srt1 == srt2 =>
              val f3 = rename_Formula(bv2, bv1, f2)
              unify_Formula(subs, f1,f3)
-    case _ => 
-      println("unification failed: " + fm1 + " " + fm2)
-      None
+    case _ => None
   }
 
 
