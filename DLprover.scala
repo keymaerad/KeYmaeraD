@@ -628,6 +628,10 @@ final object Prover {
   }
 
 
+  def unify(fm1 : Formula, fm2 : Formula) : Option[Subst] = {
+    unify_Formula(nilmap, fm1,fm2)
+  }
+
 }
 
 

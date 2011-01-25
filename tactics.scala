@@ -526,4 +526,31 @@ object Tactics {
 
   val hidethencloseT = composeT(hidecantqeT, closeOrArithT)
 
+
+  def cutT(coutout: Formula, cutin: Formula): Tactic 
+  = new Tactic("cut") {
+    def apply(nd: OrNode) : List[NodeID] = {
+      val Sequent(sig,cs,ss) = nd.goal
+      var mbesubs : Option[Prover.Subst] = None;
+      var foundidx = -1;
+      for (i <- cs.indices){
+        if(mbesubs == None) {
+          Prover.unify(cs(i),coutout) match {
+            case None => ()
+            case Some(subs) => 
+              mbesubs = Some(subs)
+              foundidx = i;
+          }
+        }
+      }
+      mbesubs match {
+        case None => Nil
+        case Some(subs) =>
+          val cutin1 = Prover.simul_substitute_Formula(subs.toList, cutin)
+          tryruleatT(directedCut(cutin1))(LeftP(foundidx))(nd)
+      }   
+    }
+  }
+
+
 }
