@@ -579,7 +579,8 @@ final object Prover {
 
     // tm1 is specific, tm2 has free variables.
     // figure out what to associate to those free variables in to get tm1.
-  def unify_Term(subs: Subst, tm1 : Term, tm2 : Term) : Option[Subst] = (tm1,tm2) match {
+  def unify_Term(subs: Subst, tm1 : Term, tm2 : Term) : Option[Subst] 
+  = (tm1,tm2) match {
     case (Fn(f1,args1), Fn(f2,args2)) if f1 == f2 =>
       unify_Terms(subs, args1,args2)
     case (tm1, Var(x)) =>
@@ -591,11 +592,15 @@ final object Prover {
         case _ =>
           None
       }
+    case (Num(n), Num(m)) if n.==(m) =>
+      Some(subs)
     case _ => 
       None
   }
 
-  def unify_Formulas(subs: Subst, fms1 : List[Formula], fms2 : List[Formula]) : Option[Subst] 
+  def unify_Formulas(subs: Subst, 
+                     fms1 : List[Formula], 
+                     fms2 : List[Formula]) : Option[Subst] 
       = (fms1, fms2) match {
         case (Nil, Nil) => Some(subs)
         case (fm1::rest1, fm2::rest2) =>

@@ -9,8 +9,19 @@ val cutrl =
   directedCut(
     parseFormula(
     "2*b()*x2()>2*b()*x1()+(v1()^2-v2()^2)+(aa()+b())*(aa()*s()^2+2*s()*v1())"
-//      "x1()+v1()*ep()+aa()*ep()^2*(1/2)<x2()+v2()*ep()+(0-b())*ep()^2*(1/2)"
       ))
+
+val cuttct = 
+  cutT(
+    parseFormula(
+    "2*b()*x2()>2*b()*x1()+(v1()^2-v2()^2)+(aa()+b())*(aa()*ep()^2+2*ep()*v1())"
+      ),
+    parseFormula(
+    "2*b()*x2()>2*b()*x1()+(v1()^2-v2()^2)+(aa()+b())*(aa()*s()^2+2*s()*v1())"
+      )
+)
+
+
 
 
 val everythingT: Tactic = 
@@ -30,7 +41,8 @@ val hardbranch =
                     usehints0T(RightP(0)),
                     repeatT(hpalpha1T),
                     repeatT(substT),
-                    tryruleatT(cutrl)(LeftP(4)),
+                    cuttct,
+//                    tryruleatT(cutrl)(LeftP(4)),
                     alleasyT
                     
                       ))

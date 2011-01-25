@@ -530,13 +530,14 @@ object Tactics {
   def cutT(coutout: Formula, cutin: Formula): Tactic 
   = new Tactic("cut") {
     def apply(nd: OrNode) : List[NodeID] = {
+      println("trying cutT on " + nd.nodeID)
       val Sequent(sig,cs,ss) = nd.goal
       var mbesubs : Option[Prover.Subst] = None;
       var foundidx = -1;
       for (i <- cs.indices){
         if(mbesubs == None) {
           Prover.unify(cs(i),coutout) match {
-            case None => ()
+            case None => println("didn't match here")
             case Some(subs) => 
               mbesubs = Some(subs)
               foundidx = i;
