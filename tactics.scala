@@ -527,7 +527,7 @@ object Tactics {
   val hidethencloseT = composeT(hidecantqeT, closeOrArithT)
 
 
-  def cutT(coutout: Formula, cutin: Formula): Tactic 
+  def cutT(cutout: Formula, cutin: Formula): Tactic 
   = new Tactic("cut") {
     def apply(nd: OrNode) : List[NodeID] = {
       println("trying cutT on " + nd.nodeID)
@@ -536,8 +536,9 @@ object Tactics {
       var foundidx = -1;
       for (i <- cs.indices){
         if(mbesubs == None) {
-          Prover.unify(cs(i),coutout) match {
-            case None => println("didn't match here")
+          Prover.unify(cs(i),cutout) match {
+            case None => 
+              println("didn't match here: " + i)
             case Some(subs) => 
               mbesubs = Some(subs)
               foundidx = i;

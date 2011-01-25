@@ -553,11 +553,6 @@ final object Prover {
   }
 
 
-  def combine_mbe_maps[A,B](m1 : Option[Map[A,B]], m2 : Option[Map[A,B]]) : Option[Map[A,B]] =
-    (m1,m2) match {
-      case _ =>
-        None
-    }
   
 
   type Subst = Map[String,Term] 
@@ -569,13 +564,17 @@ final object Prover {
         case (Nil, Nil) => Some(subs)
         case (tm1::rest1, tm2::rest2) =>
           unify_Term(subs, tm1,tm2) match {
-            case None => None
+            case None => 
+              println("unification failed: " + tms1 + " " + tms2)
+              None
             case Some(subs1) => unify_Terms(subs1,rest1,rest2) 
           }
-        case _ => None
+        case _ => 
+          println("unification failed: " + tms1 + " " + tms2)
+        None
 
       }
-  
+
 
     // tm1 is specific, tm2 has free variables.
     // figure out what to associate to those free variables in to get tm1.
@@ -587,7 +586,7 @@ final object Prover {
       subs.get(x) match {
         case None =>
           Some(subs + ((x,tm1)))
-        case tm  if tm1 == tm =>
+        case Some(tm)  if tm1 == tm =>
           Some(subs)
         case _ =>
           None
@@ -595,6 +594,7 @@ final object Prover {
     case (Num(n), Num(m)) if n.==(m) =>
       Some(subs)
     case _ => 
+      println("unification failed: " + tm1 + " " + tm2)
       None
   }
 
@@ -608,8 +608,8 @@ final object Prover {
             case None => None
             case Some(subs1) => unify_Formulas(subs1,rest1,rest2) 
           }
-        case _ => None
-
+        case _ => 
+          None
       }
 
     // fm1 is specific, fm2 has free variables.
@@ -629,6 +629,7 @@ final object Prover {
              val f3 = rename_Formula(bv2, bv1, f2)
              unify_Formula(subs, f1,f3)
     case _ => 
+      println("unification failed: " + fm1 + " " + fm2)
       None
   }
 
