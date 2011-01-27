@@ -47,6 +47,8 @@ val ch_brake =
                       ))
 
 
+
+
 val ch_whatev = 
   composelistT(List(repeatT(hpalpha1T),
                     diffsolveT(RightP(1),Standard),
@@ -57,7 +59,7 @@ val ch_whatev =
                     repeatT(hpalpha1T),
                     branchT(tryruleT(impLeft),
                             List(unitT,
-                               unitT)
+                                 unitT))
                     ))
 /*                    cuttct,                    
                     everythingT
