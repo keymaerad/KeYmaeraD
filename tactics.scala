@@ -15,6 +15,9 @@ object Tactics {
     override def toString: String = {
       name
     }
+    def * : Tactic = repeatT(this)  
+    def | (alternative : Tactic) = eitherT(this, alternative)
+    def & (continued : Tactic) = composeT(this, continued)
   }
 
 
@@ -237,7 +240,6 @@ object Tactics {
       case _ => Nil
     }
   }
-
 
   def repeatT(t: Tactic) : Tactic = new Tactic("repeat " + t.toString) {
     def apply(nd: OrNode) = {
