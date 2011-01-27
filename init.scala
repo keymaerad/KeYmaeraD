@@ -12,7 +12,7 @@ import DLBanyan._
 dl('load, "examples/simple.dl")
 dl('gui)
 
-dl('findworkers, Runtime.getRuntime().availableProcessors())
+//dl('findworkers, Runtime.getRuntime().availableProcessors())
 /* TODO Where to put the following code so that it's actually executed?
 def main(args: Array[String]) : Unit = {
 	var workers = Runtime.getRuntime().availableProcessors()

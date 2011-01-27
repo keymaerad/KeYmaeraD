@@ -32,6 +32,8 @@ val everythingT: Tactic =
 
 
 
+
+
 val ch_brake = 
   composelistT(List(repeatT(hpalpha1T),
                     usehints0T(RightP(1)),
@@ -45,22 +47,20 @@ val ch_brake =
 
 
 val ch_whatev = 
-  composelistT(List(repeatT(eitherT(hpalphaT,alphaT)),
+  composelistT(List(repeatT(hpalpha1T),
                     usehints0T(RightP(1)),
                     repeatT(hpalpha1T),
                     instantiate0T,
                     repeatT(substT),
                     hideunivsT,
                     repeatT(nullarizeT),
-                    repeatT(alphaT),
-                    repeatT(eitherlistT(List(hpalphaT, 
-                                             alphaT, 
-                                             nonarithcloseT,
-                                             betaT, 
-                                             substT))),
-                    cuttct,                    
+                    repeatT(alphaT)
+                    
+                    ))
+/*                    cuttct,                    
                     everythingT
                       ))
+*/
 
 val indtct =                           
   composeT(

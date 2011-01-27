@@ -557,4 +557,30 @@ object Tactics {
   }
 
 
+  val vacuousTrueT: Tactic 
+  = new Tactic("vacuous") {
+    def apply(nd: OrNode) : List[NodeID] = {
+      val Sequent(sig,cs,ss) = nd.goal
+      var res:List[NodeID] = Nil
+      var foundone = false
+      for (i <- cs.indices){
+        if(foundone == false){
+          cs(i) match {
+              case Binop(Imp, 
+                         Not(Atom(R("=", List(f1,f2)))),
+                         fm) if f1 == f2 =>
+                           res = tryruleatT(hide)(LeftP(i))(nd)
+                           () 
+              case _ => 
+                ()
+          }
+        }
+      }
+      res
+          
+      
+    }
+  }
+
+
 }
