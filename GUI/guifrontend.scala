@@ -13,6 +13,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
+import java.awt.Toolkit
+import javax.swing.KeyStroke
 
 import scala.actors.Actor
 import scala.actors.Actor._
@@ -296,12 +300,13 @@ object FE {
     //Create and set up the window.
     val frame = new MainFrame {
 	  title="Yandle";
+	  val keymask = toolkit.getMenuShortcutKeyMask();
       //Add content to the window.
 	  contents = new FrontEnd(fa)
           val recent = new Menu("Open Recent")
           menuBar = new MenuBar {
 	      contents += new Menu("File") {
-		contents += new MenuItem(Action("Open") {
+		  val open = new MenuItem(Action("Open") {
 		  val chooser = new FileChooser(new File("."))
 		    if (chooser.showOpenDialog(menuBar) == 
                       FileChooser.Result.Approve) {
@@ -313,20 +318,26 @@ object FE {
  		        fa ! ('load, pth)
  		    };
 		  })
+	    open.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, keymask));
+	    contents += open
 
 		contents += new Separator
                 contents += recent
 
 		contents += new Separator
-		contents += new MenuItem(Action("Quit") {
+		val quit = new MenuItem(Action("Quit") {
 		  visible = false
 		  close
 		  fa ! ('quit)
 		})
-	      }
+	    quit.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+    	contents += quit
+    }
 	    contents += new Menu("Prove") {
-	      contents += new MenuItem(Action("All Easy") 
+	      val teasy = new MenuItem(Action("All Easy") 
                                        {fa ! ('tactic, alleasyT)})
+		  teasy.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, keymask));
+		  contents += teasy
 	      contents += new MenuItem(Action("Hide Then Close") 
                                        {fa ! ('tactic, hidethencloseT)})
 	      }
