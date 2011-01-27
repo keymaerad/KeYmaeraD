@@ -1,2 +1,2 @@
 #!/bin/sh
-scala -cp .:$JLINK/JLink.jar -i init.scala
+scala -cp .:$JLINK/JLink.jar -i init.scala $*

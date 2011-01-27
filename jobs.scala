@@ -48,6 +48,7 @@ object Jobs {
 
     val newjobs = new scala.collection.mutable.Queue[JobData]()
     val idleworkers = new scala.collection.mutable.Queue[Node]()
+    val allworkers = new scala.collection.mutable.LinkedList[scala.actors.OutputChannel[Any]]()
 
 //    val localworker = new JobWorker()
 //    localworker.start()
@@ -77,14 +78,20 @@ object Jobs {
 //        println("jobmaster listening")
         receive {
           case 'quit =>
-            println("jobmaster quitting")
+            println("jobmaster quitting, notifying workers")
 //            localworker !? 'quit
+            for(w <- allworkers){
+                w ! ('quitting)
+            }
+            println("jobmaster quits")
             sender ! ()
             exit
 
           // worker registration.
-          case ('register, Node(ip,prt)) =>
-            println("got a registration.")
+          case ('register, nd@Node(ip,prt)) =>
+            println("got a registration.") 
+            //@TODO following line doesn't have much effect, what do we need to remember in allworkers so that we can talk to this worker later?
+            allworkers :+ sender
             sender ! ('registered)
             ()
             
@@ -219,7 +226,15 @@ object Jobs {
         }
       }
     }
-
+    
+    private def abort() = {
+        lock.synchronized{ working } match {
+          case Some(pr) =>
+            pr.abort
+          case None => // XXX need to look through the queue
+            println("got abort when nothing was running")
+        }
+    }
 
 
     def act(): Unit = {
@@ -239,6 +254,14 @@ object Jobs {
           case 'quit =>
             sender ! ()
             exit
+
+          case 'quitting =>
+            println("jobmaster quitting, worker exits")
+            abort()
+            println("jobmaster quitting, worker exits")
+            sender ! ()
+            exit
+
           case ('job, p: String, sq: Sequent, jid: JobID) =>
            procqueue.enqueue(JobData(p,sq,jid, sender))
 
@@ -253,15 +276,7 @@ object Jobs {
            master ! ('idling, myNode)
          
          case 'abort => 
-           lock.synchronized{ working } match {
-             case Some(pr) =>
-               pr.abort
-               case None => // XXX need to look through the queue
-               println("got abort when nothing was running")
-           }
-
-           
-              
+           abort()
         }
       }
     }
@@ -285,8 +300,8 @@ object Jobs {
 
       //use CLI to parse command line options
       var opts = new org.apache.commons.cli.Options();
-      opts.addOption("c", true, "coordinator address");
-      opts.addOption("cp", true, "coordinator port (default = 9500)");
+      opts.addOption("c", true, "coordinator address (default = localhost)");
+      opts.addOption("cp", true, "coordinator port (default = 50001)");
       opts.addOption("p", true, "port this worker should run on");
 
       //do parsing
@@ -303,20 +318,29 @@ object Jobs {
       //process options
       //coordinator address and port
       if (!cmd.hasOption("c")) {
-        println("Forgot to supply coordinator address. (use -c). Quitting.")
-        System.exit(0);
+        println("Using default coordinator address localhost. (use -c to specify).")
       }
 
       val coorHost = 
-        new Node(cmd.getOptionValue("c"), 
-                 java.lang.Integer.parseInt(cmd.getOptionValue("cp", "9500")))
+        new Node(cmd.getOptionValue("c","localhost"), 
+                 java.lang.Integer.parseInt(cmd.getOptionValue("cp", "50001")))
       
       println("coordinator at " + coorHost.toString)
       
       val thisAddr = InetAddress.getLocalHost().getHostAddress()
-      val thisHost = 
-        Node(thisAddr, 
-             java.lang.Integer.parseInt(cmd.getOptionValue("p", "9001")))
+      var thisPort = java.lang.Integer.parseInt(cmd.getOptionValue("p", "0"))
+      if (thisPort == 0)
+	      try {
+		  	  // port=0 supposedly says automatically allocate ephemeral port @see ServerSocket
+		      val testSocket = new java.net.ServerSocket(0)
+		      thisPort = testSocket.getLocalPort()
+		      testSocket.close()
+          }
+          catch {
+	          case ioe: java.io.IOException =>
+	              thisPort = 50002 + scala.util.Random.nextInt(10000)
+          }
+      val thisHost = Node(thisAddr, thisPort)
 
 
       

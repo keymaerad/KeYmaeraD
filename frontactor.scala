@@ -200,6 +200,16 @@ class FrontActor extends Actor {
           sender ! ()
         case ('registergui, tm: DLBanyan.GUI.TreeModel) => 
           treemodel = Some(tm)
+        case ('findworkers, number:Int) =>   
+          var i = 1
+          while (i <= number) {
+	          println("starting worker " + i)
+	          val pb = new ProcessBuilder("./runworker")
+			  pb.start()
+			  i += 1
+          } 
+          println("started workers")
+          sender ! ()
         case 'here =>
           displayThisNode
           sender ! ()
