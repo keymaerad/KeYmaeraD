@@ -133,30 +133,22 @@ object Tactics {
     }
   }
 
-  def usehints0T(pos: Position): Tactic = new Tactic("usehints0") {
+  def diffsolveT(pos: Position, md: DiffSolveMode): Tactic = new Tactic("diffsolveT " + md) {
     def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
-      case Modality(Box,Loop(hp, True, inv_hints), phi) => 
-        val rules = inv_hints.map(loopInduction)
-        rules.map(r => applyrule(nd, pos, r)).flatten.flatten
       case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
-        val sol_rule1 = diffSolve(Endpoint)(sols)
+        val sol_rule1 = diffSolve(md)(sols)
         val sol_res1 = applyrule(nd,pos,sol_rule1) match {
           case None => Nil
           case Some(lst) => lst
         }
         sol_res1
       case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
-        val sol_rule1 = qDiffSolve(Endpoint)(sols)
-//        val sol_rule2 = qDiffSolve(Standard)(sols)
+        val sol_rule1 = qDiffSolve(md)(sols)
         val sol_res1 = applyrule(nd,pos,sol_rule1) match {
           case None => Nil
           case Some(lst) => lst
         }
-//        val sol_res2 = applyrule(nd,pos,sol_rule2) match {
-//          case None => Nil
-//          case Some(lst) => lst
-//        } 
-        sol_res1 //++ sol_res2
+        sol_res1
 
         
       case _ => Nil
@@ -557,7 +549,7 @@ object Tactics {
   }
 
 
-  val vacuousTrueT: Tactic 
+  val vacuousT: Tactic 
   = new Tactic("vacuous") {
     def apply(nd: OrNode) : List[NodeID] = {
       val Sequent(sig,cs,ss) = nd.goal
