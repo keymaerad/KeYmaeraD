@@ -554,27 +554,35 @@ final object Prover {
 
 
 
+
+  /* If we find an update, return a formula with a hole where it was, and
+   *  the formula that was in that hole.
+   */ 
   def extract_update(fm: Formula) : Option[(Formula => Formula, Formula)] = fm match {
     case True | False | Atom(_) => 
       None
     case Not(f) =>
-      extract_update(f) match {
+      extract_update_aux(x => Not(x), f)
+    case Binop(c, fm1, fm2) =>
+      extract_update(fm1) match {
+        case None => extract_update_aux(x => Binop(c,fm1,x), fm2)
+        case Some((fn1,fm0)) => Some((x => Binop(c,fn1(x),fm2),fm0))
+      }
+    case Quantifier(q, c, v,f) => 
+      extract_update_aux(x => Quantifier(q,c,v,x), f)
+    case Modality(m, AssignQuantified(i,srt,vs), f) =>
+      Some((x => x ,fm))
+    case Modality(m, hp, f) =>
+      extract_update_aux(x => Modality(m,hp,x), f)
+
+  }
+
+  def extract_update_aux(g: Formula => Formula, fm: Formula) 
+     : Option[(Formula => Formula, Formula)] = extract_update(fm) match {
         case None => None
         case Some((fn1, f1)) => 
-          Some(((fm1 => Not(fn1(fm1)) ), f1))
-      }
-    case _ => //XXX
-      None
-/*
-    case Binop(c, f1, f2) =>
-      tm1 => Binop(c, extract(tm_ex,f1)(tm1), extract(tm_ex,f2)(tm1))
-    case Quantifier(q, c, v,f) => 
-      // should we do some alpha renaming magic here?
-      tm1 => Quantifier(q,c, v, extract(tm_ex,f)(tm1))
-    case Modality(m, hp, f) =>
-      tm1 => Modality(m,hp, extract(tm_ex,f)(tm1))
-*/
-  }
+          Some(((fm1 => g(fn1(fm1)) ), f1))
+     }
 
 
   

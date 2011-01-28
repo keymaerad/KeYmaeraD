@@ -467,14 +467,40 @@ object Rules {
    }
  }
 
-/*
-  val update = new Proofrule("update") {
+
+  val update = new ProofRule("update") {
     def apply(p: Position) = sq => {
       val Sequent(sig,c,s) = sq
-      vl fm = lookup(p,sq)
+      val fm = lookup(p,sq)
+      Prover.extract_update(fm) match {
+        case None => None
+        case Some((g,Modality(md,AssignQuantified(i,srt,vs),phi))) =>
+          var phi1 = phi;
+          var sig1 = sig;
+          var c1 = c;
+          for( v <- vs) {
+              val (Fn(vr,args), tm) = v;
+              val vr1 = Prover.uniqify(vr);
+              phi1 = Prover.renameFn(vr,vr1,phi1);
+              sig1 = sig.get(vr) match {
+                case Some(sg ) =>
+                  sig1.+((vr1,sg))
+                case _ => 
+                  sig1
+              }
+              val fm1 = Quantifier(Forall,srt, 
+                                   i, 
+                                   Atom(R("=",List(Fn(vr1,args),tm))));
+              c1 = c1 ++ List(fm1);
+                // order matters! we want p to still point to phi
+          }
+          val sq1 = replace(p, Sequent(sig1,c1,s) , g(phi1))
+          Some((List(sq1),Nil))
+        case _ => None
+      }
     }
   }
-*/
+
 
   /* this assumes that we don't have any
    *  free variables from existentials */
