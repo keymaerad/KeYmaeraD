@@ -46,7 +46,10 @@ val ch_brake =
                     everythingT
                       ))
 
-
+val whatev_finish = composelistT(List(
+        repeatT(nullarizeT),
+        cuttct
+    ))
 
 
 val ch_whatev = 
@@ -60,13 +63,18 @@ val ch_whatev =
                     repeatT(hpalpha1T),
                     repeatT(vacuousT),
                     branchT(tryruleT(impLeft),
-                            List(tryruleT(impLeft),
-                                 tryruleT(impLeft)))
-                    ))
-/*                    cuttct,                    
-                    everythingT
-                      ))
-*/
+                            List(branchT(tryruleT(impLeft),
+                                         List(whatev_finish,
+                                              composelistT(
+                                                List(tryruleT(not),
+                                                     alleasyT)))
+                                       ),
+                                 composelistT(
+                                   List(tryruleT(not),
+                                        tryruleT(close)))))
+                  ))
+
+
 
 val indtct =                           
   composeT(

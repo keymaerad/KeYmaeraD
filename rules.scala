@@ -838,7 +838,12 @@ object Rules {
               val t2_range = 
                 Binop(And,Atom(R(">=", List(Var(t2), Num(Exact.zero)))),
                       Atom(R("<=", List(Var(t2), Fn(t,Nil)))))
-              val qh = Quantifier(Forall, srt, i, h)
+              val qh = 
+                if(Util.fv(h).contains(i)){
+                  Quantifier(Forall, srt, i, h)
+                } else {
+                  h // cheating so I don't have to deal with such quantifiers for now.
+                }
               val assign_hp = AssignQuantified(i,srt,sols)
               val interm_h0 =  Modality(Box,assign_hp,qh)
               val interm_h =  renameFn(t,t2,interm_h0)
