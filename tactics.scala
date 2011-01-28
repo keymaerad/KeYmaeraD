@@ -388,26 +388,33 @@ object Tactics {
     }
 
 
-  val instantiateAuxT : Term => Formula => Tactic = tm => fm => 
+  val instantiateAuxT : Sort => Term => Formula => Tactic = srt => tm => fm => 
     new Tactic("instantiateAux") {
       def apply(nd: OrNode): List[NodeID] = {
         val Sequent(sig,cs,ss) = nd.goal
         val pn = cs.indexOf(fm)
         if(pn == -1) Nil
-        else applyrule(nd,LeftP(pn),allLeft(tm)) match { case Some(lst) => lst
-                                                        case None => Nil};
+        else { 
+          RulesUtil.lookup(LeftP(pn), nd.goal) match {
+            case Quantifier(Forall, srt1, _,_) if srt == srt1 =>
+              applyrule(nd,LeftP(pn),allLeft(tm)) match { case Some(lst) => lst
+                                                         case None => Nil};
+            case Quantifier(Forall, srt1, _,_)  => List(nd.nodeID)
+            case _ => Nil
+          }
+        }
 
       }
       
     }
 
 
-  def findunivs(sq: Sequent): List[Formula] = sq match {
+  def findunivs(srt: Sort, sq: Sequent): List[Formula] = sq match {
     case Sequent(sig,cs,ss) =>
       var res: List[Formula] = Nil
       for(c <- cs) {
         c match {
-          case Quantifier(Forall,_,_,_) =>
+          case Quantifier(Forall,srt1,_,_) if srt1 == srt =>
             res = c::res
             ()
           case _ =>
@@ -417,15 +424,19 @@ object Tactics {
     res
   }
 
-  val instantiateT : List[Term] => Tactic = tms => 
+
+  val instantiateT : Sort => List[Term] => Tactic = srt => tms => 
     new Tactic("instantiate") {
       def apply(nd: OrNode): List[NodeID] = {
-        val fms = findunivs(nd.goal)
+        val Sequent(sig,_,_) = nd.goal
+        val fms = findunivs(srt,nd.goal)
         var tct1 = unitT
         for(tm <- tms) {
-          tct1 = 
-            fms.foldRight(tct1)((fm1,rt) => 
-              composeT(instantiateAuxT(tm)(fm1),rt))          
+          if(Prover.infersort(sig, tm) == srt){
+            tct1 = 
+              fms.foldRight(tct1)((fm1,rt) => 
+                composeT(instantiateAuxT(srt)(tm)(fm1),rt))          
+          }
         }
         tct1(nd)
       }
@@ -456,20 +467,20 @@ object Tactics {
     res
   }
 
-  val instantiate0T : Tactic = new Tactic("instantiate0") {
+  val instantiate0T : Sort => Tactic = srt => new Tactic("instantiate0") {
     def apply(nd: OrNode) : List[NodeID] = {
       val idcs = findidx(nd.goal)
       val tct1 =             
         idcs.foldRight(unitT)((idx,rt) => 
-          composeT(instantiateT(List(idx._1,idx._2)),rt))
+          composeT(instantiateT(srt)(List(idx._1,idx._2)),rt))
       tct1(nd)
     }
   }
 
 
-  val hideunivsT : Tactic = new Tactic("hideunivs") {
+  val hideunivsT : Sort => Tactic = srt => new Tactic("hideunivs") {
     def apply(nd: OrNode) : List[NodeID] = {
-      val fms = findunivs(nd.goal)
+      val fms = findunivs(srt,nd.goal)
       val tct1 =             
         fms.foldRight(unitT)((fm1,rt) => 
           composeT(tryrulematchT(hide)(fm1),rt));

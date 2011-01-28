@@ -313,12 +313,14 @@ object Rules {
     def apply(p: Position) = sq => (p,sq) match {
       case (LeftP(n), Sequent(sig, c,s)) =>
         val fm = lookup(p,sq)
+        val srttm = Prover.infersort(sig,tm)
         fm match {
           // first case is an optimization
-          case Quantifier(Forall, srt, v, phi) if Prover.firstorder(phi) =>
+          case Quantifier(Forall, srt, v, phi) 
+             if srt == srttm && Prover.firstorder(phi) =>
             val phi1 = Prover.substitute_Formula(v, tm, phi)
             Some( (List(Sequent(sig, phi1::c,s)), Nil))
-          case Quantifier(Forall, srt, v, phi) =>
+          case Quantifier(Forall, srt, v, phi) if srt == srttm=>
             val v1 = Prover.uniqify(v)
             val fv1 = Fn(v1,Nil)
             val phi1 = Prover.substitute_Formula(v, fv1, phi)

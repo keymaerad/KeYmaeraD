@@ -662,6 +662,20 @@ final object Prover {
     unify_Formula(nilmap, fm1,fm2)
   }
 
+
+  def infersort(sig: Map[String, (List[Sort],Sort)], tm: Term) : Sort = tm match {
+    case Fn(f,args) =>
+      sig.get(f) match {
+        case None => Real
+        case Some((_,srt)) => srt
+      }
+    case Num(_) => 
+      Real
+    case Var(_) =>
+      Real // XXX ??
+  }
+                
+
 }
 
 
