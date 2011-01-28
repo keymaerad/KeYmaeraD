@@ -467,6 +467,14 @@ object Rules {
    }
  }
 
+/*
+  val update = new Proofrule("update") {
+    def apply(p: Position) = sq => {
+      val Sequent(sig,c,s) = sq
+      vl fm = lookup(p,sq)
+    }
+  }
+*/
 
   /* this assumes that we don't have any
    *  free variables from existentials */

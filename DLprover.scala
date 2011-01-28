@@ -553,6 +553,30 @@ final object Prover {
   }
 
 
+
+  def extract_update(fm: Formula) : Option[(Formula => Formula, Formula)] = fm match {
+    case True | False | Atom(_) => 
+      None
+    case Not(f) =>
+      extract_update(f) match {
+        case None => None
+        case Some((fn1, f1)) => 
+          Some(((fm1 => Not(fn1(fm1)) ), f1))
+      }
+    case _ => //XXX
+      None
+/*
+    case Binop(c, f1, f2) =>
+      tm1 => Binop(c, extract(tm_ex,f1)(tm1), extract(tm_ex,f2)(tm1))
+    case Quantifier(q, c, v,f) => 
+      // should we do some alpha renaming magic here?
+      tm1 => Quantifier(q,c, v, extract(tm_ex,f)(tm1))
+    case Modality(m, hp, f) =>
+      tm1 => Modality(m,hp, extract(tm_ex,f)(tm1))
+*/
+  }
+
+
   
 
   type Subst = Map[String,Term] 

@@ -57,9 +57,10 @@ val ch_whatev =
                     repeatT(substT),
                     hideunivsT,
                     repeatT(hpalpha1T),
+                    repeatT(vacuousT),
                     branchT(tryruleT(impLeft),
-                            List(unitT,
-                                 unitT))
+                            List(tryruleT(impLeft),
+                                 tryruleT(impLeft)))
                     ))
 /*                    cuttct,                    
                     everythingT

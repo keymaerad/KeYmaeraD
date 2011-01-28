@@ -561,6 +561,7 @@ object Tactics {
               case Binop(Imp, 
                          Not(Atom(R("=", List(f1,f2)))),
                          fm) if f1 == f2 =>
+                           foundone = true
                            res = tryruleatT(hide)(LeftP(i))(nd)
                            () 
               case _ => 
