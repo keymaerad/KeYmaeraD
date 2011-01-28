@@ -48,7 +48,8 @@ val ch_brake =
 
 val whatev_finish = composelistT(List(
         repeatT(nullarizeT),
-        cuttct
+        repeatT(substT),
+        repeatT(tryruleT(andRight))
     ))
 
 

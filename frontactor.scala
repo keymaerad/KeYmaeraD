@@ -71,24 +71,31 @@ object TreeActions {
 
   def applyrule(hn: OrNode, 
                 p: Position, 
-                rl: ProofRule): Option[List[NodeID]] = rl(p)(hn.goal) match {
-    case Some((Nil, _)) | Some((List(Sequent(_,Nil,List(True))),_)) => //proved
-      val pnd = new DoneNode(rl.toString, hn.goal)
-      attachnode(hn,pnd)
-      propagateProvedUp(hn.nodeID, pnd.nodeID)
-      Some(Nil)
-    case Some((List(sq), _)) => 
-      val ornd = new OrNode(rl.toString, sq)
-      attachnode(hn,ornd)
-      Some(List(ornd.nodeID))
-    case Some( (sqs, fvs)  ) =>
-      val andnd = new AndNode(rl.toString, hn.goal, Nil)
-      attachnode(hn,andnd)
-      val subname = rl.toString + " subgoal"
-      val ornds = sqs.map(s => new OrNode(subname, s))
-      attachnodes(andnd, ornds) 
-      Some(ornds.map(_.nodeID))
-    case None => 
+                rl: ProofRule): Option[List[NodeID]] = try {
+    val res =     rl(p)(hn.goal) 
+    res match {
+      case Some((Nil, _)) | Some((List(Sequent(_,Nil,List(True))),_)) => //proved
+        val pnd = new DoneNode(rl.toString, hn.goal)
+        attachnode(hn,pnd)
+        propagateProvedUp(hn.nodeID, pnd.nodeID)
+        Some(Nil)
+      case Some((List(sq), _)) => 
+        val ornd = new OrNode(rl.toString, sq)
+        attachnode(hn,ornd)
+        Some(List(ornd.nodeID))
+      case Some( (sqs, fvs)  ) =>
+        val andnd = new AndNode(rl.toString, hn.goal, Nil)
+        attachnode(hn,andnd)
+        val subname = rl.toString + " subgoal"
+        val ornds = sqs.map(s => new OrNode(subname, s))
+        attachnodes(andnd, ornds) 
+        Some(ornds.map(_.nodeID))
+      case None => 
+        None
+    }
+  } catch {
+    case (e:RulesUtil.LookupError) => 
+      println("index out of range : " + p)
       None
   }
 

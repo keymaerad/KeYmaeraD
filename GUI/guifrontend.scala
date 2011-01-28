@@ -338,8 +338,11 @@ object FE {
                                        {fa ! ('tactic, alleasyT)})
 		  teasy.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, keymask));
 		  contents += teasy
-	      contents += new MenuItem(Action("Hide Then Close") 
+              val thtc = new MenuItem(Action("Hide Then Close") 
                                        {fa ! ('tactic, hidethencloseT)})
+	      thtc.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, keymask));
+	      contents +=  thtc
+
 	      }
   	    }
       //frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
