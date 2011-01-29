@@ -531,8 +531,11 @@ object Tactics {
 
   val hidethencloseT = composeT(hidecantqeT, closeOrArithT)
 
+  sealed abstract class CutType
+  case object DirectedCut extends CutType
+  case object StandardCut extends CutType
 
-  def cutT(cutout: Formula, cutin: Formula): Tactic 
+  def cutT(ct: CutType, cutout: Formula, cutin: Formula): Tactic 
   = new Tactic("cut") {
     def apply(nd: OrNode) : List[NodeID] = {
       println("trying cutT on " + nd.nodeID)
@@ -554,7 +557,11 @@ object Tactics {
         case None => Nil
         case Some(subs) =>
           val cutin1 = Prover.simul_substitute_Formula(subs.toList, cutin)
-          tryruleatT(directedCut(cutin1))(LeftP(foundidx))(nd)
+          val rl = ct match {
+            case DirectedCut => directedCut
+            case StandardCut => cut
+          }
+          tryruleatT(rl(cutin1))(LeftP(foundidx))(nd)
       }   
     }
   }

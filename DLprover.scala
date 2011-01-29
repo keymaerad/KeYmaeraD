@@ -378,12 +378,27 @@ final object Prover {
     onterms_Formula(t => renameFn_Term(fold,fnew,t),fm)
 
 
+// "var"ifying functions
+  def varifyFn_Term(fold: String, fnew: String, tm: Term): Term = tm match {
+    case Fn(f, ps) =>
+      if(f == fold) {
+        Var(fnew)
+      } else{
+        Fn(f, ps.map(p => varifyFn_Term(fold, fnew,p)))
+      }
+    case _ => tm
+  }
+
+  def varifyFn(fold: String, fnew: String, fm : Formula) : Formula = 
+    onterms_Formula(t => varifyFn_Term(fold,fnew,t),fm)
+
+
 
   def hasFn_Term(f: String, tm: Term) : Boolean = tm match {
     case Fn(f1, ps) if f1 == f => true
     case Fn(f1, ps) =>
       val psr = ps.map(p => hasFn_Term(f,p))
-      psr.exists(x => x)
+      psr.contains(true);
     case _ => false
   }
 
@@ -392,8 +407,8 @@ final object Prover {
       {
         val R(r,ps) = a;
         val psr = ps.map(p => hasFn_Term(f,p))
-        val res = psr.exists(x => x)
-        r1 && res
+        val res = psr.contains(true)
+        r1 || res
       }, fm , false)
 
 
@@ -532,6 +547,12 @@ final object Prover {
       tm1 => Fn(f,argsfn(tm1)  )
     case _ => 
       tm1 => tm
+  }
+
+  def extract_HP(tm_ex: Term, hp : HP) : Term => HP = hp match {
+    case _ if false => 
+      tm1 => hp
+    // TODO
   }
 
 
