@@ -171,6 +171,52 @@ final object AM {
     case _ => fm
   }
 
+  // There's gotta a be a more efficient way.
+  def prenex(fm : Formula): Formula = fm match {
+    case True | False | Atom(_) => fm
+    case Not(f1) =>
+      prenex(f1) match {
+        case Quantifier(Forall, srt, i, pf1) =>
+          Quantifier(Exists, srt, i, prenex(Not(pf1)))
+        case Quantifier(Exists, srt, i, pf1) =>
+          Quantifier(Forall, srt, i, prenex(Not(pf1)))
+        case _ => fm
+      }
+    case Binop(op, f1, f2) if op == And || op == Or =>
+      prenex(f1) match {
+        case Quantifier(qt, srt, i, pf1) =>
+          Quantifier(qt, srt, i, prenex(Binop(op,pf1,f2)))
+        case pf1 =>
+          prenex(f2) match {
+            case Quantifier(qt, srt, i, pf2) =>
+              Quantifier(qt, srt, i, prenex(Binop(op,pf1,pf2)))
+            case pf2 =>
+              fm
+          }
+      }
+    case Binop(Imp, f1, f2)  =>
+      prenex(f1) match {
+        case Quantifier(Forall, srt, i, pf1) =>
+          Quantifier(Exists, srt, i, prenex(Binop(Imp,pf1,f2)))
+        case Quantifier(Exists, srt, i, pf1) =>
+          Quantifier(Forall, srt, i, prenex(Binop(Imp,pf1,f2)))
+        case pf1 =>
+          prenex(f2) match {
+            case Quantifier(qt, srt, i, pf2) =>
+              Quantifier(qt, srt, i, prenex(Binop(Imp,pf1,pf2)))
+            case pf2 =>
+              fm
+          }
+      }
+    // TODO IFF
+    case Quantifier(qt,srt,i,f1) =>
+      Quantifier(qt,srt,i,prenex(f1))
+    case _ => throw new Error("unsupported in prenex: " + fm)
+      
+  }
+
+
+
   def separate(x: String, cjs: List[Formula]): Formula = {
     val (yes,no) = cjs.partition(c => fv(c).contains(x));
     if(yes == Nil) list_conj(no) 
