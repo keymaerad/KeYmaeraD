@@ -4,6 +4,7 @@
  v : (C) -> Real,
  a : (C) -> Real}
 (
+A > 0 & 
 b > 0 & 
 B > 0 & 
 B > b &

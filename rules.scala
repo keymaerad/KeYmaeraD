@@ -975,9 +975,37 @@ object Rules {
 
   }
 
-  
 
-//  val dedupT = new Tactic
+  val prenexify = new ProofRule("prenexify"){
+    def apply(pos: Position) = sq => {
+      val fm = lookup(pos,sq)
+      if (Prover.firstorder(fm)) {
+        val fm1 = AM.prenex(fm)
+        val sq1 = replace(pos,sq,fm1)
+        Some((List(sq1), Nil))
+      }else{
+        None
+      }
+      
+    }
+  }
+
+  val commutequantifiers = new ProofRule("commutequantifiers"){
+    def apply(pos: Position) = sq => lookup(pos,sq) match {
+      case Quantifier(qt1,srt1,i1, 
+                      Quantifier(qt2,srt2,i2, qfm)) 
+      if qt1 == qt2 =>
+        val fm1 = Quantifier(qt2,srt2,i2, 
+                             Quantifier(qt1,srt1,i1, qfm))
+        val sq1 = replace(pos,sq,fm1)
+        Some((List(sq1), Nil))
+      case _ => None
+      
+    }
+  }
+
+  
+  
 
 
 }

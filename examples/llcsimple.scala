@@ -1,7 +1,7 @@
 dl('load, "examples/llcsimple.dl")
 val rl = loopInduction(
   parseFormula(
-    "(b()>0 & B() > 0 & B() > b() & ~(f() = l()) & eps() > 0) &" + 
+    "(A() > 0 & b()>0 & B() > 0 & B() > b() & ~(f() = l()) & eps() > 0) &" + 
     "(((b()*B()*x(l()) > b()*B()*x(f()) + " + 
     "(1/2) * (B()*v(f())^2 -  b()*v(l())^2) & " +
     "x(l()) > x(f()) &" +
@@ -70,6 +70,8 @@ val ch_whatev =
   composelistT(List(repeatT(hpalpha1T),
                     diffsolveT(RightP(1),Standard),
                     tryruleT(update),
+                    tryruleatT(prenexify)(LeftP(0)),
+                    tryruleatT(commutequantifiers)(LeftP(0)),
                     repeatT(hpalpha1T),
                     instantiate0T(St("C")),
                     repeatT(substT),
