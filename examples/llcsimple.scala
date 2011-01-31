@@ -68,10 +68,10 @@ val whatev_finish = composelistT(List(
 
 val ch_whatev = 
   composelistT(List(repeatT(hpalpha1T),
-                    diffsolveT(RightP(1),Standard),
-                    tryruleT(update),
-                    tryruleatT(prenexify)(LeftP(0)),
-                    tryruleatT(commutequantifiers)(LeftP(0)),
+                    diffsolveT(RightP(1),Endpoint),
+//                    tryruleT(update),
+//                    tryruleatT(prenexify)(LeftP(0)),
+//                    tryruleatT(commutequantifiers)(LeftP(0)),
                     repeatT(hpalpha1T),
                     instantiate0T(St("C")),
                     repeatT(substT),
