@@ -9,6 +9,7 @@ import javax.swing.JTree
 import javax.swing.JScrollPane
 import javax.swing.JSplitPane
 import javax.swing.JEditorPane
+import javax.swing.JPopupMenu
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import javax.swing.event.TreeSelectionEvent;
@@ -189,6 +190,27 @@ class FrontEnd(fa: Actor)
 
   //Listen for when the selection changes.
   tree.addTreeSelectionListener(this)
+  // Popup Menu per node
+  tree.addMouseListener(new MouseAdapter() {
+	var node : ProofNode = null
+	  val popup : PopupMenu = new PopupMenu
+	  popup.peer.setInvoker(tree)
+	  popup.add(new MenuItem(Action("Stop")
+                                     {println("aborting job " + node.nodeID)
+	                                  fa ! ('abort, node.nodeID)}))
+
+	override def mousePressed(e : MouseEvent) {
+		if (e.isPopupTrigger()) {
+		    val loc = e.getPoint();
+            tree.getPathForLocation(loc.x, loc.y).getLastPathComponent() match {
+                case (nd : ProofNode) =>
+                    node = nd
+                    popup.show(tree, loc.x, loc.y)
+                case _ => null
+            }
+		}
+	}
+  })
 
 
   //Create the scroll pane and add the tree to it. 
@@ -290,6 +312,15 @@ class FrontEnd(fa: Actor)
 }
 
 
+class PopupMenu extends Component
+{
+  override lazy val peer : JPopupMenu = new JPopupMenu
+
+  def add(item:MenuItem) : Unit = { peer.add(item.peer) }
+  def setVisible(visible:Boolean) : Unit = { peer.setVisible(visible) }
+  /* Create any other peer methods here */
+  def show(c:java.awt.Component, x:Int, y:Int) : Unit = {peer.show(c,x,y)}
+}
 
 object FE {
 
@@ -353,6 +384,7 @@ object FE {
       //frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 
       pack()
+      //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
       visible =true
     }
   }
