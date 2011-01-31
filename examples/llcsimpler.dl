@@ -1,0 +1,40 @@
+{f : () -> C,
+ l : () -> C,
+ x : (C) -> Real,
+ v : (C) -> Real,
+ a : (C) -> Real}
+(
+A > 0 & 
+B > 0 & 
+~(f = l) &
+eps > 0) &
+((
+B * x(l) >  B * x(f) +(1/2) *  ( v(f)^2  -   v(l)^2 ) &
+x(l) > x(f) &
+v(f) >= 0 &
+v(l) >= 0)
+) 
+|-
+[{( a(l) := -B ) ;           
+   ( (  a(f) := -B)
+       ++ (? B * x(l) > B * x(f) +  
+                     (1/2) * ( v(f)^2 -   v(l)^2) + 
+                     (A + B) * ( (1/2) * A * eps^2 + eps * v(f));
+           a(f) := A  )
+       );
+   t:= 0; forall i : C {x(i)' = v(i), 
+                        v(i)' = a(i), 
+                        t()' = 1; v(l) >= 0   & v(f) >= 0 & t() <= eps}
+                        @solution( forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i),
+                                   forall s . v(s, i) = a(i) * s + v(i),
+                                   forall s . t(s) = t()  + s)
+                            }* ]   
+(
+(
+ B * x(l) >  B * x(f) + (1/2) * ( v(f)^2 -   v(l)^2) &
+x(l) > x(f) &
+v(f) >= 0 &
+v(l) >= 0
+) 
+)
+
