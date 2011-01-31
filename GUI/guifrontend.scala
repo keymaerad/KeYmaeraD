@@ -334,6 +334,11 @@ object FE {
     	contents += quit
     }
 	    contents += new Menu("Prove") {
+		  val tstop = new MenuItem(Action("Stop")
+                                       {fa ! ('abortall)})
+		  tstop.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+		  contents += tstop
+		 
 	      val teasy = new MenuItem(Action("All Easy") 
                                        {fa ! ('tactic, alleasyT)})
 		  teasy.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, keymask));
