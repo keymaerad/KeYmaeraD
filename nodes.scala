@@ -51,6 +51,11 @@ object Nodes {
       sb.toString
     }
 
+    override def hashCode : Int = {
+      nodeID.hashCode
+    }
+
+
   }
 
 
@@ -92,9 +97,6 @@ object Nodes {
       sb.toString
    }
 
-    override def hashCode : Int = {
-      nodeID.hashCode
-    }
 
   }
 
@@ -114,6 +116,8 @@ object Nodes {
       sb.append(super.toPrettyString)
       sb.toString
    }
+
+
 
   }
 

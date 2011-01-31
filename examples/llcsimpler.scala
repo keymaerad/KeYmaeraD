@@ -21,17 +21,6 @@ val cuttct = cutT(
   )
 )
 
-val cuttct2 = cutT(
-  StandardCut,
-  parseFormula(
-    "b()*B()*X1>b()*B()*X2+1/2*(B()*V1^2-b()*V2^2)+" + 
-     "B()*(A()+b())*(1/2*A()*eps()^2+eps()*V1)"
-  ),
-  parseFormula(
-     "B()*(A()+b())*(1/2*A()*s()^2+s()*V1) <= " + 
-     "B()*(A()+b())*(1/2*A()*eps()^2+eps()*V1) "
-  )
-)
   
 val everythingT: Tactic = 
   composeT(
