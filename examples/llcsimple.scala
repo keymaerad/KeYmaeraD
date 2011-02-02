@@ -33,6 +33,15 @@ val cuttct2 = cutT(
   )
 )
   
+val mostthingsT = 
+    repeatT(
+      eitherlistT(List(hpalphaT, 
+                       alphaT, 
+                       nonarithcloseT,
+                       betaT, 
+                       substT)))
+
+
 val everythingT: Tactic = 
   composeT(
     repeatT(
@@ -62,16 +71,25 @@ val ch_brake =
 val whatev_finish = composelistT(List(
         repeatT(nullarizeT),
         repeatT(substT),
-        repeatT(tryruleT(andRight))
+        branchT(cuttct, 
+                List(unitT, 
+                     mostthingsT))
+
     ))
 
+/*
+val hidenotmatchT : List[Formula] => Tactic =  fms => 
+  new Tactic("hidenotmatch") {
+    def apply(nd: OrNode): List[nodeID] = {
+      val Sequent(sig,cs,ss) = nd.goal
+      val matchs = fm.map(x => Prover.unify(x, )
+    }
+  }
+8?
 
 val ch_whatev = 
   composelistT(List(repeatT(hpalpha1T),
                     diffsolveT(RightP(1),Endpoint),
-//                    tryruleT(update),
-//                    tryruleatT(prenexify)(LeftP(0)),
-//                    tryruleatT(commutequantifiers)(LeftP(0)),
                     repeatT(hpalpha1T),
                     instantiate0T(St("C")),
                     repeatT(substT),

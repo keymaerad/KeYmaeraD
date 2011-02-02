@@ -22,6 +22,15 @@ val cuttct = cutT(
 )
 
   
+val mostthingsT = 
+    repeatT(
+      eitherlistT(List(hpalphaT, 
+                       alphaT, 
+                       nonarithcloseT,
+                       betaT, 
+                       substT)))
+
+
 val everythingT: Tactic = 
   composeT(
     repeatT(
@@ -51,16 +60,16 @@ val ch_brake =
 val whatev_finish = composelistT(List(
         repeatT(nullarizeT),
         repeatT(substT),
-        repeatT(tryruleT(andRight))
+        branchT(cuttct,
+                List(everythingT,
+                     everythingT))
+
     ))
 
 
 val ch_whatev = 
   composelistT(List(repeatT(hpalpha1T),
-                    diffsolveT(RightP(1),Standard),
-                    tryruleT(update),
-                    tryruleatT(prenexify)(LeftP(0)),
-                    tryruleatT(commutequantifiers)(LeftP(0)),
+                    diffsolveT(RightP(1),Endpoint),
                     repeatT(hpalpha1T),
                     instantiate0T(St("C")),
                     repeatT(substT),
@@ -98,17 +107,3 @@ dl('tactic,  branchT(tryruleT(rl),
                           repeatT(trylistofrulesT(List(close,andLeft)))
                           )))
 
-
-/*
-dl('tactic, trylistofrulesT(List(rl)))
-dl('tactic, applyToLeavesT(tryruleatT(close) (RightP(0))))
-dl('tactic, applyToLeavesT(repeatT(alphaT)))
-dl('tactic, applyToLeavesT(tryruleatT(close) (RightP(0))))
-dl('tactic, applyToLeavesT(repeatT(eitherT(hpalphaT,alphaT))))
-dl('tactic, applyToLeavesT(trylistofrulesT(List(
-  qDiffSolve(Endpoint)(List(
-    parseFormula("forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i)"),
-    parseFormula("forall s . v(s, i) = a(i) * s + v(i)"),
-    parseFormula("forall s . t(s) = t()  + s")
-    ))))))
-*/
