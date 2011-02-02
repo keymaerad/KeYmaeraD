@@ -35,21 +35,21 @@ val cuttct2 = cutT(
   
 val mostthingsT = 
     repeatT(
-      eitherlistT(List(hpalphaT, 
-                       alphaT, 
-                       nonarithcloseT,
-                       betaT, 
-                       substT)))
+      eitherlistT(hpalphaT, 
+                  alphaT, 
+                  nonarithcloseT,
+                  betaT, 
+                  substT))
 
 
 val everythingT: Tactic = 
   composeT(
     repeatT(
-      eitherlistT(List(hpalphaT, 
-                       alphaT, 
-                       nonarithcloseT,
-                       betaT, 
-                       substT))),
+      eitherlistT(hpalphaT, 
+                  alphaT, 
+                  nonarithcloseT,
+                  betaT, 
+                  substT)),
     eitherT(nonarithcloseT, hidethencloseT))
 
 
@@ -57,51 +57,42 @@ val everythingT: Tactic =
 
 
 val ch_brake = 
-  composelistT(List(repeatT(hpalpha1T),
-                    diffsolveT(RightP(1),Endpoint),
-                    repeatT(hpalpha1T),
-                    instantiate0T(St("C")),
-                    repeatT(substT),
-                    hideunivsT(St("C")),
-                    repeatT(nullarizeT),
-                    repeatT(vacuousT),
-                    everythingT
-                      ))
+  composelistT(repeatT(hpalpha1T),
+               diffsolveT(RightP(1),Endpoint),
+               repeatT(hpalpha1T),
+               instantiate0T(St("C")),
+               repeatT(substT),
+               hideunivsT(St("C")),
+               repeatT(nullarizeT),
+               repeatT(vacuousT),
+               everythingT
+                      )
 
 val keepfm1 = parseFormula("B() * (A() + b()) * C <= D")
 val keepfm2 = parseFormula("b() * B()  * X > b() * B() * X1 + C + D")
 val hidefm3 = parseFormula("b() * B()  * X > b() * B() * X1 + C ")
 
-  val hidematchT : List[Formula] => Tactic =  fms => {
-    val matches : Formula => Boolean   = fm => {
-      val ms = fms.map(fm1 => Prover.unify(fm,fm1) )
-      !(fms.forall(fm1 => Prover.unify(fm,fm1) == None  ))
-    }
-    tryrulepredT(hide)(matches)
-  }
 
-val whatev_finish = composelistT(List(
+val whatev_finish = composelistT(
         repeatT(nullarizeT),
         repeatT(substT),
         branchT(cuttct, 
                 List(branchT(cuttct2,
                              List(
                                composelistT(
-                                 List(
                                    repeatT(hidematchT(List(keepfm2,hidefm3))),
-                                   everythingT)
+                                   everythingT
                                ),
                                composeT(repeatT(
                                  hidenotmatchT(List(keepfm1,keepfm2))),
                                         arithT))),
                      composelistT(
-                       List(mostthingsT,
-                            hidecantqeT,
-                            hidematchT(List(hidefm3)),
-                            everythingT
-                            ))))
-
-    ))
+                       mostthingsT,
+                       hidecantqeT,
+                       hidematchT(List(hidefm3)),
+                       everythingT
+                     )))
+    )
 
 
 
@@ -110,25 +101,25 @@ val whatev_finish = composelistT(List(
 
 
 val ch_whatev = 
-  composelistT(List(repeatT(hpalpha1T),
-                    diffsolveT(RightP(1),Endpoint),
-                    repeatT(hpalpha1T),
-                    instantiate0T(St("C")),
-                    repeatT(substT),
-                    hideunivsT(St("C")),
-                    repeatT(hpalpha1T),
-                    repeatT(vacuousT),
-                    branchT(tryruleT(impLeft),
-                            List(branchT(tryruleT(impLeft),
-                                         List(whatev_finish,
-                                              composelistT(
-                                                List(tryruleT(not),
-                                                     alleasyT)))
-                                       ),
-                                 composelistT(
-                                   List(tryruleT(not),
-                                        tryruleT(close)))))
-                  ))
+  composelistT(repeatT(hpalpha1T),
+               diffsolveT(RightP(1),Endpoint),
+               repeatT(hpalpha1T),
+               instantiate0T(St("C")),
+               repeatT(substT),
+               hideunivsT(St("C")),
+               repeatT(hpalpha1T),
+               repeatT(vacuousT),
+               branchT(tryruleT(impLeft),
+                       List(branchT(tryruleT(impLeft),
+                                    List(whatev_finish,
+                                         composelistT(
+                                           tryruleT(not),
+                                           alleasyT))
+                                  ),
+                            composelistT(
+                                   tryruleT(not),
+                                        tryruleT(close))))
+                  )
 
 
 

@@ -209,8 +209,8 @@ object Tactics {
       }
     }
 
-  def composelistT(tcts : List[Tactic]) : Tactic = 
-    tcts.foldRight(unitT)( (t1,t2) => composeT(t1,t2)  )
+  def composelistT(tcts : Tactic * ) : Tactic = 
+    tcts.toList.foldRight(unitT)( (t1,t2) => composeT(t1,t2)  )
 
 
 
@@ -229,8 +229,8 @@ object Tactics {
       }
     }
 
-  def eitherlistT(tcts : List[Tactic]) : Tactic = 
-    tcts.foldRight(nilT)( (t1,t2) => eitherT(t1,t2)  )
+  def eitherlistT(tcts : Tactic *) : Tactic = 
+    tcts.toList.foldRight(nilT)( (t1,t2) => eitherT(t1,t2)  )
 
 
   val hpeasyT : Tactic = new Tactic("hpeasy") {
@@ -337,10 +337,10 @@ object Tactics {
 
 
 
-  val alleasyT: Tactic = composelistT(List(repeatT(eitherT(hpeasyT, alphaT)),
-                                           repeatT(substT),
-                                           repeatT(eitherT(alphaT,betaT)),        
-                                           closeOrArithT))
+  val alleasyT: Tactic = composelistT(repeatT(eitherT(hpeasyT, alphaT)),
+                                      repeatT(substT),
+                                      repeatT(eitherT(alphaT,betaT)),        
+                                      closeOrArithT)
 
   def getOpenLeaves(nd: ProofNode) : List[OrNode] = {
     val kds = nd.children.map(getnode)
@@ -605,5 +605,14 @@ object Tactics {
     }
     tryrulepredT(hide)(nomatches)
   }
+
+  val hidematchT : List[Formula] => Tactic =  fms => {
+    val matches : Formula => Boolean   = fm => {
+      val ms = fms.map(fm1 => Prover.unify(fm,fm1) )
+      !(fms.forall(fm1 => Prover.unify(fm,fm1) == None  ))
+    }
+    tryrulepredT(hide)(matches)
+  }
+
 
 }

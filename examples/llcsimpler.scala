@@ -24,21 +24,21 @@ val cuttct = cutT(
   
 val mostthingsT = 
     repeatT(
-      eitherlistT(List(hpalphaT, 
-                       alphaT, 
-                       nonarithcloseT,
-                       betaT, 
-                       substT)))
+      eitherlistT(hpalphaT, 
+                  alphaT, 
+                  nonarithcloseT,
+                  betaT, 
+                  substT))
 
 
 val everythingT: Tactic = 
   composeT(
     repeatT(
-      eitherlistT(List(hpalphaT, 
-                       alphaT, 
-                       nonarithcloseT,
-                       betaT, 
-                       substT))),
+      eitherlistT(hpalphaT, 
+                  alphaT, 
+                  nonarithcloseT,
+                  betaT, 
+                  substT)),
     eitherT(nonarithcloseT, hidethencloseT))
 
 
@@ -46,47 +46,47 @@ val everythingT: Tactic =
 
 
 val ch_brake = 
-  composelistT(List(repeatT(hpalpha1T),
-                    diffsolveT(RightP(1),Endpoint),
-                    repeatT(hpalpha1T),
-                    instantiate0T(St("C")),
-                    repeatT(substT),
-                    hideunivsT(St("C")),
-                    repeatT(nullarizeT),
-                    repeatT(vacuousT),
-                    everythingT
-                      ))
+  composelistT(repeatT(hpalpha1T),
+               diffsolveT(RightP(1),Endpoint),
+               repeatT(hpalpha1T),
+               instantiate0T(St("C")),
+               repeatT(substT),
+               hideunivsT(St("C")),
+               repeatT(nullarizeT),
+               repeatT(vacuousT),
+               everythingT
+             )
 
-val whatev_finish = composelistT(List(
+val whatev_finish = composelistT(
         repeatT(nullarizeT),
         repeatT(substT),
         branchT(cuttct,
                 List(everythingT,
                      everythingT))
 
-    ))
+    )
 
 
 val ch_whatev = 
-  composelistT(List(repeatT(hpalpha1T),
-                    diffsolveT(RightP(1),Endpoint),
-                    repeatT(hpalpha1T),
-                    instantiate0T(St("C")),
-                    repeatT(substT),
-                    hideunivsT(St("C")),
-                    repeatT(hpalpha1T),
-                    repeatT(vacuousT),
-                    branchT(tryruleT(impLeft),
-                            List(branchT(tryruleT(impLeft),
-                                         List(whatev_finish,
-                                              composelistT(
-                                                List(tryruleT(not),
-                                                     alleasyT)))
-                                       ),
-                                 composelistT(
-                                   List(tryruleT(not),
-                                        tryruleT(close)))))
-                  ))
+  composelistT(repeatT(hpalpha1T),
+               diffsolveT(RightP(1),Endpoint),
+               repeatT(hpalpha1T),
+               instantiate0T(St("C")),
+               repeatT(substT),
+               hideunivsT(St("C")),
+               repeatT(hpalpha1T),
+               repeatT(vacuousT),
+               branchT(tryruleT(impLeft),
+                       List(branchT(tryruleT(impLeft),
+                                    List(whatev_finish,
+                                         composelistT(
+                                           tryruleT(not),
+                                           alleasyT))
+                                  ),
+                            composelistT(
+                              tryruleT(not),
+                              tryruleT(close))))
+                  )
 
 
 
