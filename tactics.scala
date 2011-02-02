@@ -90,10 +90,27 @@ object Tactics {
             applyrule(nd,LeftP(pn),rl) match { case Some(lst) => lst
                                                case None => Nil};
 
-
         }
       }
     }
+
+  val tryrulepredT : ProofRule
+                        => (Formula => Boolean) => Tactic = 
+    rl => pred =>
+    new Tactic("tryrulepred " ) {
+      def apply(nd: OrNode) : List[NodeID] = {
+        val sq@Sequent(sig, cs, ss) = nd.goal
+        for(p <- positions(sq)) {
+          val fm = lookup(p,sq)
+          if(pred(fm)){
+            return tryruleatT(rl)(p)(nd)
+          }
+        }
+        return Nil
+
+      }
+    }
+
 
 
   def usehintsT(pos: Position): Tactic = new Tactic("usehints") {
@@ -536,7 +553,7 @@ object Tactics {
   case object StandardCut extends CutType
 
   def cutT(ct: CutType, cutout: Formula, cutin: Formula): Tactic 
-  = new Tactic("cut") {
+  = new Tactic("cut " + ct) {
     def apply(nd: OrNode) : List[NodeID] = {
       println("trying cutT on " + nd.nodeID)
       val Sequent(sig,cs,ss) = nd.goal
@@ -593,5 +610,13 @@ object Tactics {
     }
   }
 
+  val hidenotmatchT : List[Formula] => Tactic =  fms => {
+    val nomatches : Formula => Boolean   = fm => {
+      val ms = fms.map(fm1 => Prover.unify(fm,fm1) )
+//      println("ms= " + ms)
+      (fms.forall(fm1 => Prover.unify(fm,fm1) == None  ))
+    }
+    tryrulepredT(hide)(nomatches)
+  }
 
 }

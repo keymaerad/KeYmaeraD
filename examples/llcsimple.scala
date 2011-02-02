@@ -68,24 +68,46 @@ val ch_brake =
                     everythingT
                       ))
 
+val keepfm1 = parseFormula("B() * (A() + b()) * C <= D")
+val keepfm2 = parseFormula("b() * B()  * X > b() * B() * X1 + C + D")
+val hidefm3 = parseFormula("b() * B()  * X > b() * B() * X1 + C ")
+
+  val hidematchT : List[Formula] => Tactic =  fms => {
+    val matches : Formula => Boolean   = fm => {
+      val ms = fms.map(fm1 => Prover.unify(fm,fm1) )
+      !(fms.forall(fm1 => Prover.unify(fm,fm1) == None  ))
+    }
+    tryrulepredT(hide)(matches)
+  }
+
 val whatev_finish = composelistT(List(
         repeatT(nullarizeT),
         repeatT(substT),
         branchT(cuttct, 
-                List(unitT, 
-                     mostthingsT))
+                List(branchT(cuttct2,
+                             List(
+                               composelistT(
+                                 List(
+                                   repeatT(hidematchT(List(keepfm2,hidefm3))),
+                                   everythingT)
+                               ),
+                               composeT(repeatT(
+                                 hidenotmatchT(List(keepfm1,keepfm2))),
+                                        arithT))),
+                     composelistT(
+                       List(mostthingsT,
+                            hidecantqeT,
+                            hidematchT(List(hidefm3)),
+                            everythingT
+                            ))))
 
     ))
 
-/*
-val hidenotmatchT : List[Formula] => Tactic =  fms => 
-  new Tactic("hidenotmatch") {
-    def apply(nd: OrNode): List[nodeID] = {
-      val Sequent(sig,cs,ss) = nd.goal
-      val matchs = fm.map(x => Prover.unify(x, )
-    }
-  }
-8?
+
+
+
+
+
 
 val ch_whatev = 
   composelistT(List(repeatT(hpalpha1T),

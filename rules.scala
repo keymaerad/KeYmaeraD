@@ -859,7 +859,7 @@ object Rules {
               val stay_in_h = 
                 Quantifier(Forall, Real, t2, Binop(Imp,t2_range, interm_h))
               val newgoal = mode match {
-                case Standard => //untested
+                case Standard => 
                   replace(pos,Sequent(sig, stay_in_h ::t_range::c,s), phi1)
                 case Endpoint =>
                   replace(pos,Sequent(sig, t_range::c,s), endpointphi)
