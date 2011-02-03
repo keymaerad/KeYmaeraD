@@ -12,7 +12,7 @@ ifndef SCALAC
 SCALAC= fsc
 endif
 
-OPTIONS = -deprecation 
+OPTIONS = -deprecation -unchecked
 
 all : $(SCALAFILES)
 	$(SCALAC)  -classpath $(LIBRARIES) $(SCALAFILES) $(OPTIONS)

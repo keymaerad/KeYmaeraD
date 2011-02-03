@@ -8,24 +8,42 @@ val rl = loopInduction(
     "v(f()) >= 0 &" +
     "v(l()) >= 0 ) | x(l()) < x(f()) | l() = f()))"))
 
-val qdsrT = 
-  tryruleT(
-    qDiffSolve(Endpoint)(List(
-    parseFormula("forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i)"),
-    parseFormula("forall s . v(s, i) = a(i) * s + v(i)"),
-    parseFormula("forall s . t(s) = t()  + s")
-    )))
+
+
+val mostthingsT = 
+    repeatT(
+      eitherlistT(hpalphaT, 
+                  alphaT, 
+                  nonarithcloseT,
+                  betaT, 
+                  substT))
+
+
+val everythingT: Tactic = 
+  composeT(
+    repeatT(
+      eitherlistT(hpalphaT, 
+                  alphaT, 
+                  nonarithcloseT,
+                  betaT, 
+                  substT)),
+    eitherT(nonarithcloseT, hidethencloseT))
+
+
+
+
 
 val ch_brake = 
-  composelistT(List(repeatT(hpalpha1T),
-                    qdsrT,
-                    repeatT(hpalpha1T),
-                    instantiate0T,
-                    repeatT(substT),
-                    hideunivsT,
-                    repeatT(nullarizeT),
-                    alleasyT
-                      ))
+  composelistT(repeatT(hpalpha1T),
+               diffsolveT(RightP(1),Endpoint),
+               repeatT(hpalpha1T),
+               instantiate0T(St("C")),
+               repeatT(substT),
+               hideunivsT(St("C")),
+               repeatT(nullarizeT),
+               repeatT(vacuousT),
+               everythingT
+                      )
 
 
 val ch_whatev = repeatT(eitherT(hpalphaT,alphaT))
@@ -50,16 +68,4 @@ dl('tactic,  branchT(tryruleT(rl),
                         )
                           ))
 
-/*
-dl('tactic, trylistofrulesT(List(rl)))
-dl('tactic, applyToLeavesT(tryruleatT(close) (RightP(0))))
-dl('tactic, applyToLeavesT(repeatT(alphaT)))
-dl('tactic, applyToLeavesT(tryruleatT(close) (RightP(0))))
-dl('tactic, applyToLeavesT(repeatT(eitherT(hpalphaT,alphaT))))
-dl('tactic, applyToLeavesT(trylistofrulesT(List(
-  qDiffSolve(Endpoint)(List(
-    parseFormula("forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i)"),
-    parseFormula("forall s . v(s, i) = a(i) * s + v(i)"),
-    parseFormula("forall s . t(s) = t()  + s")
-    ))))))
-*/
+

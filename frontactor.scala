@@ -99,6 +99,7 @@ object TreeActions {
       None
   }
 
+  // Returns true if successfully submitted. 
   def submitproc(ornd: OrNode, proc: String): Boolean
   = procs.get(proc) match {
     case None => false
