@@ -16,8 +16,9 @@ object Tactics {
       name
     }
     def * : Tactic = repeatT(this)  
-    def | (alternative : Tactic) = eitherT(this, alternative)
-    def & (continued : Tactic) = composeT(this, continued)
+    def | (alternative : =>Tactic) = eitherT(this, alternative)
+    def ~ (continued : =>Tactic) = composeT(this, continued)
+    def & (continued : =>Tactic) = composeT(this, continued)
   }
 
 
@@ -203,6 +204,7 @@ object Tactics {
 
 
   // do t1. Then, if no new nodes, do t2.
+  //@todo it could make sense to optimize for special case t1=nilT or t2=nilT or, instead, optimize eitherlistT to avoid nilT except for empty list
   def eitherT(t1: Tactic, t2: Tactic) : Tactic = 
     new Tactic("either " + t1.toString + "," + t2.toString) {
       def apply(nd: OrNode) = {
