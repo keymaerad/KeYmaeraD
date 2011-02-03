@@ -93,7 +93,7 @@ val ch_whatev =
 val indtct =                           
   composeT(
    repeatT(eitherT(hpalphaT,alphaT)),
-   branchT(tryruleT(choose),
+   branchT(tryruleT(andRight),
            List(ch_brake,ch_whatev)))
 
     

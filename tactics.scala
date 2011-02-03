@@ -167,7 +167,7 @@ object Tactics {
                   )
 
   val hpalpha = List(seq, check, 
-                    assign, assignAnyRight, qassign
+                    assign, assignAnyRight, qassign, choose
                   )
 
   val needhints = List(loopInduction, diffStrengthen)
@@ -275,7 +275,7 @@ object Tactics {
             val pos = LeftP(i)
             substitute.apply(pos)(sq) match {
               case Some(_) =>
-                return applyrule(nd,pos,substitute);
+                 return applyrule(nd,pos,substitute);
                 ()
               case None => 
                 ()
@@ -302,9 +302,6 @@ object Tactics {
     }
 
   }
-
-
-
 
 
 

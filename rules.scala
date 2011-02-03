@@ -355,9 +355,8 @@ object Rules {
           case Modality(Box,Choose(h1,h2), phi) => 
             val fm1 = Modality(Box,h1,phi) 
             val fm2 = Modality(Box,h2,phi)
-            val sq1 = replace(p,sq,fm1)
-            val sq2 = replace(p,sq,fm2)
-            Some( (List(sq1,sq2),Nil))
+            val sq1 = replace(p,sq,Binop(And,fm1,fm2))
+            Some( (List(sq1),Nil))
           case _ => 
             None
         }
