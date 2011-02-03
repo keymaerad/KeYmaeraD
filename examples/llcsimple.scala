@@ -126,7 +126,7 @@ val ch_whatev =
 val indtct =                           
   composeT(
    repeatT(eitherT(hpalphaT,alphaT)),
-   branchT(tryruleT(choose),
+   branchT(tryruleT(andRight),
            List(ch_brake,ch_whatev)))
 
     
@@ -141,16 +141,4 @@ dl('tactic,  branchT(tryruleT(rl),
                           )))
 
 
-/*
-dl('tactic, trylistofrulesT(List(rl)))
-dl('tactic, applyToLeavesT(tryruleatT(close) (RightP(0))))
-dl('tactic, applyToLeavesT(repeatT(alphaT)))
-dl('tactic, applyToLeavesT(tryruleatT(close) (RightP(0))))
-dl('tactic, applyToLeavesT(repeatT(eitherT(hpalphaT,alphaT))))
-dl('tactic, applyToLeavesT(trylistofrulesT(List(
-  qDiffSolve(Endpoint)(List(
-    parseFormula("forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i)"),
-    parseFormula("forall s . v(s, i) = a(i) * s + v(i)"),
-    parseFormula("forall s . t(s) = t()  + s")
-    ))))))
-*/
+

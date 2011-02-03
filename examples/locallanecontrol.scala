@@ -51,8 +51,8 @@ val ch_stopped = repeatT(eitherT(hpalphaT,alphaT))
 
 val indtct =                           
   composeT(
-   repeatT(eitherT(hpalphaT,alphaT)),
-   branchT(tryruleT(choose),
+   repeatT(hpalpha1T),
+   branchT(tryruleT(andRight),
            List(branchT(tryruleT(choose), List(ch_brake,ch_whatev) ),
                 ch_stopped )))
     
