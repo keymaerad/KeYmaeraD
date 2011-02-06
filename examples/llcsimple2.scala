@@ -128,13 +128,16 @@ val indtct =
   composeT(
    repeatT(hpalpha1T),
    branchT(tryruleT(andRight),
-           List(tryruleT(choose) & 
+           List(repeatT(hpalpha1T) & 
                 branchT(tryruleT(andRight), 
-                        List(ch_brake,ch_whatev) ),
-                ch_stopped )))
+                        List(ch_brake,
+                             ch_brake) ),
+                repeatT(hpalpha1T) & 
+                branchT(tryruleT(andRight), 
+                        List(ch_whatev,
+                             ch_brake) )
+                )))
     
-
-
 
 dl('gotoroot)
 dl('tactic,  branchT(tryruleT(rl),
