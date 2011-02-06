@@ -126,7 +126,7 @@ val ch_whatev =
 val indtct =                           
   composeT(
    repeatT(eitherT(hpalphaT,alphaT)),
-   branchT(tryruleT(choose),
+   branchT(tryruleT(andRight),
            List(ch_brake,ch_whatev)))
 
     
@@ -139,4 +139,5 @@ dl('tactic,  branchT(tryruleT(rl),
                           indtct,
                           repeatT(trylistofrulesT(List(close,andLeft)))
                           )))
+
 
