@@ -121,17 +121,7 @@ val ch_whatev =
 
 
 
-val ch_stopped = 
-  composelistT(repeatT(hpalpha1T),
-               diffsolveT(RightP(1),Endpoint),
-               repeatT(hpalpha1T),
-               instantiate0T(St("C")),
-               repeatT(substT),
-               hideunivsT(St("C")),
-               repeatT(nullarizeT),
-               repeatT(vacuousT),
-               everythingT
-             )
+val ch_stopped = ch_brake
 
 
 val indtct =                           
