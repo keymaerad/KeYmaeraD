@@ -1,12 +1,13 @@
 dl('load, "examples/llcsimple2.dl")
 val rl = loopInduction(
   parseFormula(
-    "(A() > 0 & b()>0 & B() > 0 & B() > b() & ~(f() = l()) & eps() > 0) &" + 
+    "(b()>0 & B() > 0 & B() > b() &  A() > 0 & ~(f() = l()) & eps() >= 0) &" + 
     "(((b()*B()*x(l()) > b()*B()*x(f()) + " + 
     "(1/2) * (B()*v(f())^2 -  b()*v(l())^2) & " +
     "x(l()) > x(f()) &" +
     "v(f()) >= 0 &" +
-    "v(l()) >= 0 )    )   )"))
+    "v(l()) >= 0 ) ))"))
+
 
 
 val cuttct = cutT(
@@ -32,74 +33,115 @@ val cuttct2 = cutT(
      "B()*(A()+b())*(1/2*A()*eps()^2+eps()*V1) "
   )
 )
-  
-val everythingT: Tactic = (
-    ((hpalphaT
-	 | alphaT
-     | nonarithcloseT
-     | betaT
-     | substT)*)
-    & (nonarithcloseT | hidethencloseT)
-  )
+
+
+val mostthingsT = 
+    repeatT(
+      eitherlistT(hpalphaT, 
+                  alphaT, 
+                  nonarithcloseT,
+                  betaT, 
+                  substT))
+
+
+val everythingT: Tactic = 
+  composeT(
+    repeatT(
+      eitherlistT(hpalphaT, 
+                  alphaT, 
+                  nonarithcloseT,
+                  betaT, 
+                  substT)),
+    eitherT(nonarithcloseT, hidethencloseT))
 
 
 
 
 
+val ch_brake =
+  composelistT(repeatT(hpalpha1T),
+               diffsolveT(RightP(1),Endpoint),
+               repeatT(hpalpha1T),
+               instantiate0T(St("C")),
+               repeatT(substT),
+               hideunivsT(St("C")),
+               repeatT(nullarizeT),
+               repeatT(vacuousT),
+               everythingT
+             ) 
 
-val ch_brake = 
-  composelistT((hpalpha1T*),
-                    diffsolveT(RightP(1),Endpoint),
-                    (hpalpha1T*),
-                    instantiate0T(St("C")),
-                    (substT*),
-                    hideunivsT(St("C")),
-                    (nullarizeT*),
-                    (vacuousT*),
-                    everythingT
-                      )
+
+val keepfm1 = parseFormula("B() * (A() + b()) * C <= D")
+val keepfm2 = parseFormula("b() * B()  * X > b() * B() * X1 + C + D")
+val hidefm3 = parseFormula("b() * B()  * X > b() * B() * X1 + C ")
+
 
 val whatev_finish = composelistT(
         repeatT(nullarizeT),
         repeatT(substT),
-        repeatT(tryruleT(andRight))
+        branchT(cuttct, 
+                List(branchT(cuttct2,
+                             List(
+                               composelistT(
+                                   repeatT(hidematchT(List(keepfm2,hidefm3))),
+                                   everythingT
+                               ),
+                               composeT(repeatT(
+                                 hidenotmatchT(List(keepfm1,keepfm2))),
+                                        arithT))),
+                     composelistT(
+                       mostthingsT,
+                       hidecantqeT,
+                       hidematchT(List(hidefm3)),
+                       everythingT
+                     )))
     )
 
 
 val ch_whatev = 
   composelistT(repeatT(hpalpha1T),
-                    diffsolveT(RightP(1),Standard),
-                    tryruleT(update),
-                    tryruleatT(prenexify)(LeftP(0)),
-                    tryruleatT(commutequantifiers)(LeftP(0)),
-                    repeatT(hpalpha1T),
-                    instantiate0T(St("C")),
-                    repeatT(substT),
-                    hideunivsT(St("C")),
-                    repeatT(hpalpha1T),
-                    repeatT(vacuousT),
-                    branchT(tryruleT(impLeft),
-                            List(branchT(tryruleT(impLeft),
-                                         List(whatev_finish,
-                                              composelistT(
-                                                tryruleT(not),
-                                                     alleasyT))
-                                       ),
-                                 composelistT(
+               diffsolveT(RightP(1),Endpoint),
+               repeatT(hpalpha1T),
+               instantiate0T(St("C")),
+               repeatT(substT),
+               hideunivsT(St("C")),
+               repeatT(hpalpha1T),
+               repeatT(vacuousT),
+               branchT(tryruleT(impLeft),
+                       List(branchT(tryruleT(impLeft),
+                                    List(whatev_finish,
+                                         composelistT(
+                                           tryruleT(not),
+                                           alleasyT))
+                                  ),
+                            composelistT(
                                    tryruleT(not),
                                         tryruleT(close))))
                   )
 
 
 
+val ch_stopped = 
+  composelistT(repeatT(hpalpha1T),
+               diffsolveT(RightP(1),Endpoint),
+               repeatT(hpalpha1T),
+               instantiate0T(St("C")),
+               repeatT(substT),
+               hideunivsT(St("C")),
+               repeatT(nullarizeT),
+               repeatT(vacuousT),
+               everythingT
+             )
+
 
 val indtct =                           
   composeT(
-   repeatT(eitherT(hpalphaT,alphaT)),
-   branchT(tryruleT(choose),
-           List(ch_brake,ch_whatev)))
-
-
+   repeatT(hpalpha1T),
+   branchT(tryruleT(andRight),
+           List(tryruleT(choose) & 
+                branchT(tryruleT(andRight), 
+                        List(ch_brake,ch_whatev) ),
+                ch_stopped )))
     
 
 
@@ -108,9 +150,9 @@ dl('gotoroot)
 dl('tactic,  branchT(tryruleT(rl),
                      List(tryruleatT(close)(RightP(0)),
                           indtct,
-                          repeatT(eitherT(trylistofrulesT(List(andLeft)), 
-                                          tryruleatT(close)(RightP(0))))
+                          repeatT(trylistofrulesT(List(close,andLeft)))
                         )
                           ))
+
 
 
