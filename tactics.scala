@@ -479,6 +479,20 @@ object Tactics {
     }
   }
 
+  val instantiate1T : Sort => Tactic = srt => new Tactic("instantiate1") {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val idcs = findidx(nd.goal)
+      val uvs = findunivs(srt,nd.goal)
+      val tct1 =             
+        idcs.foldRight(unitT)((idx,rt) => 
+          composeT(instantiateT(srt)(List(idx._1,idx._2)),rt))
+      val tct2 =             
+        uvs.foldRight(unitT)((fm1,rt) => 
+          composeT(tryrulematchT(hide)(fm1),rt));
+      composeT(tct1,tct2)(nd)
+    }
+  }
+
 
   val hideunivsT : Sort => Tactic = srt => new Tactic("hideunivs") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
