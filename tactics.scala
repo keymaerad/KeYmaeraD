@@ -89,6 +89,21 @@ object Tactics {
       }
     }
 
+
+  val tryruleunifyT : ProofRule => Formula => Tactic = rl => fm =>
+    new Tactic("tryruleunify " + rl +  " " + fm ) {
+      def apply(nd: OrNode) : Option[List[NodeID]] = {
+        val sq@Sequent(sig, cs, ss) = nd.goal
+        for(p <- positions(sq)) {
+           Prover.unify(lookup(p,sq), fm) match  {
+             case None => ()
+             case Some(_) => return tryruleatT(rl)(p)(nd)
+           }
+        }
+        return None
+      }
+    }
+
   val tryrulepredT : ProofRule
                         => (Formula => Boolean) => Tactic = 
     rl => pred =>
@@ -493,6 +508,39 @@ object Tactics {
     }
   }
 
+
+  val instantiate2T : Term => Term => Tactic =  tm1 => tm2 => 
+    new Tactic("instantiate2") {
+      def apply(nd: OrNode) : Option[List[NodeID]] = {
+        val sq = nd.goal
+        for(p <- positions(sq)){
+          lookup(p,sq) match {
+            case fm@Quantifier(Forall, srt1, i1, 
+                               fm1@Quantifier(Forall, srt2, i2, fm2)) =>
+                                 return composelistT(
+                                   tryruleatT(allLeft(tm1))(p),
+                                   tryruleunifyT(allLeft(tm2))(fm1),
+                                   tryruleunifyT(hide)(fm),
+                                   tryruleunifyT(hide)(fm1)
+                                 )(nd)
+            case _ => ()
+
+          }
+
+        }
+        return None
+      }
+    }
+
+  val instantiate3T : Tactic  =new Tactic("instantiate3") {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val idcs = findidx(nd.goal)
+      val tct1 =             
+        idcs.foldRight(unitT)((idx,rt) => 
+          composeT(instantiate2T(idx._1)(idx._2),rt))
+      tct1(nd)
+    }
+  }
 
   val hideunivsT : Sort => Tactic = srt => new Tactic("hideunivs") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {

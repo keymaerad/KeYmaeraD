@@ -9,19 +9,23 @@ val rl = loopInduction(
 ))
 
 
+val mostthingsT : Tactic = 
+  (hpalphaT | alphaT | nonarithcloseT | substT | betaT)*
+
+val everythingT: Tactic = 
+  mostthingsT & hidethencloseT
 
 val indtct = 
   composelistT(
     hpalpha1T*,
     diffsolveT(RightP(0),Endpoint),
     hpalpha1T*,
-    instantiate1T(St("C")),
-    instantiate1T(St("C")),
-    nullarizeT*    
+    instantiate3T,
+    instantiate1T(St("C"))
   )
 
 val posttct = 
-   (hpalpha1T*) & instantiate1T(St("C")) 
+   (hpalpha1T*) & instantiate3T & (nullarizeT*) & (substT*) & everythingT
    
 
   
