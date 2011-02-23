@@ -913,6 +913,7 @@ object Rules {
   }
 
 
+  /* XXX don't use position */
   val cut : Formula => ProofRule = 
     fm => new ProofRule("cut["
                          + Printing.stringOfFormula(fm) + "]") 
