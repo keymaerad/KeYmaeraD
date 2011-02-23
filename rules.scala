@@ -430,7 +430,7 @@ object Rules {
    }
  }
 
-
+//XXX FIX: what if "i" is not the argument?
  val qassign = new ProofRule("qassign") {
     def apply(p: Position) = sq =>   {
       val Sequent(sig, c,s) = sq
