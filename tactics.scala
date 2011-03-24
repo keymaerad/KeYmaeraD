@@ -520,7 +520,6 @@ object Tactics {
                                  return composelistT(
                                    tryruleatT(allLeft(tm1))(p),
                                    tryruleunifyT(allLeft(tm2))(fm1),
-                                   tryruleunifyT(hide)(fm),
                                    tryruleunifyT(hide)(fm1)
                                  )(nd)
             case _ => ()
@@ -552,6 +551,26 @@ object Tactics {
       
     }
   }
+
+  val hidedoublequantT : Tactic = 
+    new Tactic("hidedoublequant") {
+      def apply(nd: OrNode) : Option[List[NodeID]] = {
+        val sq = nd.goal
+        for(p <- positions(sq)){
+          lookup(p,sq) match {
+            case fm@Quantifier(Forall, srt1, i1, 
+                               fm1@Quantifier(Forall, srt2, i2, fm2)) =>
+                                 return tryruleatT(hide)(p)(nd);
+
+            case _ => ()
+
+          }
+
+        }
+        return None
+      }
+    }
+
 
 
   def branchT(tct: Tactic, tcts: List[Tactic]) : Tactic = 

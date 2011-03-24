@@ -4,6 +4,8 @@
  a : (C) -> Real,
  t : () -> Real
 }
+B > 0,
+A > 0,
 forall f : C. 
  forall l : C. 
   ( x(f) < x(l) &  (~ (f = l)) &  

@@ -35,15 +35,23 @@ val everythingT: Tactic =
 
 
 
+val sg1tct = 
+  composelistT(
+    hidedoublequantT,
+    instantiate1T(St("C")),
+    tryruleT(orLeft)*
+                
+             )
+
 
 
 val starttct = 
   composelistT(hpalpha1T*,
                diffsolveT(RightP(0),Endpoint),
                hpalpha1T*,
+               instantiate3T,
                branchT(tryruleT(impLeft),
-                     List(unitT,
-                          unitT))
+                       List(sg1tct))
              )
 
 
