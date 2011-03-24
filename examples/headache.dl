@@ -11,7 +11,7 @@ forall f : C.
         2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2
 |-
 [
-forall f : C  a(f) := 0;
+forall f : C a(f) := 0;
 ?(
  a(f) = -B |
  ( v(f) = 0 & a(f) = 0) |
@@ -22,7 +22,6 @@ forall f : C  a(f) := 0;
                       + (A + B) * (A * eps^2 + 2 * eps * v(f)))
   & a(f) = A)
  );
-
    t:= 0; forall i : C {x(i)' = v(i), 
                         v(i)' = a(i), 
                         t()' = 1; v(i) >= 0 &  t<= eps}  
@@ -30,9 +29,11 @@ forall f : C  a(f) := 0;
                                     forall s . v(s, i) = a(i) * s + v(i),
                                     forall s . t(s) = t()  + s)
 ]
+(
 forall f : C. 
  forall l : C. 
   ( x(f) < x(l) &  (~ (k = l)) ==>  
      (forall i : C . (~ i = f &  ~ i = j ) ==> (x(i) < x(f) | x(l) < x(i)) ) ) ==>
         2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2
+)
 
