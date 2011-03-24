@@ -157,6 +157,9 @@ class DLParser(ins : String)
       AssignAny(f1)
     case AssignQuantified(i,c,vs) =>
       AssignQuantified(i,c, vs.map(replace_asgn(i::bndVars)))
+    case AssignAnyQuantified(i,c,f) =>
+      val f1@Fn(_,_) = freeVarsAreFns_Term(i::bndVars,f)
+      AssignAnyQuantified(i,c,f1)
     case Check(fm) =>
       Check(freeVarsAreFns(bndVars,fm))
     case Seq(p,q) => 
@@ -189,6 +192,8 @@ class DLParser(ins : String)
        val v1@Fn(_,_) = freeVarsAreFns_Term(bndVars,v)
        (v1,t1)
      }
+
+
 
 
    def freeVarsAreFns(bndVars : List[String], fm: Formula) : Formula 
@@ -227,6 +232,9 @@ class DLParser(ins : String)
       (("forall" ~> ident <~  ":") ~ 
        ident ~ function <~ ":=") ~ term ^^ 
         {case i ~ c ~ f ~ v => AssignQuantified(i,St(c),List((f,v)))} | 
+      (("forall" ~> ident <~  ":") ~ 
+       ident ~ function <~ ":=") ~ "*" ^^ 
+        {case i ~ c ~ f ~ "*" => AssignAnyQuantified(i,St(c),f)} | 
       // { alpha }*
       ("{" ~> hp  <~ "}" <~ "*") ~ annotation("invariant") ^^ 
             { case x ~ invs => Loop(x, True, invs)} | 

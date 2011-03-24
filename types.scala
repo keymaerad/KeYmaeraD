@@ -46,10 +46,10 @@ case class Modality(m: ModalityType, hp: HP, rest: Formula) extends Formula
 sealed abstract class HP
 case class Assign( vs : List[(Fn, Term)]) extends HP
 case class AssignAny(v: Fn) extends HP
-//case class AssignAnyQuantified(i: String, c: Sort, v: Fn) extends HP
+case class AssignAnyQuantified(i: String, c: Sort, v: Fn) extends HP
 case class AssignQuantified(i : String, 
                             c: Sort, 
-                            vs: List[(Fn,Term)]) extends HP
+                            vs: List[(Fn,Term)]) extends HP 
 case class Check(h: Formula) extends HP
 case class Seq(p1: HP, p2: HP) extends HP
 case class Choose(p1: HP, p2: HP) extends HP

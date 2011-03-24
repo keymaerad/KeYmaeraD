@@ -11,8 +11,8 @@ forall f : C.
         2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2
 |-
 [
-forall f : C a(f) := 0;
-?(
+forall f : C a(f) := *;
+?(forall f : C.
  a(f) = -B |
  ( v(f) = 0 & a(f) = 0) |
  ((forall l : C. 

@@ -290,6 +290,9 @@ final object Prover {
       case AssignAny(x) =>
         val Fn(f,args) = g(x) // error if g changes x to a nonfunction
         AssignAny(Fn(f,args))
+      case AssignAnyQuantified(i,c,x) =>
+        val Fn(f,args) = g(x) // error if g changes x to a nonfunction
+        AssignAnyQuantified(i,c,Fn(f,args))
       case Check(fm) =>
         Check(onterms_Formula(g,fm))
       case Seq(p,q) => 
@@ -347,6 +350,8 @@ final object Prover {
         foldit(vs)(b)
       case AssignAny(x) =>
         b
+      case AssignAnyQuantified(i,c,f) =>
+        b // is this right?
       case Check(fm) =>
         overterms_Formula(g,fm,b)
       case Seq(p,q) => 

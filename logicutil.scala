@@ -316,9 +316,11 @@ object Util {
     case Assign(vs) =>
       val fvs = vs.map(v => fv_Term(v._2))
       unions(fvs)
-    case AssignAny(x) => Nil
+    case AssignAny(x) => Nil // XXX what about the arguments?
     case AssignQuantified(i,c,vs) =>
       unions(vs.map(v => union(fv_Term(v._1),fv_Term(v._2))))
+    case AssignAnyQuantified(i,c,vs) =>
+      Nil // XXX
     case Check(fm) =>
       fv(fm)
     case Seq(p,q) => 
