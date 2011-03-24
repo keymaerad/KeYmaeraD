@@ -1,0 +1,38 @@
+{
+ x : (C) -> Real,
+ v : (C) -> Real,
+ a : (C) -> Real,
+ t : () -> Real
+}
+forall f : C. 
+ forall l : C. 
+  ( x(f) < x(l) &  (~ (k = l)) ==>  
+     (forall i : C . (~ i = f &  ~ i = j ) ==> (x(i) < x(f) | x(l) < x(i)) ) ) ==>
+        2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2
+|-
+[
+forall f : C  a(f) := 0;
+?(
+ a(f) = -B |
+ ( v(f) = 0 & a(f) = 0) |
+ ((forall l : C. 
+   (x(f) < x(l) &  (~ (k = l)) ==>  
+     (forall i : C . (~ i = f &  ~ i = j ) ==> (x(i) < x(f) | x(l) < x(i)) ) ) ==>
+        2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2 
+                      + (A + B) * (A * eps^2 + 2 * eps * v(f)))
+  & a(f) = A)
+ );
+
+   t:= 0; forall i : C {x(i)' = v(i), 
+                        v(i)' = a(i), 
+                        t()' = 1; v(i) >= 0 &  t<= eps}  
+                         @solution( forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i),
+                                    forall s . v(s, i) = a(i) * s + v(i),
+                                    forall s . t(s) = t()  + s)
+]
+forall f : C. 
+ forall l : C. 
+  ( x(f) < x(l) &  (~ (k = l)) ==>  
+     (forall i : C . (~ i = f &  ~ i = j ) ==> (x(i) < x(f) | x(l) < x(i)) ) ) ==>
+        2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2
+
