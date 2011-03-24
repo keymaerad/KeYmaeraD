@@ -548,7 +548,19 @@ object Rules {
                                                  
           val Sequent(sig2,s2,c2) = replace(p, Sequent(sig1,c,s), phi1)
           Some((List(Sequent(sig2,asgn0::asgn::s2,c2)),Nil))
-
+        case Modality (Box, 
+                       AssignAnyQuantified(i,_,f@Fn(vr,List(Var(j)))), 
+                       phi) if j == i =>
+          val vr1 = Prover.uniqify(vr)
+          val phi1 = Prover.renameFn(vr,vr1,phi)
+          val sig1 = sig.get(vr) match {
+            case Some(sg ) =>
+              sig.+((vr1,sg))
+            case _ => 
+              sig
+          }
+          val sq1 = replace(p, Sequent(sig1 ,c,s), phi1)
+          Some((List(sq1),Nil))                         
         case _ =>
           None
       }
