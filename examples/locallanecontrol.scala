@@ -1,7 +1,7 @@
 dl('load, "examples/locallanecontrol.dl")
 val rl = loopInduction(
   parseFormula(
-    "(b()>0 & B() > 0 & ~(f() = l()) & eps() >= 0) &" + 
+    "(b()>0 & B() > 0  & eps() >= 0) &" + 
     "(((b()*B()*x(l()) > b()*B()*x(f()) + " + 
     "(1/2) * (B()*v(f())^2 -  b()*v(l())^2) & " +
     "x(l()) > x(f()) &" +
@@ -46,14 +46,28 @@ val ch_brake =
                       )
 
 
-val ch_whatev = repeatT(eitherT(hpalphaT,alphaT))
+val ch_whatev = 
+    composelistT(
+              repeatT(hpalpha1T),
+               diffsolveT(RightP(1),Endpoint),
+               repeatT(hpalpha1T),
+               instantiate0T(St("C")),
+               repeatT(substT),
+               hideunivsT(St("C")),
+               repeatT(hpalpha1T),
+               repeatT(vacuousT)
+)   
+
+
+
 val ch_stopped = repeatT(eitherT(hpalphaT,alphaT))
 
 val indtct =                           
   composeT(
    repeatT(hpalpha1T),
    branchT(tryruleT(andRight),
-           List(branchT(tryruleT(choose), List(ch_brake,ch_whatev) ),
+           List(branchT((hpalpha1T*) & tryruleT(andRight), 
+	                List(ch_brake,ch_whatev) ),
                 ch_stopped )))
     
 
