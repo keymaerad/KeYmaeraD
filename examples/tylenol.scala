@@ -28,7 +28,7 @@ val cuttct = cutT(
 
 
 val okcuttct = cutT(
-  StandardCut,
+  StandardKeepCut,
   parseFormula(
    "(x(F)<x(L)&~F=L )" + 
     "==>2*B()*x(L)>2*B()*x(F)+v(F)^2-v(L)^2"
@@ -145,17 +145,40 @@ val uselemma =  branchT(tryruleT(impLeft),
                         List(sg1tct,
                              tryruleT(close)))
 
+val or0tct = 
+  unitT
+
+val or1tct = 
+  composelistT(
+    alphaT*,
+    tryruleT(orLeft)*
+  )
+
+val or2tct = 
+ composelistT(
+   tryruleunifyT(andLeft)(Binop(And, safetyfm, Atom(R("=",List(Var("YY"),Var("ZZ")))))),
+   instantiate1T(St("C")),
+   vacuousT*,
+   branchT(tryruleT(impLeft),
+           List(impsg1,tryruleT(close)))
+ ) 
+
 val andbranch1 = 
   composelistT(
-    hidedoublequantT
+    hidedoublequantT,
+    instantiate1T(St("C")),
+    alphaT*,
+    branchT(tryruleT(orLeft),
+            List(branchT(tryruleT(orLeft), List(or0tct,or1tct)) ,or2tct))
   )
 
 val provelemma = 
-  branchT(tryruleT(andRight),
-          List(branchT(tryruleT(andRight),
-                       List(andbranch1, composelistT(tryruleT(not), substT*) )),
-             unitT)
-          )
+  composelistT(
+    tryruleunifyT(hide)(parseFormula("L > A + B - C")),
+    instantiate4T,
+    branchT(tryruleT(andRight),
+                         List(andbranch1, composelistT(tryruleT(not), tryruleT(close))))
+  )
 
 
 val starttct = 

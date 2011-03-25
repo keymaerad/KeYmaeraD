@@ -936,10 +936,22 @@ object Rules {
           val lem = Sequent(sig, c, List(fm))
           val uselem = Sequent(sig,fm::c,s)
           Some(List(lem,uselem     ), Nil)
-        case  _ => None
-        
+        case  _ => None        
+
+      }
+  }
 
 
+  val cutKeepSucc : Formula => ProofRule = 
+    fm => new ProofRule("cutKeepSucc["
+                         + Printing.stringOfFormula(fm) + "]") 
+  {
+      def apply(pos: Position) = sq => (pos,sq) match {
+        case (LeftP(n), Sequent(sig, c,s)) =>
+          val lem = Sequent(sig, c, fm::s)
+          val uselem = Sequent(sig,fm::c,s)
+          Some(List(lem,uselem     ), Nil)
+        case  _ => None        
       }
   }
 

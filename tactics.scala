@@ -541,6 +541,16 @@ object Tactics {
     }
   }
 
+  val instantiate4T : Tactic  =new Tactic("instantiate3") {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val idcs = findidx(nd.goal)
+      val tct1 =             
+        idcs.foldRight(unitT)((idx,rt) => 
+          composeT(instantiate2T(idx._2)(idx._1),rt))
+      tct1(nd)
+    }
+  }
+
   val hideunivsT : Sort => Tactic = srt => new Tactic("hideunivs") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val fms = findunivs(srt,nd.goal)
@@ -604,6 +614,7 @@ object Tactics {
         val fm = lookup(p,sq)
         cantqe = if(Prover.canQE(fm, sig)) cantqe else fm::cantqe
       }
+      println("cantqe: " + cantqe);
 
       val tct = cantqe.foldRight(unitT)((fm1,rt) 
                                         => composeT(tryrulematchT(hide)(fm1),
@@ -618,6 +629,7 @@ object Tactics {
   sealed abstract class CutType
   case object DirectedCut extends CutType
   case object StandardCut extends CutType
+  case object StandardKeepCut extends CutType
 
   def cutT(ct: CutType, cutout: Formula, cutin: Formula): Tactic 
   = new Tactic("cut " + ct) {
@@ -644,6 +656,7 @@ object Tactics {
           val rl = ct match {
             case DirectedCut => directedCut
             case StandardCut => cut
+            case StandardKeepCut => cutKeepSucc
           }
           tryruleatT(rl(cutin1))(LeftP(foundidx))(nd)
       }   
