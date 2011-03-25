@@ -124,11 +124,11 @@ object Rules {
         case (RightP(_), True) => 
           Some((Nil,Nil)) // proved!
         case (LeftP(n), fm) =>
-          if(sq.scdts.contains(fm) )
+          if(sq.scdts.exists(fm1 => Prover.alphaeq(fm,fm1)))
             Some((Nil,Nil)) // proved!
           else None
         case (RightP(n), fm) =>
-          if(sq.ctxt.contains(fm) )
+          if(sq.ctxt.exists(fm1 => Prover.alphaeq(fm,fm1)))
             Some((List(Sequent(fs,Nil,List(True))),Nil)) // proved!
           else None
       }

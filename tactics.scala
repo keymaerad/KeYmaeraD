@@ -664,8 +664,34 @@ object Tactics {
               case Binop(Imp, 
                          Not(Atom(R("=", List(f1,f2)))),
                          fm) if f1 == f2 =>
-                           res = tryruleatT(hide)(LeftP(i))(nd)
-                           () 
+                           return tryruleatT(hide)(LeftP(i))(nd)
+              case Binop(Imp, 
+                         Binop(And, _,
+                               Not(Atom(R("=", List(f1,f2))))),
+                         fm) if f1 == f2 =>
+                           return tryruleatT(hide)(LeftP(i))(nd)
+              case Binop(Imp, 
+                         Binop(And,
+                               Not(Atom(R("=", List(f1,f2)))),
+                               _),
+                         fm) if f1 == f2 =>
+                           return tryruleatT(hide)(LeftP(i))(nd)
+              case Binop(Imp, 
+                         Binop(And,
+                               Binop(And,
+                                     Not(Atom(R("=", List(f1,f2)))),
+                                     _),
+                               _),
+                         fm) if f1 == f2 =>
+                           return tryruleatT(hide)(LeftP(i))(nd)
+              case Binop(Imp, 
+                         Binop(And,
+                               Binop(And, _ ,
+                                     Not(Atom(R("=", List(f1,f2))))
+                                     ),
+                               _),
+                         fm) if f1 == f2 =>
+                           return tryruleatT(hide)(LeftP(i))(nd)
               case _ => 
                 ()
             }
