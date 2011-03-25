@@ -146,7 +146,12 @@ val uselemma =  branchT(tryruleT(impLeft),
                              tryruleT(close)))
 
 val provelemma = 
-  composelistT()
+  branchT(tryruleT(andRight),
+          List(branchT(tryruleT(andRight),
+                       List(unitT, composelistT(tryruleT(not), substT*) )))
+          )
+
+
 
 val starttct = 
   composelistT(hpalpha1T*,

@@ -943,6 +943,7 @@ object Rules {
       }
   }
 
+  // need to make this more general.
   val nullarize : String => ProofRule = 
     f => new ProofRule("nullarize " + f) {
     
