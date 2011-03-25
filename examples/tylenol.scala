@@ -1,4 +1,4 @@
-dl('load, "examples/headache.dl")
+dl('load, "examples/tylenol.dl")
 
 
 val cuttct0 = cutT(
@@ -30,11 +30,11 @@ val cuttct = cutT(
 val okcuttct = cutT(
   StandardCut,
   parseFormula(
-   "(x(F)<x(L)&~F=L&(forall i:C.~i=F &~i=L==>x(i)<x(F)|x(L)<x(i)) )" + 
+   "(x(F)<x(L)&~F=L )" + 
     "==>2*B()*x(L)>2*B()*x(F)+v(F)^2-v(L)^2"
   ),
   parseFormula(
-   "(x(F)<x(L)&~F=L&(forall i:C.~i=F &~i=L==>x(i)<x(F)|x(L)<x(i)) )" 
+   "x(F)<x(L)&~F=L" 
   )
 )
 
