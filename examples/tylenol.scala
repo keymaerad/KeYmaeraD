@@ -292,9 +292,23 @@ val provelemma =
   )
 
 
+val veltct = new Tactic("veltct"){
+  def apply(nd:Nodes.OrNode) = {
+    val Sequent(sig, cs, ss) = nd.goal
+    ss match {
+      case List(Atom(R(">=", List(Fn(v,List(i)), _)))) =>
+        tryruleT(allLeft(i))(nd)
+      case _ => None
+    }
+  }
+}
+
 val velpos = 
   composelistT(
-    hpalpha1T*
+    hpalpha1T*,
+    veltct,
+    alphaT*,
+    tryruleT(close)
   )
 
 val starttct = 
