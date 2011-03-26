@@ -154,7 +154,7 @@ object Rules {
       fm match {
         case (Atom(R("=", List(t1,t2))))  =>           
           val sq1 = replace(p,sq, Atom(R("=", List(t2,t1))))
-          Some((List(sq1),Nil)) // proved!
+          Some((List(sq1),Nil)) 
         case _ => None
       }
     }

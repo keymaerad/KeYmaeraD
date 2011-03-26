@@ -162,6 +162,23 @@ val uselemma =  branchT(tryruleT(impLeft),
 
 val oror1tct = unitT
 
+
+val precond = 
+  branchT(
+    tryruleT(andRight),
+    List(
+      composelistT(
+        tryrulepredT(hide)(fm => fm match { case Atom(R("<=",_)) => false case _ => true}),
+        hidethencloseT
+      ),
+      composelistT(alphaT*,
+                   tryruleT(commuteEquals),
+                   tryruleT(close)
+                 )
+       )
+  )
+
+
 val oror2tct = 
   composelistT(
     alphaT*,
@@ -181,9 +198,11 @@ val oror2tct =
                                       hidethencloseT
                                     ),
                                     hidethencloseT
-                                  )))
+                                  ))),
+                        precond
                         )
-                      )
+                      ),
+              precond
             )
     
           )
