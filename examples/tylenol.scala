@@ -27,14 +27,15 @@ val cuttct = cutT(
 )
 
 
+
 val okcuttct = cutT(
   StandardKeepCut,
   parseFormula(
-   "(x(F)<x(L)&~F=L )" + 
+   "(x(F)<=x(L)&~F=L )" + 
     "==>2*B()*x(L)>2*B()*x(F)+v(F)^2-v(L)^2"
   ),
   parseFormula(
-   "x(F)<x(L)&~F=L" 
+   "x(F)<=x(L)&~F=L" 
   )
 )
 
@@ -65,6 +66,19 @@ val everythingT: Tactic =
                   substT)),
     eitherT(nonarithcloseT, hidethencloseT))
 
+
+val hideforprovecut = 
+  composelistT(
+   tryruleunifyT(hide) (
+     parseFormula( "B * s()  + V >=0")
+   )*,
+   tryruleunifyT(hide) (
+     parseFormula( "2*B()*X2>2*B()*X1 + V1^2-V2^2")
+   )*,
+   tryruleunifyT(hide) (
+     parseFormula( "1/2 * B  * s()^2  + V * s()  + X <= 1/2 * A() * s()^2  + V1 * s() + X1")
+   )*
+  )
 
 
 val provecut =
@@ -145,13 +159,46 @@ val uselemma =  branchT(tryruleT(impLeft),
                         List(sg1tct,
                              tryruleT(close)))
 
+
+val oror1tct = unitT
+
+val oror2tct = 
+  composelistT(
+    alphaT*,
+    instantiate1T(St("C")),
+    vacuousT*,
+    nullarizeT*,
+    substT*,
+    branchT(tryruleT(impLeft),
+            List(
+              branchT(tryruleT(impLeft),
+                      List( 
+                        composelistT(
+                          branchT(cuttct,
+                                  List(
+                                    composelistT(
+                                      hideforprovecut,
+                                      hidethencloseT
+                                    ),
+                                    hidethencloseT
+                                  )))
+                        )
+                      )
+            )
+    
+          )
+  )
+
 val or0tct = 
-  unitT
+  composelistT(
+    alphaT*,
+    branchT(tryruleT(orLeft), 
+            List(oror1tct, oror2tct))
+  )
+
 
 val or1tct = 
   composelistT(
-    alphaT*,
-    tryruleT(orLeft)*
   )
 
 val or2tct = 
