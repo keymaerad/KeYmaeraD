@@ -179,6 +179,23 @@ val precond =
   )
 
 
+val oror0tct = 
+  composelistT(
+    alphaT*,
+    nullarizeT*,
+    substT*,
+    branchT(tryruleT(impLeft),
+            List(hidethencloseT,precond))
+  )
+
+val oror1tct = 
+  composelistT(
+    alphaT*,
+    nullarizeT*,
+    substT*,
+    hidethencloseT
+  )
+
 val oror2tct = 
   composelistT(
     alphaT*,
@@ -212,7 +229,9 @@ val or0tct =
   composelistT(
     alphaT*,
     branchT(tryruleT(orLeft), 
-            List(oror1tct, oror2tct))
+            List(branchT(tryruleT(orLeft),
+                         List(oror0tct,oror1tct)), 
+                 oror2tct))
   )
 
 
@@ -221,13 +240,8 @@ val or1tct =
   )
 
 val or2tct = 
- composelistT(
-   tryruleunifyT(andLeft)(Binop(And, safetyfm, Atom(R("=",List(Var("YY"),Var("ZZ")))))),
-   instantiate1T(St("C")),
-   vacuousT*,
-   branchT(tryruleT(impLeft),
-           List(impsg1,tryruleT(close)))
- ) 
+ composelistT()
+
 
 val andbranch1 = 
   composelistT(
