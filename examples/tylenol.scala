@@ -81,10 +81,11 @@ val hideforprovecut =
   )
 
 
-val provecut =
+val provecut = 
  composelistT(
    tryrulepredT(hide) (fm => fm match {case Binop(Or,_,_) => true case _ => false}),
-   tryruleT(not),
+   tryrulepredT(hide) (fm => fm match {case Binop(Imp,_,_) => true case _ => false}),
+   alphaT*,
    nullarizeT*,
    tryruleunifyT(hide) (
      parseFormula( "X1=1/2*A*s()^2+V*s()+X2")
@@ -109,8 +110,6 @@ val hardcase =
 
 val impsg1 = 
   composelistT(
-    tryruleT(andLeft)*,
-    hideunivsT(St("C")),
     branchT(cuttct,
             List(provecut, 
                  branchT(tryruleT(orLeft),
@@ -131,19 +130,22 @@ val impsg1 =
   )
 
 
-val orsgtct0 = unitT
+val orsg0tct = unitT
 
 val orsg1tct = 
-  branchT(tryruleT(orLeft), List(orsgtct0))
+  unitT
 
 val orsg2tct = 
  composelistT(
-   tryruleunifyT(andLeft)(Binop(And, safetyfm, Atom(R("=",List(Var("YY"),Var("ZZ")))))),
+   tryruleT(andLeft)*,
    instantiate1T(St("C")),
    vacuousT*,
    branchT(tryruleT(impLeft),
-           List(impsg1,tryruleT(close)))
+           List(impsg1,
+                branchT(tryruleT(andRight),List(tryruleT(close), 
+                                                composelistT(alphaT*, tryruleT(close))))))
  )
+
 
 
 val sg1tct = 
@@ -151,13 +153,15 @@ val sg1tct =
     hidedoublequantT,
     instantiate1T(St("C")),
     branchT(tryruleT(orLeft),
-            List(orsg1tct,orsg2tct))
+            List(branchT(tryruleT(orLeft), List(orsg0tct, orsg1tct)),orsg2tct))
              )
 
 
 val uselemma =  branchT(tryruleT(impLeft),
                         List(sg1tct,
                              tryruleT(close)))
+
+
 
 
 val oror1tct = unitT
@@ -263,15 +267,26 @@ val provelemma =
   )
 
 
+val velpos = 
+  composelistT(
+    hpalpha1T*
+  )
+
 val starttct = 
   composelistT(hpalpha1T*,
                diffsolveT(RightP(0),Endpoint),
                hpalpha1T*,
-               instantiate3T,
-               branchT(okcuttct,
-                       List(provelemma,
-                            uselemma))
-
+               branchT(tryruleT(andRight),
+                       List(velpos,
+                            composelistT(
+                              hpalpha1T*,
+                              instantiate3T,
+                              branchT(okcuttct,
+                                      List(provelemma,
+                                           uselemma))
+                            )
+                          )
+                     )
              )
 
 

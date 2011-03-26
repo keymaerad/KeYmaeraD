@@ -623,7 +623,6 @@ object Tactics {
     }
   }
 
-
   val hidethencloseT = composeT(hidecantqeT, closeOrArithT)
 
   sealed abstract class CutType
