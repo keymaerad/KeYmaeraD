@@ -228,6 +228,7 @@ val oror2tct =
 val or0tct = 
   composelistT(
     alphaT*,
+    hideunivsT(St("C")),
     branchT(tryruleT(orLeft), 
             List(branchT(tryruleT(orLeft),
                          List(oror0tct,oror1tct)), 
@@ -237,10 +238,11 @@ val or0tct =
 
 val or1tct = 
   composelistT(
+    or0tct
   )
 
 val or2tct = 
- composelistT()
+ composelistT(or0tct)
 
 
 val andbranch1 = 
