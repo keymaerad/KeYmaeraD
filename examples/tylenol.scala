@@ -130,11 +130,6 @@ val impsg1 =
   )
 
 
-val orsg0tct = unitT
-
-val orsg1tct = 
-  unitT
-
 val orsg2tct = 
  composelistT(
    tryruleT(andLeft)*,
@@ -145,6 +140,36 @@ val orsg2tct =
                 branchT(tryruleT(andRight),List(tryruleT(close), 
                                                 composelistT(alphaT*, tryruleT(close))))))
  )
+
+
+val easy0 = 
+  composelistT(
+    nullarizeT*,
+    substT*,
+    hidethencloseT
+)
+
+val easy1 = easy0
+
+val easy2 = 
+  composelistT(
+    alphaT*,
+    hideunivsT(St("C")),
+    easy0
+  )
+
+val easycase = 
+  composelistT(
+    alphaT*,
+    branchT(tryruleT(orLeft),
+            List(branchT(tryruleT(orLeft), List(easy0, easy1)),easy2))
+  )
+
+val orsg0tct = easycase
+
+val orsg1tct = easycase
+
+
 
 
 
