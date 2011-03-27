@@ -32,7 +32,7 @@ val okcuttct = cutT(
   StandardKeepCut,
   parseFormula(
    "(x(F)<=x(L)&~F=L )" + 
-    "==>2*B()*x(L)>2*B()*x(F)+v(F)^2-v(L)^2"
+    "==>(2*B()*x(L)>2*B()*x(F)+v(F)^2-v(L)^2 & x(F) < x(L))"
   ),
   parseFormula(
    "x(F)<=x(L)&~F=L" 
@@ -285,7 +285,7 @@ val andbranch1 =
 
 val provelemma = 
   composelistT(
-    tryruleunifyT(hide)(parseFormula("L > A + B - C")),
+    tryruleunifyT(hide)(parseFormula("L > A + B - C & X1 < X2")),
     instantiate4T,
     branchT(tryruleT(andRight),
                          List(andbranch1, composelistT(tryruleT(not), tryruleT(close))))
@@ -331,5 +331,3 @@ val starttct =
 
 dl('gotoroot)
 dl('tactic, starttct)
-
-
