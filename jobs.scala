@@ -342,7 +342,6 @@ object Jobs {
           }
       val thisHost = Node(thisAddr, thisPort)
 
-
       
       val jobWorker = new JobWorker(coorHost, thisHost)
       jobWorker.start

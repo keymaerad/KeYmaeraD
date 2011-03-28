@@ -520,7 +520,6 @@ object Tactics {
                                  return composelistT(
                                    tryruleatT(allLeft(tm1))(p),
                                    tryruleunifyT(allLeft(tm2))(fm1),
-                                   tryruleunifyT(hide)(fm),
                                    tryruleunifyT(hide)(fm1)
                                  )(nd)
             case _ => ()
@@ -542,6 +541,16 @@ object Tactics {
     }
   }
 
+  val instantiate4T : Tactic  =new Tactic("instantiate3") {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val idcs = findidx(nd.goal)
+      val tct1 =             
+        idcs.foldRight(unitT)((idx,rt) => 
+          composeT(instantiate2T(idx._2)(idx._1),rt))
+      tct1(nd)
+    }
+  }
+
   val hideunivsT : Sort => Tactic = srt => new Tactic("hideunivs") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val fms = findunivs(srt,nd.goal)
@@ -552,6 +561,26 @@ object Tactics {
       
     }
   }
+
+  val hidedoublequantT : Tactic = 
+    new Tactic("hidedoublequant") {
+      def apply(nd: OrNode) : Option[List[NodeID]] = {
+        val sq = nd.goal
+        for(p <- positions(sq)){
+          lookup(p,sq) match {
+            case fm@Quantifier(Forall, srt1, i1, 
+                               fm1@Quantifier(Forall, srt2, i2, fm2)) =>
+                                 return tryruleatT(hide)(p)(nd);
+
+            case _ => ()
+
+          }
+
+        }
+        return None
+      }
+    }
+
 
 
   def branchT(tct: Tactic, tcts: List[Tactic]) : Tactic = 
@@ -585,6 +614,7 @@ object Tactics {
         val fm = lookup(p,sq)
         cantqe = if(Prover.canQE(fm, sig)) cantqe else fm::cantqe
       }
+      println("cantqe: " + cantqe);
 
       val tct = cantqe.foldRight(unitT)((fm1,rt) 
                                         => composeT(tryrulematchT(hide)(fm1),
@@ -593,12 +623,12 @@ object Tactics {
     }
   }
 
-
   val hidethencloseT = composeT(hidecantqeT, closeOrArithT)
 
   sealed abstract class CutType
   case object DirectedCut extends CutType
   case object StandardCut extends CutType
+  case object StandardKeepCut extends CutType
 
   def cutT(ct: CutType, cutout: Formula, cutin: Formula): Tactic 
   = new Tactic("cut " + ct) {
@@ -625,6 +655,7 @@ object Tactics {
           val rl = ct match {
             case DirectedCut => directedCut
             case StandardCut => cut
+            case StandardKeepCut => cutKeepSucc
           }
           tryruleatT(rl(cutin1))(LeftP(foundidx))(nd)
       }   
@@ -645,8 +676,34 @@ object Tactics {
               case Binop(Imp, 
                          Not(Atom(R("=", List(f1,f2)))),
                          fm) if f1 == f2 =>
-                           res = tryruleatT(hide)(LeftP(i))(nd)
-                           () 
+                           return tryruleatT(hide)(LeftP(i))(nd)
+              case Binop(Imp, 
+                         Binop(And, _,
+                               Not(Atom(R("=", List(f1,f2))))),
+                         fm) if f1 == f2 =>
+                           return tryruleatT(hide)(LeftP(i))(nd)
+              case Binop(Imp, 
+                         Binop(And,
+                               Not(Atom(R("=", List(f1,f2)))),
+                               _),
+                         fm) if f1 == f2 =>
+                           return tryruleatT(hide)(LeftP(i))(nd)
+              case Binop(Imp, 
+                         Binop(And,
+                               Binop(And,
+                                     Not(Atom(R("=", List(f1,f2)))),
+                                     _),
+                               _),
+                         fm) if f1 == f2 =>
+                           return tryruleatT(hide)(LeftP(i))(nd)
+              case Binop(Imp, 
+                         Binop(And,
+                               Binop(And, _ ,
+                                     Not(Atom(R("=", List(f1,f2))))
+                                     ),
+                               _),
+                         fm) if f1 == f2 =>
+                           return tryruleatT(hide)(LeftP(i))(nd)
               case _ => 
                 ()
             }

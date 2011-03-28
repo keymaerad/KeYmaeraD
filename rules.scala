@@ -124,11 +124,11 @@ object Rules {
         case (RightP(_), True) => 
           Some((Nil,Nil)) // proved!
         case (LeftP(n), fm) =>
-          if(sq.scdts.contains(fm) )
+          if(sq.scdts.exists(fm1 => Prover.alphaeq(fm,fm1)))
             Some((Nil,Nil)) // proved!
           else None
         case (RightP(n), fm) =>
-          if(sq.ctxt.contains(fm) )
+          if(sq.ctxt.exists(fm1 => Prover.alphaeq(fm,fm1)))
             Some((List(Sequent(fs,Nil,List(True))),Nil)) // proved!
           else None
       }
@@ -154,7 +154,7 @@ object Rules {
       fm match {
         case (Atom(R("=", List(t1,t2))))  =>           
           val sq1 = replace(p,sq, Atom(R("=", List(t2,t1))))
-          Some((List(sq1),Nil)) // proved!
+          Some((List(sq1),Nil)) 
         case _ => None
       }
     }
@@ -548,7 +548,19 @@ object Rules {
                                                  
           val Sequent(sig2,s2,c2) = replace(p, Sequent(sig1,c,s), phi1)
           Some((List(Sequent(sig2,asgn0::asgn::s2,c2)),Nil))
-
+        case Modality (Box, 
+                       AssignAnyQuantified(i,_,f@Fn(vr,List(Var(j)))), 
+                       phi) if j == i =>
+          val vr1 = Prover.uniqify(vr)
+          val phi1 = Prover.renameFn(vr,vr1,phi)
+          val sig1 = sig.get(vr) match {
+            case Some(sg ) =>
+              sig.+((vr1,sg))
+            case _ => 
+              sig
+          }
+          val sq1 = replace(p, Sequent(sig1 ,c,s), phi1)
+          Some((List(sq1),Nil))                         
         case _ =>
           None
       }
@@ -924,13 +936,26 @@ object Rules {
           val lem = Sequent(sig, c, List(fm))
           val uselem = Sequent(sig,fm::c,s)
           Some(List(lem,uselem     ), Nil)
-        case  _ => None
-        
-
+        case  _ => None        
 
       }
   }
 
+
+  val cutKeepSucc : Formula => ProofRule = 
+    fm => new ProofRule("cutKeepSucc["
+                         + Printing.stringOfFormula(fm) + "]") 
+  {
+      def apply(pos: Position) = sq => (pos,sq) match {
+        case (LeftP(n), Sequent(sig, c,s)) =>
+          val lem = Sequent(sig, c, fm::s)
+          val uselem = Sequent(sig,fm::c,s)
+          Some(List(lem,uselem     ), Nil)
+        case  _ => None        
+      }
+  }
+
+  // need to make this more general.
   val nullarize : String => ProofRule = 
     f => new ProofRule("nullarize " + f) {
     

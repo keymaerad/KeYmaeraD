@@ -152,6 +152,9 @@ object Printing {
     case AssignQuantified(i, c, List((f, theta))) =>
       text("forall ") :: text(i) :: text(":") :: docOfSort(c) :: text(" ") ::
           docOfTerm(f) :: text(":=") :: docOfTerm(theta)
+    case AssignAnyQuantified(i, c, f) =>
+      text("forall ") :: text(i) :: text(":") :: docOfSort(c) :: text(" ") ::
+          docOfTerm(f) :: text(":= * ")
     case AssignQuantified(i,c,vs) => 
      text("forall ") :: text(i) :: text(":") :: docOfSort(c) :: text(" ") ::
      bracket("{", "}", 

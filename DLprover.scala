@@ -290,6 +290,9 @@ final object Prover {
       case AssignAny(x) =>
         val Fn(f,args) = g(x) // error if g changes x to a nonfunction
         AssignAny(Fn(f,args))
+      case AssignAnyQuantified(i,c,x) =>
+        val Fn(f,args) = g(x) // error if g changes x to a nonfunction
+        AssignAnyQuantified(i,c,Fn(f,args))
       case Check(fm) =>
         Check(onterms_Formula(g,fm))
       case Seq(p,q) => 
@@ -347,6 +350,8 @@ final object Prover {
         foldit(vs)(b)
       case AssignAny(x) =>
         b
+      case AssignAnyQuantified(i,c,f) =>
+        b // is this right?
       case Check(fm) =>
         overterms_Formula(g,fm,b)
       case Seq(p,q) => 
@@ -696,6 +701,19 @@ final object Prover {
       Real // XXX ??
   }
                 
+
+  // not yet fully implemented
+  def alphaeq(fm1: Formula, fm2: Formula) : Boolean = (fm1,fm2) match {
+    case (Not(p1), Not(p2)) =>
+      alphaeq(p1,p2) 
+    case (Binop(o1,p1,q1), Binop(o2,p2,q2)) if o1 == o2 =>
+      alphaeq(p1,p2) && alphaeq(q1,q2)
+    case (Quantifier(q1,c1,i1, f1), Quantifier(q2,c2,i2,f2)) if q1 == q2 && c1 == c2 =>
+      alphaeq(f1, rename_Formula(i2,i1,f2))
+    case _ => fm1 == fm2
+  }
+
+
 
 }
 
