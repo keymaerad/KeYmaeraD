@@ -1,18 +1,6 @@
 dl('load, "examples/tylenol.dl")
 
 
-val cuttct0 = cutT(
-  StandardCut,
-  parseFormula(
-    "2*B()*X1>2*B()*X2+ V2^2 - V1^2 +" + 
-     "(A()+B())*(A()*eps()^2+2 * eps()*V2)"
-  ),
-  parseFormula(
-     "(A()+B())*(A()*eps()^2+2 * eps()*V2) >= "+
-     "(A()+B())*(A()*s()^2+2 * s()*V2) "
-  )
-)
-
 
 val cuttct = cutT(
   DirectedCut,
@@ -38,13 +26,6 @@ val okcuttct = cutT(
    "x(F)<=x(L)&~F=L" 
   )
 )
-
-
-val safetyfm=
-  parseFormula(
-    "(forall l:C . x(F)<x(l)&~F=l&(forall i:C.~i=F&~i=l==>x(i)<x(F)"+
-    "|x(l)<x(i))==>2*B()*x(l)>2*B()*x(F)+v(F)^2-v(l)^2+(A()+B())*(A()*eps()^2+2*eps()*v(F)))"
-  )
 
   
 val mostthingsT = 
