@@ -12,7 +12,7 @@ A > 0,
 forall f : C. 
  forall l : C. 
   (e(f) = 1 & e(l) = 1 & x(f) <= x(l) &  (~ (f = l))) ==>
-        2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2 
+        2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2 & x(f) < x(l)
 |-
 [
 (n :=*; ?(e(n) = 1); e(n) := 0);
@@ -51,7 +51,7 @@ forall f : C a(f) := *;
 forall f : C. 
   forall l : C. 
    (e(f) = 1 & e(l) = 1 & x(f) <= x(l) &  (~ (f = l)))  ==>
-         2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2
+         2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2 & x(f) < x(l)
 )
 )
 
