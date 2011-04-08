@@ -10,6 +10,7 @@ A > 0,
 
 
 (forall i : C . v(i) >= 0),
+
 forall f : C. 
  forall l : C. 
   ( x(f) <= x(l) &  (~ (f = l))) ==>
