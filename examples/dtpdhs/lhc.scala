@@ -313,7 +313,9 @@ val deletetct =
   composelistT(
     hpalpha1T*,
     branchT(tryruleT(andRight),
-          List( ))
+          List(
+            hpalphaT*
+          ))
   )
 
 
