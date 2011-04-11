@@ -19,11 +19,11 @@ val cuttct = cutT(
 val okcuttct = cutT(
   StandardKeepCut,
   parseFormula(
-   "(x(F)<=x(L)&~F=L )" + 
+   "(e(F) = 1 & e(L) = 1 & x(F)<=x(L) & ~F=L )" + 
     "==>(2*B()*x(L)>2*B()*x(F)+v(F)^2-v(L)^2 & x(F) < x(L))"
   ),
   parseFormula(
-   "x(F)<=x(L)&~F=L" 
+   "e(F) = 1 & e(L) = 1 & x(F)<=x(L)&~F=L" 
   )
 )
 
@@ -309,12 +309,27 @@ val tyltct =
                      )
              )
 
+
+
+
 val deletetct = 
   composelistT(
     hpalpha1T*,
     branchT(tryruleT(andRight),
           List(
-            hpalphaT*
+            hpalphaT*,
+            composelistT(
+              alphaT*,
+              tryruleatT(commuteEquals)(RightP(0)),
+              instantiate4T,
+              branchT(tryruleatT(impLeft)(LeftP(0)),
+                      List(tryruleT(close),
+                         composelistT(
+                           instantiate1T(St("C")),
+                           hideunivsT(St("C")),
+                           tryruleatT(impLeft)(LeftP(1))
+                         )))
+            )
           ))
   )
 
@@ -331,7 +346,7 @@ val starttct =
                           deletetct,
                           deletetct))
               ),
-              unitT
+              tyltct
             )
           )
   )
