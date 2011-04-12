@@ -260,16 +260,21 @@ val andbranch1 =
     hidedoublequantT,
     instantiate1T(St("C")),
     alphaT*,
-    branchT(tryruleT(orLeft),
-            List(branchT(tryruleT(orLeft), List(or0tct,or1tct)) ,or2tct))
+    tryruleT(andRight)<(
+      tryruleT(andRight) & tryruleT(close),
+      branchT(tryruleT(orLeft),
+              List(branchT(tryruleT(orLeft), List(or0tct,or1tct)) ,or2tct))
+    )
   )
 
 val provelemma = 
   composelistT(
     tryruleunifyT(hide)(parseFormula("L > A + B - C & X1 < X2")),
     instantiate4T,
-    branchT(tryruleT(andRight),
-                         List(andbranch1, composelistT(tryruleT(not), tryruleT(close))))
+    tryruleT(andRight)<(
+      andbranch1, 
+      composelistT(tryruleT(not), tryruleT(close))
+    )
   )
 
 
@@ -289,25 +294,28 @@ val velpos =
     hpalpha1T*,
     veltct,
     alphaT*,
-    tryruleT(close)
+    tryruleT(impLeft)<(
+      tryruleT(close),
+      tryruleT(close)
+    )
   )
 
-val tyltct = 
-  composelistT(hpalpha1T*,
-               diffsolveT(RightP(0),Endpoint),
-               hpalpha1T*,
-               branchT(tryruleT(andRight),
-                       List(velpos,
-                            composelistT(
-                              hpalpha1T*,
-                              instantiate3T,
-                              branchT(okcuttct,
-                                      List(provelemma,
-                                           uselemma))
-                            )
-                          )
-                     )
-             )
+val tyltct = composelistT(
+  hpalpha1T*,
+  diffsolveT(RightP(0),Endpoint),
+  hpalpha1T*,
+  tryruleT(andRight)<(
+    velpos,
+    composelistT(
+      hpalpha1T*,
+      instantiate3T,
+      okcuttct<(
+        provelemma,
+        uselemma
+      )
+    )
+  )
+)
 
 
 
@@ -365,18 +373,15 @@ val deletetct =
 val starttct = 
   composelistT(
     hpalpha1T*,
-    branchT(tryruleT(andRight),
-            List(
-              composelistT(
-                tryruleT(choose),
-                branchT(tryruleT(andRight),
-                        List(
-                          deletetct,
-                          deletetct))
-              ),
-              tyltct
-            )
-          )
+    tryruleT(andRight)<(
+      composelistT(
+        tryruleT(choose),
+        tryruleT(andRight)<(
+          deletetct,
+          deletetct)
+      ),
+      tyltct
+    )      
   )
 
 
