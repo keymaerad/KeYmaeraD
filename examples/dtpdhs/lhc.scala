@@ -327,7 +327,17 @@ val deletetct =
                          composelistT(
                            instantiate1T(St("C")),
                            hideunivsT(St("C")),
-                           tryruleatT(impLeft)(LeftP(1))
+                           branchT(tryruleT(andRight),
+                                   List(
+                                     branchT(tryruleT(andRight),
+                                             List(
+                                               branchT(tryruleT(andRight),
+                                                       Nil),
+                                               tryruleT(close))
+                                             ),
+                                     (tryruleT(not) & tryruleT(commuteEquals) & tryruleT(close) )
+                                   )
+                                 )
                          )))
             )
           ))

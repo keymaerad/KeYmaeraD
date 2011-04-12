@@ -38,7 +38,7 @@ object TreeActions {
 
   def gotonode(nd: ProofNode) : Unit = {
         hereNode = nd
-        println("now at node " + nd.nodeID )
+//        println("now at node " + nd.nodeID )
     }
 
   def shownode(nd: ProofNode) : Unit = 
@@ -60,7 +60,7 @@ object TreeActions {
       register(newnd)
       pt.addchild(newnd.nodeID)
     }
-    println("treemodel attaching nodes: " + newnds)
+//    println("treemodel attaching nodes: " + newnds)
     treemodel.map(_.fireNodesInserted(pt, newnds)) // GUI
     treemodel.map(_.fireChanged(pt)) // GUI
   }
