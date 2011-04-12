@@ -262,8 +262,12 @@ val andbranch1 =
     alphaT*,
     tryruleT(andRight)<(
       tryruleT(andRight) & tryruleT(close),
-      branchT(tryruleT(orLeft),
-              List(branchT(tryruleT(orLeft), List(or0tct,or1tct)) ,or2tct))
+      composelistT(
+        substT*,
+        branchT(tryruleT(orLeft),
+                List(branchT(tryruleT(orLeft), List(or0tct,or1tct)) ,or2tct))
+
+      )
     )
   )
 
