@@ -557,7 +557,9 @@ object Tactics {
       val Sequent(sig,s,c) = nd.goal
       val sig1 = sig.filter((kv) => kv._2 match { case (Nil, srt1) if srt == srt1 => true
                                                 case _ => false})
-      val tms = sig1.keys.map( k => (Fn(k,Nil): Term) ).toList
+      val tms = 
+        sig1.keys.toList.sortWith((s1,s2) => 
+          s1.compareTo(s2) < 0 ).map( k => (Fn(k,Nil): Term) )
       instantiateT(srt)(tms)(nd)
     }
   }
