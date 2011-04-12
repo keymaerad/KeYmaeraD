@@ -315,33 +315,51 @@ val tyltct =
 val deletetct = 
   composelistT(
     hpalpha1T*,
-    branchT(tryruleT(andRight),
-          List(
-            hpalphaT*,
-            composelistT(
-              alphaT*,
-              tryruleatT(commuteEquals)(RightP(0)),
-              instantiate4T,
-              branchT(tryruleatT(impLeft)(LeftP(0)),
-                      List(tryruleT(close),
-                         composelistT(
-                           instantiate1T(St("C")),
-                           hideunivsT(St("C")),
-                           branchT(tryruleT(andRight),
-                                   List(
-                                     branchT(tryruleT(andRight),
-                                             List(
-                                               branchT(tryruleT(andRight),
-                                                       Nil),
-                                               tryruleT(close))
-                                             ),
-                                     (tryruleT(not) & tryruleT(commuteEquals) & tryruleT(close) )
-                                   )
-                                 )
-                         )))
+    tryruleT(andRight)<(
+      composelistT(
+        hpalpha1T*,
+        instantiate5T(St("C")),
+        hideunivsT(St("C")),
+        tryruleatT(impLeft)(LeftP(0))<(
+          tryruleT(close),
+          tryruleatT(impLeft)(LeftP(0))<(
+            ((alphaT*) & (substT*) & nonarithcloseT  ),
+            ((alphaT*) & (substT*) & nonarithcloseT  )
+          )
+        )
+      ),
+      composelistT(
+        alphaT*,
+        tryruleatT(commuteEquals)(RightP(0)),
+        instantiate4T,
+        tryruleatT(impLeft)(LeftP(0))<(
+          tryruleT(close),
+          composelistT(
+            instantiate1T(St("C")),
+            hideunivsT(St("C")),
+            tryruleT(andRight)<(
+              tryruleT(andRight)<(
+                tryruleT(andRight)<(
+                  tryruleatT(impLeft)(LeftP(3))<(
+                    ((substT*) & nonarithcloseT),
+                    ((alphaT*) & (substT*) & nonarithcloseT  )
+                  ),
+                  tryruleatT(impLeft)(LeftP(1))<(
+                    ((substT*) & nonarithcloseT),
+                    ((alphaT*) & (substT*) & nonarithcloseT  )
+                  )
+                ),
+                tryruleT(close)
+              ),
+              (tryruleT(not) & tryruleT(commuteEquals) & tryruleT(close))
             )
-          ))
+          )
+        )
+      )
+    )
   )
+
+
 
 
 val starttct = 

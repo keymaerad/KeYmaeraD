@@ -20,6 +20,7 @@ object Tactics {
     def | (alternative : =>Tactic) = eitherT(this, alternative)
     def ~ (continued : =>Tactic) = composeT(this, continued)
     def & (continued : =>Tactic) = composeT(this, continued)
+    def < (tcts : Tactic *) = branchT(this, tcts.toList)
   }
 
 
@@ -541,7 +542,7 @@ object Tactics {
     }
   }
 
-  val instantiate4T : Tactic  =new Tactic("instantiate3") {
+  val instantiate4T : Tactic  =new Tactic("instantiate4") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val idcs = findidx(nd.goal)
       val tct1 =             
@@ -550,6 +551,18 @@ object Tactics {
       tct1(nd)
     }
   }
+
+  val instantiate5T : Sort => Tactic  = srt => new Tactic("instantiate5 " + srt) {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val Sequent(sig,s,c) = nd.goal
+      val sig1 = sig.filter((kv) => kv._2 match { case (Nil, srt1) if srt == srt1 => true
+                                                case _ => false})
+      val tms = sig1.keys.map( k => (Fn(k,Nil): Term) ).toList
+      instantiateT(srt)(tms)(nd)
+    }
+  }
+
+  
 
   val hideunivsT : Sort => Tactic = srt => new Tactic("hideunivs") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
@@ -603,6 +616,8 @@ object Tactics {
     }
 
     }
+
+  
 
 
 
