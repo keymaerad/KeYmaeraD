@@ -891,13 +891,14 @@ object Rules {
     import Prover._
 
     def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
-      case (LeftP(n), Sequent(sig, ctxt,sc), Atom(R("=", List(Fn(v,Nil),tm)))) 
-        if (ctxt ++ sc).forall(firstorder) =>
+      case (LeftP(n), Sequent(sig, ctxt,sc), Atom(R("=", List(tm1,tm2))))
+        if Util.fv_Term(tm1) == Nil
+             &&  (ctxt ++ sc).forall(firstorder) =>
 //          println("applying substitute. tm = " + tm)
           val ctxt1 = removelist(n,ctxt)
           val ctxt2 = 
-            ctxt1.map(x => extract(Fn(v,Nil), x)(tm))
-          val sc1 = sc.map(x => extract(Fn(v,Nil), x)(tm))
+            ctxt1.map(x => extract(tm1, x)(tm2))
+          val sc1 = sc.map(x => extract(tm1, x)(tm2))
           Some(List(  Sequent(sig, ctxt2,sc1))    ,Nil)
       case _ =>
         None

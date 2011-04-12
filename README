@@ -1,5 +1,8 @@
 Yandle is a theorem prover for hybrid systems.
 
+Original author: David Renshaw
+
+
 Yandle has the following design goals:
  -  
  -
@@ -22,3 +25,11 @@ To compile, navigate to the DLBanyan directory and type "make"
 
 To run, use the "runprover" script.
 ./runworker -c 127.0.0.1 -cp 50001 -p <MAKEUPPORTHERE>
+
+
+
+--------
+KNOWN ISSUES
+
+Parsing is not right-inverse to pretty printing, 
+mostly because of the "." notation for nullary functions.

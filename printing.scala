@@ -208,7 +208,7 @@ object Printing {
     case Sequent(sig, c,s) => 
       docOfSig(sig) :/: 
       docOfList(c.map(docOfFormula), DocCons(text(","), DocBreak)) :/:
-       text("|-") :: DocNest(2,
+       text("|-") :/: DocNest(2,
         docOfList(s.map(docOfFormula), DocCons(text(","), DocBreak)))
   }
 
