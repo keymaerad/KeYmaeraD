@@ -260,16 +260,17 @@ val andbranch1 =
     hidedoublequantT,
     instantiate1T(St("C")),
     alphaT*,
-    branchT(tryruleT(orLeft),
-            List(branchT(tryruleT(orLeft), List(or0tct,or1tct)) ,or2tct))
+    tryruleT(orLeft)<(
+      tryruleT(orLeft)<(or0tct,or1tct),
+      or2tct
+    )
   )
 
 val provelemma = 
   composelistT(
     tryruleunifyT(hide)(parseFormula("L > A + B - C & X1 < X2")),
     instantiate4T,
-    branchT(tryruleT(andRight),
-                         List(andbranch1, composelistT(tryruleT(not), tryruleT(close))))
+    tryruleT(andRight)<(andbranch1, tryruleT(not) & tryruleT(close))
   )
 
 
@@ -296,19 +297,19 @@ val starttct =
   composelistT(hpalpha1T*,
                diffsolveT(RightP(0),Endpoint),
                hpalpha1T*,
-               branchT(tryruleT(andRight),
-                       List(velpos,
-                            composelistT(
-                              hpalpha1T*,
-                              instantiate3T,
-                              branchT(okcuttct,
-                                      List(provelemma,
-                                           uselemma))
-                            )
-                          )
-                     )
+               tryruleT(andRight)<(
+                 velpos,
+                 composelistT(
+                   hpalpha1T*,
+                   instantiate3T,
+                   okcuttct<(
+                     provelemma,
+                     uselemma
+                   )
+                 )
+               )
              )
-
+                 
 
 dl('gotoroot)
 dl('tactic, starttct)
