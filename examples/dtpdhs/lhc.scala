@@ -374,6 +374,56 @@ val deletetct =
 
 
 
+val createtct = 
+  composelistT(
+    hpalpha1T*,
+    tryruleT(andRight)<(
+      composelistT(
+        hpalpha1T*,
+        instantiate5T(St("C")),
+        hideunivsT(St("C")),
+        tryruleatT(impLeft)(LeftP(2))<(
+          (substT*)  & (tryruleatT(impLeft)(LeftP(1))   )  & nonarithcloseT ,
+          tryruleatT(impLeft)(LeftP(0))<(
+            ((alphaT*) & (substT*) & nonarithcloseT  ),
+            ((alphaT*) & (substT*) & nonarithcloseT  )
+          )
+        )
+      ),
+      composelistT(
+        alphaT*,
+        tryruleatT(commuteEquals)(RightP(0)),
+        instantiate4T,
+        tryruleatT(impLeft)(LeftP(0))<(
+          tryruleT(close),
+          composelistT(
+            instantiate1T(St("C")),
+            hideunivsT(St("C")),
+            tryruleT(andRight)<(
+              tryruleT(andRight)<(
+                tryruleT(andRight)<(
+                  tryruleatT(impLeft)(LeftP(3))<(
+                    ((substT*) & nonarithcloseT),
+                    ((alphaT*) & (substT*) & nonarithcloseT  )
+                  ),
+                  tryruleatT(impLeft)(LeftP(1))<(
+                    ((substT*) & nonarithcloseT),
+                    ((alphaT*) & (substT*) & nonarithcloseT  )
+                  )
+                ),
+                tryruleT(close)
+              ),
+              (tryruleT(not) & tryruleT(commuteEquals) & tryruleT(close))
+            )
+          )
+        )
+      )
+    )
+  )
+
+
+
+
 val starttct = 
   composelistT(
     hpalpha1T*,
@@ -382,7 +432,7 @@ val starttct =
         tryruleT(choose),
         tryruleT(andRight)<(
           deletetct,
-          deletetct)
+          createtct)
       ),
       tyltct
     )      
