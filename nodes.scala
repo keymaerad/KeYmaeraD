@@ -70,7 +70,7 @@ object Nodes {
 
    override def toPrettyString : String = {
       val sb = new StringBuilder()
-      sb.append(Printing.stringOfSequent(goal) + "\n")
+      sb.append(Printing.stringOfSequent(goal) + "\n\n\n")
       sb.append("AndNode\n")
       sb.append("rule = " + rule + "\n")
       sb.append("schemavars = " + schemavars + "\n")
@@ -90,7 +90,7 @@ object Nodes {
 
    override def toPrettyString : String = {
       val sb = new StringBuilder()
-      sb.append(Printing.stringOfSequent(goal) + "\n")
+      sb.append(Printing.stringOfSequent(goal) + "\n\n\n")
       sb.append("OrNode\n")
       sb.append("rule = " + rule + "\n")
       sb.append(super.toPrettyString)
@@ -110,7 +110,7 @@ object Nodes {
 
    override def toPrettyString : String = {
       val sb = new StringBuilder()
-      sb.append(Printing.stringOfSequent(goal) + "\n")
+      sb.append(Printing.stringOfSequent(goal) + "\n\n\n\n")
       sb.append("WorkingNode\n")
       sb.append("rule = " + rule + "\n")
       sb.append(super.toPrettyString)

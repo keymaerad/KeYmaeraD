@@ -1,4 +1,4 @@
-dl('load, "examples/tylenol.dl")
+dl('load, "examples/dtpdhs/lhc.dl")
 
 
 
@@ -19,11 +19,11 @@ val cuttct = cutT(
 val okcuttct = cutT(
   StandardKeepCut,
   parseFormula(
-   "(x(F)<=x(L)&~F=L )" + 
+   "(e(F) = 1 & e(L) = 1 & x(F)<=x(L) & ~F=L )" + 
     "==>(2*B()*x(L)>2*B()*x(F)+v(F)^2-v(L)^2 & x(F) < x(L))"
   ),
   parseFormula(
-   "x(F)<=x(L)&~F=L" 
+   "e(F) = 1 & e(L) = 1 & x(F)<=x(L)&~F=L" 
   )
 )
 
@@ -260,9 +260,14 @@ val andbranch1 =
     hidedoublequantT,
     instantiate1T(St("C")),
     alphaT*,
-    tryruleT(orLeft)<(
-      tryruleT(orLeft)<(or0tct,or1tct),
-      or2tct
+    tryruleT(andRight)<(
+      tryruleT(andRight) & tryruleT(close),
+      composelistT(
+        substT*,
+        branchT(tryruleT(orLeft),
+                List(branchT(tryruleT(orLeft), List(or0tct,or1tct)) ,or2tct))
+
+      )
     )
   )
 
@@ -270,7 +275,10 @@ val provelemma =
   composelistT(
     tryruleunifyT(hide)(parseFormula("L > A + B - C & X1 < X2")),
     instantiate4T,
-    tryruleT(andRight)<(andbranch1, tryruleT(not) & tryruleT(close))
+    tryruleT(andRight)<(
+      andbranch1, 
+      composelistT(tryruleT(not), tryruleT(close))
+    )
   )
 
 
@@ -290,26 +298,96 @@ val velpos =
     hpalpha1T*,
     veltct,
     alphaT*,
-    tryruleT(close)
+    tryruleT(impLeft)<(
+      tryruleT(close),
+      tryruleT(close)
+    )
   )
 
+val tyltct = composelistT(
+  hpalpha1T*,
+  diffsolveT(RightP(0),Endpoint),
+  hpalpha1T*,
+  tryruleT(andRight)<(
+    velpos,
+    composelistT(
+      hpalpha1T*,
+      instantiate3T,
+      okcuttct<(
+        provelemma,
+        uselemma
+      )
+    )
+  )
+)
+
+
+
+
+val deletetct = 
+  composelistT(
+    hpalpha1T*,
+    tryruleT(andRight)<(
+      composelistT(
+        hpalpha1T*,
+        instantiate5T(St("C")),
+        hideunivsT(St("C")),
+        tryruleatT(impLeft)(LeftP(0))<(
+          tryruleT(close),
+          tryruleatT(impLeft)(LeftP(0))<(
+            ((alphaT*) & (substT*) & nonarithcloseT  ),
+            ((alphaT*) & (substT*) & nonarithcloseT  )
+          )
+        )
+      ),
+      composelistT(
+        alphaT*,
+        tryruleatT(commuteEquals)(RightP(0)),
+        instantiate4T,
+        tryruleatT(impLeft)(LeftP(0))<(
+          tryruleT(close),
+          composelistT(
+            instantiate1T(St("C")),
+            hideunivsT(St("C")),
+            tryruleT(andRight)<(
+              tryruleT(andRight)<(
+                tryruleT(andRight)<(
+                  tryruleatT(impLeft)(LeftP(3))<(
+                    ((substT*) & nonarithcloseT),
+                    ((alphaT*) & (substT*) & nonarithcloseT  )
+                  ),
+                  tryruleatT(impLeft)(LeftP(1))<(
+                    ((substT*) & nonarithcloseT),
+                    ((alphaT*) & (substT*) & nonarithcloseT  )
+                  )
+                ),
+                tryruleT(close)
+              ),
+              (tryruleT(not) & tryruleT(commuteEquals) & tryruleT(close))
+            )
+          )
+        )
+      )
+    )
+  )
+
+
+
+
 val starttct = 
-  composelistT(hpalpha1T*,
-               diffsolveT(RightP(0),Endpoint),
-               hpalpha1T*,
-               tryruleT(andRight)<(
-                 velpos,
-                 composelistT(
-                   hpalpha1T*,
-                   instantiate3T,
-                   okcuttct<(
-                     provelemma,
-                     uselemma
-                   )
-                 )
-               )
-             )
-                 
+  composelistT(
+    hpalpha1T*,
+    tryruleT(andRight)<(
+      composelistT(
+        tryruleT(choose),
+        tryruleT(andRight)<(
+          deletetct,
+          deletetct)
+      ),
+      tyltct
+    )      
+  )
+
 
 dl('gotoroot)
 dl('tactic, starttct)
