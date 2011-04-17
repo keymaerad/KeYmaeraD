@@ -164,20 +164,13 @@ val sg1tct =
   )
 
 
-val uselemma =  branchT(tryruleT(impLeft),
-                        List(sg1tct,
-                             tryruleT(close)))
+val uselemma =  tryruleT(impLeft)<( sg1tct,  tryruleT(close))
 
 
-
-
-val oror1tct = unitT
 
 
 val precond = 
-  branchT(
-    tryruleT(andRight),
-    List(
+    tryruleT(andRight)<(
       composelistT(
         tryrulepredT(hide)(fm => fm match { case Atom(R("<=",_)) => false case _ => true}),
         hidethencloseT
@@ -186,8 +179,7 @@ val precond =
                    tryruleT(commuteEquals),
                    tryruleT(close)
                  )
-       )
-  )
+    )
 
 
 val oror0tct = 
@@ -195,8 +187,7 @@ val oror0tct =
     alphaT*,
     nullarizeT*,
     substT*,
-    branchT(tryruleT(impLeft),
-            List(hidethencloseT,precond))
+    tryruleT(impLeft)<(hidethencloseT,precond)
   )
 
 val oror1tct = 
@@ -214,46 +205,28 @@ val oror2tct =
     vacuousT*,
     nullarizeT*,
     substT*,
-    branchT(tryruleT(impLeft),
-            List(
-              branchT(tryruleT(impLeft),
-                      List( 
-                        composelistT(
-                          branchT(cuttct,
-                                  List(
-                                    composelistT(
-                                      hideforprovecut,
-                                      hidethencloseT
-                                    ),
-                                    hidethencloseT
-                                  ))),
-                        precond
-                        )
-                      ),
-              precond
-            )
+    tryruleT(impLeft)<(
+      tryruleT(impLeft)<(
+        cuttct<(
+          hideforprovecut & hidethencloseT, 
+          hidethencloseT),
+        precond
+      ),
+      precond
+    )
     
-          )
   )
+
 
 val or0tct = 
   composelistT(
     alphaT*,
     hideunivsT(St("C")),
-    branchT(tryruleT(orLeft), 
-            List(branchT(tryruleT(orLeft),
-                         List(oror0tct,oror1tct)), 
-                 oror2tct))
+    tryruleT(orLeft)<(
+      tryruleT(orLeft)<(oror0tct,oror1tct), 
+      oror2tct)
   )
 
-
-val or1tct = 
-  composelistT(
-    or0tct
-  )
-
-val or2tct = 
- composelistT(or0tct)
 
 
 val andbranch1 = 
@@ -268,8 +241,8 @@ val andbranch1 =
           impleftknownT*
         ),
         tryruleT(orLeft)<(
-          tryruleT(orLeft)<(or0tct,or1tct),
-          or2tct)
+          tryruleT(orLeft)<(or0tct,or0tct),
+          or0tct)
 
       )
     )
