@@ -105,7 +105,6 @@ val impsg1 =
           hidethencloseT
         )
       )
-    
     )
   )
 
@@ -404,16 +403,17 @@ val createtct =
           composelistT(
             instantiate1T(St("C")),
             hideunivsT(St("C")),
+            impleftknownT*,
             tryruleT(andRight)<(
               tryruleT(andRight)<(
                 tryruleT(andRight)<(
-                  tryruleatT(impLeft)(LeftP(3))<(
+                  tryruleatT(impLeft)(LeftP(5))<(
                     ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) & nonarithcloseT  )
+                    ((alphaT*) & (substT*) &  (impleftknownT*  )  & nonarithcloseT  )
                   ),
-                  tryruleatT(impLeft)(LeftP(1))<(
+                  tryruleatT(impLeft)(LeftP(2))<(
                     ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) & nonarithcloseT  )
+                    ((alphaT*) & (substT*) & (impleftknownT*  )  & nonarithcloseT  )
                   )
                 ),
                 tryruleT(close)
