@@ -980,7 +980,7 @@ object Rules {
           val fmsr = fms.map(fm1 => hasFn_Formula(f,fm1))
 //          println("in nullarize. fms = " + fms)
          
-          println("in nullarize. f = " + f + ".  fmsr = " + fmsr)
+//          println("in nullarize. f = " + f + ".  fmsr = " + fmsr)
           val sig1 = sig.get(f) match {
             case Some((args,rtn) ) =>
               sig + ((fi,(Nil,rtn))) + ((fj, (Nil,rtn)))

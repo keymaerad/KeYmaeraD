@@ -91,24 +91,24 @@ val hardcase =
 
 val impsg1 = 
   composelistT(
-    branchT(cuttct,
-            List(provecut, 
-                 branchT(tryruleT(orLeft),
-                         List(branchT(tryruleT(orLeft),
-                                      List(hardcase, 
-                                           composelistT(nullarizeT*,hidethencloseT))),
-                              composelistT(
-                                tryruleT(andLeft)*,
-                                hideunivsT(St("C")),
-                                nullarizeT*,
-                                substT*,
-                                hidethencloseT
-                              )
-                            )
-                       )
-               )
-          )
+    cuttct<(
+      provecut, 
+      tryruleT(orLeft)<(
+        tryruleT(orLeft)<(
+          hardcase, 
+          composelistT(nullarizeT*,hidethencloseT)),
+        composelistT(
+          tryruleT(andLeft)*,
+          hideunivsT(St("C")),
+          nullarizeT*,
+          substT*,
+          hidethencloseT
+        )
+      )
+    
+    )
   )
+
 
 
 val orsg2tct = 
