@@ -28,25 +28,6 @@ val okcuttct = cutT(
 )
 
   
-val mostthingsT = 
-    repeatT(
-      eitherlistT(hpalphaT, 
-                  alphaT, 
-                  nonarithcloseT,
-                  betaT, 
-                  substT))
-
-
-val everythingT: Tactic = 
-  composeT(
-    repeatT(
-      eitherlistT(hpalphaT, 
-                  alphaT, 
-                  nonarithcloseT,
-                  betaT, 
-                  substT)),
-    eitherT(nonarithcloseT, hidethencloseT))
-
 
 val hideforprovecut = 
   composelistT(
@@ -143,13 +124,10 @@ val easy2 =
 val easycase = 
   composelistT(
     alphaT*,
-    branchT(tryruleT(orLeft),
-            List(branchT(tryruleT(orLeft), List(easy0, easy1)),easy2))
+    tryruleT(orLeft)<(
+      tryruleT(orLeft)<(easy0, easy1),
+      easy2)
   )
-
-val orsg0tct = easycase
-
-val orsg1tct = easycase
 
 
 
@@ -159,7 +137,7 @@ val sg1tct =
     instantiate1T(St("C")),
     impleftknownT*,
     tryruleT(orLeft)<(
-      tryruleT(orLeft)<(orsg0tct, orsg1tct),
+      tryruleT(orLeft)<(easycase, easycase),
       orsg2tct)
   )
 
