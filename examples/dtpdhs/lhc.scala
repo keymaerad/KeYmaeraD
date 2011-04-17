@@ -116,10 +116,12 @@ val orsg2tct =
    tryruleT(andLeft)*,
    instantiate1T(St("C")),
    vacuousT*,
-   branchT(tryruleT(impLeft),
-           List(impsg1,
-                branchT(tryruleT(andRight),List(tryruleT(close), 
-                                                composelistT(alphaT*, tryruleT(close))))))
+   impleftknownT*,
+   tryruleT(impLeft)<(
+     impsg1,
+     tryruleT(andRight)<( 
+       tryruleT(andRight) & nonarithcloseT, 
+       composelistT(alphaT*, tryruleT(close))))
  )
 
 
@@ -152,15 +154,15 @@ val orsg1tct = easycase
 
 
 
-
-
 val sg1tct = 
   composelistT(
     hidedoublequantT,
     instantiate1T(St("C")),
-    branchT(tryruleT(orLeft),
-            List(branchT(tryruleT(orLeft), List(orsg0tct, orsg1tct)),orsg2tct))
-             )
+    impleftknownT*,
+    tryruleT(orLeft)<(
+      tryruleT(orLeft)<(orsg0tct, orsg1tct),
+      orsg2tct)
+  )
 
 
 val uselemma =  branchT(tryruleT(impLeft),
