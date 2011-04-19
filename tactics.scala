@@ -753,4 +753,35 @@ object Tactics {
   
 
 
+  val impleftknownT : Tactic = new Tactic("impleftknown") {
+    def apply(nd : OrNode) : Option[List[NodeID]] = {
+      val Sequent(sig,cs,ss) = nd.goal
+      for(i <- cs.indices) {
+        cs(i) match {
+          case Binop(Imp,Atom(R("=",List(t1,t2))) ,f2) if t1 == t2 =>
+            return (tryruleatT(impLeft)(LeftP(i))<(
+              unitT,
+              nonarithcloseT
+            ))(nd)
+
+          case Binop(Imp,f1,f2) =>
+            for(c2 <- cs) {
+              if (f1 == c2 ){
+                return (tryruleatT(impLeft)(LeftP(i))<(
+                  unitT,
+                  nonarithcloseT
+                ))(nd)
+              } else {
+                ()
+              }
+            }
+          case _ =>
+          ()
+        }
+      }
+      return None
+    }
+  }
+
+
 }

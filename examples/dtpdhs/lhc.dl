@@ -22,12 +22,11 @@ forall f : C.
 (n :=*; ?(e(n) = 0 & v(n) >= 0); e(n) := 1; 
  ?(forall i : C. 
     (e(i) = 1 ==> 
-      ((x(i) < x(n) ==>  
-        2 * B * x(n) > 2 *  B * x(i) + v(i)^2 - v(n)^2 
-                       + (A + B) * (A * eps^2 + 2 * eps * v(i)))
-      & (x(n) < x(i) ==>  
-        2 * B * x(i) > 2 *  B * x(n) + v(n)^2 - v(i)^2 
-                       + (A + B) * (A * eps^2 + 2 * eps * v(n)))))))
+      ((( x(i) <= x(n)  & ~ i = n )==>  
+        2 * B * x(n) > 2 *  B * x(i) + v(i)^2 - v(n)^2  & x(i) < x(n)  )
+      & (x(n) <= x(i) & ~ i = n ==>  
+        2 * B * x(i) > 2 *  B * x(n) + v(n)^2 - v(i)^2  & x(n) < x(i) )))))
+                       
 ++
 (
 forall f : C a(f) := *;

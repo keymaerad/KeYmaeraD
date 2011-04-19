@@ -28,25 +28,6 @@ val okcuttct = cutT(
 )
 
   
-val mostthingsT = 
-    repeatT(
-      eitherlistT(hpalphaT, 
-                  alphaT, 
-                  nonarithcloseT,
-                  betaT, 
-                  substT))
-
-
-val everythingT: Tactic = 
-  composeT(
-    repeatT(
-      eitherlistT(hpalphaT, 
-                  alphaT, 
-                  nonarithcloseT,
-                  betaT, 
-                  substT)),
-    eitherT(nonarithcloseT, hidethencloseT))
-
 
 val hideforprovecut = 
   composelistT(
@@ -91,24 +72,23 @@ val hardcase =
 
 val impsg1 = 
   composelistT(
-    branchT(cuttct,
-            List(provecut, 
-                 branchT(tryruleT(orLeft),
-                         List(branchT(tryruleT(orLeft),
-                                      List(hardcase, 
-                                           composelistT(nullarizeT*,hidethencloseT))),
-                              composelistT(
-                                tryruleT(andLeft)*,
-                                hideunivsT(St("C")),
-                                nullarizeT*,
-                                substT*,
-                                hidethencloseT
-                              )
-                            )
-                       )
-               )
-          )
+    cuttct<(
+      provecut, 
+      tryruleT(orLeft)<(
+        tryruleT(orLeft)<(
+          hardcase, 
+          composelistT(nullarizeT*,hidethencloseT)),
+        composelistT(
+          tryruleT(andLeft)*,
+          hideunivsT(St("C")),
+          nullarizeT*,
+          substT*,
+          hidethencloseT
+        )
+      )
+    )
   )
+
 
 
 val orsg2tct = 
@@ -116,10 +96,12 @@ val orsg2tct =
    tryruleT(andLeft)*,
    instantiate1T(St("C")),
    vacuousT*,
-   branchT(tryruleT(impLeft),
-           List(impsg1,
-                branchT(tryruleT(andRight),List(tryruleT(close), 
-                                                composelistT(alphaT*, tryruleT(close))))))
+   impleftknownT*,
+   tryruleT(impLeft)<(
+     impsg1,
+     tryruleT(andRight)<( 
+       tryruleT(andRight) & nonarithcloseT, 
+       composelistT(alphaT*, tryruleT(close))))
  )
 
 
@@ -142,15 +124,10 @@ val easy2 =
 val easycase = 
   composelistT(
     alphaT*,
-    branchT(tryruleT(orLeft),
-            List(branchT(tryruleT(orLeft), List(easy0, easy1)),easy2))
+    tryruleT(orLeft)<(
+      tryruleT(orLeft)<(easy0, easy1),
+      easy2)
   )
-
-val orsg0tct = easycase
-
-val orsg1tct = easycase
-
-
 
 
 
@@ -158,25 +135,20 @@ val sg1tct =
   composelistT(
     hidedoublequantT,
     instantiate1T(St("C")),
-    branchT(tryruleT(orLeft),
-            List(branchT(tryruleT(orLeft), List(orsg0tct, orsg1tct)),orsg2tct))
-             )
+    impleftknownT*,
+    tryruleT(orLeft)<(
+      tryruleT(orLeft)<(easycase, easycase),
+      orsg2tct)
+  )
 
 
-val uselemma =  branchT(tryruleT(impLeft),
-                        List(sg1tct,
-                             tryruleT(close)))
+val uselemma =  tryruleT(impLeft)<( sg1tct,  tryruleT(close))
 
 
-
-
-val oror1tct = unitT
 
 
 val precond = 
-  branchT(
-    tryruleT(andRight),
-    List(
+    tryruleT(andRight)<(
       composelistT(
         tryrulepredT(hide)(fm => fm match { case Atom(R("<=",_)) => false case _ => true}),
         hidethencloseT
@@ -185,8 +157,7 @@ val precond =
                    tryruleT(commuteEquals),
                    tryruleT(close)
                  )
-       )
-  )
+    )
 
 
 val oror0tct = 
@@ -194,8 +165,7 @@ val oror0tct =
     alphaT*,
     nullarizeT*,
     substT*,
-    branchT(tryruleT(impLeft),
-            List(hidethencloseT,precond))
+    tryruleT(impLeft)<(hidethencloseT,precond)
   )
 
 val oror1tct = 
@@ -213,46 +183,28 @@ val oror2tct =
     vacuousT*,
     nullarizeT*,
     substT*,
-    branchT(tryruleT(impLeft),
-            List(
-              branchT(tryruleT(impLeft),
-                      List( 
-                        composelistT(
-                          branchT(cuttct,
-                                  List(
-                                    composelistT(
-                                      hideforprovecut,
-                                      hidethencloseT
-                                    ),
-                                    hidethencloseT
-                                  ))),
-                        precond
-                        )
-                      ),
-              precond
-            )
+    tryruleT(impLeft)<(
+      tryruleT(impLeft)<(
+        cuttct<(
+          hideforprovecut & hidethencloseT, 
+          hidethencloseT),
+        precond
+      ),
+      precond
+    )
     
-          )
   )
+
 
 val or0tct = 
   composelistT(
     alphaT*,
     hideunivsT(St("C")),
-    branchT(tryruleT(orLeft), 
-            List(branchT(tryruleT(orLeft),
-                         List(oror0tct,oror1tct)), 
-                 oror2tct))
+    tryruleT(orLeft)<(
+      tryruleT(orLeft)<(oror0tct,oror1tct), 
+      oror2tct)
   )
 
-
-val or1tct = 
-  composelistT(
-    or0tct
-  )
-
-val or2tct = 
- composelistT(or0tct)
 
 
 val andbranch1 = 
@@ -263,9 +215,12 @@ val andbranch1 =
     tryruleT(andRight)<(
       tryruleT(andRight) & tryruleT(close),
       composelistT(
-        substT*,
-        branchT(tryruleT(orLeft),
-                List(branchT(tryruleT(orLeft), List(or0tct,or1tct)) ,or2tct))
+        composelistT(
+          impleftknownT*
+        ),
+        tryruleT(orLeft)<(
+          tryruleT(orLeft)<(or0tct,or0tct),
+          or0tct)
 
       )
     )
@@ -399,16 +354,22 @@ val createtct =
           composelistT(
             instantiate1T(St("C")),
             hideunivsT(St("C")),
+            impleftknownT*,
             tryruleT(andRight)<(
               tryruleT(andRight)<(
                 tryruleT(andRight)<(
-                  tryruleatT(impLeft)(LeftP(3))<(
+                  tryruleatT(impLeft)(LeftP(5))<(
                     ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) & nonarithcloseT  )
+                    ((alphaT*) & (substT*) &  (tryruleatT(impLeft)(LeftP(1))<(
+                      nonarithcloseT,
+                      (tryruleT(andRight)) & (alphaT* ) & nonarithcloseT)))
                   ),
-                  tryruleatT(impLeft)(LeftP(1))<(
+                  tryruleatT(impLeft)(LeftP(2))<(
                     ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) & nonarithcloseT  )
+                    ((alphaT*) & (substT*) &  (tryruleatT(impLeft)(LeftP(3))<(
+                      nonarithcloseT,
+                      (tryruleT(andRight))<(nonarithcloseT, 
+                                            alphaT & tryruleT(commuteEquals) & nonarithcloseT))))
                   )
                 ),
                 tryruleT(close)
