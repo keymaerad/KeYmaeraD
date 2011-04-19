@@ -360,11 +360,16 @@ val createtct =
                 tryruleT(andRight)<(
                   tryruleatT(impLeft)(LeftP(5))<(
                     ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) &  (impleftknownT*  )  & nonarithcloseT  )
+                    ((alphaT*) & (substT*) &  (tryruleatT(impLeft)(LeftP(1))<(
+                      nonarithcloseT,
+                      (tryruleT(andRight)) & (alphaT* ) & nonarithcloseT)))
                   ),
                   tryruleatT(impLeft)(LeftP(2))<(
                     ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) & (impleftknownT*  )  & nonarithcloseT  )
+                    ((alphaT*) & (substT*) &  (tryruleatT(impLeft)(LeftP(3))<(
+                      nonarithcloseT,
+                      (tryruleT(andRight))<(nonarithcloseT, 
+                                            alphaT & tryruleT(commuteEquals) & nonarithcloseT))))
                   )
                 ),
                 tryruleT(close)
