@@ -1,3 +1,7 @@
+/**
+ * This file is soundness critical. Don't touch without review!
+ * @soundness
+ */
 package DLBanyan
 
 
@@ -581,7 +585,7 @@ object Rules {
  }
    
   //
-  // induction rules
+  // loop rules
   //
 
   val loopInduction : Formula => ProofRule = 
@@ -607,6 +611,24 @@ object Rules {
       }
     }
 
+  val iterate = new ProofRule("iterate") {
+      def apply(p: Position) = sq => {
+	      val fm = lookup(p,sq)
+          fm match {
+            case Modality(Box,Loop(hp, True, inv_hints), phi) =>
+              val fm1 = Binop(And,phi,Modality(Box, hp, fm))
+              val sq1 = replace(p, sq, fm1)
+              Some((List(sq1),Nil))
+            case _ => 
+              None
+          }
+      }
+    }
+
+  
+  //
+  // differential equation rules
+  //
 
   val diffClose = new ProofRule("diffClose") {
     def apply(pos: Position) = sq => (pos,sq) match { 
