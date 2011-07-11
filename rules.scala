@@ -167,6 +167,10 @@ object Rules {
     def apply(p:Position) = sq => 
       Some( (List(remove(p,sq)   ), Nil )   )
   }
+   
+  //
+  // propositional rules
+  //
 
   val andLeft  = new ProofRule("andleft") {
     def apply(p:Position) = sq => (p,sq) match {
@@ -280,7 +284,9 @@ object Rules {
     }
   }
 
-
+  //
+  // quantifier rules
+  //
 
 
   val allRight = new ProofRule("allright") {
@@ -333,7 +339,10 @@ object Rules {
         None
     }
   }
-
+  
+  //
+  // regular hybrid program rules
+  //
 
   val seq = new ProofRule("seq") {
     def apply(p: Position) = sq => {
@@ -378,6 +387,9 @@ object Rules {
   }
  
 
+  //
+  // assignment rules
+  //
 
  val assign = new ProofRule("assign") {
     def apply(p: Position) = sq =>   {
@@ -567,7 +579,10 @@ object Rules {
      case _ => None
    }
  }
-
+   
+  //
+  // induction rules
+  //
 
   val loopInduction : Formula => ProofRule = 
     inv => new ProofRule("loopInduction[" 
@@ -885,7 +900,9 @@ object Rules {
                                                         
     }
 
-
+  //
+  // equality substitution rule
+  //
 
   val substitute = new ProofRule("substitute") {
     import Prover._
@@ -906,7 +923,9 @@ object Rules {
 
   }
 
-
+  //
+  // cuts
+  //
 
   val directedCut : Formula => ProofRule = 
     fm => new ProofRule("directedCut["
