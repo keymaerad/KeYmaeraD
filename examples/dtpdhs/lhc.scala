@@ -1,7 +1,5 @@
 dl('load, "examples/dtpdhs/lhc.dl")
 
-
-
 val cuttct = cutT(
   DirectedCut,
   parseFormula(
@@ -14,8 +12,6 @@ val cuttct = cutT(
   )
 )
 
-
-
 val okcuttct = cutT(
   StandardKeepCut,
   parseFormula(
@@ -26,8 +22,6 @@ val okcuttct = cutT(
    "e(F) = 1 & e(L) = 1 & x(F)<=x(L)&~F=L" 
   )
 )
-
-  
 
 val hideforprovecut = 
   composelistT(
@@ -143,9 +137,6 @@ val sg1tct =
 
 
 val uselemma =  tryruleT(impLeft)<( sg1tct,  tryruleT(close))
-
-
-
 
 val precond = 
     tryruleT(andRight)<(

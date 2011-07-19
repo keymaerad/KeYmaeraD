@@ -326,11 +326,13 @@ object FE {
 
   var recentFiles : List[String] = Nil;
 
+  var mf: Any = null;
+
   def createAndShowGUI(fa: Actor) : Unit =  {
 
     //Create and set up the window.
-    val frame = new MainFrame {
-	  title="Yandle";
+    mf = new MainFrame {
+	  title="KeYmaeraD";
 	  val keymask = toolkit.getMenuShortcutKeyMask();
       //Add content to the window.
 	  contents = new FrontEnd(fa)
