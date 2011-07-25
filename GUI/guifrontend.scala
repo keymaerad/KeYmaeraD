@@ -363,7 +363,7 @@ object FE {
 		  close
 		  fa ! ('quit)
 		})
-	    quit.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+	    quit.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
     	contents += quit
     }
 	    contents += new Menu("Prove") {

@@ -1,9 +1,10 @@
-Yandle is a theorem prover for hybrid systems.
+KeYmaeraD is a theorem prover for distributed hybrid systems.
+KeYmaeraD implements quantified differential dynamic logic (QdL).
 
 Original author: David Renshaw
 
 
-Yandle has the following design goals:
+KeYmaeraD has the following design goals:
  -  
  -
 
@@ -21,12 +22,37 @@ JLINK (=/Applications/Mathematica.app/SystemFiles/Links/JLink)
 MATHKERNEL (=/Applications/Mathematica.app/Contents/MacOS/MathKernel)
 
 
-To compile, navigate to the DLBanyan directory and type "make"
+To compile, navigate to the KeYmaeraD root directory and type "make"
 
 To run, use the "runprover" script.
+./runprover
+
+If workers do not start automatically from "runprover", then run workers, use one of the following forms
+./runworker
 ./runworker -c 127.0.0.1 -cp 50001 -p <MAKEUPPORTHERE>
 
+--------
+REFERENCES
 
+KeYmaeraD is described in
+
+  David W. Renshaw, Sarah M. Loos, and André Platzer.
+  Distributed theorem proving for distributed hybrid systems.
+  In Shengchao Qin and Zongyan Qiu, editors, International Conference
+  on Formal Engineering Methods, ICFEM'11, Durham, United Kingdom,
+  Proceedings, volume 6991 of LNCS. Springer, 2011.
+
+KeYmaeraD implements the logic and proof calculus introduced in 
+
+  André Platzer.
+  Quantified differential dynamic logic for distributed hybrid systems.
+  In Anuj Dawar and Helmut Veith, editors, Computer Science Logic,
+  19th EACSL Annual Conference, CSL 2010, Brno, Czech Republic, August 23-27, 2010.
+  Proceedings, volume 6247 of LNCS, pages 469-483. Springer, 2010.
+
+For more information, also see
+
+  http://symbolaris.com/logic/disthysys.html
 
 --------
 KNOWN ISSUES
