@@ -108,9 +108,10 @@ class DLParser(ins : String)
    def formula0 : Parser[Formula] = 
      formula1*( "<=>" ^^^ {(f1:Formula,f2:Formula) => Binop(Iff,f1,f2)})
 
-   // XXX This should be right-associative instead.
+   // Implication is right-associative.
    def formula1 : Parser[Formula] = 
-     formula2*( "==>" ^^^ {(f1:Formula,f2:Formula) => Binop(Imp,f1,f2)})
+      rep1sep(formula2, "==>") ^^ 
+        ((lst) => lst.reduceRight((f1:Formula,f2:Formula) => Binop(Imp,f1,f2)))
 
    def formula2 : Parser[Formula] = 
      formula3*( "|" ^^^ {(f1:Formula,f2:Formula) => Binop(Or,f1,f2)})

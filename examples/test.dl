@@ -30,7 +30,9 @@ forall j : D {f(j)' = 4 ; f(j) > 4 };
 ? true
 ] 1 = 1,
 [forall j : D {f(j)' = 4 ; f(j) > 0 }] 1 = 1,
-forall i : D . x(i) = x(i)
+forall i : D . x(i) = x(i),
+true ==> true & false ==> true | true,
+(true ==> true) ==> true
 
 
 

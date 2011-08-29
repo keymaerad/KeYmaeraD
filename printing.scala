@@ -112,11 +112,12 @@ object Printing {
       bracketp(pr>pr1)("(",")",
                        docOfFormulaAux(pr1)(fm1) :: text("|") :: 
                        docOfFormulaAux(pr1+1)(fm2) )
+    // Implication is right-associative.
     case Binop(Imp,fm1,fm2) =>
       val pr1 = 6;
       bracketp(pr>pr1)("(",")", 
-                       docOfFormulaAux(pr1)(fm1) :: text("==>") :: 
-                       docOfFormulaAux(pr1+1)(fm2))
+                       docOfFormulaAux(pr1+1)(fm1) :: text("==>") :: 
+                       docOfFormulaAux(pr1)(fm2))
     case Binop(Iff,fm1,fm2) => 
       val pr1 = 4;
       bracketp(pr>pr1)("(",")",
