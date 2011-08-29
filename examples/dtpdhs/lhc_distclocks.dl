@@ -29,7 +29,8 @@ forall f : C.
                        
 ++
 (
-f := *; a(f) := *;
+f := *; 
+a(f) := *;
 ?(e(f) = 1 ==>
  (a(f) = -B |
   ( v(f) = 0 & a(f) = 0) |
@@ -39,8 +40,11 @@ f := *; a(f) := *;
          2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2 
                        + (A + B) * (A * eps^2 + 2 * eps * v(f)))
    & a(f) = A))
- );
-   forall i : C {x(i)' = v(i), 
+ ) ;
+t(f) := 0 
+)
+++
+(   forall i : C {x(i)' = v(i), 
                         v(i)' = a(i), 
                         t(i)' = 1; (e(i) = 1 ==> v(i) >= 0) &  t(i) <= eps}  
                          @solution( forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i),
