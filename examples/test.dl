@@ -1,9 +1,12 @@
+// this is a comment.
 {}      
 4 = r & 3 > s,
 [g:= 40] g > 30 | 5 < x + 1 + 2 +3 ,
 forall y. t + y > 3 | t < 10
 |-
 [x := 1 ; y := 2 ; {s := 3; y:=4}* 
+   /* this is a multiline
+      comment */
        @invariant(  2 * b * bb * x2 >  2 * b * bb * x1
                          + v1 ^ 2   * bb
                          - v2 ^ 2  * b &

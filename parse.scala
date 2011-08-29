@@ -49,7 +49,7 @@ class DLParser(ins : String)
      var ln = br.readLine()
      while (ln != null){
        println( ln)
-       ins1 = ins1 + ln
+       ins1 = ins1 + ln + "\n"
        ln = br.readLine()
      }
      println("input = " + ins1)
