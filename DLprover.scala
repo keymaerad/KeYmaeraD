@@ -8,6 +8,7 @@ import java.io.InputStreamReader
 
 import scala.collection.immutable.ListSet
 import scala.collection.immutable.HashSet
+import scala.collection.mutable.HashMap
 
 
 import DLBanyan.Util._
@@ -16,21 +17,20 @@ final object Prover {
 
 
   // for fresh variable names
-  var uniqid: Int = 0
+  val uniqids: HashMap[String, Int] = new HashMap[String,Int];
 
-  
   def uniqify(s: String): String = {
-//    val s1 =   s + "$" + getShortName + "$" + uniqid
-    val uniqid0 = uniqid
-    uniqid = uniqid + 1
     val dol = s.indexOf("$")
-    if(dol == -1){
-      val s1 = s + "$" + uniqid0
-      s1
-    } else {
-      val s0 = s.substring(0,dol)
-      val s1 = s0 + "$" + uniqid0
-      s1
+    val s0 = if(dol == -1) s else s.substring(0,dol);
+    uniqids.get(s0) match {
+      case None =>
+        val s1 = s + "$" + 1;
+        uniqids.put(s, 2);
+        s1
+      case Some(n) =>
+        val s1 = s0 + "$" + n;
+        uniqids.put(s0, n + 1);
+        s1
     }
   }
   

@@ -130,9 +130,8 @@ val sg1tct =
     hidedoublequantT,
     instantiate1T(St("C")),
     impleftknownT*,
-    tryruleT(orLeft)<(
-      tryruleT(orLeft)<(easycase, easycase),
-      orsg2tct)
+    nullarizeT*,
+    substT*
   )
 
 
