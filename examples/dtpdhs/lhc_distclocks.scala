@@ -12,6 +12,8 @@ val cuttct = cutT(
   )
 )
 
+
+// We need to fix this to reflect the new invariant.
 val okcuttct = cutT(
   StandardKeepCut,
   parseFormula(
@@ -129,8 +131,8 @@ val sg1tct =
   composelistT(
     hidedoublequantT,
     instantiate1T(St("C")),
-    impleftknownT*,
     alphaT*,
+    impleftknownT*,
     nullarizeT*,
     substT*
   )
