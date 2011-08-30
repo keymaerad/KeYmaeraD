@@ -130,6 +130,7 @@ val sg1tct =
     hidedoublequantT,
     instantiate1T(St("C")),
     impleftknownT*,
+    alphaT*,
     nullarizeT*,
     substT*
   )
