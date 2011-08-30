@@ -276,12 +276,12 @@ class FrontActor extends Actor {
           }
           sender ! ()
 
-        case ('jobdone, ndID: NodeID, sq: Sequent) =>
-
-          (jobs.get(ndID), nodeTable.get(ndID)) match {
-            case (None, _ ) =>
+        case ('jobdone, ndID: NodeID, sq : Sequent) =>
+          (jobs.get(ndID), nodeTable.get(ndID), sq) match {
+            case (None, _, _ ) =>
               ()
-            case (Some(t), Some(nd)) =>
+            // Proved.
+            case (Some(t), Some(nd), Sequent(_, Nil, List(True))) =>
               jobs.remove(ndID)
               nd.parent match {
                 case Some(ptid) =>
@@ -292,14 +292,28 @@ class FrontActor extends Actor {
                 case None =>
                   error("no parent")
               }
-
-            case (Some(t),None) => 
+            // Disproved.
+            case (Some(t), Some(nd), Sequent(_, Nil, Nil)) =>
+              jobs.remove(ndID)
+              nd.status = Disproved
+              treemodel.map(_.fireChanged(nd)) //GUI
+            // Nothing to report
+            case (Some(t), Some(nd), _) => 
+              throw new Error("proc should return True or False")
+            case (Some(t), None, _) => 
               throw new Error("node not in nodeTable")
           }
 
-
-        case ('jobdone, ndID: NodeID) =>
-          jobs.remove(ndID)
+        // Aborted job.
+        case ('jobdone, ndID : NodeID) =>
+          nodeTable.get(ndID) match {
+            case None =>
+              ()
+            case Some(nd) =>
+              jobs.remove(ndID)
+              nd.status = Aborted
+              treemodel.map(_.fireChanged(nd)) //GUI
+          }
 
 
         case 'jobs =>

@@ -195,21 +195,24 @@ object Procedures {
 
          if(result == abortExpr) {
            None
-         } 
-         else if(result == new Expr(Expr.SYMBOL, "True"))
-           {
-             println("success!")
-             
-             println("error code = " + link.error())
-             Some(Sequent(sig, Nil,List(True)))
-           } else {
-             // TODO this doesn't actually mean disproved or aborted.
-             // should return the actual formula
-             println("failure!")
-             println("returned: " + result)
-             println("error code = " + link.error())
-       	     None
-           }
+         } else if(result == new Expr(Expr.SYMBOL, "True")) {
+           println("success!")
+           
+           println("error code = " + link.error())
+           Some(Sequent(sig, Nil,List(True)))
+         } else if(result == new Expr(Expr.SYMBOL, "False")) {
+           // TODO this doesn't actually mean disproved or aborted.
+           // should return the actual formula
+           println("failure!")
+           println("error code = " + link.error())
+       	   Some(Sequent(sig, Nil, Nil))
+         } else {
+           // This means neither disproved nor aborted.
+           println("failure!")
+           println("returned: " + result)
+           println("error code = " + link.error())
+       	   Some(sq)
+         }
 
 
        } catch {

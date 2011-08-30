@@ -276,6 +276,7 @@ class FrontEnd(fa: Actor)
       val provedIcon = loadicon("icons/proved.png", closedIcon)
       val irrelevantIcon = loadicon("icons/irrelevant.png", leafIcon)
       val disprovedIcon = loadicon("icons/disproved.png", closedIcon)
+      val abortedIcon = loadicon("icons/aborted.png", closedIcon)
 
 
       override def getTreeCellRendererComponent(tree: JTree,
@@ -301,6 +302,8 @@ class FrontEnd(fa: Actor)
                 setIcon(disprovedIcon)
               case Proved => 
                 setIcon(provedIcon)
+              case Aborted => 
+                setIcon(abortedIcon)
             }
           case _ =>
         }

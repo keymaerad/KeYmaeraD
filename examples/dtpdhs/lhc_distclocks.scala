@@ -15,13 +15,14 @@ val cuttct = cutT(
 
 // We need to fix this to reflect the new invariant.
 val okcuttct = cutT(
-  StandardKeepCut,
+  DirectedCut,
   parseFormula(
-   "(e(F) = 1 & e(L) = 1 & x(F)<=x(L) & ~F=L )" + 
-    "==>(2*B()*x(L)>2*B()*x(F)+v(F)^2-v(L)^2 & x(F) < x(L))"
+   "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A+B())*(A *" +
+   "(eps()-T3)^2+2*(eps()-T3)*V1)"
   ),
   parseFormula(
-   "e(F) = 1 & e(L) = 1 & x(F)<=x(L)&~F=L" 
+   "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A +B())*(A *" +
+   "(s())^2+2*(s())*V1)"
   )
 )
 
@@ -134,11 +135,12 @@ val sg1tct =
     alphaT*,
     impleftknownT*,
     nullarizeT*,
-    substT*
+    substT*,
+    okcuttct
   )
 
 
-val uselemma =  tryruleT(impLeft)<( sg1tct,  tryruleT(close))
+val uselemma =  sg1tct
 
 val precond = 
     tryruleT(andRight)<(
@@ -261,10 +263,14 @@ val tyltct = composelistT(
     composelistT(
       hpalpha1T*,
       instantiate3T,
-      okcuttct<(
-        provelemma,
-        uselemma
+      tryruleT(impLeft)<(
+        uselemma,
+        provelemma
       )
+//      okcuttct<(
+//        provelemma,
+//        uselemma
+//      )
     )
   )
 )

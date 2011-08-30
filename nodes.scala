@@ -19,6 +19,7 @@ object Nodes {
   case object Proved extends Status
   case object Disproved extends Status
   case object Open extends Status
+  case object Aborted extends Status
   case class Irrelevant(old: Status) extends Status
 
 
