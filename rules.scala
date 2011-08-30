@@ -1071,8 +1071,30 @@ object Rules {
     }
   }
 
-  
-  
+  val concave : Fn => Term => Term => ProofRule = v => startpoint => endpoint => 
+   new ProofRule("concave[" + v + "," + startpoint + "," + endpoint + "]") {
+    def apply(pos: Position) = sq => (pos,sq) match {
+      case (RightP(n), Sequent(sig, c, s)) =>
+        val fm = lookup(pos,sq)
+        fm match {
+          case Atom(R(">", List(lhs, rhs))) =>
+            val d = List((v, Num(Exact.Integer(1))))
+            val lhs1 = Prover.totalDerivTerm(d, lhs);
+            val lhs2 = Prover.totalDerivTerm(d, lhs1);
+            val rhs1 = Prover.totalDerivTerm(d, rhs);
+            val rhs2 = Prover.totalDerivTerm(d, rhs1);
+            val fm1 = Atom(R("<=", List(lhs2, rhs2)));
+            val sq1 = replace(pos,sq,fm1)
+          // XXX need to and endpoints and maybe some other conditions (?)
+            Some((List(sq1), Nil))
+          case _ =>
+            None
+        }
+      case _ =>
+        None
+    }
+  }
+
 
 
 }

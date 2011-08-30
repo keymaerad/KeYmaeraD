@@ -15,7 +15,7 @@ forall f : C.
   forall l : C. 
    (e(f) = 1 & e(l) = 1 & x(f) <= x(l) &  (~ (f = l)))  ==>
          2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2 
-                       + (a(f) + B) * (a(f) * (eps - t(f) )^2 + 2 * (eps - t(f) )* v(f)) &
+                    + (a(f) + B) * (a(f) * (eps - t(f) )^2 + 2 * (eps - t(f) )* v(f)) &
         x(f) < x(l)    
 
 |-
@@ -48,11 +48,11 @@ t(f) := 0
 )
 ++
 (   forall i : C {x(i)' = v(i), 
-                        v(i)' = a(i), 
-                        t(i)' = 1; (e(i) = 1 ==> v(i) >= 0) &  t(i) <= eps}  
-                         @solution( forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i),
-                                    forall s . v(s, i) = a(i) * s + v(i),
-                                    forall s . t(s, i) = t(i)  + s)
+                  v(i)' = a(i), 
+                  t(i)' = 1; (e(i) = 1 ==> v(i) >= 0) &  t(i) <= eps}  
+                   @solution( forall s . x(s, i) = (1/2) *a(i) * s^2 + v(i) * s + x(i),
+                              forall s . v(s, i) = a(i) * s + v(i),
+                              forall s . t(s, i) = t(i)  + s)
 )
 ]
 (
@@ -63,7 +63,7 @@ forall f : C.
   forall l : C. 
    (e(f) = 1 & e(l) = 1 & x(f) <= x(l) &  (~ (f = l)))  ==>
          2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2 
-                       + (a(f) + B) * (a(f) * (eps - t(f) )^2 + 2 * (eps - t(f) )* v(f)) &
+                  + (a(f) + B) * (a(f) * (eps - t(f) )^2 + 2 * (eps - t(f) )* v(f)) &
         x(f) < x(l)    
          )
 

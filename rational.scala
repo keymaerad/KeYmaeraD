@@ -158,12 +158,12 @@ object Exact {
 
   def *(that: Num): Num = that match {
     case Rational(p,q) => new Rational(p * n, q)
-    case Integer(m) => new Integer(n + m)
+    case Integer(m) => new Integer(n * m)
   }
 
   def /(that: Num): Num = that match {
     case Rational(p,q) => new Rational(q * n, p)
-    case Integer(m) => new Rational(n,m)
+    case Integer(m) => new Rational(n, m)
   }
 
   def <(that: Num): Boolean = {

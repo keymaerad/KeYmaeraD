@@ -100,16 +100,20 @@ final object Prover {
       case None => Num(Exact.Integer(0))
     }
     case Fn("+", List(t1,t2)) =>
-      Fn("+", List( totalDerivTerm(d,t1),  totalDerivTerm(d,t2)))
+      AM.tsimplify(
+        Fn("+", List( totalDerivTerm(d,t1), totalDerivTerm(d,t2)))
+      )
     case Fn("-", List(t1,t2)) =>
-      Fn("-", List( totalDerivTerm(d,t1),  totalDerivTerm(d,t2)))
+      AM.tsimplify(Fn("-", List(totalDerivTerm(d,t1), totalDerivTerm(d,t2))))
     case Fn("-", List(t1)) =>
       Fn("-", List( totalDerivTerm(d,t1)))
     case Fn("*", List(t1,t2)) =>
-      Fn("+", List(Fn("*", List(totalDerivTerm(d,t1),  t2)),
-                   Fn("*", List(t1,totalDerivTerm(d,t2)))))
+      AM.tsimplify(
+        Fn("+", List(AM.tsimplify (Fn("*", List(totalDerivTerm(d,t1), t2))),
+                     AM.tsimplify( Fn("*", List(t1,totalDerivTerm(d,t2))))))
+      )
     case Fn("/", List(t1,Num(n))) =>
-      Fn("/", List( totalDerivTerm(d,t1), Num(n)))
+      AM.tsimplify( Fn("/", List( totalDerivTerm(d,t1), Num(n))) )
     case Fn("^", List(t1,Num(n))) =>
       if(n == Exact.Integer(2)) {
         Fn("*", 
