@@ -638,6 +638,11 @@ object Rules {
           case Modality(Box,Evolve(derivs,h,_,_), phi) =>
             val closed = Sequent(sig, List(h), List(phi))
             Some((List(closed), Nil))
+          case Modality(Box,
+                        EvolveQuantified(i, st, derivs, h, _),
+                        phi) =>
+            val closed = Sequent(sig, List(h), List(phi))
+            Some((List(closed), Nil))
           case _ => None
         }
       case _ => None
@@ -656,18 +661,34 @@ object Rules {
               val (ind_asm, ind_cons) = 
                 if(Prover.openSet(inv)) 
                   ( List(inv,h), 
-                    Prover.setClosure(Prover.totalDeriv(derivs, inv, true)))
-                else ( List(h), Prover.totalDeriv(derivs, inv, true))
+                    Prover.setClosure(Prover.totalDeriv(derivs, inv)))
+                else ( List(h), Prover.totalDeriv(derivs, inv))
               val inv_hints1 = inv_hints.filter( inv != _)
               val fm1 = Modality(Box,
                                  Evolve(derivs, 
                                         Binop(And,h,inv),
                                         inv_hints1, 
-                                        sols), phi) 
+                                        sols),
+                                 phi) 
               val iv = Sequent(sig, h::c, List(inv))
               val ind = Sequent(sig, ind_asm, List(ind_cons))
               val str = replace(pos,sq, fm1)
               Some((List(iv,ind,str), Nil))
+            case Modality(Box,
+                          EvolveQuantified(i, st, derivs, h, sols),
+                          phi) =>
+              val (ind_asm, ind_cons) = 
+                 (List(h), Prover.totalDeriv(derivs, inv))
+              val fm1 = Modality(Box,
+                                 EvolveQuantified(i, st,
+                                                  derivs, 
+                                                  Binop(And,h,inv),
+                                                  sols), 
+                                 phi) 
+              val iv = Sequent(sig, h::c, List(inv))
+              val ind = Sequent(sig, ind_asm, List(ind_cons))
+              val str = replace(pos, sq, fm1)
+              Some((List(iv, ind, str), Nil))
 
             case _ => None
           }
@@ -1047,7 +1068,7 @@ object Rules {
     def apply(pos: Position) = sq => {
       val fm = lookup(pos,sq)
       if (Prover.firstorder(fm)) {
-        val fm1 = AM.prenex(fm)
+        val fm1 = Util.prenex(fm)
         val sq1 = replace(pos,sq,fm1)
         Some((List(sq1), Nil))
       }else{

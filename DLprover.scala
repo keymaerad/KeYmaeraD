@@ -102,26 +102,26 @@ final object Prover {
       //case Some(x) => x
       //case None => Num(Exact.Integer(0))
     //}
-    case Fn(f,Nil) =>  assoc(tm,d) match {
+    case Fn(f, Nil) =>  assoc(tm,d) match {
       case Some(x) => x
       case None => Num(Exact.Integer(0))
     }
-    case Fn("+", List(t1,t2)) =>
+    case Fn("+", List(t1, t2)) =>
       AM.tsimplify(
-        Fn("+", List( totalDerivTerm(d,t1), totalDerivTerm(d,t2)))
+        Fn("+", List( totalDerivTerm(d, t1), totalDerivTerm(d, t2)))
       )
-    case Fn("-", List(t1,t2)) =>
-      AM.tsimplify(Fn("-", List(totalDerivTerm(d,t1), totalDerivTerm(d,t2))))
+    case Fn("-", List(t1, t2)) =>
+      AM.tsimplify(Fn("-", List(totalDerivTerm(d, t1), totalDerivTerm(d, t2))))
     case Fn("-", List(t1)) =>
-      Fn("-", List( totalDerivTerm(d,t1)))
-    case Fn("*", List(t1,t2)) =>
+      Fn("-", List( totalDerivTerm(d, t1)))
+    case Fn("*", List(t1, t2)) =>
       AM.tsimplify(
-        Fn("+", List(AM.tsimplify (Fn("*", List(totalDerivTerm(d,t1), t2))),
-                     AM.tsimplify( Fn("*", List(t1,totalDerivTerm(d,t2))))))
+        Fn("+", List(AM.tsimplify (Fn("*", List(totalDerivTerm(d, t1), t2))),
+                     AM.tsimplify( Fn("*", List(t1,totalDerivTerm(d, t2))))))
       )
-    case Fn("/", List(t1,Num(n))) =>
-      AM.tsimplify( Fn("/", List( totalDerivTerm(d,t1), Num(n))) )
-    case Fn("^", List(t1,Num(n))) =>
+    case Fn("/", List(t1, Num(n))) =>
+      AM.tsimplify( Fn("/", List( totalDerivTerm(d, t1), Num(n))) )
+    case Fn("^", List(t1, Num(n))) =>
       if(n == Exact.Integer(2)) {
         Fn("*", 
            List(Num(n),  
@@ -139,41 +139,40 @@ final object Prover {
   }
 
 
+  // Precondition: |fm| is in negation normal form.
   // TODO handle other cases
-  def totalDeriv(d: List[(Fn,Term)], fm: Formula, sign: Boolean) : Formula 
+  def totalDerivAux(d: List[(Fn,Term)], fm: Formula) : Formula 
     = fm match {
       case True => True
       case False => False
       case Atom(R(r, tms)) =>
         val tms1 = tms.map( (t: Term) =>  totalDerivTerm(d, t))
-        val r1 = R(r, tms1)
-        Atom(if(sign) r1 else negate(r1))
-      case Not(f) => totalDeriv(d, f, ! sign)
+        Atom(R(r, tms1))
+      case Not(Atom(R(r, tms))) =>
+        val tms1 = tms.map( (t: Term) =>  totalDerivTerm(d, t))
+        Atom(negate(R(r, tms1)))
       case Binop(And, f1, f2) =>
-        Binop(And, totalDeriv(d, f1, sign), totalDeriv(d, f2, sign))
+        Binop(And, totalDerivAux(d, f1), totalDerivAux(d, f2))
 
       case Binop(Or, f1, f2) =>
         Binop(Or,
-              Binop(And, f1, totalDeriv(d, f1, sign)),
-              Binop(And, f2, totalDeriv(d, f2, sign)))
+              Binop(And, f1, totalDerivAux(d, f1)),
+              Binop(And, f2, totalDerivAux(d, f2)))
 
       // Alternate definition:
-      //case Binop(Or,f1,f2) => Binop(And,totalDeriv(d,f1), totalDeriv(d,f2))
+      //case Binop(Or,f1,f2) => Binop(And,totalDerivAux(d,f1), totalDerivAux(d,f2))
       
-      case Binop(Imp, f1, f2) => 
-        Binop(Or,
-              Binop(And, Not(f1), totalDeriv(d, f1, !sign)),
-              Binop(And, f2, totalDeriv(d, f2, sign)))
-
-      //case Iff(f1,f2) => Iff(totalDeriv(d,f1), totalDeriv(d,f2))
+      //case Iff(f1,f2) => Iff(totalDerivAux(d,f1), totalDerivAux(d,f2))
       case Quantifier(Forall, s, v, f) =>
-        Quantifier(Forall, s, v, totalDeriv(d, f, sign))
+        Quantifier(Forall, s, v, totalDerivAux(d, f))
       case _ => 
-        throw new Error("can't take total derivative of quantified term " +
+        throw new Error("can't take total derivative of formula " +
                         fm);
                       //P.string_of_Formula(fm))
-
     }
+
+  def totalDeriv(d: List[(Fn,Term)], fm: Formula) : Formula =
+    totalDerivAux(d, Util.nnf(fm))
 
   def varsOfTerm(tm: Term): HashSet[String] = tm match {
     case Var(x)  =>

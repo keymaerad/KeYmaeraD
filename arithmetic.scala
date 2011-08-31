@@ -189,6 +189,9 @@ final object AM {
     ! intersect(pos, setify(neg.map(negate))).isEmpty
   }
 
+
+
+
   def simpdnf(fm: Formula): List[List[Formula]] = {
     if(fm == False) Nil else if(fm == True) List(Nil) else {
     val djs = purednf(nnf(fm)).filter((x:List[Formula]) => ! trivial(x));
@@ -200,68 +203,6 @@ final object AM {
     list_disj(simpdnf(fm).map(list_conj))
   }
 
-  def nnf(fm: Formula): Formula = fm match {
-    case Binop(And,p,q) => Binop(And,nnf(p), nnf(q))
-    case Binop(Or,p,q) => Binop(Or,nnf(p), nnf(q))
-    case Binop(Imp,p,q) => Binop(Or,nnf(Not(p)), nnf(q))
-    case Binop(Iff,p,q) => Binop(Or, Binop(And, nnf(p), nnf(q)), 
-                                     Binop(And,nnf(Not(p)), nnf(Not(q))))
-    case Not(Not(p)) => p
-    case Not(Binop(And,p,q)) => Binop(Or,nnf(Not(p)),nnf(Not(q)))
-    case Not(Binop(Or,p,q)) => Binop(And,nnf(Not(p)), nnf(Not(q)))
-    case Not(Binop(Imp,p,q)) => Binop(And,nnf(p), nnf(Not(q)))
-    case Not(Binop(Iff,p,q)) => Binop(Or,Binop(And,nnf(p),nnf(Not(q))),
-                                      Binop(And,nnf(Not(p)),nnf(q)))
-    case Quantifier(Forall,c@Real,x,p) => Quantifier(Forall,c,x,nnf(p))
-    case Quantifier(Exists,c@Real,x,p) => Quantifier(Exists,c,x,nnf(p))
-    case Not(Quantifier(Forall,c@Real,x,p)) => Quantifier(Exists,c,x,nnf(Not(p)))
-    case Not(Quantifier(Exists,c@Real,x,p)) => Quantifier(Forall,c,x,nnf(Not(p)))
-    case _ => fm
-  }
-
-  // There's gotta a be a more efficient way.
-  def prenex(fm : Formula): Formula = fm match {
-    case True | False | Atom(_) => fm
-    case Not(f1) =>
-      prenex(f1) match {
-        case Quantifier(Forall, srt, i, pf1) =>
-          Quantifier(Exists, srt, i, prenex(Not(pf1)))
-        case Quantifier(Exists, srt, i, pf1) =>
-          Quantifier(Forall, srt, i, prenex(Not(pf1)))
-        case _ => fm
-      }
-    case Binop(op, f1, f2) if op == And || op == Or =>
-      prenex(f1) match {
-        case Quantifier(qt, srt, i, pf1) =>
-          Quantifier(qt, srt, i, prenex(Binop(op,pf1,f2)))
-        case pf1 =>
-          prenex(f2) match {
-            case Quantifier(qt, srt, i, pf2) =>
-              Quantifier(qt, srt, i, prenex(Binop(op,pf1,pf2)))
-            case pf2 =>
-              fm
-          }
-      }
-    case Binop(Imp, f1, f2)  =>
-      prenex(f1) match {
-        case Quantifier(Forall, srt, i, pf1) =>
-          Quantifier(Exists, srt, i, prenex(Binop(Imp,pf1,f2)))
-        case Quantifier(Exists, srt, i, pf1) =>
-          Quantifier(Forall, srt, i, prenex(Binop(Imp,pf1,f2)))
-        case pf1 =>
-          prenex(f2) match {
-            case Quantifier(qt, srt, i, pf2) =>
-              Quantifier(qt, srt, i, prenex(Binop(Imp,pf1,pf2)))
-            case pf2 =>
-              fm
-          }
-      }
-    // TODO IFF
-    case Quantifier(qt,srt,i,f1) =>
-      Quantifier(qt,srt,i,prenex(f1))
-    case _ => throw new Error("unsupported in prenex: " + fm)
-      
-  }
 
 
 
