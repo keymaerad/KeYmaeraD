@@ -56,11 +56,13 @@ object Printing {
     case Fn(f, List(x,y)) if List("+","-").contains(f) =>
       val pr1 = 2;
       bracketp(pr > pr1)("(",")", 
-                         docOfTermAux(pr1)(x) ::text(f):: docOfTermAux(pr1+1)(y))
+                         docOfTermAux(pr1)(x) ::text(" " + f + " "):: 
+                         docOfTermAux(pr1+1)(y))
     case Fn(f, List(x,y)) if List("*","/").contains(f) =>
       val pr1 = 4;
       bracketp(pr > pr1)("(",")", 
-                         docOfTermAux(pr1)(x) ::text(f):: docOfTermAux(pr1+1)(y))
+                         docOfTermAux(pr1)(x) ::text(" " + f + " "):: 
+                         docOfTermAux(pr1+1)(y))
     case Fn("-", List(x)) =>
      val pr1 = 6;
       "-" :: bracketp(pr > pr1)("(",")", 
@@ -85,7 +87,7 @@ object Printing {
 
   def docOfPred(p: Pred): Document = p match {
     case R(r,List(t1,t2)) if List("=", "<", ">", "<=", ">=", "<>"). contains(r) =>
-      docOfTerm(t1) :: text(r) :: docOfTerm(t2)
+      docOfTerm(t1) :: text(" " + r + " ") :: docOfTerm(t2)
     case R(r, ts)  =>
       bracket(r+"(",")",
         docOfList(ts.map(docOfTerm), text(",") :: DocBreak))
@@ -105,23 +107,23 @@ object Printing {
     case Binop(And,fm1,fm2) => 
       val pr1 = 10;
       bracketp(pr>pr1)("(",")", 
-                       docOfFormulaAux(pr1)(fm1) :: text("&") :: 
+                       docOfFormulaAux(pr1)(fm1) :: text(" & ") :: 
                        docOfFormulaAux(pr1+1)(fm2))
     case Binop(Or,fm1,fm2) => 
       val pr1 = 8;
       bracketp(pr>pr1)("(",")",
-                       docOfFormulaAux(pr1)(fm1) :: text("|") :: 
+                       docOfFormulaAux(pr1)(fm1) :: text(" | ") :: 
                        docOfFormulaAux(pr1+1)(fm2) )
     // Implication is right-associative.
     case Binop(Imp,fm1,fm2) =>
       val pr1 = 6;
       bracketp(pr>pr1)("(",")", 
-                       docOfFormulaAux(pr1+1)(fm1) :: text("==>") :: 
+                       docOfFormulaAux(pr1+1)(fm1) :: text(" ==> ") :: 
                        docOfFormulaAux(pr1)(fm2))
     case Binop(Iff,fm1,fm2) => 
       val pr1 = 4;
       bracketp(pr>pr1)("(",")",
-                       docOfFormulaAux(pr1)(fm1) :: text("<=>") :: 
+                       docOfFormulaAux(pr1)(fm1) :: text(" <=> ") :: 
                        docOfFormulaAux(pr1+1)(fm2))
     case Quantifier(qt, c,x, fm) =>
       val pr1 = 2;
@@ -143,10 +145,10 @@ object Printing {
 
   def docOfHP(h: HP) : Document = h match {
     case Assign(List((f,tm))) => 
-     docOfTerm(f) :: text(":=") :: docOfTerm(tm)
+     docOfTerm(f) :: text(" := ") :: docOfTerm(tm)
     case Assign(vs) => 
      bracket("{", "}", 
-             docOfList(vs.map(v => docOfTerm(v._1)::text(":=")::docOfTerm(v._2)), 
+             docOfList(vs.map(v => docOfTerm(v._1)::text(" := ")::docOfTerm(v._2)), 
                                  text(",")))
     case AssignAny(x) =>
      docOfTerm(x) :: text(":= *")
@@ -173,13 +175,13 @@ object Printing {
       bracket("{","}", docOfHP(h)):: text("*")
     case Evolve(derivs, reg, hnts, sols) =>
       bracket("{","}",
-       docOfList(derivs.map(docOfDeriv), text(",")) ::
+       docOfList(derivs.map(docOfDeriv), text(", ")) ::
        text(";") ::
        docOfFormula(reg))
     case EvolveQuantified(i, c, vs,reg,_) =>
       text("forall ") :: text(i) :: text(":") :: docOfSort(c) :: text(" ") ::
           bracket("{", "}",
-                  docOfList(vs.map(docOfDeriv), text(",")) ::
+                  docOfList(vs.map(docOfDeriv), text(", ")) ::
                     text(";") :: docOfFormula(reg))
   }
 
@@ -195,22 +197,22 @@ object Printing {
 
   def docOfSig1(sig1 : (String, (List[Sort], Sort))) : Document = {
     text(sig1._1) :: text(": (") :: 
-    docOfList(sig1._2._1.map(docOfSort), text(",")) ::
+    docOfList(sig1._2._1.map(docOfSort), text(", ")) ::
     text(") ->") :: docOfSort(sig1._2._2)
   }
 
   def docOfSig(sig : Map[String, (List[Sort], Sort)]) : Document = {
     text("{") :/:
-    docOfList(sig.toList.map(docOfSig1), DocCons(text(","), DocBreak)) :/:
+    docOfList(sig.toList.map(docOfSig1), DocCons(text(", "), DocBreak)) :/:
     text("}") 
   }
 
   def docOfSequent(sq: Sequent) : Document = sq match {
     case Sequent(sig, c,s) => 
       docOfSig(sig) :/: 
-      docOfList(c.map(docOfFormula), DocCons(text(","), DocBreak)) :/:
+      docOfList(c.map(docOfFormula), DocCons(text(", "), DocBreak)) :/:
        text("|-") :/: DocNest(2,
-        docOfList(s.map(docOfFormula), DocCons(text(","), DocBreak)))
+        docOfList(s.map(docOfFormula), DocCons(text(", "), DocBreak)))
   }
 
 
