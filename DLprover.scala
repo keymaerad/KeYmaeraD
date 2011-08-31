@@ -42,6 +42,17 @@ final object Prover {
   }
 
 
+  def negate(p : Pred): Pred = p match {
+    case R("=", args) => R("/=", args)
+    case R("/=", args) => R("=", args)
+    case R("<", args) => R(">=", args)
+    case R("<=", args) => R(">", args)
+    case R(">=", args) => R("<", args)
+    case R(">", args) => R("<=", args)
+    case _ =>
+      throw new Error("can't negate: " + p)
+  }
+
   // Indicate whether, e.g.,  we can apply substitution safely. 
   def firstorder(fm: Formula): Boolean = fm match {
     case True | False => true
@@ -83,11 +94,7 @@ final object Prover {
       canQE(f,sig)
     case _ => false
   }
-
-
-
-
-
+  
   def totalDerivTerm(d: List[(Fn, Term)], tm: Term) : Term = tm match {
     case Var(s) =>  
       Num(Exact.Integer(0))
@@ -133,21 +140,34 @@ final object Prover {
 
 
   // TODO handle other cases
-  def totalDeriv(d: List[(Fn,Term)], fm: Formula) : Formula 
+  def totalDeriv(d: List[(Fn,Term)], fm: Formula, sign: Boolean) : Formula 
     = fm match {
       case True => True
       case False => False
       case Atom(R(r, tms)) =>
-        val tms1 = tms.map( (t: Term) =>  totalDerivTerm(d, t ))
-        Atom(R(r, tms1))
-      //case Not(f) => Not(totalDeriv(d,f))
-      case Binop(And,f1,f2) => Binop(And,totalDeriv(d,f1), totalDeriv(d,f2))
+        val tms1 = tms.map( (t: Term) =>  totalDerivTerm(d, t))
+        val r1 = R(r, tms1)
+        Atom(if(sign) r1 else negate(r1))
+      case Not(f) => totalDeriv(d, f, ! sign)
+      case Binop(And, f1, f2) =>
+        Binop(And, totalDeriv(d, f1, sign), totalDeriv(d, f2, sign))
 
-                       // not "Or" here!
-      case Binop(Or,f1,f2) => Binop(And,totalDeriv(d,f1), totalDeriv(d,f2))
+      case Binop(Or, f1, f2) =>
+        Binop(Or,
+              Binop(And, f1, totalDeriv(d, f1, sign)),
+              Binop(And, f2, totalDeriv(d, f2, sign)))
+
+      // Alternate definition:
+      //case Binop(Or,f1,f2) => Binop(And,totalDeriv(d,f1), totalDeriv(d,f2))
       
-      //case Imp(f1,f2) => Imp(totalDeriv(d,f1), totalDeriv(d,f2))
+      case Binop(Imp, f1, f2) => 
+        Binop(Or,
+              Binop(And, Not(f1), totalDeriv(d, f1, !sign)),
+              Binop(And, f2, totalDeriv(d, f2, sign)))
+
       //case Iff(f1,f2) => Iff(totalDeriv(d,f1), totalDeriv(d,f2))
+      case Quantifier(Forall, s, v, f) =>
+        Quantifier(Forall, s, v, totalDeriv(d, f, sign))
       case _ => 
         throw new Error("can't take total derivative of quantified term " +
                         fm);

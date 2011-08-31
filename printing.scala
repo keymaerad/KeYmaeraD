@@ -86,7 +86,7 @@ object Printing {
 
 
   def docOfPred(p: Pred): Document = p match {
-    case R(r,List(t1,t2)) if List("=", "<", ">", "<=", ">=", "<>"). contains(r) =>
+    case R(r,List(t1,t2)) if List("=", "<", ">", "<=", ">=", "/="). contains(r) =>
       docOfTerm(t1) :: text(" " + r + " ") :: docOfTerm(t2)
     case R(r, ts)  =>
       bracket(r+"(",")",

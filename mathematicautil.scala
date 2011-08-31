@@ -113,6 +113,7 @@ object MathematicaUtil {
 
     def math_name(r:String): String = r match {
       case "=" => "Equal"
+      case "<>" => "Unequal"
       case "<" => "Less"
       case "<=" => "LessEqual"
       case ">" => "Greater"

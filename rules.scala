@@ -656,8 +656,8 @@ object Rules {
               val (ind_asm, ind_cons) = 
                 if(Prover.openSet(inv)) 
                   ( List(inv,h), 
-                    Prover.setClosure(Prover.totalDeriv(derivs,inv)))
-                else ( List(h), Prover.totalDeriv(derivs,inv))
+                    Prover.setClosure(Prover.totalDeriv(derivs, inv, true)))
+                else ( List(h), Prover.totalDeriv(derivs, inv, true))
               val inv_hints1 = inv_hints.filter( inv != _)
               val fm1 = Modality(Box,
                                  Evolve(derivs, 

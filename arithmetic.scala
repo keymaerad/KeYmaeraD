@@ -309,6 +309,7 @@ final object AM {
 
   val operations: List[(String, (Exact.Num,Exact.Num) => Boolean)] = 
     List(("=", (r,s) => r == s),
+         ("/=", (r,s) => r != s),
          ("<", (r,s) => r < s),
          (">", (r,s) => r > s),
          ("<=", (r,s) => r <= s),

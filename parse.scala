@@ -24,7 +24,7 @@ class DLParser(ins : String)
  extends StdTokenParsers { 
   type Tokens = StdLexical ; val lexical = new DLLexical
   lexical.delimiters ++= List(",", ";",":", "(", ")","[","]","{","}",
-                             "=", "<", ">", ">=", "<=", "<>",
+                             "=", "<", ">", ">=", "<=", "/=",
                               "+","-","*", "/", "^",
                              "++", ":=", "@", "?", "\'",
                              "&", "|", "<=>", "==>", "|-", ".", "~", "->"
@@ -89,7 +89,7 @@ class DLParser(ins : String)
 
 
    def pred : Parser[Pred] = 
-     term ~ ("=" | "<" | ">" | "<=" | ">=" ) ~ term ^^
+     term ~ ("=" | "/=" | "<" | ">" | "<=" | ">=" ) ~ term ^^
        { case t1 ~ r ~ t2 =>
           R(r, List(t1,t2))}
 
