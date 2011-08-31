@@ -61,9 +61,9 @@ t(f) := 0
 (
 forall f : C. 
   forall l : C. 
-   (e(f) = 1 & e(l) = 1 & x(f) <= x(l) &  (~ (f = l)))  ==>
+   (e(f) = 1 & e(l) = 1 & x(f) <= x(l) & (~ (f = l)))  ==>
          2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2 
-                  + (a(f) + B) * (a(f) * (eps - t(f) )^2 + 2 * (eps - t(f) )* v(f)) &
+                  + (a(f) + B) * (a(f) * (eps - t(f))^2 + 2 * (eps - t(f)) * v(f)) &
         x(f) < x(l)    
          )
 
