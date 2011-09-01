@@ -33,6 +33,12 @@ final object Prover {
         s1
     }
   }
+
+  def ununiqify(s: String): String = {
+    val dol = s.indexOf("$")
+    if(dol == -1) s else s.substring(0,dol);
+  }
+
   
   def assoc[A,B](k: A, al: List[(A,B)]): Option[B] = al match {
     case (a,b) :: rest =>

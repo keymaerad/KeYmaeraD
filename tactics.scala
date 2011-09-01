@@ -444,12 +444,47 @@ object Tactics {
     res
   }
 
+  def findSingleUnivs(srt: Sort, sq: Sequent): List[Formula] = sq match {
+    case Sequent(sig,cs,ss) =>
+      var res: List[Formula] = Nil
+      for(c <- cs) {
+        c match {
+          case Quantifier(Forall, srt1, _,
+                          Quantifier(Forall, _, _, _))  =>
+            ()
+          case Quantifier(Forall,srt1,_,_) if srt1 == srt =>
+            res = c::res
+            ()
+          case _ =>
+            ()
+        }
+      }
+    res
+  }
+
 
   val instantiateT : Sort => List[Term] => Tactic = srt => tms => 
     new Tactic("instantiate") {
       def apply(nd: OrNode): Option[List[NodeID]] = {
         val Sequent(sig,_,_) = nd.goal
         val fms = findunivs(srt,nd.goal)
+        var tct1 = unitT
+        for(tm <- tms) {
+          if(Prover.infersort(sig, tm) == srt){
+            tct1 = 
+              fms.foldRight(tct1)((fm1,rt) => 
+                composeT(instantiateAuxT(srt)(tm)(fm1),rt))          
+          }
+        }
+        tct1(nd)
+      }
+    }
+
+  val instantiateSinglesT : Sort => List[Term] => Tactic = srt => tms => 
+    new Tactic("instantiate") {
+      def apply(nd: OrNode): Option[List[NodeID]] = {
+        val Sequent(sig,_,_) = nd.goal
+        val fms = findSingleUnivs(srt,nd.goal)
         var tct1 = unitT
         for(tm <- tms) {
           if(Prover.infersort(sig, tm) == srt){
@@ -563,6 +598,19 @@ object Tactics {
         sig1.keys.toList.sortWith((s1,s2) => 
           s1.compareTo(s2) < 0 ).map( k => (Fn(k,Nil): Term) )
       instantiateT(srt)(tms)(nd)
+    }
+  }
+
+
+  val instantiateSinglesOfT : Sort => Tactic  = srt => new Tactic("instantiate5 " + srt) {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val Sequent(sig,s,c) = nd.goal
+      val sig1 = sig.filter((kv) => kv._2 match { case (Nil, srt1) if srt == srt1 => true
+                                                case _ => false})
+      val tms = 
+        sig1.keys.toList.sortWith((s1,s2) => 
+          s1.compareTo(s2) < 0 ).map( k => (Fn(k,Nil): Term) )
+      instantiateSinglesT(srt)(tms)(nd)
     }
   }
 
