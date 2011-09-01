@@ -169,26 +169,24 @@ final object Prover {
       case Binop(And, f1, f2) =>
         Binop(And, totalDerivAux(forall_i, d, f1), totalDerivAux(forall_i, d, f2))
 
-      case Binop(Or, f1, f2) =>
-        Binop(Or,
-              Binop(And, f1, totalDerivAux(forall_i, d, f1)),
-              Binop(And, f2, totalDerivAux(forall_i, d, f2)))
-
-      // Alternate definition:
-      //case Binop(Or,f1,f2) => Binop(And,totalDerivAux(d,f1), totalDerivAux(d,f2))
+       
+      case Binop(Or,f1,f2) =>
+        Binop(And, // N.B. this is not "or"!
+              totalDerivAux(forall_i, d, f1), 
+              totalDerivAux(forall_i, d, f2))
       
       //case Iff(f1,f2) => Iff(totalDerivAux(d,f1), totalDerivAux(d,f2))
       case Quantifier(Forall, s, v, f) =>
         Quantifier(Forall, s, v, totalDerivAux(forall_i, d, f))
       case _ => 
         throw new Error("can't take total derivative of formula " +
-                        fm);
-                      //P.string_of_Formula(fm))
+                        fm)
     }
+    
 
   def totalDeriv(forall_i: Option[String], 
                  d: List[(Fn,Term)],
-                 fm: Formula) : Formula =} {
+                 fm: Formula) : Formula = {
     totalDerivAux(forall_i, d, Util.nnf(fm))
   }
 

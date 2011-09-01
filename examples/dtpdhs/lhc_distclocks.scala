@@ -260,7 +260,7 @@ val tyltct = composelistT(
     nilT,
     nilT,
     tryruleT(diffStrengthen(
-      parseFormula("forall f : C. forall l : C. (e(f) = 1 & e(l) = 1 & x(f) <= x(l) & (f /= l))  ==> 2 * B() * x(l) > 2 *  B() * x(f) + v(f) ^2 - v(l)^2  + (a(f) + B()) * (a(f) * (eps() - t(f))^2 + 2 * (eps() - t(f)) * v(f))")))
+      parseFormula("forall f : C. forall l : C. (e(f) = 1 & e(l) = 1 & id(f) < id(l) & (f /= l))  ==> 2 * B() * x(l) > 2 *  B() * x(f) + v(f) ^2 - v(l)^2  + (a(f) + B()) * (a(f) * (eps() - t(f))^2 + 2 * (eps() - t(f)) * v(f))")))
   )
 )
 
