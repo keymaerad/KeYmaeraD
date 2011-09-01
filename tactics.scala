@@ -351,7 +351,9 @@ object Tactics {
                               arithT)
 
 
-
+  
+  // lazy arithmetic
+  //@todo could add cheap close earlier.
   val alleasyT: Tactic = composelistT(repeatT(eitherT(hpeasyT, alphaT)),
                                       repeatT(substT),
                                       repeatT(eitherT(alphaT,betaT)),        
