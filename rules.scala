@@ -641,7 +641,9 @@ object Rules {
           case Modality(Box,
                         EvolveQuantified(i, st, derivs, h, _),
                         phi) =>
-            val closed = Sequent(sig, List(h), List(phi))
+            val closed = Sequent(sig, 
+                                 List(Quantifier(Forall, st, i, h)),
+                                 List(phi))
             Some((List(closed), Nil))
           case _ => None
         }
@@ -661,8 +663,8 @@ object Rules {
               val (ind_asm, ind_cons) = 
                 if(Prover.openSet(inv)) 
                   ( List(inv,h), 
-                    Prover.setClosure(Prover.totalDeriv(derivs, inv)))
-                else ( List(h), Prover.totalDeriv(derivs, inv))
+                    Prover.setClosure(Prover.totalDeriv(None, derivs, inv)))
+                else ( List(h), Prover.totalDeriv(None, derivs, inv))
               val inv_hints1 = inv_hints.filter( inv != _)
               val fm1 = Modality(Box,
                                  Evolve(derivs, 
@@ -678,14 +680,17 @@ object Rules {
                           EvolveQuantified(i, st, derivs, h, sols),
                           phi) =>
               val (ind_asm, ind_cons) = 
-                 (List(h), Prover.totalDeriv(derivs, inv))
+                (List(Quantifier(Forall, st, i, h)), 
+                 Quantifier(Forall, st, i, Prover.totalDeriv(Some(i), derivs, inv)))
               val fm1 = Modality(Box,
                                  EvolveQuantified(i, st,
                                                   derivs, 
                                                   Binop(And,h,inv),
                                                   sols), 
                                  phi) 
-              val iv = Sequent(sig, h::c, List(inv))
+              val iv = Sequent(sig, 
+                               (Quantifier(Forall, st, i, h))::c, 
+                               List(inv))
               val ind = Sequent(sig, ind_asm, List(ind_cons))
               val str = replace(pos, sq, fm1)
               Some((List(iv, ind, str), Nil))
@@ -1100,10 +1105,10 @@ object Rules {
         fm match {
           case Atom(R(">", List(lhs, rhs))) =>
             val d = List((v, Num(Exact.Integer(1))))
-            val lhs1 = Prover.totalDerivTerm(d, lhs);
-            val lhs2 = Prover.totalDerivTerm(d, lhs1);
-            val rhs1 = Prover.totalDerivTerm(d, rhs);
-            val rhs2 = Prover.totalDerivTerm(d, rhs1);
+            val lhs1 = Prover.totalDerivTerm(None, d, lhs);
+            val lhs2 = Prover.totalDerivTerm(None, d, lhs1);
+            val rhs1 = Prover.totalDerivTerm(None, d, rhs);
+            val rhs2 = Prover.totalDerivTerm(None, d, rhs1);
             val fm1 = Atom(R("<=", List(lhs2, rhs2)));
             val sq1 = replace(pos,sq,fm1)
           // XXX need to and endpoints and maybe some other conditions (?)

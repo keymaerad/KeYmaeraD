@@ -301,8 +301,8 @@ object Util {
     case Not(Binop(Imp,p,q)) => Binop(And,nnf(p), nnf(Not(q)))
     case Not(Binop(Iff,p,q)) => Binop(Or,Binop(And,nnf(p),nnf(Not(q))),
                                       Binop(And,nnf(Not(p)),nnf(q)))
-    case Quantifier(Forall,c@Real,x,p) => Quantifier(Forall,c,x,nnf(p))
-    case Quantifier(Exists,c@Real,x,p) => Quantifier(Exists,c,x,nnf(p))
+    case Quantifier(Forall,c, x, p) => Quantifier(Forall,c,x,nnf(p))
+    case Quantifier(Exists,c, x, p) => Quantifier(Exists,c,x,nnf(p))
     case Not(Quantifier(Forall,c@Real,x,p)) => Quantifier(Exists,c,x,nnf(Not(p)))
     case Not(Quantifier(Exists,c@Real,x,p)) => Quantifier(Forall,c,x,nnf(Not(p)))
     case _ => fm

@@ -256,22 +256,11 @@ val velpos =
 
 val tyltct = composelistT(
   hpalpha1T*,
-  diffsolveT(RightP(0),Endpoint),
-  hpalpha1T*,
-  tryruleT(andRight)<(
-    velpos,
-    composelistT(
-      hpalpha1T*,
-      instantiate3T,
-      tryruleT(impLeft)<(
-        uselemma,
-        provelemma
-      )
-//      okcuttct<(
-//        provelemma,
-//        uselemma
-//      )
-    )
+  tryruleT(diffStrengthen(parseFormula("forall i : C . a(i) >= -B ")))<(
+    nilT,
+    nilT,
+    tryruleT(diffStrengthen(
+      parseFormula("forall f : C. forall l : C. (e(f) = 1 & e(l) = 1 & x(f) <= x(l) & (f /= l))  ==> 2 * B() * x(l) > 2 *  B() * x(f) + v(f) ^2 - v(l)^2  + (a(f) + B()) * (a(f) * (eps() - t(f))^2 + 2 * (eps() - t(f)) * v(f))")))
   )
 )
 
