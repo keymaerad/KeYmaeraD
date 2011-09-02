@@ -40,20 +40,20 @@ object Jobs {
   class JobMaster(myPort: Int) extends Actor {
 
     // the jobs we've sent out to workers
-    val jobs = new scala.collection.mutable.HashMap[JobID, (JobData, Node)]()
-
+    val jobs =
+      new scala.collection.mutable.HashMap[JobID, 
+                                           (JobData, scala.actors.OutputChannel[Any])]()
 
     /* Keep a queue of unstarted jobs and idling workers.
      * At each loop, match them up and dispatch.
      */
 
     val newjobs = new scala.collection.mutable.Queue[JobData]()
-    val idleworkers = new scala.collection.mutable.Queue[Node]()
-    var allworkers : List[Node] = List()
+    val idleworkers =
+      new scala.collection.mutable.Queue[scala.actors.OutputChannel[Any]]()
 
 //    val localworker = new JobWorker()
 //    localworker.start()
-  
 
     def act(): Unit = {
       println("jobmaster acting")
@@ -63,15 +63,13 @@ object Jobs {
       alive(myPort)
       register('master, self)
 
-
       while(true){
 
         // Assign jobs if we can.
         while((! idleworkers.isEmpty) && (! newjobs.isEmpty) ){
           val iw = idleworkers.dequeue()
           val jd@JobData(jid, s,p,sq,t) = newjobs.dequeue()
-          val actr = select(iw, 'worker)
-          actr ! ( ('job, p, sq, jid) )
+          iw ! ( ('job, p, sq, jid) )
           jobs.put(jid,(jd, iw))
           ()
         };
@@ -81,26 +79,15 @@ object Jobs {
           case 'quit =>
             println("jobmaster quitting, notifying workers")
 //            localworker !? 'quit
-            for (w <- allworkers) {
-              val actr = select(w, 'worker)
+            for (w <- idleworkers) {
               println("notifying worker: " + w)
-              actr !? ('quitting)
+              w ! ('quit)
             }
             println("jobmaster quits")
             sender ! ()
             exit
 
-          // worker registration.
-          case ('register, nd@Node(ip,prt)) =>
-            println("Got a worker registration.") 
-            allworkers = nd :: allworkers 
-            sender ! ('registered)
-            ()
-            
-
-          case ('idling, nd@Node(ip,prt)) =>
-            idleworkers.enqueue(nd)
-            ()
+          case ('idling) => idleworkers.enqueue(sender)
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
 //            val jid = nextJobID
@@ -110,12 +97,11 @@ object Jobs {
 
          case 'list =>
            println(jobs)
-          
 
          case ('jobdone, jid: JobID, res: Sequent) =>
            jobs.get(jid) match {
              case Some((JobData(_,s,p,sq,t),w)) =>
-               s ! ('jobdone, jid,res)
+               s ! ('jobdone, jid, res)
              case None =>
                throw new Error("invalid jobID")
            }
@@ -137,10 +123,9 @@ object Jobs {
             s ! ('jobdone,jid1) 
           }
           jobs.get(jid) match {
-            case Some((JobData(_,s,p,sq,t), nd)) =>
+            case Some((JobData(_,s,p,sq,t), w)) =>
               println("jobmaster: aborting job " + jid)
-              val actr = select(nd,'worker)
-              actr ! 'abort
+              w ! 'abort
             case None =>
               if (njs.length == 0)
                 println("jobmaster: could not find job " + jid)
@@ -161,7 +146,7 @@ object Jobs {
 
 
 
-  class JobWorker(masterNode: Node, myNode: Node) extends Actor {
+  class JobWorker(masterNode: Node) extends Actor {
 
     case class JobData(proc:String, 
                        sq:Sequent,
@@ -174,28 +159,6 @@ object Jobs {
       new scala.collection.mutable.Queue[JobData]()
 
     val lock = new Object()
-
-    def doRegistration(master: AbstractActor, thisHost: Node) = {
-
-      alive(thisHost.port)
-      register('worker, self)
-
-
-      println("this host: " + thisHost.toString)
-      master ! ('register, thisHost)
-    
-      println("waiting for ack from master")
-      receive {
-        case ('registered) =>
-          println("got ack.")
-          ()
-        case msg => 
-          throw new Error("not an ack: " + msg)
-      }
-
-      ()
-  }
-
 
     def tryworking : Unit = {
       if (working == None  && ! procqueue.isEmpty) {
@@ -241,45 +204,32 @@ object Jobs {
       println("jobworker acting")
 
       val master = select(masterNode, 'master)
-
-      println("registering...")
-
-      doRegistration(master, myNode)
       trapExit = true
       link(master)
-      
-      println("registered.")
 
-      master ! ('idling, myNode)
+      master ! ('idling)
 
       while(true){
         tryworking
         receive {
           case 'quit =>
-            sender ! ()
-            Thread.sleep(1000)
-            System.exit(0)
-            exit()
-
-          case 'quitting =>
             println("jobmaster quitting, worker aborts jobs")
             abort()
             println("jobmaster quitting, worker exits")
-            sender ! ()
-            self ! ('quit)
+            exit
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
-           procqueue.enqueue(JobData(p,sq,jid, sender))
+           procqueue.enqueue(JobData(p, sq, jid, sender))
 
          case ('done, JobData(p,sq,jid,jobsender), res: Sequent) =>
            lock.synchronized {working = None}
            jobsender ! ('jobdone, jid, res)
-          master ! ('idling, myNode)
+           master ! ('idling)
           
          case ('done, JobData(p,sq,jid,jobsender)) =>
            lock.synchronized  { working = None }
            jobsender ! ('jobdone, jid)
-           master ! ('idling, myNode)
+           master ! ('idling)
          
          case 'abort => 
            abort()
@@ -301,18 +251,16 @@ object Jobs {
     import org.apache.commons.cli.CommandLine
     import java.net.InetAddress
 
-
     def parse(args: Array[String]) : CommandLine = {
 
       //use CLI to parse command line options
       var opts = new org.apache.commons.cli.Options();
       opts.addOption("c", true, "coordinator address (default = localhost)");
       opts.addOption("cp", true, "coordinator port (default = 50001)");
-      opts.addOption("p", true, "port this worker should run on");
 
       //do parsing
       var parser = new org.apache.commons.cli.GnuParser();
-      parser.parse( opts, args);
+      parser.parse(opts, args);
 
     }
 
@@ -333,26 +281,7 @@ object Jobs {
       
       println("coordinator at " + coorHost.toString)
       
-      val thisAddr = InetAddress.getLocalHost().getHostAddress()
-      var thisPort = java.lang.Integer.parseInt(cmd.getOptionValue("p", "0"))
-      if (thisPort == 0)
-	      try {
-	     // port=0 supposedly says automatically allocate ephemeral port @see ServerSocket
-		      val testSocket = new java.net.ServerSocket(0)
-		      thisPort = testSocket.getLocalPort()
-		      testSocket.close()
-          }
-          catch {
-	          case ioe: java.io.IOException =>
-                      println("using a random port")
-	              thisPort = 50002 + scala.util.Random.nextInt(10000)
-
-          }
-      val thisHost = Node(thisAddr, thisPort)
-
-      println("using port " + thisPort)
-
-      val jobWorker = new JobWorker(coorHost, thisHost)
+      val jobWorker = new JobWorker(coorHost)
       jobWorker.start
       ()
     }

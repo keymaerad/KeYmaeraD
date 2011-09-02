@@ -9,14 +9,22 @@ import Nodes._
 
 object TreeActions {
   
-
   import RulesUtil._
   import Procedures._
 
-  // TODO something smarter here
-  val myPort = 50001
-  println("listening on port " + myPort)
-  
+  val myAddr = java.net.InetAddress.getLocalHost().getHostAddress()
+  var myPort = 0
+  try {
+    val testSocket = new java.net.ServerSocket(0)
+    myPort = testSocket.getLocalPort()
+    testSocket.close()
+  } catch {
+    case ioe: java.io.IOException =>
+      println("using a random port")
+    myPort = 50000 + scala.util.Random.nextInt(10000)
+  }
+
+  println("job master will listen on port " + myPort)
 
   val workers = new scala.collection.mutable.HashSet[Process]()
 
@@ -213,7 +221,9 @@ class FrontActor extends Actor {
           var i = 1
           while (i <= number) {
 	          println("starting worker " + i)
-	          val pb = new ProcessBuilder("./runworker")
+	          val pb = new ProcessBuilder("./runworker",
+                                              "-cp",
+                                              myPort.toString)
 			  workers += pb.start()
 			  i += 1
           } 

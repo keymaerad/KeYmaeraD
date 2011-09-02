@@ -1,14 +1,15 @@
 #!/bin/sh
 echo "Loading Scala REPL..."
 # Hack to give init.scala the command line arguments.
-echo "val args : Array[String] = Array(" > _loader.scala
+args="val args : Array[String] = Array("
 i="0"
 for a in $*;
 do if [ "$i" -ne "0" ]; then 
-   echo `cat _loader.scala` , > _loader.scala;
+   args="$args,"
    fi
    i="1"
-  echo `cat _loader.scala` "\"$a\"" > _loader.scala ;
+  args="$args\"$a\""
 done
-echo `cat _loader.scala` ")" > _loader.scala ;
+args="$args)"
+echo $args > _args.scala ;
 scala -cp .:$JLINK/JLink.jar -i init.scala
