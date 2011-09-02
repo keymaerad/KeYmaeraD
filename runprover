@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "Loading Scala REPL..."
+echo "Launching Scala REPL..."
 # Hack to give init.scala the command line arguments.
 args="val args : Array[String] = Array("
 i="0"

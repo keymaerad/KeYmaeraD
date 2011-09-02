@@ -2,6 +2,9 @@ package DLBanyan
 
 import scala.actors.Actor
 import scala.actors.Actor._
+import java.io.InputStream
+import java.io.FileOutputStream
+import java.io.File
 
 
 import Nodes._
@@ -26,7 +29,7 @@ object TreeActions {
 
   println("job master will listen on port " + myPort)
 
-  val workers = new scala.collection.mutable.HashSet[Process]()
+  var workerInputStreams : List[InputStream] = Nil
 
   val jobs = new scala.collection.mutable.HashMap[NodeID, Long]()
   val jobmaster = new Jobs.JobMaster(myPort)
@@ -193,8 +196,6 @@ class FrontActor extends Actor {
   import Tactics.Tactic
 
 
-
-
   def act(): Unit = {
     println("acting")
     link(jobmaster)
@@ -202,14 +203,31 @@ class FrontActor extends Actor {
     while(true){
       receive {
         case 'quit =>
-//          for(p <- workers){
-//            println("destroying worker process")
-//            p.destroy
-//            p.waitFor
-//          }
           println("frontactor quitting")
+          for((jid,t) <- jobs){
+            jobmaster ! ('abort, jid)
+          }
           jobmaster !? 'quit
           sender ! ()
+/*          for (ins <- workerInputStreams) {
+            println("WORKER OUTPUT")
+            try
+            {
+              val f = new File("outFile.txt");
+              val out = new FileOutputStream(f);
+              val buf =new Array[Byte](1024);
+              var len = ins.read(buf)
+              while (len > 0) {
+                out.write(buf,0,len)
+                len = ins.read(buf)
+              }
+              out.close();
+              //ins.close();
+              println("\nFile is created........");
+            }
+            catch { case e => println("caught: " + e) }
+          }
+*/
           System.exit(0)
           exit
         case 'gui => 
@@ -220,12 +238,15 @@ class FrontActor extends Actor {
         case ('findworkers, number:Int) =>   
           var i = 1
           while (i <= number) {
-	          println("starting worker " + i)
-	          val pb = new ProcessBuilder("./runworker",
-                                              "-cp",
-                                              myPort.toString)
-			  workers += pb.start()
-			  i += 1
+	    println("starting worker " + i)
+	    val pb = new ProcessBuilder("./runworker",
+                                        "-cp",
+                                        myPort.toString)
+            val p = pb.start()
+//	    workers += p
+            val ins = p.getInputStream()
+            workerInputStreams = ins :: workerInputStreams
+	    i += 1
           } 
           println("started workers")
           sender ! ()
@@ -342,16 +363,6 @@ class FrontActor extends Actor {
           }
         sender ! ()
 
-/*        case ('runworker, port: Int) =>
-          val name = port.toString + ".out"
-          val pb = 
-            new ProcessBuilder("./runworkerf",
-                               port.toString, name)
-
-          val p = pb.start
-          workers += p
-          sender ! ()
-*/
         case msg =>
           println("got message: " + msg)
           sender ! ()

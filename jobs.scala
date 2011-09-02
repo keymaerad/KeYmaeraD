@@ -67,10 +67,11 @@ object Jobs {
 
         // Assign jobs if we can.
         while((! idleworkers.isEmpty) && (! newjobs.isEmpty) ){
+          println("looking...")
           val iw = idleworkers.dequeue()
-          val jd@JobData(jid, s,p,sq,t) = newjobs.dequeue()
+          val jd@JobData(jid, s, p, sq, t) = newjobs.dequeue()
           iw ! ( ('job, p, sq, jid) )
-          jobs.put(jid,(jd, iw))
+          jobs.put(jid, (jd, iw))
           ()
         };
 
@@ -88,7 +89,7 @@ object Jobs {
             exit
 
           case ('idling) =>
-            println("got request from an idling worker")
+            println("A worker idles.")
             idleworkers.enqueue(sender)
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
@@ -122,7 +123,7 @@ object Jobs {
           val njs = newjobs.dequeueAll( {case JobData(x,_,_,_,_) => x == jid})
           println("jobmaster: cancelling "+ njs.length +   " job(s) ")
           for(JobData(jid1,s,p,sq,t) <- njs){
-            s ! ('jobdone,jid1) 
+            s ! ('jobdone, jid1) 
           }
           jobs.get(jid) match {
             case Some((JobData(_,s,p,sq,t), w)) =>
@@ -131,11 +132,8 @@ object Jobs {
             case None =>
               if (njs.length == 0)
                 println("jobmaster: could not find job " + jid)
-            
           }
 
-
-          
           case msg =>
             println ("jobserver got message: " + msg)
 
@@ -143,8 +141,6 @@ object Jobs {
       }
     }
   }
-
-
 
 
 
@@ -162,27 +158,34 @@ object Jobs {
 
     val lock = new Object()
 
-    def tryworking : Unit = {
+    def tryworking(master: AbstractActor) : Unit = {
       if (working == None  && ! procqueue.isEmpty) {
+        master ! ("procqueue has length " + procqueue.length)
         println("procqueue has length " + procqueue.length)
         val jd@JobData(p,sq,jid,sender) = procqueue.dequeue
         procs.get(p) match {
           case Some(pr) =>
             val sf = self
             if(pr.applies(sq)) {
+              master ! ("working on jid " + jid)
               println("working on jid " + jid)
               lock.synchronized{
                 working = Some(pr)
               } 
-              future ({
+              future {
+                master ! "about to proceed"
                 val res = pr.proceed(sq)
+                println("proceeded")
+                master ! "did proceed"
                 res match {
                   case Some(r) =>
                     sf ! ('done, jd, r)
+                    println("sent back result")
                   case None =>
                     sf ! ('done, jd)
+                    println("sent back abort message")
                 }
-              })
+              }
             }  else  sf ! ('doesnotapply, jid) // should not happen
                 
 
@@ -212,7 +215,7 @@ object Jobs {
       master ! ('idling)
 
       while(true){
-        tryworking
+        tryworking(master)
         receive {
           case 'quit =>
             println("jobmaster quitting, worker aborts jobs")
@@ -222,10 +225,14 @@ object Jobs {
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
            procqueue.enqueue(JobData(p, sq, jid, sender))
+           master ! "enqueued a job"
 
          case ('done, JobData(p,sq,jid,jobsender), res: Sequent) =>
+           println("got result")
            lock.synchronized {working = None}
+           println("about to send notification")
            jobsender ! ('jobdone, jid, res)
+           println("about to send idling message")
            master ! ('idling)
           
          case ('done, JobData(p,sq,jid,jobsender)) =>
@@ -239,11 +246,7 @@ object Jobs {
       }
     }
   }
-
-
 }
-
-
 
 // Code entry point for workers.
  object WorkerMain {
