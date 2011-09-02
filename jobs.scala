@@ -67,9 +67,9 @@ object Jobs {
 
         // Assign jobs if we can.
         while((! idleworkers.isEmpty) && (! newjobs.isEmpty) ){
-          println("looking...")
           val iw = idleworkers.dequeue()
           val jd@JobData(jid, s, p, sq, t) = newjobs.dequeue()
+          println("Assigning work!")
           iw ! ( ('job, p, sq, jid) )
           jobs.put(jid, (jd, iw))
           ()
@@ -142,8 +142,6 @@ object Jobs {
     }
   }
 
-
-
   class JobWorker(masterNode: Node) extends Actor {
 
     case class JobData(proc:String, 
@@ -160,32 +158,26 @@ object Jobs {
 
     def tryworking(master: AbstractActor) : Unit = {
       if (working == None  && ! procqueue.isEmpty) {
-        master ! ("procqueue has length " + procqueue.length)
         println("procqueue has length " + procqueue.length)
         val jd@JobData(p,sq,jid,sender) = procqueue.dequeue
         procs.get(p) match {
           case Some(pr) =>
             val sf = self
             if(pr.applies(sq)) {
-              master ! ("working on jid " + jid)
               println("working on jid " + jid)
               lock.synchronized{
                 working = Some(pr)
               } 
               future {
-                master ! "about to proceed"
                 val res = pr.proceed(sq)
-                println("proceeded")
-                master ! "did proceed"
                 res match {
                   case Some(r) =>
                     sf ! ('done, jd, r)
-                    println("sent back result")
                   case None =>
                     sf ! ('done, jd)
-                    println("sent back abort message")
                 }
               }
+              ()
             }  else  sf ! ('doesnotapply, jid) // should not happen
                 
 
@@ -225,14 +217,10 @@ object Jobs {
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
            procqueue.enqueue(JobData(p, sq, jid, sender))
-           master ! "enqueued a job"
 
          case ('done, JobData(p,sq,jid,jobsender), res: Sequent) =>
-           println("got result")
            lock.synchronized {working = None}
-           println("about to send notification")
            jobsender ! ('jobdone, jid, res)
-           println("about to send idling message")
            master ! ('idling)
           
          case ('done, JobData(p,sq,jid,jobsender)) =>

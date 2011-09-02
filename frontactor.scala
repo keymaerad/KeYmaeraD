@@ -29,8 +29,6 @@ object TreeActions {
 
   println("job master will listen on port " + myPort)
 
-  var workerInputStreams : List[InputStream] = Nil
-
   val jobs = new scala.collection.mutable.HashMap[NodeID, Long]()
   val jobmaster = new Jobs.JobMaster(myPort)
   jobmaster.start
@@ -182,10 +180,33 @@ object TreeActions {
     nd.getchildren.map( propagateIrrelevantDown)
 
   }
-
-
 }
 
+// WorkerTracers have two purposes. The first is to record the ouput
+// of worker subprocesses, which do not have their own terminal. The
+// second is to ensure that these subprocesses get scheduled by
+// demanding input from them. TODO: understand why that, without these
+// tracers, workers can sometimes make no progress.
+class WorkerTracer(id: Int, ins: InputStream) extends Actor {
+  def act(): Unit = {
+    try
+    {
+      val f = new File("worker" + id + ".out");
+      val out = new FileOutputStream(f);
+      val buf =new Array[Byte](1024);
+      var len = ins.read(buf)
+      while (len > 0) {
+        out.write(buf,0,len)
+        len = ins.read(buf)
+      }
+      out.close();
+      ins.close();
+      println("created trace in " + f)
+    }
+    catch { case e => println("caught: " + e) }
+
+  }
+}
 
 
 class FrontActor extends Actor {
@@ -209,26 +230,9 @@ class FrontActor extends Actor {
           }
           jobmaster !? 'quit
           sender ! ()
-/*          for (ins <- workerInputStreams) {
-            println("WORKER OUTPUT")
-            try
-            {
-              val f = new File("outFile.txt");
-              val out = new FileOutputStream(f);
-              val buf =new Array[Byte](1024);
-              var len = ins.read(buf)
-              while (len > 0) {
-                out.write(buf,0,len)
-                len = ins.read(buf)
-              }
-              out.close();
-              //ins.close();
-              println("\nFile is created........");
-            }
-            catch { case e => println("caught: " + e) }
-          }
-*/
-          System.exit(0)
+        // TODO: It would be better to just |exit|,
+        // but how then to kill the REPL frontend?
+          System.exit(0) 
           exit
         case 'gui => 
           val fe = DLBanyan.GUI.FE.start(self)
@@ -243,9 +247,9 @@ class FrontActor extends Actor {
                                         "-cp",
                                         myPort.toString)
             val p = pb.start()
-//	    workers += p
-            val ins = p.getInputStream()
-            workerInputStreams = ins :: workerInputStreams
+            val wt = new WorkerTracer(i, p.getInputStream())
+            link(wt)
+            wt.start()
 	    i += 1
           } 
           println("started workers")

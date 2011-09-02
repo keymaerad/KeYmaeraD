@@ -99,13 +99,10 @@ object Procedures {
     val abortLock = new Lock()
 
 
-
-
     def applies(sq: Sequent) : Boolean = sq match {
       case Sequent(sig, c,s) =>
         !(c.exists(x => ! canQE(x,sig)) ||  s.exists(x => ! canQE(x,sig)) )
     }
-
 
     def proceed(sq: Sequent, tm: Long): Option[Sequent] = sq match {
       case Sequent(sig, c,s) => 
@@ -140,15 +137,14 @@ object Procedures {
 
        println("\nmathematica version of formula = ")
        println(mfm_tmt)
-    
-       
+ 
        val link = linkLock.synchronized{
-                   mbe_link match {
-                     case None =>
-                       createLink
-                     case Some(link1) =>
-                       link1
-                   }
+         mbe_link match {
+           case None =>
+             createLink
+           case Some(link1) =>
+             link1
+         }
        }
 
        try{ 
@@ -191,7 +187,6 @@ object Procedures {
            }
          }
 
-
          link.newPacket()
 
          println("result = " + result)
@@ -232,22 +227,23 @@ object Procedures {
     }
 
 
-    def abort : Unit = linkLock.synchronized {
-      mbe_link match {
-        case Some(lnk) =>
-          evalLock.synchronized{
-            if (eval == true) {
-              println("about to signal an abort. ")
-              System.out.flush
-              lnk.abortEvaluation()
-
-              aborted = true
+    def abort : Unit = 
+      linkLock.synchronized {
+        mbe_link match {
+          case Some(lnk) =>
+            println("about to grab evalLock")
+            evalLock.synchronized{
+              if (eval == true) {
+                println("about to signal an abort. ")
+                System.out.flush
+                lnk.abortEvaluation()
+                
+                aborted = true
+              }
             }
-          }
-
-        case None =>
-      }      
-    }
+          case None =>
+        }      
+      }
 
 
 
