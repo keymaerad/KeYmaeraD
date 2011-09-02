@@ -20,14 +20,8 @@
   inv_hints and sols parameters of Evolve, Loop are ignorable
 */
 /* === TODO
-   -prob: start loc shouldn't be an end state but seems to be
 
-   -unbounded sets error
-
-   -ask david if he could check the scala code style
-
-   -alternative for isendstate: create endstate & use "& loc(endstate)"
-
+   -spaceex unexpected output
 
    ---parallel
    -how powerfull/weak is the translation
@@ -37,10 +31,14 @@
    -make bouncing ball work
 
    ---done
+   -unbounded sets error
+   -prob: start loc shouldn't be an end state but seems to be
+   -alternative for isendstate:  forbidden+= "& loc(endstate)"
    -set forbidden state space: negate good state space
    -set init and end states
    -graph output
    -branch of main impl
+    -ask david if he could check the scala code style
 */
 /* === bug-iser details
    no assertion that var isendstate is already used
@@ -256,7 +254,7 @@ class Automaton(hp: HP) {
         transitions_str+= "  <transition source=\""+id+"\" target=\""+getId(t.to).toString()+"\">\n"
         transitions_str+= Deparse(t.check ,                                                                    "guard"     ,"    ","\n")
         transitions_str+= Deparse(t.assign,                                                                    "assignment","    ","\n")
-        transitions_str+= Deparse(List((Fn("isendstate",Nil),Num((if(isEnd(t.to))Exact.one else Exact.zero)))),"assignment","    ","\n")
+        //transitions_str+= Deparse(List((Fn("isendstate",Nil),Num((if(isEnd(t.to))Exact.one else Exact.zero)))),"assignment","    ","\n")
         transitions_str+= "  </transition>\n"
       }
     }
@@ -328,6 +326,7 @@ object Spaceex {
       res+="iter-max = 1\n"
       res+="rel-err = 1.0e-12\n"
       res+="abs-err = 1.0e-15\n"
+      res+="output-format = TXT"
       res
       //sampling-time = 0.5
       //}}}
@@ -351,8 +350,12 @@ object Spaceex {
 
             //println(a.toStr('txt))
 
-            var init = "loc()==l"+a.getId(a.start)+" & isendstate=="+(if(a.isEnd(a.start)) "1" else "0")
-            var forb = Deparse(negate(phi))+" & isendstate == 1"
+            var init = "loc()==l"+a.getId(a.start)
+            var forb = Deparse(negate(phi))
+            //endstate
+            //init+= " & isendstate=="+(if(a.isEnd(a.start)) "1" else "0")
+            //forb+= " & isendstate==1"
+            forb+=" & ("+a.ends.map(end => "loc()==l"+a.getId(end)).mkString(" | ")+")"
             Util.str2file("DLBanyan/_.cfg",configFile(init,forb))
             Util.str2file("DLBanyan/_.xml",a.toSX.toString())
             Util.str2file("DLBanyan/_.dot",a.toStr('graph))
