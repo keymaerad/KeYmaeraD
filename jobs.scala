@@ -87,7 +87,9 @@ object Jobs {
             sender ! ()
             exit
 
-          case ('idling) => idleworkers.enqueue(sender)
+          case ('idling) =>
+            println("got request from an idling worker")
+            idleworkers.enqueue(sender)
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
 //            val jid = nextJobID
