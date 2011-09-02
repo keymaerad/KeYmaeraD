@@ -12,7 +12,6 @@ import DLBanyan._
 dl('load, "examples/simple.dl")
 dl('gui)
 
-/* @TODO the following only works when calling scala without -i. */
  print("Starting workers")
 var workers = 0 //Runtime.getRuntime().availableProcessors()
 if (args.length > 0)

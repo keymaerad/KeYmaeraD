@@ -3,23 +3,12 @@ package DLBanyan
 import scala.actors.Actor
 import scala.actors.Actor._
 
-
-
 object CommandLine {
 
   var frontactor = new FrontActor;
 
-
-
-//  def begin : Unit = {
-  println ("Welcome to DLBanyan.")
+  println ("KeYmaeraD frontend loaded.")
   frontactor.start()
-//    frontactor ! 'hi
-    
-//  }
-
-  def ex = "examples/simple.dl"
-
 
   def dl(cmd: Symbol): Unit = {
     frontactor !? cmd
@@ -32,9 +21,5 @@ object CommandLine {
   def dl(cmd: Symbol, arg1: Any, arg2: Any): Unit = {
     frontactor.!?((cmd,arg1,arg2))
   }
-
-
-
-
 
 }

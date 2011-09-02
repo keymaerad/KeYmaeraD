@@ -1,7 +1,7 @@
 #!/bin/sh
-echo "Welcome to KeYmaeraD!"
+echo "Loading Scala REPL..."
 # Hack to give init.scala the command line arguments.
-echo "val args = Array(" > _loader.scala
+echo "val args : Array[String] = Array(" > _loader.scala
 i="0"
 for a in $*;
 do if [ "$i" -ne "0" ]; then 

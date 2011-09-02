@@ -189,19 +189,20 @@ class FrontActor extends Actor {
 
   def act(): Unit = {
     println("acting")
+    link(jobmaster)
 
     while(true){
       receive {
         case 'quit =>
-          for(p <- workers){
-            println("destroying worker process")
-            p.destroy
-            p.waitFor
-          }
+//          for(p <- workers){
+//            println("destroying worker process")
+//            p.destroy
+//            p.waitFor
+//          }
           println("frontactor quitting")
           jobmaster !? 'quit
           sender ! ()
-          System.exit(0)   //@TODO necessary?
+          System.exit(0)
           exit
         case 'gui => 
           val fe = DLBanyan.GUI.FE.start(self)

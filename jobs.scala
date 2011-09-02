@@ -1,6 +1,7 @@
 package DLBanyan
 
 import scala.actors.Actor
+import scala.actors.AbstractActor
 import scala.actors.Actor._
 import scala.actors.Futures._
 
@@ -48,7 +49,7 @@ object Jobs {
 
     val newjobs = new scala.collection.mutable.Queue[JobData]()
     val idleworkers = new scala.collection.mutable.Queue[Node]()
-    val allworkers = new scala.collection.mutable.LinkedList[scala.actors.OutputChannel[Any]]()
+    var allworkers : List[Node] = List()
 
 //    val localworker = new JobWorker()
 //    localworker.start()
@@ -80,8 +81,10 @@ object Jobs {
           case 'quit =>
             println("jobmaster quitting, notifying workers")
 //            localworker !? 'quit
-            for(w <- allworkers){
-                w ! ('quitting)
+            for (w <- allworkers) {
+              val actr = select(w, 'worker)
+              println("notifying worker: " + w)
+              actr !? ('quitting)
             }
             println("jobmaster quits")
             sender ! ()
@@ -90,14 +93,13 @@ object Jobs {
           // worker registration.
           case ('register, nd@Node(ip,prt)) =>
             println("Got a worker registration.") 
-            //@TODO following line doesn't have much effect, what do we need to remember in allworkers so that we can talk to this worker later?
-            allworkers :+ sender
+            allworkers = nd :: allworkers 
             sender ! ('registered)
             ()
             
 
           case ('idling, nd@Node(ip,prt)) =>
-            idleworkers.enqueue( nd)
+            idleworkers.enqueue(nd)
             ()
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
@@ -171,11 +173,9 @@ object Jobs {
     val procqueue = 
       new scala.collection.mutable.Queue[JobData]()
 
-    val master = select(masterNode, 'master)
-
     val lock = new Object()
 
-    def doRegistration(coorHost: Node, thisHost: Node) = {
+    def doRegistration(master: AbstractActor, thisHost: Node) = {
 
       alive(thisHost.port)
       register('worker, self)
@@ -208,7 +208,7 @@ object Jobs {
               println("working on jid " + jid)
               lock.synchronized{
                 working = Some(pr)
-              }
+              } 
               future ({
                 val res = pr.proceed(sq)
                 res match {
@@ -240,9 +240,13 @@ object Jobs {
     def act(): Unit = {
       println("jobworker acting")
 
+      val master = select(masterNode, 'master)
+
       println("registering...")
 
-      doRegistration(masterNode, myNode)
+      doRegistration(master, myNode)
+      trapExit = true
+      link(master)
       
       println("registered.")
 
@@ -253,14 +257,16 @@ object Jobs {
         receive {
           case 'quit =>
             sender ! ()
-            exit
+            Thread.sleep(1000)
+            System.exit(0)
+            exit()
 
           case 'quitting =>
-            println("jobmaster quitting, worker exits")
+            println("jobmaster quitting, worker aborts jobs")
             abort()
             println("jobmaster quitting, worker exits")
             sender ! ()
-            exit
+            self ! ('quit)
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
            procqueue.enqueue(JobData(p,sq,jid, sender))

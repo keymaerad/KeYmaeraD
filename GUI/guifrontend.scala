@@ -334,7 +334,7 @@ object FE {
   def createAndShowGUI(fa: Actor) : Unit =  {
 
     //Create and set up the window.
-    mf = new MainFrame {
+    mf = new Frame {
       title="KeYmaeraD";
       val keymask = toolkit.getMenuShortcutKeyMask();
       //Add content to the window.
@@ -393,8 +393,9 @@ object FE {
         super.close
       }
 
+      override def closeOperation = close
+
       pack()
-      //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
       visible =true
     }
   }
