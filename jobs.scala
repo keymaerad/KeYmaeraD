@@ -89,7 +89,7 @@ object Jobs {
 
           // worker registration.
           case ('register, nd@Node(ip,prt)) =>
-            println("got a registration.") 
+            println("Got a worker registration.") 
             //@TODO following line doesn't have much effect, what do we need to remember in allworkers so that we can talk to this worker later?
             allworkers :+ sender
             sender ! ('registered)
@@ -331,18 +331,21 @@ object Jobs {
       var thisPort = java.lang.Integer.parseInt(cmd.getOptionValue("p", "0"))
       if (thisPort == 0)
 	      try {
-		  	  // port=0 supposedly says automatically allocate ephemeral port @see ServerSocket
+	     // port=0 supposedly says automatically allocate ephemeral port @see ServerSocket
 		      val testSocket = new java.net.ServerSocket(0)
 		      thisPort = testSocket.getLocalPort()
 		      testSocket.close()
           }
           catch {
 	          case ioe: java.io.IOException =>
+                      println("using a random port")
 	              thisPort = 50002 + scala.util.Random.nextInt(10000)
+
           }
       val thisHost = Node(thisAddr, thisPort)
 
-      
+      println("using port " + thisPort)
+
       val jobWorker = new JobWorker(coorHost, thisHost)
       jobWorker.start
       ()

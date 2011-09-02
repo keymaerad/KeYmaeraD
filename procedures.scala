@@ -48,15 +48,20 @@ object Procedures {
        try{ 
  
         CV.start()
+         println("real eliming")
 //         val r =  AM.real_elim_goal(fm)
          val r = AM.real_elim(fm1)
          if(r == True) {
-           //println("success!")
+           println("success!")
            Some(Sequent(sig, Nil,List(True)))
+         } else if(r == False) {
+           println("that formula is false!")
+       	   Some(Sequent(sig, Nil, Nil))
          } else {
+
            // TODO this doesn't actually mean disproved
-           //println("failure!")
-           //println("returned: " + P.string_of_Formula(r))
+           println("failure!")
+           println(r)
            Some(Sequent(sig, Nil, List(r)))
          }      
        } catch {
@@ -148,8 +153,6 @@ object Procedures {
 
        try{ 
 
-
-
            link.newPacket()
 
            println("evaluating expression")
@@ -201,9 +204,7 @@ object Procedures {
            println("error code = " + link.error())
            Some(Sequent(sig, Nil,List(True)))
          } else if(result == new Expr(Expr.SYMBOL, "False")) {
-           // TODO this doesn't actually mean disproved or aborted.
-           // should return the actual formula
-           println("failure!")
+           println("that formula is false!")
            println("error code = " + link.error())
        	   Some(Sequent(sig, Nil, Nil))
          } else {

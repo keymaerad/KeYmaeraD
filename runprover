@@ -1,2 +1,14 @@
 #!/bin/sh
-scala -cp .:$JLINK/JLink.jar -i init.scala $*
+echo "Welcome to KeYmaeraD!"
+# Hack to give init.scala the command line arguments.
+echo "val args = Array(" > _loader.scala
+i="0"
+for a in $*;
+do if [ "$i" -ne "0" ]; then 
+   echo `cat _loader.scala` , > _loader.scala;
+   fi
+   i="1"
+  echo `cat _loader.scala` "\"$a\"" > _loader.scala ;
+done
+echo `cat _loader.scala` ")" > _loader.scala ;
+scala -cp .:$JLINK/JLink.jar -i init.scala

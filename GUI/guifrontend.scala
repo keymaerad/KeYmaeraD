@@ -335,58 +335,63 @@ object FE {
 
     //Create and set up the window.
     mf = new MainFrame {
-	  title="KeYmaeraD";
-	  val keymask = toolkit.getMenuShortcutKeyMask();
+      title="KeYmaeraD";
+      val keymask = toolkit.getMenuShortcutKeyMask();
       //Add content to the window.
-	  contents = new FrontEnd(fa)
-          val recent = new Menu("Open Recent")
-          menuBar = new MenuBar {
-	      contents += new Menu("File") {
-		  val open = new MenuItem(Action("Open") {
-		  val chooser = new FileChooser(new File("."))
-		    if (chooser.showOpenDialog(menuBar) == 
-                      FileChooser.Result.Approve) {
-                        val pth = chooser.selectedFile.getCanonicalPath
-                        recentFiles = pth :: recentFiles
-                        recent.contents += new MenuItem(Action(pth){
- 		          fa ! ('load, pth)
-                        })
- 		        fa ! ('load, pth)
- 		    };
-		  })
-	    open.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, keymask));
-	    contents += open
+      contents = new FrontEnd(fa)
+      val recent = new Menu("Open Recent")
+      menuBar = new MenuBar {
+	contents += new Menu("File") {
+	  val open = new MenuItem(Action("Open") {
+	    val chooser = new FileChooser(new File("."))
+	    if (chooser.showOpenDialog(menuBar) == 
+              FileChooser.Result.Approve) {
+              val pth = chooser.selectedFile.getCanonicalPath
+              recentFiles = pth :: recentFiles
+              recent.contents += new MenuItem(Action(pth){
+ 		fa ! ('load, pth)
+              })
+ 	      fa ! ('load, pth)
+ 	    };
+	  })
+	  open.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, keymask));
+	  contents += open
+          
+	  contents += new Separator
+          contents += recent
 
-		contents += new Separator
-                contents += recent
-
-		contents += new Separator
-		val quit = new MenuItem(Action("Quit") {
-		  visible = false
-		  close
-		  fa ! ('quit)
-		})
-	    quit.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
-    	contents += quit
-    }
-	    contents += new Menu("Prove") {
-		  val tstop = new MenuItem(Action("Stop")
-                                       {fa ! ('abortall)})
-		  tstop.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
-		  contents += tstop
+	  contents += new Separator
+	  val quit = new MenuItem(Action("Quit") {
+	    visible = false
+	    close
+//	    fa ! ('quit)
+	  })
+	  quit.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
+    	    contents += quit
+        }
+	contents += new Menu("Prove") {
+	  val tstop = new MenuItem(Action("Stop")
+                                   {fa ! ('abortall)})
+	  tstop.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+	  contents += tstop
 		 
-	      val teasy = new MenuItem(Action("All Easy") 
-                                       {fa ! ('tactic, alleasyT)})
-		  teasy.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, keymask));
-		  contents += teasy
-              val thtc = new MenuItem(Action("Hide Then Close") 
-                                       {fa ! ('tactic, hidethencloseT)})
-	      thtc.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, keymask));
-	      contents +=  thtc
+	  val teasy = new MenuItem(Action("All Easy") 
+                                   {fa ! ('tactic, alleasyT)})
+	  teasy.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, keymask));
+	  contents += teasy
+          val thtc = new MenuItem(Action("Hide Then Close") 
+                                  {fa ! ('tactic, hidethencloseT)})
+	  thtc.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, keymask));
+	  contents +=  thtc
 
-	      }
-  	    }
-      //frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
+	}
+
+      }
+      
+      override def close = {
+	fa ! ('quit)
+        super.close
+      }
 
       pack()
       //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
