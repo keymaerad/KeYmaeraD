@@ -68,7 +68,7 @@ class DLParser(ins : String)
                              => Fn("*", List(x, y))}  
              | "/" ^^^ {(x: Term, y: Term) 
                                 =>  Fn("/", List(x, y))}) | 
-     "-" ~> prod ^^ { x => Fn("-", List(x))} 
+     "-" ~> prod ^^ { x => Fn("-", List(Num(Exact.zero),x))} 
 
    def factor: Parser[Term] = 
       atomicTerm ~ "^" ~ numericLit ^^ 

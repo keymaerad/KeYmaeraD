@@ -1,22 +1,17 @@
-SCALAFILES= types.scala rational.scala logicutil.scala arithmetic.scala \
-	parse.scala printing.scala \
-	nodes.scala mathematicautil.scala \
-	rules.scala procedures.scala jobs.scala \
-	frontend.scala frontactor.scala \
-	DLprover.scala tactics.scala GUI/guifrontend.scala
+LIBRARIES= ./commons-cli-1.2/commons-cli-1.2.jar
 
+all:
+	rm -r -f DLBanyan
+	#fsc *.scala -unchecked -deprecation
+	fsc *.scala -unchecked -deprecation -cp $(LIBRARIES) 
+	make run
 
-LIBRARIES= .:$(JLINK)/JLink.jar:./commons-cli-1.2/commons-cli-1.2.jar
+run:
+	#scala DLBanyan.Test --input examples/simpler.dl
+	scala DLBanyan.Test examples/simpler.dl
 
-ifndef SCALAC
-SCALAC= fsc
-endif
+spaceex:
+	${SPACEEX} -m DLBanyan/_.xml --config DLBanyan/_.cfg
 
-OPTIONS = -deprecation -unchecked
-
-all : $(SCALAFILES)
-	$(SCALAC)  -classpath $(LIBRARIES) $(SCALAFILES) $(OPTIONS)
-
-clean :
-	rm -rf DLBanyan/
-	fsc -shutdown -verbose
+graph:
+	dot DLBanyan/_.dot -Tps | gv -
