@@ -206,6 +206,8 @@ object Jobs {
 
       master ! ('idling)
 
+      println("jobworker ready for work")
+
       while(true){
         tryworking(master)
         receive {

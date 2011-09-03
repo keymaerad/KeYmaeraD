@@ -182,12 +182,27 @@ object TreeActions {
   }
 }
 
+
+object BlockingActorScheduler {
+  lazy val scheduler = {
+    val s = new scala.actors.scheduler.ResizableThreadPoolScheduler(false)
+    s.start()
+    s
+  }
+}
+
+
+trait BlockingActor extends Actor {
+  override def scheduler = BlockingActorScheduler.scheduler
+}
+
 // WorkerTracers have two purposes. The first is to record the ouput
 // of worker subprocesses, which do not have their own terminal. The
 // second is to ensure that these subprocesses get scheduled by
 // demanding input from them. TODO: understand why that, without these
 // tracers, workers can sometimes make no progress.
-class WorkerTracer(id: Int, ins: InputStream) extends Actor {
+class WorkerTracer(id: Int, ins: InputStream) extends BlockingActor {
+
   def act(): Unit = {
     try
     {
@@ -215,7 +230,6 @@ class FrontActor extends Actor {
   import RulesUtil._
 
   import Tactics.Tactic
-
 
   def act(): Unit = {
     println("acting")
