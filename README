@@ -17,15 +17,19 @@ JLINK (=/Applications/Mathematica.app/SystemFiles/Links/JLink)
 MATHKERNEL (=/Applications/Mathematica.app/Contents/MacOS/MathKernel)
 
 
-To compile, navigate to the KeYmaeraD root directory and type "make"
+To compile, navigate to the KeYmaeraD root directory and type "make".
 
-To run, use the "runprover" script.
-./runprover
+To run, use the "runprover" script:
+./runprover [# workers]
 
-If workers do not start automatically from "runprover", then run workers, use one of the following forms
-./runworker
-./runworker -c 127.0.0.1 -cp 50001 -p <MAKEUPPORTHERE>
+The default number of workers is the number of available processors on
+your machine, determined by a call to Runtime.getRuntime().availableProcessors().
+This command will launch these workers as subprocesses.
 
+You may also start workers manually with the "runworker" command:
+./runworker [-c jobmaster address] [-cp jobmaster port]
+
+The jobmaster port can be read from the output of the prover.
 
 
 --------
