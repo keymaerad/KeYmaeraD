@@ -1,6 +1,7 @@
 package DLBanyan
 
 import scala.actors.Actor
+import scala.actors.TIMEOUT
 import scala.actors.AbstractActor
 import scala.actors.Actor._
 import scala.actors.Futures._
@@ -90,6 +91,7 @@ object Jobs {
 
           case ('idling) =>
             println("A worker idles.")
+            sender ! 'ack
             idleworkers.enqueue(sender)
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
@@ -197,6 +199,14 @@ object Jobs {
     }
 
 
+    private def getack = receiveWithin (5000) {
+      case 'ack =>
+        println("got an ack")
+      case TIMEOUT =>
+        println("no ack. quitting")
+        exit
+    }
+    
     def act(): Unit = {
       println("jobworker acting")
 
@@ -205,6 +215,7 @@ object Jobs {
       link(master)
 
       master ! ('idling)
+      getack
 
       println("jobworker ready for work")
 
@@ -224,11 +235,13 @@ object Jobs {
            lock.synchronized {working = None}
            jobsender ! ('jobdone, jid, res)
            master ! ('idling)
+           getack
           
          case ('done, JobData(p,sq,jid,jobsender)) =>
            lock.synchronized  { working = None }
            jobsender ! ('jobdone, jid)
            master ! ('idling)
+           getack
          
          case 'abort => 
            abort()
