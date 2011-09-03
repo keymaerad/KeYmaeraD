@@ -76,7 +76,6 @@ object Jobs {
           ()
         };
 
-//        println("jobmaster listening")
         receive {
           case 'quit =>
             println("jobmaster quitting, notifying workers")
@@ -95,7 +94,7 @@ object Jobs {
             idleworkers.enqueue(sender)
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
-//            val jid = nextJobID
+            println("jobmaster got a job")
             val t = System.currentTimeMillis
             // PERF: insert easy filter here.
             newjobs += JobData(jid, sender, p, sq, t)
@@ -158,7 +157,7 @@ object Jobs {
 
     val lock = new Object()
 
-    def tryworking(master: AbstractActor) : Unit = {
+    def tryworking : Unit = {
       if (working == None  && ! procqueue.isEmpty) {
         println("procqueue has length " + procqueue.length)
         val jd@JobData(p,sq,jid,sender) = procqueue.dequeue
@@ -211,8 +210,6 @@ object Jobs {
       println("jobworker acting")
 
       val master = select(masterNode, 'master)
-      trapExit = true
-      link(master)
 
       master ! ('idling)
       getack
@@ -220,7 +217,7 @@ object Jobs {
       println("jobworker ready for work")
 
       while(true){
-        tryworking(master)
+        tryworking
         receive {
           case 'quit =>
             println("jobmaster quitting, worker aborts jobs")

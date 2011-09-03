@@ -218,7 +218,7 @@ class WorkerTracer(id: Int, ins: InputStream) extends BlockingActor {
       ins.close();
       println("created trace in " + f)
     }
-    catch { case e => println("caught: " + e) }
+    catch { case e => println("caught while tracing: " + e) }
 
   }
 }
@@ -246,6 +246,12 @@ class FrontActor extends Actor {
           sender ! ()
         // TODO: It would be better to just |exit|,
         // but how then to kill the REPL frontend?
+        // HACK:
+        // If we're going to System.exit here,
+        // we don't want the worker 'quit messages to
+        // get cut off. So sleep to allow them to 
+        // work through the pipes.
+          Thread.sleep(200)
           System.exit(0) 
           exit
         case 'gui => 
