@@ -1023,52 +1023,33 @@ object Rules {
       }
   }
 
-  // need to make this more general.
-  val nullarize : String => ProofRule = 
-    f => new ProofRule("nullarize " + f) {
-    
+  val unsubstitute : Term => ProofRule = 
+    tm => new ProofRule("unsubstitute " + tm) {    
     import Prover._
 
-    def apply(pos: Position) = sq => (pos, sq, lookup(pos, sq)) match {
-    // A common case. TODO: Lift this to tactics.
-      case (RightP(_), Sequent(sig, ctxt,sc), 
-            Atom(R("=", List(Fn(i,Nil),Fn(j,Nil)))))
-        if (ctxt ++ sc).forall(firstorder) =>
-          val fi = uniqify(f)
-          val fj = uniqify(f)
-          val ctxt1 = 
-            ctxt.map(x => extract(Fn(f,List(Fn(i,Nil))), x)(Fn(fi,Nil)))
-          val sc1 = 
-            sc.map(x => extract(Fn(f,List(Fn(i,Nil))), x)(Fn(fi,Nil)))
-          val ctxt2 = 
-            ctxt1.map(x => extract(Fn(f,List(Fn(j,Nil))), x)(Fn(fj,Nil)))
-          val sc2 = 
-            sc1.map(x => extract(Fn(f,List(Fn(j,Nil))), x)(Fn(fj,Nil)))
-          val fms = ctxt2 ++ sc2
-          val fmsr = fms.map(fm1 => hasFn_Formula(f,fm1))
-//          println("in nullarize. fms = " + fms)
-         
-//          println("in nullarize. f = " + f + ".  fmsr = " + fmsr)
-          val sig1 = sig.get(f) match {
-            case Some((args,rtn) ) =>
-              sig + ((fi,(Nil,rtn))) + ((fj, (Nil,rtn)))
-            case _ => 
-              sig
-          }
-          val sq2 = Sequent(sig1, ctxt2,sc2)
-         if((ctxt2 == ctxt && sc2 == sc) ||
-            fmsr.exists(x => x) )
-            {
-              None
-            }
-          else
-            Some((List(sq2  )    ,Nil))
+    def apply(pos: Position) = sq => sq match {
+      case Sequent(sig, ctxt, sc) if (ctxt ++ sc).forall(firstorder) =>
+        val f = tm match {
+          case Fn(f_name, _) => uniqify(f_name)
+          case _ => uniqify("X")
+        }
+        val ctxt1 = 
+          ctxt.map(x => extract(tm, x)(Fn(f,Nil)))
+        val sc1 = 
+          sc.map(x => extract(tm, x)(Fn(f,Nil)))
+        val fms = ctxt1 ++ sc1
+        val f_sort = infersort(sig, tm)
+        val sig1 = sig + ((f, (Nil, f_sort)))
+        val sq1 = Sequent(sig1, ctxt1, sc1)
+        if (ctxt1 == ctxt && sc1 == sc) {
+          None
+        } else {
+          Some((List(sq1), Nil))
+        }
       case _ =>
         None
     }
-
   }
-
 
   val prenexify = new ProofRule("prenexify"){
     def apply(pos: Position) = sq => {

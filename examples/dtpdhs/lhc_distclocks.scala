@@ -373,7 +373,8 @@ val createtct =
 
 val loopinv = parseFormula(
   "eps() > 0 & A() > 0 & B() > 0 &  " +
-  "(forall i : C. (e(i) = 1 ==> t(i) >= 0 & t(i) <= eps() & a(i) >= -B()))  & " +
+  "(forall i : C. (e(i) = 1 ==> v(i) >= 0 & " + 
+  "t(i) >= 0 & t(i) <= eps() & a(i) >= -B()))  & " +
   "(forall f : C. forall l : C. " +
    "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==>" +
     "2 * B() * x(l) > 2 *  B() * x(f) + v(f) ^2 - v(l)^2 " +
@@ -401,7 +402,8 @@ val starttct =
       instantiatebyT(St("C"))
                     (List(("i", List("f", "l")), 
                           ("f", List("f")), 
-                          ("l", List("l"))))*
+                          ("l", List("l"))))*,
+      nullarizeT*
       
       
     )

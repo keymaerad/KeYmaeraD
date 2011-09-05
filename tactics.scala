@@ -381,29 +381,28 @@ object Tactics {
        }
      }
 
+
   val nullarizeT : Tactic = 
     new Tactic("nullarize") {
       import Prover._
-      def getunaryfn(tm: Term) : List[String] = tm match {
-        case Fn(f, List(arg)) => List(f)
+      def getunaryfn(tm: Term) : List[Term] = tm match {
+        case Fn(f, List(arg)) if f != "-" => List(tm)
         case Fn(f, args) => args.map(getunaryfn).flatten
         case _ => Nil
       }
 
       def apply(nd: OrNode): Option[List[NodeID]] = {
-        val Sequent(sig,c,s) = nd.goal
+        val Sequent(sig, c, s) = nd.goal
         val fms = c ++ s
         val unaryfns = fms.map(fm => 
-                              overterms_Formula(tm => (b:List[String]) => 
+                              overterms_Formula(tm => (b:List[Term]) => 
                                               getunaryfn(tm) ++ b,
                                                 fm, Nil)).flatten.distinct
         println("unaryfns: " + unaryfns)
-        val rls = unaryfns.map(s => nullarize(s))
-        trylistofrules(rls,nd)
-        
+        val rls = unaryfns.map(tm => unsubstitute(tm))
+        trylistofrules(rls, nd)
       }
     }
-
 
   val instantiateAuxT : Sort => Term => Formula => Tactic = srt => tm => fm => 
     new Tactic("instantiateAux") {

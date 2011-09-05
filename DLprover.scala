@@ -737,8 +737,9 @@ final object Prover {
   def infersort(sig: Map[String, (List[Sort],Sort)], tm: Term) : Sort = tm match {
     case Fn(f,args) =>
       sig.get(f) match {
-        case None => Real
+        case None if List("+", "-", "*", "/", "^").contains(f) => Real
         case Some((_,srt)) => srt
+        case _ => Real // Perhaps should throw error here.
       }
     case Num(_) => 
       Real
