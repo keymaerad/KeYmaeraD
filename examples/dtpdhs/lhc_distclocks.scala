@@ -401,7 +401,8 @@ val starttct =
       instantiatebyT(St("C"))
                     (List(("i", List("f", "l")), 
                           ("f", List("f")), 
-                          ("l", List("l"))))*,
+                          ("l", List("l"))))*
+      
       
     )
   )
