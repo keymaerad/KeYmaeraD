@@ -1030,6 +1030,7 @@ object Rules {
     import Prover._
 
     def apply(pos: Position) = sq => (pos, sq, lookup(pos, sq)) match {
+    // A common case. TODO: Lift this to tactics.
       case (RightP(_), Sequent(sig, ctxt,sc), 
             Atom(R("=", List(Fn(i,Nil),Fn(j,Nil)))))
         if (ctxt ++ sc).forall(firstorder) =>

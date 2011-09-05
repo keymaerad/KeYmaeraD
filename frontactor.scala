@@ -251,7 +251,7 @@ class FrontActor extends Actor {
         // we don't want the worker 'quit messages to
         // get cut off. So sleep to allow them to 
         // work through the pipes.
-          Thread.sleep(200)
+          Thread.sleep(500)
           System.exit(0) 
           exit
         case 'gui => 

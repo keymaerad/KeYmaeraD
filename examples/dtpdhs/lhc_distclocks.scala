@@ -381,7 +381,6 @@ val loopinv = parseFormula(
  )
 
 
-
 val starttct = 
   tryruleT(loopInduction(loopinv))<(
     nilT,
@@ -399,7 +398,11 @@ val starttct =
     ),
     composelistT(
       hpalphaT*,
-      instantiateSinglesOfT(St("C"))
+      instantiatebyT(St("C"))
+                    (List(("i", List("f", "l")), 
+                          ("f", List("f")), 
+                          ("l", List("l"))))*,
+      
     )
   )
 

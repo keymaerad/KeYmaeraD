@@ -383,16 +383,12 @@ object Tactics {
 
   val nullarizeT : Tactic = 
     new Tactic("nullarize") {
-      
-
       import Prover._
-
       def getunaryfn(tm: Term) : List[String] = tm match {
         case Fn(f, List(arg)) => List(f)
         case Fn(f, args) => args.map(getunaryfn).flatten
         case _ => Nil
       }
-
 
       def apply(nd: OrNode): Option[List[NodeID]] = {
         val Sequent(sig,c,s) = nd.goal
@@ -480,7 +476,7 @@ object Tactics {
       }
     }
 
-  val instantiateSinglesT : Sort => List[Term] => Tactic = srt => tms => 
+  val instantiatesinglesT : Sort => List[Term] => Tactic = srt => tms => 
     new Tactic("instantiate") {
       def apply(nd: OrNode): Option[List[NodeID]] = {
         val Sequent(sig,_,_) = nd.goal
@@ -496,6 +492,41 @@ object Tactics {
         tct1(nd)
       }
     }
+
+ val instantiatebyT : Sort => List[(String, List[String])] => Tactic = srt => alist =>
+   new Tactic("instantiate by") {
+     def apply(nd: OrNode): Option[List[NodeID]] = {
+       val Sequent(sig,_,_) = nd.goal
+       val sig1 =
+         sig.filter((kv) => kv._2 match { case (Nil, srt1) if srt == srt1 => true
+                                         case _ => false}) 
+       val insts = sig1.keys.toList
+       val fms = findunivs(srt, nd.goal)
+       var tcts : List[Tactic] = Nil
+       for (fm <- fms) {
+         fm match {
+           case Quantifier(Forall, s, i, fm0) =>
+             Prover.assoc(Prover.ununiqify(i), alist) match {
+               case None => ()
+               case Some(js) => 
+                 for (j <- js) {
+                   tcts = 
+                     insts.filter(x => Prover.ununiqify(x) == j).map(x =>
+                       instantiateAuxT(srt)(Fn(x,Nil))(fm)) ++ tcts
+                 }
+             }
+           case _ => ()
+         }
+       }
+       if (tcts.length == 0) {
+         None
+       } else {
+         val tct = tcts.foldRight(unitT)(composeT)
+         val hidetct = fms.map(fm => tryrulematchT(hide)(fm)).foldRight(unitT)(composeT)
+         composeT(tct, hidetct)(nd)
+       }
+     }
+   }
 
 
   def findidx(sq: Sequent): List[(Term,Term)] = sq match {
@@ -602,7 +633,7 @@ object Tactics {
   }
 
 
-  val instantiateSinglesOfT : Sort => Tactic  = srt => new Tactic("instantiate5 " + srt) {
+  val instantiatesinglesofT : Sort => Tactic = srt => new Tactic("instantiate5 " + srt) {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val Sequent(sig,s,c) = nd.goal
       val sig1 = sig.filter((kv) => kv._2 match { case (Nil, srt1) if srt == srt1 => true
@@ -610,7 +641,7 @@ object Tactics {
       val tms = 
         sig1.keys.toList.sortWith((s1,s2) => 
           s1.compareTo(s2) < 0 ).map( k => (Fn(k,Nil): Term) )
-      instantiateSinglesT(srt)(tms)(nd)
+      instantiatesinglesT(srt)(tms)(nd)
     }
   }
 
