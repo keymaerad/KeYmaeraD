@@ -21,16 +21,14 @@
 */
 /* === TODO
 
-   -spaceex unexpected output
+   -feed big ddl formula to check
+   -make bouncing ball work
 
    ---parallel
    -how powerfull/weak is the translation
 
-   ---later
-   -feed big ddl formula to check
-   -make bouncing ball work
-
    ---done
+   -spaceex unexpected output
    -unbounded sets error
    -prob: start loc shouldn't be an end state but seems to be
    -alternative for isendstate:  forbidden+= "& loc(endstate)"
@@ -240,6 +238,36 @@ class Automaton(hp: HP) {
 
   def toSX = {
   //{{{
+    //
+    assert(Deparse.varS.length>0,"assumption that toSX would be called max one time apparently false")
+
+    //only purpose of following paragraph is to set varS
+    for(l <- locations)
+    {
+      Deparse(l.inv)
+      Deparse(l.evolve)
+      for(t <- l.transitions)
+      {
+        Deparse(t.check)
+        Deparse(t.assign)
+      }
+    }
+
+    def make_evolve_explicit(v: Any):List[(Fn,Term)] = v match
+    {
+      case l:List[(Fn,Term)] => {
+        var varS_todo:Set[String] = Deparse.varS.toSet
+        l.foreach(tuple => varS_todo=varS_todo-(tuple._1.f))
+        var res = l
+        varS_todo.foreach(v => res=((Fn(v,Nil),Num(Exact.zero)))::res )
+        res
+      }
+      case None => make_evolve_explicit(Nil)
+      case Some(v: Any) => make_evolve_explicit(v)
+      case _ => throw new Exception("unexpected input type")
+    }
+
+    //actual deparsing
     var locations_str = ""
     var transitions_str = ""
     for(l <- locations)
@@ -247,14 +275,15 @@ class Automaton(hp: HP) {
       val id = getId(l).toString()
       locations_str+= "  <location id=\""+id+"\" name=\"l"+id+"\">\n"
       locations_str+= Deparse(l.inv,"invariant","    ","\n")
-      locations_str+= Deparse(l.evolve,"flow","    ","\n")
+    //locations_str+= Deparse(l.evolve,"flow","    ","\n")
+      locations_str+= Deparse(make_evolve_explicit(l.evolve),"flow","    ","\n")
       locations_str+= "  </location>\n"
       for(t <- l.transitions)
       {
         transitions_str+= "  <transition source=\""+id+"\" target=\""+getId(t.to).toString()+"\">\n"
         transitions_str+= Deparse(t.check ,                                                                    "guard"     ,"    ","\n")
         transitions_str+= Deparse(t.assign,                                                                    "assignment","    ","\n")
-        //transitions_str+= Deparse(List((Fn("isendstate",Nil),Num((if(isEnd(t.to))Exact.one else Exact.zero)))),"assignment","    ","\n")
+      //transitions_str+= Deparse(List((Fn("isendstate",Nil),Num((if(isEnd(t.to))Exact.one else Exact.zero)))),"assignment","    ","\n")
         transitions_str+= "  </transition>\n"
       }
     }
