@@ -37,8 +37,6 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
   import javax.swing.event.TreeModelEvent
   import javax.swing.event.TreeModelListener
 
-  
-
   import DLBanyan.Nodes._
 
   val frontend = fe
@@ -54,45 +52,37 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
         treeModelListeners.remove(l)
   }
 
-
   def fireNodesInserted(pt: ProofNode, newnds: List[ProofNode]): Unit = {
     val path = getPath(pt)
-//    println("path = " + path)
     val c: Array[Object] = newnds.toArray
-    val newlength = pt.getchildren.length 
+    val newlength = pt.getChildren.length 
     val oldlength = newlength - newnds.length
     val ci: Array[Int] = Range(oldlength, newlength).toArray
-    val e = new TreeModelEvent(this,path,ci,c)
-    for(l <- treeModelListeners){
+    val e = new TreeModelEvent(this, path, ci, c)
+    for (l <- treeModelListeners) {
       l.treeNodesInserted(e)
 //      l.treeStructureChanged(e)
     }
-    
     frontend.fireNodesInserted(path)
-    
-
   }
 
   def fireChanged(nd: ProofNode): Unit = {
     val path = getPath(nd)
-    val e = new TreeModelEvent(this,path)
-    for(l <- treeModelListeners){
+    val e = new TreeModelEvent(this, path)
+    for (l <- treeModelListeners) {
       l.treeNodesChanged(e)
-    }
-
+      }
   }
 
   def fireNewRoot(nd: ProofNode): Unit = {
     val path:Array[Object] = List(nd).toArray
     val e = new TreeModelEvent(this, path)
-    for(l <- treeModelListeners){
+    for (l <- treeModelListeners) {
       l.treeStructureChanged(e)
     }
-
   }
 
-
-  def getPathAux(nd: ProofNode): List[Object] = nd.parent match {
+  def getPathAux(nd: ProofNode): List[Object] = nd.getParent match {
     case None =>
       if (nd == rootNode) {
         List(nd)
@@ -105,7 +95,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
   }
 
   def getPath(nd: ProofNode): Array[Object] = {
-    try{
+    try {
       val p = getPathAux(nd)
       p.reverse.toArray
     } catch {
@@ -116,17 +106,16 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
     }
   }
 
-
-  def getIndexOfChild(parent: Any, child: Any): Int = (parent,child) match {
+  def getIndexOfChild(parent: Any, child: Any): Int = (parent, child) match {
     case (p: ProofNode, c: ProofNode) =>
-      p.getchildren.indexOf(c.nodeID)
+      p.getChildren.indexOf(c.nodeID)
     case _ => 
-      0
+      throw new Error("child not found")
   }
 
   def getChild(parent: Any, index: Int): Object = parent match {
     case (pn: ProofNode) =>
-      val r = getnode(pn.getchildren.apply(index))
+      val r = getnode(pn.getChildren.apply(index))
 //      println("getting child  " + index + " of " + pn)
 //      println("it is " + r)
       r
@@ -136,10 +125,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
   def getChildCount(parent: Any): Int = parent match {
     case (pn: ProofNode) =>
-      val r = pn.getchildren.length
-//      println("getting child count of " + pn)
-//      println("it is " + r)
-      r
+      pn.getChildren.length
     case _ => 
       0
   }
@@ -150,22 +136,17 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
   def isLeaf(node: Any): Boolean = node match {
     case (pn: ProofNode) =>
-      pn.getchildren.isEmpty
+      pn.getChildren.isEmpty
     case _ => 
       true
   }
-  
 
   // I think this would get used if the user could make changes
   // through the gui.
   def valueForPathChanged(path: javax.swing.tree.TreePath, newValue: Any): Unit = {
     ()
   }
-
 }
-
-
-
 
 class FrontEnd(fa: Actor) 
   extends GridPanel(1,0) with TreeSelectionListener {
@@ -175,96 +156,87 @@ class FrontEnd(fa: Actor)
 
     val frontactor = fa
 
-
-    var  htmlPane :JEditorPane = null 
+    var htmlPane :JEditorPane = null 
     var tree : JTree = null
 
+    val tm = new TreeModel(this)
+    fa ! ('registergui, tm)
 
-  val tm = new TreeModel(this)
-  fa ! ('registergui, tm)
+    tree = new JTree(tm)
+    tree.setCellRenderer(new MyRenderer)
+    tree.getSelectionModel().setSelectionMode(
+      TreeSelectionModel.SINGLE_TREE_SELECTION)
 
-  tree = new JTree(tm)
-  tree.setCellRenderer(new MyRenderer)
-  tree.getSelectionModel().setSelectionMode(
-    TreeSelectionModel.SINGLE_TREE_SELECTION)
+    //Listen for when the selection changes.
+    tree.addTreeSelectionListener(this)
+    // Popup Menu per node
+    tree.addMouseListener(new MouseAdapter() {
+      var node : ProofNode = null
+      val popup : PopupMenu = new PopupMenu
+      popup.peer.setInvoker(tree)
+      popup.add(new MenuItem(Action("Stop")
+                             {println("aborting job " + node.nodeID)
+	                      fa ! ('abort, node.nodeID)}))
 
-  //Listen for when the selection changes.
-  tree.addTreeSelectionListener(this)
-  // Popup Menu per node
-  tree.addMouseListener(new MouseAdapter() {
-	var node : ProofNode = null
-	  val popup : PopupMenu = new PopupMenu
-	  popup.peer.setInvoker(tree)
-	  popup.add(new MenuItem(Action("Stop")
-                                     {println("aborting job " + node.nodeID)
-	                                  fa ! ('abort, node.nodeID)}))
-
-	override def mousePressed(e : MouseEvent) {
-		if (e.isPopupTrigger()) {
-		    val loc = e.getPoint();
-            tree.getPathForLocation(loc.x, loc.y).getLastPathComponent() match {
-                case (nd : ProofNode) =>
-                    node = nd
-                    popup.show(tree, loc.x, loc.y)
-                case _ => null
-            }
-		}
+      override def mousePressed(e : MouseEvent) {
+	if (e.isPopupTrigger()) {
+	  val loc = e.getPoint();
+          tree.getPathForLocation(loc.x, loc.y).getLastPathComponent() match {
+            case (nd : ProofNode) =>
+              node = nd
+              popup.show(tree, loc.x, loc.y)
+            case _ => null
+          }
 	}
-  })
+      }
+    })
 
-
-  //Create the scroll pane and add the tree to it. 
-  val treeView = new JScrollPane(tree)
+    //Create the scroll pane and add the tree to it. 
+    val treeView = new JScrollPane(tree)
   
-  //Create the HTML viewing pane.
-  htmlPane = new JEditorPane()
-  htmlPane.setEditable(false)
-  val htmlView = new JScrollPane(htmlPane);
+    //Create the HTML viewing pane.
+    htmlPane = new JEditorPane()
+    htmlPane.setEditable(false)
+    val htmlView = new JScrollPane(htmlPane);
 
-  //Add the scroll panes to a split pane.
-  val splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT)
-  splitPane.setTopComponent(treeView)
-  splitPane.setBottomComponent(htmlView)
+    //Add the scroll panes to a split pane.
+    val splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT)
+    splitPane.setTopComponent(treeView)
+    splitPane.setBottomComponent(htmlView)
 
-  override val minimumSize = new Dimension(100, 50)
-  htmlView.setMinimumSize(minimumSize)
-  treeView.setMinimumSize(minimumSize)
-  splitPane.setDividerLocation(300)
-  splitPane.setPreferredSize(new Dimension(800, 640))
+    override val minimumSize = new Dimension(100, 50)
+    htmlView.setMinimumSize(minimumSize)
+    treeView.setMinimumSize(minimumSize)
+    splitPane.setDividerLocation(300)
+    splitPane.setPreferredSize(new Dimension(800, 640))
 
-  //@TODO Add the split pane to this panel.
-  //contents = splitPane
-  peer.add(splitPane)
-
+    //@TODO Add the split pane to this panel.
+    //contents = splitPane
+    peer.add(splitPane)
 
     /** Required by TreeSelectionListener interface. */
     def valueChanged(e: TreeSelectionEvent) : Unit = {
-          tree.getLastSelectedPathComponent() match {
-            case (nd : ProofNode) => 
-              htmlPane.setText(nd.toPrettyString)
-              TreeActions.gotonode(nd)
-            case _ => null
-          }
-
+      tree.getLastSelectedPathComponent() match {
+        case (nd : ProofNode) => 
+          htmlPane.setText(nd.toPrettyString)
+          TreeActions.gotonode(nd)
+        case _ => null
+      }
     }
-
 
     def fireNodesInserted(path: Array[Object]): Unit = {
       val tpath = new javax.swing.tree.TreePath(path)
       tree.expandPath(tpath)
     }
 
-
-
     class MyRenderer extends DefaultTreeCellRenderer {
 
       import javax.swing.Icon
 
       def loadicon(filename: String, default: Icon): Icon = {
-
         val i = try {
           new javax.swing.ImageIcon(filename)
-        }catch {
+        } catch {
           case e => 
             println ("using default icon")
             default
@@ -277,7 +249,6 @@ class FrontEnd(fa: Actor)
       val irrelevantIcon = loadicon("icons/irrelevant.png", leafIcon)
       val disprovedIcon = loadicon("icons/disproved.png", closedIcon)
       val abortedIcon = loadicon("icons/aborted.png", closedIcon)
-
 
       override def getTreeCellRendererComponent(tree: JTree,
                                                 value: Object,
@@ -293,7 +264,7 @@ class FrontEnd(fa: Actor)
 
         value match {
           case (nd: ProofNode) =>
-            nd.status match {
+            nd.getStatus match {
               case Open => 
                 setIcon(openIcon)
               case Irrelevant(_) => 
@@ -306,12 +277,11 @@ class FrontEnd(fa: Actor)
                 setIcon(abortedIcon)
             }
           case _ =>
+            throw new Error("not a proof node")
         }
-        this 
+        this
       }
     }
-
-
 }
 
 
@@ -364,7 +334,6 @@ object FE {
 	  val quit = new MenuItem(Action("Quit") {
 	    visible = false
 	    close
-//	    fa ! ('quit)
 	  })
 	  quit.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
     	    contents += quit
@@ -396,7 +365,7 @@ object FE {
       override def closeOperation = close
 
       pack()
-      visible =true
+      visible = true
     }
   }
 

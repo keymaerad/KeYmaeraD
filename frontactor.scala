@@ -65,13 +65,13 @@ object TreeActions {
 
   def attachnodes(pt: ProofNode, newnds: List[ProofNode]): Unit = {
     for (newnd <- newnds){
-      newnd.parent = Some(pt.nodeID)
+      newnd.setParent(Some(pt.nodeID))
       register(newnd)
       pt.addchild(newnd.nodeID)
     }
 //    println("treemodel attaching nodes: " + newnds)
     treemodel.map(_.fireNodesInserted(pt, newnds)) // GUI
-    treemodel.map(_.fireChanged(pt)) // GUI
+//    treemodel.map(_.fireChanged(pt)) // GUI
   }
 
   def attachnode(pt: ProofNode, newnd: ProofNode): Unit = {
@@ -134,13 +134,13 @@ object TreeActions {
     val nd = getnode(ndID)
     nd match {
       case AndNode(r,g,svs) =>
-        val others = nd.getchildren.filterNot( _ ==  from)
-        val os = others.map(getnode).map(_.status)
+        val others = nd.getChildren.filterNot( _ ==  from)
+        val os = others.map(getnode).map(_.getStatus)
         os.find( _ != Proved) match {
            case None =>
-             nd.status = Proved
+             nd.setStatus(Proved)
              treemodel.map(_.fireChanged(nd)) // GUI
-             nd.parent match {
+             nd.getParent match {
                case Some(p) =>
                  propagateProvedUp(p, ndID)
                case None =>
@@ -149,11 +149,11 @@ object TreeActions {
         }
 
       case OrNode(r,g) =>
-        nd.status = Proved
+        nd.setStatus(Proved)
         treemodel.map(_.fireChanged(nd)) // GUI
-        val others = nd.getchildren.filterNot( _ ==  from)
+        val others = nd.getChildren.filterNot( _ ==  from)
         others.map(x => propagateIrrelevantDown(x))
-        nd.parent match {
+        nd.getParent match {
           case Some(p) =>
             propagateProvedUp(p, ndID)
           case None =>
@@ -168,7 +168,7 @@ object TreeActions {
   // called when ndID becomes irrelevant.
   def propagateIrrelevantDown(ndID: NodeID) : Unit = {
     val nd = getnode(ndID)
-    nd.status = Irrelevant(nd.status)
+    nd.setStatus(Irrelevant(nd.getStatus))
     treemodel.map(_.fireChanged(nd)) //GUI
     jobs.get(ndID) match {
       case Some(t) => 
@@ -177,7 +177,7 @@ object TreeActions {
       case None =>
         
     }
-    nd.getchildren.map( propagateIrrelevantDown)
+    nd.getChildren.map( propagateIrrelevantDown)
 
   }
 }
@@ -339,7 +339,7 @@ class FrontActor extends Actor {
             // Proved.
             case (Some(t), Some(nd), Sequent(_, Nil, List(True))) =>
               jobs.remove(ndID)
-              nd.parent match {
+              nd.getParent match {
                 case Some(ptid) =>
                   val pt = getnode(ptid)
                   val nd1 = DoneNode("quantifier elimination", sq)
@@ -351,7 +351,7 @@ class FrontActor extends Actor {
             // Disproved.
             case (Some(t), Some(nd), Sequent(_, Nil, Nil)) =>
               jobs.remove(ndID)
-              nd.status = Disproved
+              nd.setStatus(Disproved)
               treemodel.map(_.fireChanged(nd)) //GUI
             // Nothing to report
             case (Some(t), Some(nd), _) => 
@@ -367,7 +367,7 @@ class FrontActor extends Actor {
               ()
             case Some(nd) =>
               jobs.remove(ndID)
-              nd.status = Aborted
+              nd.setStatus(Aborted)
               treemodel.map(_.fireChanged(nd)) //GUI
           }
 

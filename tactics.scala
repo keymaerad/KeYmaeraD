@@ -360,8 +360,8 @@ object Tactics {
                                       closeOrArithT)
 
   def getOpenLeaves(nd: ProofNode) : List[OrNode] = {
-    val kds = nd.children.map(getnode)
-    (kds, nd.status, nd) match {
+    val kds = nd.getChildren.map(getnode)
+    (kds, nd.getStatus, nd) match {
       case (Nil,Open, nd1@OrNode(_,_)) =>
         List(nd1)
       case _ =>

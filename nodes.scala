@@ -26,16 +26,31 @@ object Nodes {
   abstract class ProofNode() {
     //val nodeType : NodeType = t
     val nodeID = nextNodeID 
-    var children : List[NodeID] = Nil
-    var parent : Option[NodeID] = None
+    private var children : List[NodeID] = Nil
+    private var parent : Option[NodeID] = None
+    private var status: Status  = Open
 
-    var status: Status  = Open
-
-    def addchild(c: NodeID): Unit = synchronized{
-      children =  children ++ List(c)
+    def getParent : Option[NodeID] = synchronized{
+      parent
     }
 
-    def getchildren : List[NodeID] = synchronized{
+    def setParent(p: Option[NodeID]) : Unit = synchronized{
+      parent = p
+    }
+
+    def getStatus : Status = synchronized{
+      status
+    }
+
+    def setStatus(s: Status) : Unit = synchronized{
+      status = s
+    }
+
+    def addchild(c: NodeID): Unit = synchronized{
+      children = children ++ List(c)
+    }
+
+    def getChildren : List[NodeID] = synchronized{
       children
     }
 
@@ -55,8 +70,6 @@ object Nodes {
     override def hashCode : Int = {
       nodeID.hashCode
     }
-
-
   }
 
 
@@ -78,12 +91,10 @@ object Nodes {
       sb.append(super.toPrettyString)
       sb.toString
    }
-
   }
 
-
   case class OrNode (rule: String, 
-                goal: Sequent) extends ProofNode() {
+                     goal: Sequent) extends ProofNode() {
 
     override def toString: String = {
       nodeID.toString + " | " + rule
@@ -103,7 +114,7 @@ object Nodes {
 
   case class WorkingNode (rule: String, 
                           goal: Sequent) extends ProofNode() {
-   status = Open
+   setStatus(Open)
     
     override def toString: String = {
       "WorkingNode " + nodeID.toString
@@ -117,17 +128,11 @@ object Nodes {
       sb.append(super.toPrettyString)
       sb.toString
    }
-
-
-
   }
-
-
-
 
   case class DoneNode (rule: String, 
                        goal: Sequent) extends ProofNode() {
-   status = Proved
+   setStatus(Proved)
     
     override def toString: String = {
       "DoneNode " + nodeID.toString
@@ -141,9 +146,7 @@ object Nodes {
       sb.append(super.toPrettyString)
       sb.toString
    }
-
   }
-
 
   // do I need the synchronization?
   class SyncHashMap extends
