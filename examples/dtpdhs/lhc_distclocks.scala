@@ -21,8 +21,8 @@ val okcuttct = cutT(
    "(eps()-T3)^2+2*(eps()-T3)*V1)"
   ),
   parseFormula(
-   "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A +B())*(A *" +
-   "(s())^2+2*(s())*V1)"
+   "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A+B())*(A *" +
+   "(eps())^2+2*(eps())*V1)"
   )
 )
 
@@ -376,9 +376,16 @@ val loopinv = parseFormula(
   "(forall i : C. (e(i) = 1 ==> v(i) >= 0 & " + 
   "t(i) >= 0 & t(i) <= eps() & a(i) >= -B()))  & " +
   "(forall f : C. forall l : C. " +
-   "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==>" +
+   "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==> " +
+"  (((t(f) < t(l) &  0  <= - a(f) * t(f) + v(f) & 0  <= - a(l) * t(f)  + v(l) & " +
+"     1 / 2 *  a(f) * t(f)^2 - v(f) * t(f) + x(f) < " +
+"     1 / 2 *  a(l) * t(f)^2 - v(l) * t(f) + x(l) )" +
+"   | " +
+"    1 / 2 *  a(f) * t(l)^2 - v(f) * t(l) + x(f) < " +
+"    1 / 2 *  a(l) * t(l)^2 - v(l) * t(l) + x(l) " +
+"   ) & " +
     "2 * B() * x(l) > 2 *  B() * x(f) + v(f) ^2 - v(l)^2 " +
-       " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) )* v(f)))"
+       " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) )* v(f))))"
  )
 
 
