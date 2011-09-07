@@ -88,35 +88,26 @@ object Deparse {
   }
 
   def apply(v:Any, xmlTagName:String="", prefix:String="", suffix:String=""):String = {
-    var res = ""
-    val tagOpen  = if(xmlTagName.length>0) "<" +xmlTagName+">" else ""
-    val tagClose = if(xmlTagName.length>0) "</"+xmlTagName+">" else ""
-    var suffix_ = suffix
-    if(xmlTagName.length==0) suffix_ += "&"
     v match {
-      case None => {}
       case ee:(_,_) => {
         ee._1 match {
           case x:Fn => ee._2 match {
             case tm:Term => {
               assert(x.ps.size==0) //not sure if this is catched earlier / if Exception should be used
-              return prefix+tagOpen+termToXmlString(x)+"' == "+termToXmlString(tm)+tagClose+suffix_
+              apply(termToXmlString(x)+"' == "+termToXmlString(tm),xmlTagName,prefix,suffix)
             }
-            case _ => assert(false,"(Fn,Term) expected")
+            case _ => throw new Exception("(Fn,Term) expected")
           }
-          case _ => assert(false,"(Fn,Term) expected")
+          case _ => throw new Exception("(Fn,Term) expected")
         }
       }
-      case f:Formula => formulatoXmlString(f).foreach(str => res+= prefix+tagOpen+str+tagClose+suffix_)
-      case l:List[_] => {
-        l.foreach(e => res+= apply(e,xmlTagName,prefix,suffix))
-      }
-      case Some(f:Formula ) => return apply(f,xmlTagName,prefix,suffix)
-      case Some(l: List[_]) => return apply(l,xmlTagName,prefix,suffix)
-      case _ => assert(false)
+      case f  :Formula  => apply(formulatoXmlString(f),xmlTagName,prefix,suffix)
+      case l  :List[_]  => l.map(el => apply(el,xmlTagName,prefix,suffix)).mkString(if(xmlTagName.length==0) " & " else "")
+      case str:String   => prefix+(if(xmlTagName.length>0) "<" +xmlTagName+">" else "")+str+(if(xmlTagName.length>0) "</"+xmlTagName+">" else "")+suffix
+      case None         => ""
+      case Some(el:Any) => apply(el,xmlTagName,prefix,suffix)
+      case _            => throw new Exception()
     }
-    if(xmlTagName.length==0 && res.length>0) res= res.substring(0,res.length-1)
-    res
   }
 //}}}
 }
@@ -182,16 +173,22 @@ class Automaton(hp: HP) {
       start.add_transition(a2.start)
       this
     case Loop(p1: HP,_,_) =>
-      val a1 = new Automaton(p1)
-      a1.ends.foreach(end => {
-      val t = end.add_transition(a1.start)
-      })
+      /*
+      var a1 = new Automaton(p1)
+      a1.ends.foreach(end => end.add_transition(a1.start))
       a1
+      */
+      val a1      = new Automaton(p1)
+      locations   = a1.locations
+      ends        = a1.ends
+      start       = a1.start
+      ends.foreach(end => end.add_transition(a1.start))
+      this
     case _ => throw new TooWeak("no way founded to make automaton simulate * assignments and quantified assignments / diff eqS")
     //}}}
   }
 
-  def getId  (l:Automaton#Location) = locations.indexOf(l)
+  def getId  (l:Automaton#Location) = {val res = locations.indexOf(l);assert(res!= -1);res}
   def isEnd  (l:Automaton#Location) = ends.indexOf(l)!= -1
   def isStart(l:Automaton#Location) = l==start
 
@@ -371,15 +368,16 @@ object Spaceex {
         //val print_fm = (fm:Formula) => println(Printing.stringOfFormula(fm))
         //g.ctxt .foreach(print_fm)
         //g.scdts.foreach(print_fm)
-        if(g.ctxt.size != 0 || g.scdts.size !=1) throw new TooWeak("Sequent with empty premises and one goal expected")
+        //if(g.ctxt.size != 0 || g.scdts.size !=1) throw new TooWeak("Sequent with empty premises and one goal expected")
+        if(g.scdts.size !=1) throw new TooWeak("Sequent with one goal expected")
         var h = g.scdts(0)
         h match {
           case Modality(Box,hp,phi) => {
             val a = new Automaton(hp)
-
-            //println(a.toStr('txt))
+            println(a.toStr('txt))
 
             var init = "loc()==l"+a.getId(a.start)
+            init+= " "+Deparse(g.ctxt)
             var forb = Deparse(negate(phi))
             //endstate
             //init+= " & isendstate=="+(if(a.isEnd(a.start)) "1" else "0")
@@ -396,7 +394,7 @@ object Spaceex {
           case _ => throw new TooWeak("Box modality expected")
         }
       }
-      case None => throw new Exception("dlp.result didn't returned a sequent")
+      case None => throw new Exception("DLParser.result didn't returned a sequent")
     }
   }
 //}}}
