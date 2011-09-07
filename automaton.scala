@@ -37,6 +37,8 @@
    -graph output
    -branch of main impl
     -ask david if he could check the scala code style
+     -get rid of the two warnings
+     -NoClassDefFoundError
 */
 /* === bug-iser details
    no assertion that var isendstate is already used
@@ -59,35 +61,37 @@ object Deparse {
   //-Printing fcts make returns char . only by calling docOfTerm or docOfFormula
   private def retrieve_varS(s:String):Unit = {varS = varS ::: "[a-zA-Z]+(?=\\.)".r.findAllIn(s).toList }
 
-  private def escapeXml(s:String):String = s.replaceAll("<","&lt;").replaceAll(">","&gt;")
-  private def termToXmlString(tm: Term):String = {
-    val sw = new java.io.StringWriter()
-    val d = Printing.docOfTerm(tm)
-    d.format(70, sw)
-    val res = sw.toString
-    retrieve_varS(res)
-    escapeXml(res).replaceAll("\\.","")
-  }
-  private def formulatoXmlString(f: Formula):List[String] =
-  {
-    f match {
-      case Atom(R(_,_)) => {
-        val res = Printing.stringOfFormula(f)
-        retrieve_varS(res)
-        //List(escapeXml(res).replaceAll("\\.",""))
-        //TODO toggle xml escape -- tmp: no escape since this used only for config file
-        List(res.replaceAll("\\.",""))
-      }
-      case Quantifier(Forall,_,_,g) => formulatoXmlString(g)
-      case Binop(And, f1, f2) => formulatoXmlString(f1) ::: formulatoXmlString(f2)
-      case Binop(_,_,_) => throw new TODO("Not supported yet")
-      case Not(_) | True | False => throw new TODO("Not not supported yet")
-      case Quantifier(Exists,_,_,_) | Modality(_,_,_) => throw new TooWeak("Exists quantifier and modality not supported")
-      //case _ => throw new Exception("i should have covered every case")
-    }
-  }
-
   def apply(v:Any, xmlTagName:String="", prefix:String="", suffix:String=""):String = {
+
+    def escapeXml(s:String):String = if(xmlTagName=="") s else s.replaceAll("<","&lt;").replaceAll(">","&gt;")
+    def termToXmlString(tm: Term):String = {
+      val sw = new java.io.StringWriter()
+      val d = Printing.docOfTerm(tm)
+      d.format(70, sw)
+      val res = sw.toString
+      //println("Printing.docOfTerm")
+      //println(res)
+      //println(tm)
+      retrieve_varS(res)
+      escapeXml(res).replaceAll("\\.","")
+    }
+    def formulatoXmlString(f: Formula):List[String] =
+    {
+      f match {
+        case Atom(R(_,_)) | True | False => {
+          val res = Printing.stringOfFormula(f)
+          retrieve_varS(res)
+          List(escapeXml(res).replaceAll("\\.",""))
+        }
+        case Quantifier(Forall,_,_,g) => formulatoXmlString(g)
+        case Binop(And, f1, f2) => formulatoXmlString(f1) ::: formulatoXmlString(f2)
+        case Binop(_,_,_) => throw new TODO("Not supported yet "+f)
+        case Not(_) => throw new TODO("Not not supported yet -- "+f)
+        case Quantifier(Exists,_,_,_) | Modality(_,_,_) => throw new TooWeak("Exists quantifier and modality not supported")
+        //case _ => throw new Exception("i should have covered every case")
+      }
+    }
+
     v match {
       case ee:(_,_) => {
         ee._1 match {
@@ -154,6 +158,8 @@ class Automaton(hp: HP) {
       locations = List(new Location)
       locations(0).inv = Some(h)
       locations(0).evolve = Some(derivs)
+      start = locations(0)
+      ends  = List(locations(0))
       this
     case Seq(p1: HP, p2: HP) => 
       val a1 = new Automaton(p1)
