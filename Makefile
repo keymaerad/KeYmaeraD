@@ -12,6 +12,9 @@ run:
 	#scala DLBanyan.Test examples/simple.dl
 	scala DLBanyan.Test examples/bouncingball.dl
 
+input:
+	vi DLBanyan/_.xml DLBanyan/_.cfg
+
 spaceex:
 	${SPACEEX} -m DLBanyan/_.xml --config DLBanyan/_.cfg
 

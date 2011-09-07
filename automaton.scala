@@ -39,6 +39,7 @@
     -ask david if he could check the scala code style
      -get rid of the two warnings
      -NoClassDefFoundError
+     -test1.dl not parsing
 */
 /* === bug-iser details
    no assertion that var isendstate is already used
@@ -63,7 +64,11 @@ object Deparse {
 
   def apply(v:Any, xmlTagName:String="", prefix:String="", suffix:String=""):String = {
 
-    def escapeXml(s:String):String = if(xmlTagName=="") s else s.replaceAll("<","&lt;").replaceAll(">","&gt;")
+    def spaceexizeSyntax(s:String):String = {
+      //TODO: not thought through solution according to "0 -" -> "-" -- probably some case where it won't do like "x - 0 - y"
+      def escapeXml(s:String):String = if(xmlTagName=="") s else s.replaceAll("<","&lt;").replaceAll(">","&gt;")
+      escapeXml(s.replaceAll("0 -","-").replaceAll("([^<>!=])=","$1==").replaceAll("\\.",""))
+     }
     def termToXmlString(tm: Term):String = {
       val sw = new java.io.StringWriter()
       val d = Printing.docOfTerm(tm)
@@ -73,7 +78,8 @@ object Deparse {
       //println(res)
       //println(tm)
       retrieve_varS(res)
-      escapeXml(res).replaceAll("\\.","")
+      //escapeXml(res).replaceAll("\\.","")
+      spaceexizeSyntax(res)
     }
     def formulatoXmlString(f: Formula):List[String] =
     {
@@ -81,7 +87,8 @@ object Deparse {
         case Atom(R(_,_)) | True | False => {
           val res = Printing.stringOfFormula(f)
           retrieve_varS(res)
-          List(escapeXml(res).replaceAll("\\.",""))
+          //List(escapeXml(res.replaceAll("([^<>!=])=","$1==")).replaceAll("\\.",""))
+          List(spaceexizeSyntax(res))
         }
         case Quantifier(Forall,_,_,g) => formulatoXmlString(g)
         case Binop(And, f1, f2) => formulatoXmlString(f1) ::: formulatoXmlString(f2)
@@ -382,13 +389,15 @@ object Spaceex {
             val a = new Automaton(hp)
             println(a.toStr('txt))
 
-            var init = "loc()==l"+a.getId(a.start)
-            init+= " "+Deparse(g.ctxt)
+            var init = Deparse(g.ctxt)
+            if(init!="") init+= " & "
+            init+= "loc()==l"+a.getId(a.start)
             var forb = Deparse(negate(phi))
+            assert(a.ends.length>0)
+            forb+= " & ("+a.ends.map(end => "loc()==l"+a.getId(end)).mkString(" | ")+")"
             //endstate
             //init+= " & isendstate=="+(if(a.isEnd(a.start)) "1" else "0")
             //forb+= " & isendstate==1"
-            forb+=" & ("+a.ends.map(end => "loc()==l"+a.getId(end)).mkString(" | ")+")"
             Util.str2file("DLBanyan/_.cfg",configFile(init,forb))
             Util.str2file("DLBanyan/_.xml",a.toSX.toString())
             Util.str2file("DLBanyan/_.dot",a.toStr('graph))
