@@ -263,7 +263,7 @@ val diffinv = parseFormula(
      " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) )* v(f)) &" + 
 " v(f) - a(f) * s() >= 0 & v(l) - a(l) * s() >= 0 &   " + 
     "2 * B() *  (1 / 2 *  a(l) * s()^2 - v(l) * s() + x(l))  > 2 *  B() * (1 / 2 *  a(f) * s()^2 - v(f) * s() + x(f) ) + (- a(f) * s() + v(f))^2 - (- a(l) * s()  + v(l))^2 " +
-       " + (a(f) + B()) * (a(f) * (eps() - s() )^2 + 2 * (eps() - s() )* (- a(f) * s() + v(f)))))"
+       " + (a(f) + B()) * (a(f) * (eps() - (t(f) - s())  )^2 + 2 * (eps() - (t(f) - s())  )* (- a(f) * s() + v(f)))))"
  )
 
 
@@ -398,6 +398,10 @@ val loopinv = parseFormula(
        " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) )* v(f)))"
  )
 
+
+val instT =   instantiatebyT(St("C")) (List(("i", List("f", "l")), 
+                                            ("f", List("f")), 
+                                            ("l", List("l"))))
 
 
 val starttct = 
