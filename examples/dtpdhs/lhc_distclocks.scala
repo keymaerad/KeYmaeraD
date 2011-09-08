@@ -254,13 +254,29 @@ val velpos =
     )
   )
 
+
+val diffinv = parseFormula(
+  "(forall f : C. forall l : C. " +
+   "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==> " +
+"  ( " +
+"2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
+     " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) )* v(f)) &" + 
+" v(f) - a(f) * s() >= 0 & v(l) - a(l) * s() >= 0 &   " + 
+    "2 * B() *  (1 / 2 *  a(l) * s()^2 - v(l) * s() + x(l))  > 2 *  B() * (1 / 2 *  a(f) * s()^2 - v(f) * s() + x(f) ) + (- a(f) * s() + v(f))^2 - (- a(l) * s()  + v(l))^2 " +
+       " + (a(f) + B()) * (a(f) * (eps() - s() )^2 + 2 * (eps() - s() )* (- a(f) * s() + v(f)))))"
+ )
+
+
 val tyltct = composelistT(
   hpalpha1T*,
-  tryruleT(diffStrengthen(parseFormula("forall i : C . a(i) >= -B ")))<(
-    nilT,
-    nilT,
-    tryruleT(diffStrengthen(
-      parseFormula("forall f : C. forall l : C. (e(f) = 1 & e(l) = 1 & id(f) < id(l) & (f /= l))  ==> 2 * B() * x(l) > 2 *  B() * x(f) + v(f) ^2 - v(l)^2  + (a(f) + B()) * (a(f) * (eps() - t(f))^2 + 2 * (eps() - t(f)) * v(f))")))
+  tryruleT(diffStrengthen(
+    parseFormula(
+      "eps() > 0 & A() > 0 & B() > 0 &  s() >= 0 &" +
+      "(forall i : C. (e(i) = 1 ==>  " + 
+      "t(i) >= 0 & s() <= t(i) & a(i) >= -B()))" )))<(
+        nilT,
+        nilT,
+        tryruleT(diffStrengthen(diffinv))
   )
 )
 
@@ -372,21 +388,16 @@ val createtct =
 
 
 val loopinv = parseFormula(
-  "eps() > 0 & A() > 0 & B() > 0 &  " +
+  "eps() > 0 & A() > 0 & B() > 0 &  s() = 0 &" +
   "(forall i : C. (e(i) = 1 ==> v(i) >= 0 & " + 
   "t(i) >= 0 & t(i) <= eps() & a(i) >= -B()))  & " +
   "(forall f : C. forall l : C. " +
    "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==> " +
-"  (((t(f) < t(l) &  0  <= - a(f) * t(f) + v(f) & 0  <= - a(l) * t(f)  + v(l) & " +
-"     1 / 2 *  a(f) * t(f)^2 - v(f) * t(f) + x(f) < " +
-"     1 / 2 *  a(l) * t(f)^2 - v(l) * t(f) + x(l) )" +
-"   | " +
-"    1 / 2 *  a(f) * t(l)^2 - v(f) * t(l) + x(f) < " +
-"    1 / 2 *  a(l) * t(l)^2 - v(l) * t(l) + x(l) " +
-"   ) & " +
-    "2 * B() * x(l) > 2 *  B() * x(f) + v(f) ^2 - v(l)^2 " +
-       " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) )* v(f))))"
+" x(f) < x(l) &  " + 
+    "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
+       " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) )* v(f)))"
  )
+
 
 
 val starttct = 
@@ -410,7 +421,8 @@ val starttct =
                     (List(("i", List("f", "l")), 
                           ("f", List("f")), 
                           ("l", List("l"))))*,
-      nullarizeT*
+      nullarizeT*,
+      alleasyT
       
       
     )

@@ -5,8 +5,10 @@
  id : (C) -> Real, // ID number.
  e : (C) -> Real,
  n : () -> C,
- t : (C) -> Real
+ t : (C) -> Real,
+ s : () -> Real
 }
+s = 0,
 B > 0,
 A > 0, 
 eps > 0,
@@ -35,9 +37,12 @@ forall i : C. e(i) = 0
       );
     t(f) := 0)
  ++
-  ( forall i : C {x(i)' = v(i), 
-                  v(i)' = a(i), 
-                  t(i)' = 1; e(i) = 1 ==> (v(i) >= 0 &  t(i) <= eps) }  
+ (
+ forall i : C {x(i)' = v(i), 
+               v(i)' = a(i), 
+               t(i)' = 1,
+               s()' = 1; e(i) = 1 ==> (v(i) >= 0 &  t(i) <= eps) };
+  s := 0
   )
 }*
 ]
