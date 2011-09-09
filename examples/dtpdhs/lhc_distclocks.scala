@@ -254,13 +254,12 @@ val velpos =
     )
   )
 
-
 val diffinv = parseFormula(
   "(forall f : C. forall l : C. " +
    "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==> " +
 "  ( " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
-     " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) )* v(f)) &" + 
+     " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)) &" + 
 " v(f) - a(f) * s() >= 0 & v(l) - a(l) * s() >= 0 &   " + 
 " 1 / 2 *  a(l) * s()^2 - v(l) * s() + x(l) > " + 
 " 1 / 2 *  a(f) * s()^2 - v(f) * s() + x(f) & " + 
@@ -395,8 +394,8 @@ val loopinv = parseFormula(
   "t(i) >= 0 & t(i) <= eps() & a(i) >= -B()))  & " +
   "(forall f : C. forall l : C. " +
    "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==> " +
-" x(f) < x(l) &  " + 
-    "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
+" x(f) < x(l) & " + 
+    "2 * B() *  x(l)  > 2 * B() * x(f) + v(f)^2 - v(l)^2 " +
        " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) )* v(f)))"
  )
 
