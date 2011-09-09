@@ -254,6 +254,8 @@ val velpos =
     )
   )
 
+// XXX no good. a(f) might be negative.
+
 val diffinv = parseFormula(
   "(forall f : C. forall l : C. " +
    "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==> " +
@@ -263,8 +265,8 @@ val diffinv = parseFormula(
 " v(f) - a(f) * s() >= 0 & v(l) - a(l) * s() >= 0 &   " + 
 " 1 / 2 *  a(l) * s()^2 - v(l) * s() + x(l) > " + 
 " 1 / 2 *  a(f) * s()^2 - v(f) * s() + x(f) & " + 
-    "2 * B() *  (1 / 2 *  a(l) * s()^2 - v(l) * s() + x(l))  > 2 *  B() * (1 / 2 *  a(f) * s()^2 - v(f) * s() + x(f) ) + (- a(f) * s() + v(f))^2 - (- a(l) * s()  + v(l))^2 " +
-       " + (a(f) + B()) * (a(f) * (eps() - (t(f) - s())  )^2 + 2 * (eps() - (t(f) - s())  )* (- a(f) * s() + v(f)))))"
+    " (((v(f) - a(f) * s()) + (eps() - t(f) + s()) * a(f) >= 0 &   2 * B() *  (1 / 2 *  a(l) * s()^2 - v(l) * s() + x(l))  > 2 *  B() * (1 / 2 *  a(f) * s()^2 - v(f) * s() + x(f) ) + (- a(f) * s() + v(f))^2 - (- a(l) * s()  + v(l))^2   " +
+       " + (a(f) + B()) * (a(f) * (eps() - (t(f) - s())  )^2 + 2 * (eps() - (t(f) - s())  )* (- a(f) * s() + v(f))))  | ((v( f) - a(f) * s()) + (eps() - t(f) + s()) * a(f) < 0 & -2 * B() * a(f) * ( 1 / 2 *  a(f) * s()^2 - v(f) * s() + x(f)  )  + B() * (v(f) - a(f) * s() )^2 < -a(f) * (2 * B() * (1 / 2 *  a(l) * s()^2 - v(l) * s() + x(l)) + (v(l) - a(l) * s())^2 )))))"
  )
 
 
