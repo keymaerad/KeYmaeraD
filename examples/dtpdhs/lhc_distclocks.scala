@@ -13,7 +13,7 @@ val cuttct = cutT(
 )
 
 
-// We need to fix this to reflect the new invariant.
+
 val okcuttct = cutT(
   DirectedCut,
   parseFormula(
@@ -22,9 +22,22 @@ val okcuttct = cutT(
   ),
   parseFormula(
    "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A+B())*(A *" +
-   "(eps())^2+2*(eps())*V1)"
+   "(s())^2+2*(s())*V1)"
   )
 )
+
+val okcuttct2 = cutT(
+  StandardCut,
+  parseFormula(
+   "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A+B())*(A *" +
+   "(eps()-T3)^2+2*(eps()-T3)*V1)"
+  ),
+  parseFormula(
+   " (A+B())*(A *(s())^2+2*(s())*V1)  <=   (A+B())*(A *(eps() - T3)^2+2*(eps() - T3)*V1) "
+  )
+)
+
+
 
 val hideforprovecut = 
   composelistT(
@@ -254,19 +267,15 @@ val velpos =
     )
   )
 
-// XXX no good. a(f) might be negative.
 
 val diffinv = parseFormula(
-  "(forall f : C. forall l : C. " +
+  "forall f : C. forall l : C. " +
    "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==> " +
-"  ( " +
+"  ( (v(f) + a(f) * (eps() - t(f)) > 0 &   " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
-     " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)) &" + 
-" v(f) - a(f) * s() >= 0 & v(l) - a(l) * s() >= 0 &   " + 
-" 1 / 2 *  a(l) * s()^2 - v(l) * s() + x(l) > " + 
-" 1 / 2 *  a(f) * s()^2 - v(f) * s() + x(f) & " + 
-    " (((v(f) - a(f) * s()) + (eps() - t(f) + s()) * a(f) >= 0 &   2 * B() *  (1 / 2 *  a(l) * s()^2 - v(l) * s() + x(l))  > 2 *  B() * (1 / 2 *  a(f) * s()^2 - v(f) * s() + x(f) ) + (- a(f) * s() + v(f))^2 - (- a(l) * s()  + v(l))^2   " +
-       " + (a(f) + B()) * (a(f) * (eps() - (t(f) - s())  )^2 + 2 * (eps() - (t(f) - s())  )* (- a(f) * s() + v(f))))  | ((v( f) - a(f) * s()) + (eps() - t(f) + s()) * a(f) < 0 & -2 * B() * a(f) * ( 1 / 2 *  a(f) * s()^2 - v(f) * s() + x(f)  )  + B() * (v(f) - a(f) * s() )^2 < -a(f) * (2 * B() * (1 / 2 *  a(l) * s()^2 - v(l) * s() + x(l)) + (v(l) - a(l) * s())^2 )))))"
+     " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
+" (v(f) + a(f) * (eps() - t(f)) <= 0  &" +
+" - 2 * B() * a(f) * x(f) + B() * v(f)^2   < - 2 * B() * a(f) * x(f) - a(f) * v(f)^2   ))  "
  )
 
 
@@ -279,7 +288,14 @@ val tyltct = composelistT(
       "t(i) >= 0 & s() <= t(i) & a(i) >= -B()))" )))<(
         nilT,
         nilT,
-        tryruleT(diffStrengthen(diffinv))
+        tryruleT(diffStrengthen(diffinv))< (
+          nilT,
+          nilT,
+          composelistT(
+            diffsolveT(RightP(0),Endpoint),
+            hpalpha1T*
+          )
+        )
   )
 )
 
@@ -391,14 +407,17 @@ val createtct =
 
 
 val loopinv = parseFormula(
-  "eps() > 0 & A() > 0 & B() > 0 &  s() = 0 &" +
+  "eps() > 0 & A() > 0 & B() > 0 & " +
   "(forall i : C. (e(i) = 1 ==> v(i) >= 0 & " + 
   "t(i) >= 0 & t(i) <= eps() & a(i) >= -B()))  & " +
   "(forall f : C. forall l : C. " +
    "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==> " +
 " x(f) < x(l) & " + 
-    "2 * B() *  x(l)  > 2 * B() * x(f) + v(f)^2 - v(l)^2 " +
-       " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) )* v(f)))"
+"  ( (v(f) + a(f) * (eps() - t(f)) > 0 &   " +
+"2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
+     " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
+" (v(f) + a(f) * (eps() - t(f)) <= 0  &" +
+" - 2 * B() * a(f) * x(f) + B() * v(f)^2   < - 2 * B() * a(f) * x(f) - a(f) * v(f)^2   )))  "
  )
 
 
