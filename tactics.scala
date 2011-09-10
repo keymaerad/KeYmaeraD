@@ -830,7 +830,13 @@ object Tactics {
   }
 
 
-  
+  val dedupT : Tactic = new Tactic("dedup"){
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val Sequent(sig,cs,ss) = nd.goal
+      hidematchT(cs.diff(cs.distinct))(nd)
+    }
+  }
+
 
 
   val impleftknownT : Tactic = new Tactic("impleftknown") {
