@@ -428,7 +428,7 @@ val instT =   instantiatebyT(St("C")) (List(("i", List("f", "l")),
 
 val starttct = 
   tryruleT(loopInduction(loopinv))<(
-    hpalpha1T*,
+    easywithforalls(St("C")),
     composelistT(
       hpalpha1T*,
       tryruleT(andRight)<(
