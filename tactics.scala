@@ -910,7 +910,7 @@ object Tactics {
           case Binop(Imp, f1, f2) if ss.contains(f2) =>
             return (tryruleatT(impLeft)(LeftP(i))<(
                       tryruleT(close),
-                      unitT
+                      tryruleatT(hide)(RightP(ss.indexOf(f2) + 1))
                      ))(nd)
           case _ => ()
         }

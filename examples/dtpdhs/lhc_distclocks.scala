@@ -311,7 +311,9 @@ val deletetct =
         composelistT(
           hpalpha1T*,
           instantiatebyT(St("C"))(List(("i", List("i")), ("j", List("i")))),
-          impleftgoalT
+          impleftgoalT,
+          tryruleT(impLeft),
+          alleasyT
         )
       ),
       composelistT(
@@ -320,36 +322,13 @@ val deletetct =
                                      ("l", List("l")),
                                      ("j", List("f","l"))))*,
         impleftgoalT,
-        nilT,
-        alphaT*,
-        tryruleatT(commuteEquals)(RightP(0)),
-        instantiate4T,
-        tryruleatT(impLeft)(LeftP(0))<(
-          tryruleT(close),
-          composelistT(
-            instantiate1T(St("C")),
-            hideunivsT(St("C")),
-            tryruleT(andRight)<(
-              tryruleT(andRight)<(
-                tryruleT(andRight)<(
-                  tryruleatT(impLeft)(LeftP(3))<(
-                    ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) & nonarithcloseT  )
-                  ),
-                  tryruleatT(impLeft)(LeftP(1))<(
-                    ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) & nonarithcloseT  )
-                  )
-                ),
-                tryruleT(close)
-              ),
-              (tryruleT(not) & tryruleT(commuteEquals) & tryruleT(close))
-            )
-          )
-        )
+        tryruleT(impLeft)*,
+        alleasyT
       )
     )
   )
+
+
 
 
 
