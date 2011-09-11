@@ -20,7 +20,7 @@ forall i : C. e(i) = 0
      // Create a car.
  ++  (n := *; ?(e(n) = 0 & v(n) >= 0); e(n) := 1; id(n) := *; t(n) := 0;
         ?(forall l : C. 
-          (e(l) = 1 & id(n()) < id(l) ==> 
+          (e(l) = 1 & id(n) <= id(l) ==> 
             x(n) < x(l) & 
            ( (v(n) + a(n) * (eps() - t(n)) > 0 &  
               2 * B() *  x(l)  > 2 *  B() * x(n) + v(n)^2 - v(l)^2 
@@ -30,18 +30,19 @@ forall i : C. e(i) = 0
               < - 2 * B() * a(n) * x(n) - a(n) * v(n)^2 )))))
 
     // Control a car.
- ++ (f := *; a(f) := *;
-      ?(e(f) = 1 ==>
-         (a(f) = -B |
-          (v(f) = 0 & a(f) = 0) |
-           ((forall l : C. 
-            (e(l) = 1 & x(f) <= x(l) &  ( (f /= l)) 
-               ) ==> 
-                 2 * B * x(l) > 2 *  B * x(f) + v(f) ^2 - v(l)^2 
-                              + (A + B) * (A * eps^2 + 2 * eps * v(f)))
-           & a(f) = A))
-      );
-    t(f) := 0)
+ ++ (n := *; a(n) := *;
+      ?(e(n) = 1 ==>
+         a(n) >= -B & a(n) <= A & 
+           (forall l : C. 
+            (e(l) = 1 & id(n) <= id(l) ==> 
+              x(n) < x(l) & 
+              ((v(n) + a(n) * (eps() - t(n)) > 0 &  
+                2 * B() *  x(l)  > 2 *  B() * x(n) + v(n)^2 - v(l)^2 
+                  + (a(n) + B()) * (a(n) * (eps() - t(n) )^2 + 2 * (eps() - t(n) ) * v(n)))  |
+               (v(n) + a(n) * (eps() - t(n)) <= 0  &
+                 - 2 * B() * a(n) * x(n) + B() * v(n)^2 
+                 < - 2 * B() * a(n) * x(n) - a(n) * v(n)^2 )))));
+    t(n) := 0)
 
     // Dynamics.
  ++ (

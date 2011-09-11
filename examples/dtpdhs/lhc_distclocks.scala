@@ -270,7 +270,7 @@ val velpos =
 
 val diffinv = parseFormula(
   "forall f : C. forall l : C. " +
-   "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==> " +
+   "(e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
 "  ( (v(f) + a(f) * (eps() - t(f)) > 0 &   " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
      " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
@@ -411,7 +411,7 @@ val loopinv = parseFormula(
   "(forall i : C. (e(i) = 1 ==> v(i) >= 0 & " + 
   "t(i) >= 0 & t(i) <= eps() & a(i) >= -B()))  & " +
   "(forall f : C. forall l : C. " +
-   "(e(f) = 1 & e(l) = 1 & id(f) < id(l))  ==> " +
+   "(e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
 " x(f) < x(l) & " + 
 "  ( (v(f) + a(f) * (eps() - t(f)) > 0 &   " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
@@ -428,7 +428,7 @@ val instT =   instantiatebyT(St("C")) (List(("i", List("f", "l")),
 
 val starttct = 
   tryruleT(loopInduction(loopinv))<(
-    nilT,
+    hpalpha1T*,
     composelistT(
       hpalpha1T*,
       tryruleT(andRight)<(
