@@ -872,7 +872,6 @@ object Tactics {
   }
 
 
-
   val impleftknownT : Tactic = new Tactic("impleftknown") {
     def apply(nd : OrNode) : Option[List[NodeID]] = {
       val Sequent(sig,cs,ss) = nd.goal
@@ -903,12 +902,29 @@ object Tactics {
     }
   }
 
-  val easywithforalls: Sort => Tactic = srt => 
+  val impleftgoalT : Tactic = new Tactic("impleftgoal") {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val Sequent(sig,cs,ss) = nd.goal
+      for (i <- cs.indices) {
+        cs(i) match {
+          case Binop(Imp, f1, f2) if ss.contains(f2) =>
+            return (tryruleatT(impLeft)(LeftP(i))<(
+                      tryruleT(close),
+                      unitT
+                     ))(nd)
+          case _ => ()
+        }
+      }
+      return None
+    }
+  }
+
+  val easywithforallsT: Sort => Tactic = srt => 
     composelistT(
       (nonarithcloseT | hpeasyT | alphaT | betaT   )*,
       instantiatebyeverythingT(srt),
       (nonarithcloseT | hpeasyT | alphaT | betaT  )*,
       nullarizeT*,
       hidethencloseT)
-      
+
 }

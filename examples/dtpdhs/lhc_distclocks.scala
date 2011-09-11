@@ -306,19 +306,21 @@ val deletetct =
   composelistT(
     hpalpha1T*,
     tryruleT(andRight)<(
-      composelistT(
-        hpalpha1T*,
-        instantiate5T(St("C")),
-        hideunivsT(St("C")),
-        tryruleatT(impLeft)(LeftP(0))<(
-          tryruleT(close),
-          tryruleatT(impLeft)(LeftP(0))<(
-            ((alphaT*) & (substT*) & nonarithcloseT  ),
-            ((alphaT*) & (substT*) & nonarithcloseT  )
-          )
+      tryruleT(andRight)<(
+        alleasyT,
+        composelistT(
+          hpalpha1T*,
+          instantiatebyT(St("C"))(List(("i", List("i")), ("j", List("i")))),
+          impleftgoalT
         )
       ),
       composelistT(
+        hpalpha1T*,
+        instantiatebyT(St("C"))(List(("f", List("f")),
+                                     ("l", List("l")),
+                                     ("j", List("f","l"))))*,
+        impleftgoalT,
+        nilT,
         alphaT*,
         tryruleatT(commuteEquals)(RightP(0)),
         instantiate4T,
@@ -428,19 +430,26 @@ val instT =   instantiatebyT(St("C")) (List(("i", List("f", "l")),
 
 val starttct = 
   tryruleT(loopInduction(loopinv))<(
-    easywithforalls(St("C")),
+    easywithforallsT(St("C")),
     composelistT(
       hpalpha1T*,
       tryruleT(andRight)<(
         composelistT(
           tryruleT(choose),
           tryruleT(andRight)<(
-            deletetct,
-            createtct)
+            composelistT(
+              tryruleT(choose),
+              tryruleT(andRight)<(
+                deletetct,
+                createtct)),
+        // control
+            unitT)
         ),
+        //dynamics
         tyltct
       )
     ),
+    // post condition
     composelistT(
       hpalphaT*,
       instantiatebyT(St("C"))
