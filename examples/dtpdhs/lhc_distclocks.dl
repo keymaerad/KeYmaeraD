@@ -14,14 +14,22 @@ forall i : C. e(i) = 0
 |-
 [
 {
-     (n :=*; ?(e(n) = 1); e(n) := 0)
- ++  (n :=*; ?(e(n) = 0 & v(n) >= 0); e(n) := 1; 
-        ?(forall i : C. 
-          (e(i) = 1 ==> 
-            ((( x(i) <= x(n)  & ~ i = n )==>  
-               2 * B * x(n) > 2 *  B * x(i) + v(i)^2 - v(n)^2  & x(i) < x(n)  )
-               & (x(n) <= x(i) & ~ i = n ==>  
-             2 * B * x(i) > 2 *  B * x(n) + v(n)^2 - v(i)^2  & x(n) < x(i) )))))
+     // Delete a car.
+     (n := *; ?(e(n) = 1); e(n) := 0)
+
+     // Create a car.
+ ++  (n := *; ?(e(n) = 0 & v(n) >= 0); e(n) := 1; id(n) := *; t(n) := 0;
+        ?(forall l : C. 
+          (e(l) = 1 & id(n()) < id(l) ==> 
+            x(n) < x(l) & 
+           ( (v(n) + a(n) * (eps() - t(n)) > 0 &  
+              2 * B() *  x(l)  > 2 *  B() * x(n) + v(n)^2 - v(l)^2 
+                + (a(n) + B()) * (a(n) * (eps() - t(n) )^2 + 2 * (eps() - t(n) ) * v(n)))  |
+             (v(n) + a(n) * (eps() - t(n)) <= 0  &
+              - 2 * B() * a(n) * x(n) + B() * v(n)^2 
+              < - 2 * B() * a(n) * x(n) - a(n) * v(n)^2 )))))
+
+    // Control a car.
  ++ (f := *; a(f) := *;
       ?(e(f) = 1 ==>
          (a(f) = -B |
@@ -34,8 +42,9 @@ forall i : C. e(i) = 0
            & a(f) = A))
       );
     t(f) := 0)
- ++
- (
+
+    // Dynamics.
+ ++ (
  forall i : C {x(i)' = v(i), 
                v(i)' = a(i), 
                t(i)' = 1; e(i) = 1 ==> (v(i) >= 0 &  t(i) <= eps) }
