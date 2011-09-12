@@ -234,39 +234,6 @@ val andbranch1 =
     )
   )
 
-val provelemma = 
-  composelistT(
-    tryruleunifyT(hide)(parseFormula("L > A + B - C & X1 < X2")),
-    instantiate4T,
-    tryruleT(andRight)<(
-      andbranch1, 
-      composelistT(tryruleT(not), tryruleT(close))
-    )
-  )
-
-
-val veltct = new Tactic("veltct"){
-  def apply(nd:Nodes.OrNode) = {
-    val Sequent(sig, cs, ss) = nd.goal
-    ss match {
-      case List(Atom(R(">=", List(Fn(v,List(i)), _)))) =>
-        tryruleT(allLeft(i))(nd)
-      case _ => None
-    }
-  }
-}
-
-val velpos = 
-  composelistT(
-    hpalpha1T*,
-    veltct,
-    alphaT*,
-    tryruleT(impLeft)<(
-      tryruleT(close),
-      tryruleT(close)
-    )
-  )
-
 
 val diffinv = parseFormula(
   "forall f : C. forall l : C. " +
@@ -283,10 +250,14 @@ val tyltct = composelistT(
   hpalpha1T*,
   tryruleT(diffStrengthen(
     parseFormula(
-      "eps() > 0 & A() > 0 & B() > 0 &  s() >= 0 &" +
+      "eps() > 0 & A() > 0 & B() > 0 &" +
       "(forall i : C. (e(i) = 1 ==>  " + 
-      "t(i) >= 0 & s() <= t(i) & a(i) >= -B()))" )))<(
-        nilT,
+      "t(i) >= 0 & a(i) >= -B()))" )))<(
+        composelistT(
+          (alphaT | betaT | tryruleT(close))*,
+          instantiatebyT(St("C"))(List(("i", List("i")))),
+          alleasyT
+        ),
         nilT,
         tryruleT(diffStrengthen(diffinv))< (
           nilT,

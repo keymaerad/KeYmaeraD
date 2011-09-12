@@ -390,7 +390,6 @@ object Tactics {
                               overterms_Formula(tm => (b:List[Term]) => 
                                               getunaryfn(tm) ++ b,
                                                 fm, Nil)).flatten.distinct
-        println("unaryfns: " + unaryfns)
         val rls = unaryfns.map(tm => unsubstitute(tm))
         trylistofrules(rls, nd)
       }
