@@ -238,12 +238,18 @@ val andbranch1 =
 val diffinv = parseFormula(
   "forall f : C. forall l : C. " +
    "(e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
-"  ( (v(f) + a(f) * (eps() - t(f)) > 0 &   " +
+"  ( (v(f) + a(f) * (eps() - t(f)) >= 0 & " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
      " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
-" (v(f) + a(f) * (eps() - t(f)) <= 0  &" +
+" (v(f) + a(f) * (eps() - t(f)) <= 0  & " +
 " - 2 * B() * a(f) * x(f) + B() * v(f)^2   < - 2 * B() * a(f) * x(f) - a(f) * v(f)^2   ))  "
  )
+
+
+
+val instT =   instantiatebyT(St("C")) (List(("i", List("f", "l")), 
+                                            ("f", List("f")), 
+                                            ("l", List("l"))))
 
 
 val tyltct = composelistT(
@@ -252,7 +258,7 @@ val tyltct = composelistT(
     parseFormula(
       "eps() > 0 & A() > 0 & B() > 0 &" +
       "(forall i : C. (e(i) = 1 ==>  " + 
-      "t(i) >= 0 & a(i) >= -B()))" )))<(
+      "t(i) >= 0 & a(i) > -B()))" )))<(
         
         // initially valid
         composelistT(
@@ -281,13 +287,84 @@ val tyltct = composelistT(
           composelistT(
             alphaT*,
             instantiatebyT(St("C"))(List(("i", List("l", "f"))))*,
+            alphaT*,
+            instantiatebyT(St("C"))(List(("i", List("l"))))*,
             unitT
           ),
 
           // strengthened
           composelistT(
             diffsolveT(RightP(0),Endpoint),
-            hpalpha1T*
+            hpalpha1T*,
+            tryruleT(andRight) <(
+              tryruleT(andRight) <(
+                alleasyT,
+                composelistT(
+                  alphaT*,
+                  instantiatebyselfT(St("C"))*,
+                  alphaT*,
+                  instantiatebyselfT(St("C"))*,
+                  nullarizeT*,
+                  hidethencloseT
+                )
+              ),
+              composelistT(
+                alphaT*,
+                instT*,
+                alphaT*,
+                instT*,
+                substT*,
+                impleftknownT*,
+                alphaT*,
+                dedupT*,
+                // brittle!
+                tryruleatT(hide)(LeftP(0)),
+                tryruleT(impLeft)< (
+                  composelistT(
+                    alphaT*,
+                    tryruleT(orLeft)< (
+                      composelistT(
+                        alphaT*,
+                        okcuttct<(
+                          unitT,
+                          composelistT(
+                            nullarizeT*,
+                            substT*,
+                            tryruleT(andRight)<(
+                              unitT,
+                              composelistT(
+                                alphaT*,
+                                //brittle
+                                tryruleatT(hide)(RightP(1)),
+                                tryruleT(andRight) <(
+                                  alleasyT,
+                                  unitT
+                                )
+                              )
+                            )
+                          )
+                        )
+                      ),
+                      composelistT(
+                        alphaT*,
+                        nullarizeT*,
+                        tryruleT(andRight)<(
+                          alleasyT,
+                          composelistT(
+                            alphaT*,
+                            //brittle
+                            tryruleatT(hide)(RightP(0)),
+                            alleasyT
+                          )
+                          
+                        )
+                      )
+                    )
+                  ),
+                  alleasyT
+                )
+              )
+            )
           )
         )
   )
@@ -420,21 +497,17 @@ val controltct =
 val loopinv = parseFormula(
   "eps() > 0 & A() > 0 & B() > 0 & " +
   "(forall i : C. (e(i) = 1 ==> v(i) >= 0 & " + 
-  "t(i) >= 0 & t(i) <= eps() & a(i) >= -B()))  & " +
+  "t(i) >= 0 & t(i) <= eps() & a(i) > -B()))  & " +
   "(forall f : C. forall l : C. " +
    "(e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
 " x(f) < x(l) & " + 
-"  ( (v(f) + a(f) * (eps() - t(f)) > 0 &   " +
+"  ((v(f) + a(f) * (eps() - t(f)) >= 0 &  " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
      " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
-" (v(f) + a(f) * (eps() - t(f)) <= 0  &" +
+" (v(f) + a(f) * (eps() - t(f)) <= 0  &  " +
 " - 2 * B() * a(f) * x(f) + B() * v(f)^2   < - 2 * B() * a(f) * x(f) - a(f) * v(f)^2   )))  "
  )
 
-
-val instT =   instantiatebyT(St("C")) (List(("i", List("f", "l")), 
-                                            ("f", List("f")), 
-                                            ("l", List("l"))))
 
 
 val starttct = 

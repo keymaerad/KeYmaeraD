@@ -113,7 +113,11 @@ final object Prover {
       AM.tsimplify(Fn("-", List(totalDerivTerm(forall_i, d, t1), 
                                 totalDerivTerm(forall_i, d, t2))))
     case Fn("-", List(t1)) =>
-      Fn("-", List( totalDerivTerm(forall_i, d, t1)))
+      val t = totalDerivTerm(forall_i, d, t1)
+      t match {
+        case Num(n) if (n.is_zero) => Num(Exact.Integer(0))
+        case _ => Fn("-", List(t))
+      }
     case Fn("*", List(t1, t2)) =>
       AM.tsimplify(
         Fn("+", List(AM.tsimplify (Fn("*", List(totalDerivTerm(forall_i, d, t1), t2))),
