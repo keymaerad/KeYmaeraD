@@ -863,6 +863,19 @@ object Tactics {
   }
 
 
+  val hidehasfnT : String => Tactic = fname => new Tactic ("hidehasfn") {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val Sequent(sig,cs,ss) = nd.goal
+      val insts =
+        fname :: sig.keys.toList.filter(k => Prover.ununiqify(k) == fname)
+      val matches : Formula => Boolean = fm => {
+        insts.exists(i => Prover.hasFn_Formula(i, fm))
+      }
+      tryrulepredT(hide)(matches)(nd)
+    }
+  }
+
+
   val dedupT : Tactic = new Tactic("dedup"){
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val Sequent(sig,cs,ss) = nd.goal

@@ -359,6 +359,9 @@ val tyltct = composelistT(
                               ),
                               composelistT(
                                 nullarizeT*,
+                                hidehasfnT("t")*,
+                                hidehasfnT("id")*,
+                                hidehasfnT("eps")*,
                                 alleasyT
                               )
                             )
