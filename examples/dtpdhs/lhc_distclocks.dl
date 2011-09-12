@@ -27,9 +27,9 @@ forall i : C. e(i) = 0
             (v(n) + a(n) * (eps() - t(n)) >= 0 & 
               2 * B() *  x(l)  > 2 *  B() * x(n) + v(n)^2 - v(l)^2 
                 + (a(n) + B()) * (a(n) * (eps() - t(n) )^2 + 2 * (eps() - t(n) ) * v(n)))  |
-             (v(n) + a(n) * (eps() - t(n)) <= 0  & 
-              - 2 * B() * a(n) * x(n) + B() * v(n)^2 
-              < - 2 * B() * a(n) * x(n) - a(n) * v(n)^2 )))))
+             (v(n) + a(n) * (eps() - t(n)) <= 0  &
+              2 * B() * a(n)^2 * x(n) - B() * v(n)^2 * a(n) 
+              <  2 * B() * a(n)^2 * x(n) + a(n) * v(n)^2 * a(n) )))))
 
     // Control a car.
  ++ (n := *; a(n) := *; t(n) := 0;
@@ -43,8 +43,8 @@ forall i : C. e(i) = 0
                 2 * B() *  x(l)  > 2 *  B() * x(n) + v(n)^2 - v(l)^2 
                   + (a(n) + B()) * (a(n) * (eps() - t(n) )^2 + 2 * (eps() - t(n) ) * v(n)))  |
                (v(n) + a(n) * (eps() - t(n)) <= 0  & 
-                 - 2 * B() * a(n) * x(n) + B() * v(n)^2 
-                 < - 2 * B() * a(n) * x(n) - a(n) * v(n)^2 ))))))
+                 2 * B() * a(n)^2 * x(n) - B() * v(n)^2 * a(n) 
+                 < 2 * B() * a(n)^2 * x(n) + a(n)^2 * v(n)^2 ))))))
 
     // Dynamics.
  ++ (
@@ -60,7 +60,7 @@ forall i : C. e(i) = 0
 (
 forall f : C. 
   forall l : C. 
-   (e(f) = 1 & e(l) = 1 & id(f) < id(l) )  ==>
+   (e(f) = 1 & e(l) = 1 & id(f) <= id(l) )  ==>
         x(f) < x(l)    
         )
 

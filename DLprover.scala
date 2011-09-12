@@ -158,6 +158,16 @@ final object Prover {
 
   }
 
+  def totalDerivR(r : String): String = r match {
+    case ">" => ">="
+    case ">=" => ">="
+    case "<" => "<="
+    case "<=" => "<="
+    case "=" => "="
+    case "/=" => "="
+    case _ => throw new Error("cannot take total deriv of " + r)
+  }
+
 
   // Precondition: |fm| is in negation normal form.
   // TODO handle other cases
@@ -170,10 +180,11 @@ final object Prover {
       case Atom(R(r, tms)) =>
         val tms1 = tms.map( (t: Term) =>  totalDerivTerm(forall_i, d, t))
         tms1 match {
+          // An optimization.
           case Num(n1)::Num(n2)::nil if n1.is_zero && n2.is_zero =>
             True
           case _ => 
-            Atom(R(r, tms1))
+            Atom(R( totalDerivR(r) , tms1))
         }
       case Not(Atom(p)) =>
         totalDerivAux(forall_i, d, Atom(negate(p)))

@@ -252,7 +252,7 @@ val diffinv = parseFormula(
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
      " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
 " (v(f) + a(f) * (eps() - t(f)) <= 0  & " +
-" - 2 * B() * a(f) * x(f) + B() * v(f)^2   < - 2 * B() * a(f) * x(f) - a(f) * v(f)^2   ))  "
+" 2 * B() * a(f)^2 * x(f) - B() * v(f)^2 * a(f)   < 2 * B() * a(f)^2 * x(f) + a(f)^2 * v(f)^2   ))  "
  )
 
 
@@ -299,7 +299,10 @@ val tyltct = composelistT(
             instantiatebyT(St("C"))(List(("i", List("l", "f"))))*,
             alphaT*,
             instantiatebyT(St("C"))(List(("i", List("l"))))*,
-            unitT
+            tryruleT(andRight)<(
+              composelistT(tryruleT(andRight)*, tryruleT(close)),
+              unitT
+            )
           ),
 
           // strengthened
@@ -515,7 +518,7 @@ val loopinv = parseFormula(
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
      " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
 " (v(f) + a(f) * (eps() - t(f)) <= 0  &  " +
-" - 2 * B() * a(f) * x(f) + B() * v(f)^2   < - 2 * B() * a(f) * x(f) - a(f) * v(f)^2   )))  "
+" 2 * B() * a(f)^2 * x(f) - B() * v(f)^2 * a(f)   <  2 * B() * a(f)^2 * x(f) + a(f)^2 * v(f)^2   )))  "
  )
 
 
