@@ -267,7 +267,7 @@ val tyltct = composelistT(
   tryruleT(diffStrengthen(
     parseFormula(
       "eps() > 0 & A() > 0 & B() > 0 &" +
-      "(forall i : C. (e(i) = 1 ==>  " + 
+      "(forall i : C. (  " + 
       "t(i) >= 0 & a(i) > -B()))" )))<(
         
         // initially valid
@@ -301,7 +301,7 @@ val tyltct = composelistT(
             instantiatebyT(St("C"))(List(("i", List("l"))))*,
             tryruleT(andRight)<(
               composelistT(tryruleT(andRight)*, tryruleT(close)),
-              unitT
+              composelistT(nullarizeT*, alleasyT)
             )
           ),
 
@@ -398,8 +398,7 @@ val deletetct =
         composelistT(
           hpalpha1T*,
           instantiatebyT(St("C"))(List(("i", List("i")), ("j", List("i")))),
-          impleftgoalT,
-          tryruleT(impLeft),
+          nullarizeT*,
           alleasyT
         )
       ),
@@ -512,8 +511,8 @@ val controltct =
 
 val loopinv = parseFormula(
   "eps() > 0 & A() > 0 & B() > 0 & " +
-  "(forall i : C. (e(i) = 1 ==> v(i) >= 0 & " + 
-  "t(i) >= 0 & t(i) <= eps() & a(i) > -B()))  & " +
+  "(forall i : C. (  a(i) > -B() & v(i) >= 0 & " + 
+  "t(i) >= 0 & t(i) <= eps()   )) & " +
   "(forall f : C. forall l : C. " +
    "(e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
 " x(f) < x(l) & " + 

@@ -10,7 +10,7 @@
 B > 0,
 A > 0, 
 eps > 0,
-forall i : C. e(i) = 0 
+forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
 |-
 [
 {
@@ -33,8 +33,9 @@ forall i : C. e(i) = 0
 
     // Control a car.
  ++ (n := *; a(n) := *; t(n) := 0;
-      ?(e(n) = 1 ==>
-         a(n) > -B & a(n) < A & 
+      ?(a(n) > -B & a(n) < A & 
+         (e(n) = 1 ==>
+
            (forall l : C. 
             (e(l) = 1 & id(n) <= id(l) ==> 
               x(n) < x(l) & 
@@ -44,13 +45,13 @@ forall i : C. e(i) = 0
                   + (a(n) + B()) * (a(n) * (eps() - t(n) )^2 + 2 * (eps() - t(n) ) * v(n)))  |
                (v(n) + a(n) * (eps() - t(n)) <= 0  & 
                  2 * B() * a(n)^2 * x(n) - B() * v(n)^2 * a(n) 
-                 < 2 * B() * a(n)^2 * x(n) + a(n)^2 * v(n)^2 ))))))
+                 < 2 * B() * a(n)^2 * x(n) + a(n)^2 * v(n)^2 )))))))
 
     // Dynamics.
  ++ (
  forall i : C {x(i)' = v(i), 
                v(i)' = a(i), 
-               t(i)' = 1; e(i) = 1 ==> (v(i) >= 0 &  t(i) <= eps) }
+               t(i)' = 1; v(i) >= 0 &  t(i) <= eps }
                          @solution( forall s . x(s, i) = (1/2)  *a(i) * s^2 + v(i) * s + x(i),
                                     forall s . v(s, i) = a(i) * s + v(i),
                                     forall s . t(s, i) = s + t(i) )
