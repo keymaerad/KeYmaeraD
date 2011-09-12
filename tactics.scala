@@ -798,51 +798,51 @@ object Tactics {
   = new Tactic("vacuous") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val Sequent(sig,cs,ss) = nd.goal
-      var res:Option[List[NodeID]] = None
       for (i <- cs.indices){
-        res match {
-          case Some(_) => ()
-          case None =>
-            cs(i) match {
-              case Binop(Imp, 
-                         Not(Atom(R("=", List(f1,f2)))),
-                         fm) if f1 == f2 =>
-                           return tryruleatT(hide)(LeftP(i))(nd)
-              case Binop(Imp, 
-                         Binop(And, _,
-                               Not(Atom(R("=", List(f1,f2))))),
-                         fm) if f1 == f2 =>
-                           return tryruleatT(hide)(LeftP(i))(nd)
-              case Binop(Imp, 
-                         Binop(And,
-                               Not(Atom(R("=", List(f1,f2)))),
-                               _),
-                         fm) if f1 == f2 =>
-                           return tryruleatT(hide)(LeftP(i))(nd)
-              case Binop(Imp, 
-                         Binop(And,
-                               Binop(And,
-                                     Not(Atom(R("=", List(f1,f2)))),
-                                     _),
-                               _),
-                         fm) if f1 == f2 =>
-                           return tryruleatT(hide)(LeftP(i))(nd)
-              case Binop(Imp, 
-                         Binop(And,
-                               Binop(And, _ ,
-                                     Not(Atom(R("=", List(f1,f2))))
-                                     ),
-                               _),
-                         fm) if f1 == f2 =>
-                           return tryruleatT(hide)(LeftP(i))(nd)
-              case _ => 
-                ()
-            }
+        cs(i) match {
+          // compiler bug? if I put this case last,
+          // everything breaks.
+          case Binop(Imp, fm1, fm2) if ss.contains(fm1) =>
+              return tryruleatT(hide)(LeftP(i))(nd)
+
+          case Binop(Imp, 
+                     Not(Atom(R("=", List(f1,f2)))),
+                     fm) if f1 == f2 =>
+                       return tryruleatT(hide)(LeftP(i))(nd)
+
+          case Binop(Imp, 
+                     Binop(And, _,
+                           Not(Atom(R("=", List(f1,f2))))),
+                     fm) if f1 == f2 =>
+                       return tryruleatT(hide)(LeftP(i))(nd)
+          case Binop(Imp, 
+                     Binop(And,
+                           Not(Atom(R("=", List(f1,f2)))),
+                           _),
+                     fm) if f1 == f2 =>
+                       return tryruleatT(hide)(LeftP(i))(nd)
+          case Binop(Imp, 
+                     Binop(And,
+                           Binop(And,
+                                 Not(Atom(R("=", List(f1,f2)))),
+                                 _),
+                           _),
+                     fm) if f1 == f2 =>
+                       return tryruleatT(hide)(LeftP(i))(nd)
+          case Binop(Imp, 
+                     Binop(And,
+                           Binop(And, _,
+                                 Not(Atom(R("=", List(f1,f2))))
+                               ),
+                           _),
+                     fm) if f1 == f2 =>
+                       return tryruleatT(hide)(LeftP(i))(nd)
+
+          case _ => 
+            ()
         }
       }
-      res
-          
-      
+      None
     }
   }
 

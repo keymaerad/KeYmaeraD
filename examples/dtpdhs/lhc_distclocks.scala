@@ -350,7 +350,26 @@ val createtct =
         instantiatebyT(St("C"))(List(("f", List("f")),
                                      ("l", List("l")),
                                      ("j", List("f","l"))))*,
-        unitT
+        cutT(StandardKeepCut,
+             parseFormula("~ F = N ==> T1 = T2"), 
+             parseFormula("~ F = N")) < (
+               composelistT(
+                 vacuousT*,
+                 tryruleT( impLeft)*,
+                 alphaT*,
+                 substT*,
+                 nullarizeT*,
+                 hidethencloseT
+               ),
+               composelistT(
+                 impleftknownT*,
+                 tryruleT( impLeft)*,
+                 alphaT*,
+                 substT*,
+                 nullarizeT*,
+                 hidethencloseT
+               )
+             )
       )
     )
   )
