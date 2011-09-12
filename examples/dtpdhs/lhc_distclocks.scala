@@ -328,64 +328,33 @@ val deletetct =
     )
   )
 
-
-
-
-
-
 val createtct = 
   composelistT(
     hpalpha1T*,
     tryruleT(andRight)<(
-      composelistT(
-        hpalpha1T*,
-        instantiate5T(St("C")),
-        hideunivsT(St("C")),
-        tryruleatT(impLeft)(LeftP(2))<(
-          (substT*)  & (tryruleatT(impLeft)(LeftP(1))   )  & nonarithcloseT ,
-          tryruleatT(impLeft)(LeftP(0))<(
-            ((alphaT*) & (substT*) & nonarithcloseT  ),
-            ((alphaT*) & (substT*) & nonarithcloseT  )
-          )
+      tryruleT(andRight)<(
+        alleasyT,
+        composelistT(
+          hpalpha1T*,
+          instantiatebyT(St("C"))(List(("i", List("i")), 
+                                       ("j", List("i"))))*,
+          tryruleT( impLeft)*, 
+          alphaT*,
+          substT*,
+          nullarizeT*,
+          alleasyT
         )
       ),
       composelistT(
-        alphaT*,
-        tryruleatT(commuteEquals)(RightP(0)),
-        instantiate4T,
-        tryruleatT(impLeft)(LeftP(0))<(
-          tryruleT(close),
-          composelistT(
-            instantiate1T(St("C")),
-            hideunivsT(St("C")),
-            impleftknownT*,
-            tryruleT(andRight)<(
-              tryruleT(andRight)<(
-                tryruleT(andRight)<(
-                  tryruleatT(impLeft)(LeftP(5))<(
-                    ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) &  (tryruleatT(impLeft)(LeftP(1))<(
-                      nonarithcloseT,
-                      (tryruleT(andRight)) & (alphaT* ) & nonarithcloseT)))
-                  ),
-                  tryruleatT(impLeft)(LeftP(2))<(
-                    ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) &  (tryruleatT(impLeft)(LeftP(3))<(
-                      nonarithcloseT,
-                      (tryruleT(andRight))<(nonarithcloseT, 
-                                            alphaT & tryruleT(commuteEquals) & nonarithcloseT))))
-                  )
-                ),
-                tryruleT(close)
-              ),
-              (tryruleT(not) & tryruleT(commuteEquals) & tryruleT(close))
-            )
-          )
-        )
+        hpalpha1T*,
+        instantiatebyT(St("C"))(List(("f", List("f")),
+                                     ("l", List("l")),
+                                     ("j", List("f","l"))))*,
+        unitT
       )
     )
   )
-
+ 
 
 val loopinv = parseFormula(
   "eps() > 0 & A() > 0 & B() > 0 & " +

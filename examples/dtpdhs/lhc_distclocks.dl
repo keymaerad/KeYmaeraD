@@ -18,7 +18,8 @@ forall i : C. e(i) = 0
      (n := *; ?(e(n) = 1); e(n) := 0)
 
      // Create a car.
- ++  (n := *; ?(e(n) = 0 & v(n) >= 0); e(n) := 1; id(n) := *; t(n) := 0;
+ ++  (n := *; ?(e(n) = 0 & v(n) >= 0); e(n) := 1; id(n) := *; t(n) := 0; a(n) := *;
+        ?(a(n) >= -B) ; ? (a(n) <= A);
         ?(forall l : C. 
           (e(l) = 1 & id(n) <= id(l) ==> 
             x(n) < x(l) & 
