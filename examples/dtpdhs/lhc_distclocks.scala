@@ -13,28 +13,38 @@ val cuttct = cutT(
 )
 
 
-
-val okcuttct = cutT(
-  DirectedCut,
+val okcuttctfm1 = 
   parseFormula(
    "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A+B())*(A *" +
    "(eps()-T3)^2+2*(eps()-T3)*V1)"
-  ),
+  )
+
+val okcuttctfm2 = 
   parseFormula(
    "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A+B())*(A *" +
    "(s())^2+2*(s())*V1)"
   )
+
+val okcuttct = cutT(
+  DirectedCut,
+  okcuttctfm1,
+  okcuttctfm2
 )
+
+val okcuttct2fm1 =   parseFormula(
+   "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A+B())*(A *" +
+   "(eps()-T3)^2+2*(eps()-T3)*V1)"
+  )
+
+val okcuttct2fm2 =
+  parseFormula(
+   " (A+B())*(A *(s())^2+2*(s())*V1)  <= (A+B())*(A *(eps() - T3)^2+2*(eps() - T3)*V1) "
+  )
 
 val okcuttct2 = cutT(
   StandardCut,
-  parseFormula(
-   "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A+B())*(A *" +
-   "(eps()-T3)^2+2*(eps()-T3)*V1)"
-  ),
-  parseFormula(
-   " (A+B())*(A *(s())^2+2*(s())*V1)  <=   (A+B())*(A *(eps() - T3)^2+2*(eps() - T3)*V1) "
-  )
+  okcuttct2fm1,
+  okcuttct2fm2
 )
 
 
@@ -317,48 +327,47 @@ val tyltct = composelistT(
                 impleftknownT*,
                 alphaT*,
                 dedupT*,
-                // brittle!
-                tryruleatT(hide)(LeftP(0)),
-                tryruleT(impLeft)< (
+                tryruleT(andRight)<(
                   composelistT(
-                    alphaT*,
-                    tryruleT(orLeft)< (
+                    // brittle!
+                    tryruleatT(hide)(LeftP(0)),
+                    tryruleT(impLeft)< (
                       composelistT(
                         alphaT*,
-                        okcuttct<(
-                          unitT,
+                        tryruleT(orLeft)<(
                           composelistT(
-                            nullarizeT*,
-                            substT*,
-                            tryruleT(andRight)<(
-                              unitT,
+                            alphaT*,
+                            okcuttct<(
                               composelistT(
                                 alphaT*,
-                                //brittle
-                                tryruleatT(hide)(RightP(1)),
-                                tryruleT(andRight) <(
-                                  alleasyT,
-                                  unitT
+                                nullarizeT*,
+                                okcuttct2<(
+                                  composelistT(
+                                    hidematchT(List(okcuttctfm1)),
+                                    alleasyT
+                                  ),
+                                  composelistT(
+                                    hidenotmatchT(List(okcuttct2fm1, 
+                                                       okcuttct2fm2,
+                                                       okcuttctfm2))*,
+                                    alleasyT
+                                  )
                                 )
+                              ),
+                              composelistT(
+                                nullarizeT*,
+                                alleasyT
                               )
                             )
+                          ),
+                          composelistT(
+                            alphaT*,
+                            nullarizeT*,
+                            alleasyT
                           )
                         )
                       ),
-                      composelistT(
-                        alphaT*,
-                        nullarizeT*,
-                        tryruleT(andRight)<(
-                          alleasyT,
-                          composelistT(
-                            alphaT*,
-                            //brittle
-                            tryruleatT(hide)(RightP(0)),
-                            alleasyT
-                          )
-                          
-                        )
-                      )
+                      alleasyT
                     )
                   ),
                   alleasyT
@@ -367,8 +376,9 @@ val tyltct = composelistT(
             )
           )
         )
+      )
   )
-)
+
 
 
 
