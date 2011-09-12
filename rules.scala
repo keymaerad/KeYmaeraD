@@ -270,8 +270,6 @@ object Rules {
     }
   }
 
-
-
   val not = new ProofRule("not") { 
     def apply(p:Position) = sq => {
       val Sequent(fs,c,s) = sq
@@ -1028,7 +1026,9 @@ object Rules {
     import Prover._
 
     def apply(pos: Position) = sq => sq match {
-      case Sequent(sig, ctxt, sc) if (ctxt ++ sc).forall(firstorder) =>
+      case Sequent(sig, ctxt, sc) 
+        if (ctxt ++ sc).forall(firstorder) && 
+            Util.fv_Term(tm).length == 0 =>
         val f = tm match {
           case Fn(f_name, _) => uniqify(f_name)
           case _ => uniqify("X")
@@ -1061,7 +1061,6 @@ object Rules {
       }else{
         None
       }
-      
     }
   }
 

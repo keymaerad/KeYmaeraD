@@ -618,12 +618,10 @@ final object Prover {
       tm1 => Binop(c, extract(tm_ex,f1)(tm1), extract(tm_ex,f2)(tm1))
     case Quantifier(q, c, v,f) => 
       // should we do some alpha renaming magic here?
-      tm1 => Quantifier(q,c, v, extract(tm_ex,f)(tm1))
+      tm1 => Quantifier(q, c, v, extract(tm_ex,f)(tm1))
     case Modality(m, hp, f) =>
       tm1 => Modality(m,hp, extract(tm_ex,f)(tm1))
   }
-
-
 
 
   /* If we find an update, return a formula with a hole where it was, and

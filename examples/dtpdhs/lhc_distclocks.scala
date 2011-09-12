@@ -373,7 +373,55 @@ val createtct =
       )
     )
   )
- 
+
+val controltct = 
+  composelistT(
+    hpalpha1T*,
+    tryruleT(andRight)<(
+      tryruleT(andRight)<(
+        alleasyT,
+        composelistT(
+          hpalpha1T*,
+          instantiatebyT(St("C"))(List(("i", List("i")), 
+                                       ("j", List("i"))))*,
+          tryruleT( impLeft)*, 
+          alphaT*,
+          substT*,
+          nullarizeT*,
+          hidethencloseT
+        )
+      ),
+      composelistT(
+        hpalpha1T*,
+        instantiatebyT(St("C"))(List(("f", List("f")),
+                                     ("l", List("l")),
+                                     ("j", List("f","l"))))*,
+        cutT(StandardKeepCut,
+             parseFormula("~ F = N ==> T1 = T2"), 
+             parseFormula("~ F = N")) < (
+               composelistT(
+                 vacuousT*,
+                 tryruleT( impLeft)*,
+                 alphaT*,
+                 instantiatebyT(St("C"))(List(("f", List("f")),
+                                              ("l", List("l")),
+                                              ("j", List("f","l"))))*,
+                 substT*,
+                 nullarizeT*,
+                 hidethencloseT
+               ),
+               composelistT(
+                 impleftknownT*,
+                 tryruleT( impLeft)*,
+                 alphaT*,
+                 substT*,
+                 nullarizeT*,
+                 hidethencloseT
+               )
+             )
+      )
+    )
+  )
 
 val loopinv = parseFormula(
   "eps() > 0 & A() > 0 & B() > 0 & " +
@@ -410,7 +458,7 @@ val starttct =
                 deletetct,
                 createtct)),
         // control
-            unitT)
+            controltct)
         ),
         //dynamics
         tyltct
