@@ -253,15 +253,38 @@ val tyltct = composelistT(
       "eps() > 0 & A() > 0 & B() > 0 &" +
       "(forall i : C. (e(i) = 1 ==>  " + 
       "t(i) >= 0 & a(i) >= -B()))" )))<(
+        
+        // initially valid
         composelistT(
           (alphaT | betaT | tryruleT(close))*,
           instantiatebyT(St("C"))(List(("i", List("i")))),
           alleasyT
         ),
-        nilT,
+
+        // invariant
+        composelistT(
+          (alphaT | betaT | tryruleT(close))*,
+          hidethencloseT
+        ),
+
+        // strengthened
         tryruleT(diffStrengthen(diffinv))< (
-          nilT,
-          nilT,
+           
+          //initially valid
+          composelistT(
+            alphaT*,
+            instantiatebyselfT(St("C"))*,
+            alleasyT
+          ),
+
+          // invariant
+          composelistT(
+            alphaT*,
+            instantiatebyT(St("C"))(List(("i", List("l", "f"))))*,
+            unitT
+          ),
+
+          // strengthened
           composelistT(
             diffsolveT(RightP(0),Endpoint),
             hpalpha1T*
