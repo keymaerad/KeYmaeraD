@@ -49,8 +49,9 @@
 
 package DLBanyan
 
-class TooWeak(e:String) extends Exception(e)
-class    TODO(e:String) extends Exception(e)
+class TooWeak       (e:String) extends Exception("no way found to support "+e)
+class NotImplemented(e:String) extends Exception(e)
+class TODO          (e:String) extends Exception(e)
 
 object Deparse {
 //{{{
@@ -89,7 +90,7 @@ object Deparse {
     def formulatoXmlString(f: Formula):List[String] =
     //{{{
     {
-      var quantified_varS: List[String] = Nil
+      //var quantified_varS: List[String] = Nil
       f match {
         case Atom(R(_,_)) | True | False => {
           val res = Printing.stringOfFormula(f)
@@ -97,13 +98,14 @@ object Deparse {
           //List(escapeXml(res.replaceAll("([^<>!=])=","$1==")).replaceAll("\\.",""))
           List(spaceexizeSyntax(res))
         }
-        case Quantifier(Forall,Real,v,g) => assert(quantified_varS.indexOf(v)== -1);quantified_varS=quantified_varS:+v;formulatoXmlString(g)
-        case Quantifier(Forall,_   ,_,_) => throw new TooWeak("no way found to supported distributed quantifier")
+        //case Quantifier(Forall,Real,v,g) => assert(quantified_varS.indexOf(v)== -1);quantified_varS=quantified_varS:+v;formulatoXmlString(g)
+        case Quantifier(_,Real,_,_) => throw new NotImplemented("quantifiers not supported")
+        case Quantifier(Forall,_   ,_,_) => throw new TooWeak("distributed quantifier")
         case Binop(And, f1, f2) => formulatoXmlString(f1) ::: formulatoXmlString(f2)
         case Binop(Or , f1, f2) => List("("+formulatoXmlString(f1).mkString(" & ") +")|("+ formulatoXmlString(f2).mkString(" & ")+")")
         case Binop(_,_,_) => throw new TODO("Not supported yet "+f)
         case Not(_) => throw new TODO("Not not supported yet -- "+f)
-        case Quantifier(Exists,_,_,_) | Modality(_,_,_) => throw new TooWeak("Exists quantifier and modality not supported")
+        case Quantifier(Exists,_,_,_) | Modality(_,_,_) => throw new TooWeak("Exists quantifier and modality")
         //case _ => throw new Exception("i should have covered every case")
       }
     }
@@ -131,39 +133,6 @@ object Deparse {
     }
   }
 //}}}
-}
-
-object DNFize {
-  def apply(f:Formula):List[Formula] = {
-    def binop_simplify(g:Formula):Formula = g match {
-      case Binop(Iff,f1,f2) => Binop(Or,Binop(And,f1,f2),Binop(And,Not(f1),Not(f2)))
-      case Binop(Imp,f1,f2) => Binop(Or,Not(f1),f2)
-      case _ => throw new Exception()
-    }
-    f match {
-      case Binop(Or ,f1,f2) => apply(f1) ::: apply(f2)
-      case Binop(And,f1,f2) => {
-        var res:List[Formula] = List()
-          apply(f1).foreach(fleft => {
-            apply(f2).foreach(fright => res = Binop(And,fleft,fright)::res)
-          })
-        res
-      }
-      case Atom(_) | True | False => List(f)
-      case Binop(Iff,_,_) | Binop(Imp,_,_) => apply(binop_simplify(f))
-      case Not(Binop(Or ,f1,f2)) =>   apply(Binop(And,Not(f1),Not(f2)))
-      case Not(Binop(And,f1,f2)) =>   apply(Binop(Or ,Not(f1),Not(f2)))
-      case Not(Binop(c,f1,f2))   =>   apply(Not(binop_simplify(Binop(c,f1,f2))))
-      case Not(Not(g)) => apply(g)
-      case Not(g) => {
-        val g_dnf = apply(g)
-        assert(g_dnf.length==0)
-        List(Not(g_dnf(0)))
-      }
-      case Quantifier(_,_,_,_) => throw new Exception()
-      case Modality(_,_,_) => throw new Exception()
-    }
-  }
 }
 
 class Automaton(hp: HP) {
@@ -240,7 +209,7 @@ class Automaton(hp: HP) {
       start       = a1.start
       ends.foreach(end => end.add_transition(a1.start))
       this
-    case _ => throw new TooWeak("no way founded to make automaton simulate * assignments and quantified assignments / diff eqS")
+    case _ => throw new TooWeak("automaton simulate * assignments and quantified assignments / diff eqS")
     //}}}
   }
 
@@ -355,6 +324,60 @@ class Automaton(hp: HP) {
 
 object Spaceex {
 //{{{
+  object DNFize {
+  //{{{
+  //conjunction of equations <=> no Not,Quantifier,Modality + dnf
+    private def negateAtom(a:Atom):Atom = a match
+    //{{{
+    {
+      case Atom(R(rel,tmS)) => rel match {
+        case ">"  => Atom(R("<=",tmS))
+        case "<"  => Atom(R(">=",tmS))
+        case ">=" => Atom(R("<" ,tmS))
+        case "<=" => Atom(R(">" ,tmS))
+        case "==" => Atom(R("!=",tmS))
+        case "!=" => Atom(R("==",tmS))
+        case _ => throw new TODO("lookup all relations / their syntax -- context: "+a)
+      }
+    }
+    //}}}
+    //eleminates Not,Imp,Iff and catches Quantifier,Modality
+    def simplify(f:Formula):Formula = f match {
+    //{{{
+      case Atom(_) | True | False => f
+      case Binop(Iff,f1,f2) => simplify(Binop(Or,Binop(And,f1,f2),Binop(And,Not(f1),Not(f2))))
+      case Binop(Imp,f1,f2) => simplify(Binop(Or,Not(f1),f2))
+      case Binop(c,f1,f2) => Binop(c,simplify(f1),simplify(f2))
+      case Not(Binop(Or ,f1,f2)) =>   simplify(Binop(And,Not(f1),Not(f2)))
+      case Not(Binop(And,f1,f2)) =>   simplify(Binop(Or ,Not(f1),Not(f2)))
+      case Not(Binop(c,f1,f2))   =>   simplify(Not(simplify(Binop(c,f1,f2))))
+      case Not(Atom(p)) => negateAtom(Atom(p))
+      case Not(True) => False
+      case Not(False) => True
+      case Not(Not(g)) => g
+      case Not(g) => {simplify(g);throw new Exception("this should never have been called -- instead another Exception should have been thrown befor")}
+      case Quantifier(_,Real,_,_) => throw new NotImplemented("quantifiers not supported")
+      case Quantifier(_,_,_,_) => throw new TooWeak("distributed quantifier")
+      case Modality(_,_,_) => throw new NotImplemented("multiple modalities not supported")
+    }
+    //}}}
+    def apply(f:Formula):List[Formula] = {
+      val g = simplify(f)
+      g match {
+        case Binop(Or ,f1,f2) => apply(f1) ::: apply(f2)
+        case Binop(And,f1,f2) => {
+          var res:List[Formula] = List()
+            apply(f1).foreach(fleft => {
+              apply(f2).foreach(fright => res = Binop(And,fleft,fright)::res)
+            })
+          res
+        }
+        case Atom(_) | True | False => List(g)
+        case Binop(Iff,_,_) | Binop(Imp,_,_) | Not(_) | Quantifier(_,_,_,_) | Modality(_,_,_) => throw new Exception("these classes should have been eliminted by simplify before")
+      }
+    }
+  }
+  //}}}
 
   def apply(filename: String):Unit = {
 
@@ -380,23 +403,6 @@ object Spaceex {
         stdout
       //}}}
       }
-    }
-
-    def negate(f:Formula):Formula = f match {
-      //{{{
-      case Atom(R(rel,tmS)) => rel match {
-        case ">"  => Atom(R("<=",tmS))
-        case "<"  => Atom(R(">=",tmS))
-        case ">=" => Atom(R("<" ,tmS))
-        case "<=" => Atom(R(">" ,tmS))
-        case "==" => Atom(R("!=",tmS))
-        case "!=" => Atom(R("==",tmS))
-        case _ => throw new TODO("lookup all relations / their syntax -- context: "+f)
-      }
-      case Binop(And, f1, f2) => Binop(Or , negate(f1), negate(f2))
-      case Binop(Or , f1, f2) => Binop(And, negate(f1), negate(f2))
-      case _ => throw new TODO("only negation of inequalities / conjuction / disjunction supported for now -- context: "+f)
-      //}}}
     }
 
     def configFile(init:String,forbidden:String):String = {
@@ -426,8 +432,7 @@ object Spaceex {
         //val print_fm = (fm:Formula) => println(Printing.stringOfFormula(fm))
         //g.ctxt .foreach(print_fm)
         //g.scdts.foreach(print_fm)
-        //if(g.ctxt.size != 0 || g.scdts.size !=1) throw new TooWeak("Sequent with empty premises and one goal expected")
-        if(g.scdts.size !=1) throw new TooWeak("Sequent with one goal expected")
+        if(g.scdts.size !=1) throw new NotImplemented("Sequent with one goal expected")
         var h = g.scdts(0)
         h match {
           case Modality(Box,hp,phi) => {
@@ -438,7 +443,7 @@ object Spaceex {
             var init = Deparse(g.ctxt)
             if(init!="") init+= " & "
             init+= "loc()==l"+a.getId(a.start)
-            var forb = Deparse(negate(phi))
+            var forb = Deparse(DNFize.simplify(phi))
             assert(a.ends.length>0)
             forb+= " & ("+a.ends.map(end => "loc()==l"+a.getId(end)).mkString(" | ")+")"
             //endstate
@@ -451,7 +456,7 @@ object Spaceex {
             assert(spaceex_path!=null && spaceex_path.length>0,"set SPACEEX env var")
             println(Util.runCmd(spaceex_path+" -m DLBanyan/_.xml --config DLBanyan/_.cfg"))
           }
-          case _ => throw new TooWeak("Box modality expected")
+          case _ => throw new TooWeak("Diamond modality")
         }
       }
       case None => throw new Exception("DLParser.result didn't returned a sequent")
