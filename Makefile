@@ -10,7 +10,9 @@ run:
 	#scala DLBanyan.Test --input examples/simpler.dl
 	#scala DLBanyan.Test examples/simpler.dl
 	#scala DLBanyan.Test examples/simple.dl
-	scala DLBanyan.Test examples/bouncingball.dl
+	#scala DLBanyan.Test examples/bouncingball.dl
+	scala DLBanyan.Test examples/water_tank.dl
+	#scala DLBanyan.Test examples/TRM-essentials.dl
 
 input:
 	vi DLBanyan/_.xml DLBanyan/_.cfg

@@ -40,6 +40,7 @@
      -get rid of the two warnings
      -NoClassDefFoundError
      -test1.dl not parsing
+     -DNFize: binop_simplify kinda ugly
 */
 /* === bug-iser details
    no assertion that var isendstate is already used
@@ -65,11 +66,14 @@ object Deparse {
   def apply(v:Any, xmlTagName:String="", prefix:String="", suffix:String=""):String = {
 
     def spaceexizeSyntax(s:String):String = {
+    //{{{
       //TODO: not thought through solution according to "0 -" -> "-" -- probably some case where it won't do like "x - 0 - y"
       def escapeXml(s:String):String = if(xmlTagName=="") s else s.replaceAll("<","&lt;").replaceAll(">","&gt;")
       escapeXml(s.replaceAll("0 -","-").replaceAll("([^<>!=])=","$1==").replaceAll("\\.",""))
      }
+   //}}}
     def termToXmlString(tm: Term):String = {
+    //{{{
       val sw = new java.io.StringWriter()
       val d = Printing.docOfTerm(tm)
       d.format(70, sw)
@@ -81,8 +85,11 @@ object Deparse {
       //escapeXml(res).replaceAll("\\.","")
       spaceexizeSyntax(res)
     }
+    //}}}
     def formulatoXmlString(f: Formula):List[String] =
+    //{{{
     {
+      var quantified_varS: List[String] = Nil
       f match {
         case Atom(R(_,_)) | True | False => {
           val res = Printing.stringOfFormula(f)
@@ -90,14 +97,17 @@ object Deparse {
           //List(escapeXml(res.replaceAll("([^<>!=])=","$1==")).replaceAll("\\.",""))
           List(spaceexizeSyntax(res))
         }
-        case Quantifier(Forall,_,_,g) => formulatoXmlString(g)
+        case Quantifier(Forall,Real,v,g) => assert(quantified_varS.indexOf(v)== -1);quantified_varS=quantified_varS:+v;formulatoXmlString(g)
+        case Quantifier(Forall,_   ,_,_) => throw new TooWeak("no way found to supported distributed quantifier")
         case Binop(And, f1, f2) => formulatoXmlString(f1) ::: formulatoXmlString(f2)
+        case Binop(Or , f1, f2) => List("("+formulatoXmlString(f1).mkString(" & ") +")|("+ formulatoXmlString(f2).mkString(" & ")+")")
         case Binop(_,_,_) => throw new TODO("Not supported yet "+f)
         case Not(_) => throw new TODO("Not not supported yet -- "+f)
         case Quantifier(Exists,_,_,_) | Modality(_,_,_) => throw new TooWeak("Exists quantifier and modality not supported")
         //case _ => throw new Exception("i should have covered every case")
       }
     }
+    //}}}
 
     v match {
       case ee:(_,_) => {
@@ -121,6 +131,39 @@ object Deparse {
     }
   }
 //}}}
+}
+
+object DNFize {
+  def apply(f:Formula):List[Formula] = {
+    def binop_simplify(g:Formula):Formula = g match {
+      case Binop(Iff,f1,f2) => Binop(Or,Binop(And,f1,f2),Binop(And,Not(f1),Not(f2)))
+      case Binop(Imp,f1,f2) => Binop(Or,Not(f1),f2)
+      case _ => throw new Exception()
+    }
+    f match {
+      case Binop(Or ,f1,f2) => apply(f1) ::: apply(f2)
+      case Binop(And,f1,f2) => {
+        var res:List[Formula] = List()
+          apply(f1).foreach(fleft => {
+            apply(f2).foreach(fright => res = Binop(And,fleft,fright)::res)
+          })
+        res
+      }
+      case Atom(_) | True | False => List(f)
+      case Binop(Iff,_,_) | Binop(Imp,_,_) => apply(binop_simplify(f))
+      case Not(Binop(Or ,f1,f2)) =>   apply(Binop(And,Not(f1),Not(f2)))
+      case Not(Binop(And,f1,f2)) =>   apply(Binop(Or ,Not(f1),Not(f2)))
+      case Not(Binop(c,f1,f2))   =>   apply(Not(binop_simplify(Binop(c,f1,f2))))
+      case Not(Not(g)) => apply(g)
+      case Not(g) => {
+        val g_dnf = apply(g)
+        assert(g_dnf.length==0)
+        List(Not(g_dnf(0)))
+      }
+      case Quantifier(_,_,_,_) => throw new Exception()
+      case Modality(_,_,_) => throw new Exception()
+    }
+  }
 }
 
 class Automaton(hp: HP) {
@@ -348,9 +391,11 @@ object Spaceex {
         case "<=" => Atom(R(">" ,tmS))
         case "==" => Atom(R("!=",tmS))
         case "!=" => Atom(R("==",tmS))
-        case _ => throw new TODO("lookup all relations / their syntax")
+        case _ => throw new TODO("lookup all relations / their syntax -- context: "+f)
       }
-      case _ => throw new TODO("only negation of inequalities supported for now")
+      case Binop(And, f1, f2) => Binop(Or , negate(f1), negate(f2))
+      case Binop(Or , f1, f2) => Binop(And, negate(f1), negate(f2))
+      case _ => throw new TODO("only negation of inequalities / conjuction / disjunction supported for now -- context: "+f)
       //}}}
     }
 
@@ -388,6 +433,7 @@ object Spaceex {
           case Modality(Box,hp,phi) => {
             val a = new Automaton(hp)
             println(a.toStr('txt))
+            Util.str2file("DLBanyan/_.dot",a.toStr('graph))
 
             var init = Deparse(g.ctxt)
             if(init!="") init+= " & "
@@ -400,7 +446,6 @@ object Spaceex {
             //forb+= " & isendstate==1"
             Util.str2file("DLBanyan/_.cfg",configFile(init,forb))
             Util.str2file("DLBanyan/_.xml",a.toSX.toString())
-            Util.str2file("DLBanyan/_.dot",a.toStr('graph))
 
             val spaceex_path=System.getenv("SPACEEX")
             assert(spaceex_path!=null && spaceex_path.length>0,"set SPACEEX env var")
