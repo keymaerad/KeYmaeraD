@@ -164,6 +164,8 @@ class Automaton(hp: HP) {
     //}}}
   }
 
+  def add_location():Automaton#Location = {val newL=new Location;locations=locations:+newL;newL}
+
   def getId  (l:Automaton#Location) = {val res = locations.indexOf(l);assert(res!= -1);res}
   def isEnd  (l:Automaton#Location) = ends.indexOf(l)!= -1
   def isStart(l:Automaton#Location) = l==start
@@ -275,8 +277,22 @@ object Spaceex {
       if(l.inv != None)
       {
         val inv_dnf = DNFize(l.inv.get)
-        assert(inv_dnf.length==1)
-        l.inv = Some(inv_dnf(0))
+        assert(inv_dnf.length>0)
+        if(inv_dnf.length==1)
+          l.inv = Some(inv_dnf(0))
+        else
+        {
+          for(i <- 0 to inv_dnf.length-1)
+          {
+            val newL = a.add_location()
+            newL.inv = Some(inv_dnf(i))
+            newL.evolve = l.evolve
+            l.add_transition(newL)
+            newL.add_transition(l)
+          }
+          l.inv = None
+          l.evolve = None
+        }
       }
       for(t <- l.transitions)
       {

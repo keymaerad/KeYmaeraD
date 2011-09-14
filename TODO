@@ -4,6 +4,7 @@
  -get rid of the two warnings
  -NoClassDefFoundError
  -test1.dl not parsing
+ -how is Automaton#Location called and what diff exactly w Location
 
 ---parallel
 -how powerfull/weak is the translation
