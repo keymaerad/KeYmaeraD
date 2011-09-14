@@ -12,11 +12,18 @@ ifndef SCALAC
 SCALAC= fsc
 endif
 
-OPTIONS = -deprecation -unchecked
 
-all : $(SCALAFILES)
-	$(SCALAC)  -classpath $(LIBRARIES) $(SCALAFILES) $(OPTIONS)
+OPTIONS=
+ALLOPTIONS=$(OPTIONS) -deprecation -unchecked
+
+
+all : version $(SCALAFILES)
+	$(SCALAC)  -classpath $(LIBRARIES) $(SCALAFILES) $(ALLOPTIONS)
+
+version : 	
+	$(SCALAC) -version 2>&1 | python specialoptions.py > specialoptions
 
 clean :
+	rm specialoptions
 	rm -rf DLBanyan/
 	fsc -shutdown -verbose
