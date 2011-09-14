@@ -346,7 +346,7 @@ class FrontActor extends Actor {
                   attachnode(pt, nd1)
                   propagateProvedUp(pt.nodeID, nd1.nodeID)
                 case None =>
-                  error("no parent")
+                  throw new Error("no parent")
               }
             // Disproved.
             case (Some(t), Some(nd), Sequent(_, Nil, Nil)) =>
