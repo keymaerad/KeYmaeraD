@@ -257,69 +257,6 @@ class Automaton(hp: HP) {
     res
   //}}}
   }
-
-  def toSX = {
-  //{{{
-    //
-    assert(Deparse.varS.length>0,"assumption that toSX would be called max one time apparently false")
-
-    //only purpose of following paragraph is to set varS
-    for(l <- locations)
-    {
-      Deparse(l.inv)
-      Deparse(l.evolve)
-      for(t <- l.transitions)
-      {
-        Deparse(t.check)
-        Deparse(t.assign)
-      }
-    }
-
-    def make_evolve_explicit(v: Any):List[(Fn,Term)] = v match
-    {
-      case l:List[(Fn,Term)] => {
-        var varS_todo:Set[String] = Deparse.varS.toSet
-        l.foreach(tuple => varS_todo=varS_todo-(tuple._1.f))
-        var res = l
-        varS_todo.foreach(v => res=((Fn(v,Nil),Num(Exact.zero)))::res )
-        res
-      }
-      case None => make_evolve_explicit(Nil)
-      case Some(v: Any) => make_evolve_explicit(v)
-      case _ => throw new Exception("unexpected input type")
-    }
-
-    //actual deparsing
-    var locations_str = ""
-    var transitions_str = ""
-    for(l <- locations)
-    {
-      val id = getId(l).toString()
-      locations_str+= "  <location id=\""+id+"\" name=\"l"+id+"\">\n"
-      locations_str+= Deparse(l.inv,"invariant","    ","\n")
-    //locations_str+= Deparse(l.evolve,"flow","    ","\n")
-      locations_str+= Deparse(make_evolve_explicit(l.evolve),"flow","    ","\n")
-      locations_str+= "  </location>\n"
-      for(t <- l.transitions)
-      {
-        transitions_str+= "  <transition source=\""+id+"\" target=\""+getId(t.to).toString()+"\">\n"
-        transitions_str+= Deparse(t.check ,                                                                    "guard"     ,"    ","\n")
-        transitions_str+= Deparse(t.assign,                                                                    "assignment","    ","\n")
-      //transitions_str+= Deparse(List((Fn("isendstate",Nil),Num((if(isEnd(t.to))Exact.one else Exact.zero)))),"assignment","    ","\n")
-        transitions_str+= "  </transition>\n"
-      }
-    }
-
-    var res = ""
-    def xmlParam(v:String,t:String) = "  <param name=\""+v+"\" type=\""+t+"\" d1=\"1\" d2=\"1\" local=\"true\" dynamics=\"any\"/>\n"
-    Deparse.varS.toSet.foreach((v: String) => res+=xmlParam(v,"real"))
-
-    res+=locations_str
-    res+=transitions_str
-
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<sspaceex xmlns=\"http://www-verimag.imag.fr/xml-namespaces/sspaceex\" version=\"0.2\" math=\"SpaceEx\">\n"+"<component id=\"system\">\n"+res+"</component>\n</sspaceex>"
-  //}}}
-  }
 }
 
 object Spaceex {
@@ -379,9 +316,103 @@ object Spaceex {
   }
   //}}}
 
+  def toSpaceexAutomaton(a:Automaton):Unit =
+  //{{{
+  {
+    for(l <- a.locations)
+    {
+      if(l.inv != None)
+      {
+        val inv_dnf = DNFize(l.inv.get)
+        assert(inv_dnf.length==1)
+        l.inv = Some(inv_dnf(0))
+      }
+      for(t <- l.transitions)
+      {
+        if(t.check != None)
+        {
+          val check_dnf = DNFize(t.check.get)
+          assert(check_dnf.length>0)
+          t.check = Some(check_dnf(0))
+          for(i <- 1 to check_dnf.length-1)
+          {
+            var new_t=l.add_transition(t.to)
+            new_t.check=Some(check_dnf(i))
+            new_t.assign=t.assign
+          }
+        }
+      }
+    }
+  }
+  //}}}
+
+  def toSX(a:Automaton) = {
+  //{{{
+    //
+    assert(Deparse.varS.length>0,"assumption that toSX would be called max one time apparently false")
+
+    //only purpose of following paragraph is to set varS
+    for(l <- a.locations)
+    {
+      Deparse(l.inv)
+      Deparse(l.evolve)
+      for(t <- l.transitions)
+      {
+        Deparse(t.check)
+        Deparse(t.assign)
+      }
+    }
+
+    def make_evolve_explicit(v: Any):List[(Fn,Term)] = v match
+    {
+      case l:List[(Fn,Term)] => {
+        var varS_todo:Set[String] = Deparse.varS.toSet
+        l.foreach(tuple => varS_todo=varS_todo-(tuple._1.f))
+        var res = l
+        varS_todo.foreach(v => res=((Fn(v,Nil),Num(Exact.zero)))::res )
+        res
+      }
+      case None => make_evolve_explicit(Nil)
+      case Some(v: Any) => make_evolve_explicit(v)
+      case _ => throw new Exception("unexpected input type")
+    }
+
+    //actual deparsing
+    var locations_str = ""
+    var transitions_str = ""
+    for(l <- a.locations)
+    {
+      val id = a.getId(l).toString()
+      locations_str+= "  <location id=\""+id+"\" name=\"l"+id+"\">\n"
+      locations_str+= Deparse(l.inv,"invariant","    ","\n")
+    //locations_str+= Deparse(l.evolve,"flow","    ","\n")
+      locations_str+= Deparse(make_evolve_explicit(l.evolve),"flow","    ","\n")
+      locations_str+= "  </location>\n"
+      for(t <- l.transitions)
+      {
+        transitions_str+= "  <transition source=\""+id+"\" target=\""+a.getId(t.to).toString()+"\">\n"
+        transitions_str+= Deparse(t.check ,                                                                    "guard"     ,"    ","\n")
+        transitions_str+= Deparse(t.assign,                                                                    "assignment","    ","\n")
+      //transitions_str+= Deparse(List((Fn("isendstate",Nil),Num((if(a.isEnd(t.to))Exact.one else Exact.zero)))),"assignment","    ","\n")
+        transitions_str+= "  </transition>\n"
+      }
+    }
+
+    var res = ""
+    def xmlParam(v:String,t:String) = "  <param name=\""+v+"\" type=\""+t+"\" d1=\"1\" d2=\"1\" local=\"true\" dynamics=\"any\"/>\n"
+    Deparse.varS.toSet.foreach((v: String) => res+=xmlParam(v,"real"))
+
+    res+=locations_str
+    res+=transitions_str
+
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<sspaceex xmlns=\"http://www-verimag.imag.fr/xml-namespaces/sspaceex\" version=\"0.2\" math=\"SpaceEx\">\n"+"<component id=\"system\">\n"+res+"</component>\n</sspaceex>"
+  //}}}
+  }
+
   def apply(filename: String):Unit = {
 
-    object Util {
+    object Util
+    {
       def str2file(file:String,text:String){
         //{{{
           def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
@@ -437,6 +468,7 @@ object Spaceex {
         h match {
           case Modality(Box,hp,phi) => {
             val a = new Automaton(hp)
+            toSpaceexAutomaton(a)
             println(a.toStr('txt))
             Util.str2file("DLBanyan/_.dot",a.toStr('graph))
 
@@ -450,7 +482,7 @@ object Spaceex {
             //init+= " & isendstate=="+(if(a.isEnd(a.start)) "1" else "0")
             //forb+= " & isendstate==1"
             Util.str2file("DLBanyan/_.cfg",configFile(init,forb))
-            Util.str2file("DLBanyan/_.xml",a.toSX.toString())
+            Util.str2file("DLBanyan/_.xml",toSX(a).toString())
 
             val spaceex_path=System.getenv("SPACEEX")
             assert(spaceex_path!=null && spaceex_path.length>0,"set SPACEEX env var")
