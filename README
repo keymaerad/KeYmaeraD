@@ -1,0 +1,19 @@
+ === Notes
+scala >=2.9 required -- use of sys.process introduced in 2.9
+export SPACEEX=/path/to/spaceex
+this is a proof of concept, many details are not well written
+//{{{ and //}}} are vim fold markers
+
+ === limitations
+modeling:
+-formula to verify needs to be changed to the form: h->[hp]f
+-not distributed; no quantified assignements / differential equations
+-invariants/guards formulas restriced to conjunctions of linear inequalities/equations
+proveness:
+-LGG formally not sound
+-only proves stable systems
+platform:
+-command line only on linux otherwise virtual machine
+
+ === assumptions
+inv_hints and sols parameters of Evolve and Loop are ignorable -- see types.scala

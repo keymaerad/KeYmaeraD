@@ -1,52 +1,3 @@
-//{{{
-/* === Notes
-  scala >=2.9 required -- use of sys.process introduced in 2.9
-  export SPACEEX=/path/to/spaceex
-  this is a proof of concept, many details are not well written
-   //{{{ and //}}} are vim fold markers
-*/
-/* === limitations
-   modeling:
-   -formula to verify needs to be changed to the form: h->[hp]f
-   -not distributed; no quantified assignements / differential equations
-   -invariants/guards formulas restriced to conjunctions of linear inequalities/equations
-   proveness:
-   -LGG formally not sound
-   -only proves stable systems
-   platform:
-   -command line only on linux otherwise virtual machine
-*/
-/* === assumptions
-  inv_hints and sols parameters of Evolve, Loop are ignorable
-*/
-/* === TODO
-
-   -feed big ddl formula to check
-   -make bouncing ball work
-
-   ---parallel
-   -how powerfull/weak is the translation
-
-   ---done
-   -spaceex unexpected output
-   -unbounded sets error
-   -prob: start loc shouldn't be an end state but seems to be
-   -alternative for isendstate:  forbidden+= "& loc(endstate)"
-   -set forbidden state space: negate good state space
-   -set init and end states
-   -graph output
-   -branch of main impl
-    -ask david if he could check the scala code style
-     -get rid of the two warnings
-     -NoClassDefFoundError
-     -test1.dl not parsing
-     -DNFize: binop_simplify kinda ugly
-*/
-/* === bug-iser details
-   no assertion that var isendstate is already used
-*/
-//}}}
-
 package DLBanyan
 
 class TooWeak       (e:String) extends Exception("no way found to support "+e)
@@ -261,7 +212,7 @@ class Automaton(hp: HP) {
 
 object Spaceex {
 //{{{
-  object DNFize {
+  private object DNFize {
   //{{{
   //conjunction of equations <=> no Not,Quantifier,Modality + dnf
     private def negateAtom(a:Atom):Atom = a match
@@ -316,7 +267,7 @@ object Spaceex {
   }
   //}}}
 
-  def toSpaceexAutomaton(a:Automaton):Unit =
+  private def toSpaceexAutomaton(a:Automaton):Unit =
   //{{{
   {
     for(l <- a.locations)
@@ -346,7 +297,7 @@ object Spaceex {
   }
   //}}}
 
-  def toSX(a:Automaton) = {
+  private def toSX(a:Automaton) = {
   //{{{
     //
     assert(Deparse.varS.length>0,"assumption that toSX would be called max one time apparently false")
@@ -393,6 +344,7 @@ object Spaceex {
         transitions_str+= "  <transition source=\""+id+"\" target=\""+a.getId(t.to).toString()+"\">\n"
         transitions_str+= Deparse(t.check ,                                                                    "guard"     ,"    ","\n")
         transitions_str+= Deparse(t.assign,                                                                    "assignment","    ","\n")
+      ////no assertion that var isendstate is already used
       //transitions_str+= Deparse(List((Fn("isendstate",Nil),Num((if(a.isEnd(t.to))Exact.one else Exact.zero)))),"assignment","    ","\n")
         transitions_str+= "  </transition>\n"
       }

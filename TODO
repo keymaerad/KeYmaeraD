@@ -1,0 +1,21 @@
+-feed big ddl formula to check
+
+-ask david if he could check the scala code style
+ -get rid of the two warnings
+ -NoClassDefFoundError
+ -test1.dl not parsing
+
+---parallel
+-how powerfull/weak is the translation
+
+---done
+-spaceex unexpected output
+-unbounded sets error
+-prob: start loc shouldn't be an end state but seems to be
+-alternative for isendstate:  forbidden+= "& loc(endstate)"
+-set forbidden state space: negate good state space
+-set init and end states
+-graph output
+-branch of main impl
+-make bouncing ball work
+-adapt transition guards to spaceex
