@@ -24,6 +24,6 @@ version :
 	$(SCALAC) -version 2>&1 | python specialoptions.py > specialoptions
 
 clean :
-	rm specialoptions
+	rm -f specialoptions
 	rm -rf DLBanyan/
 	fsc -shutdown -verbose
