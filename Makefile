@@ -14,16 +14,16 @@ endif
 
 
 OPTIONS=
-ALLOPTIONS=$(OPTIONS) -deprecation -unchecked
+ALLOPTIONS=${OPTIONS} -deprecation -unchecked
 
 
-all : version $(SCALAFILES)
+all : specialoptions $(SCALAFILES)
 	$(SCALAC)  -classpath $(LIBRARIES) $(SCALAFILES) $(ALLOPTIONS)
 
-version : 	
+specialoptions : 	
 	$(SCALAC) -version 2>&1 | python specialoptions.py > specialoptions
 
 clean :
 	rm -f specialoptions
 	rm -rf DLBanyan/
-	fsc -shutdown -verbose
+	$(SCALAC) -shutdown -verbose
