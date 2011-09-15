@@ -18,7 +18,7 @@ forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
      (n := *; ?(e(n) = 1); e(n) := 0)
 
      // Create a car.
- ++  (n := *; ?(e(n) = 0 & v(n) >= 0 & a(n) > -B & a(n) < A);
+ ++  (n := *; ?(e(n) = 0 & v(n) >= 0 & a(n) >= -B & a(n) <= A);
       e(n) := 1; id(n) := *; t(n) := 0;
         ?(forall l : C. 
           (e(l) = 1 & id(n) <= id(l) ==> 
@@ -33,9 +33,8 @@ forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
 
     // Control a car.
  ++ (n := *; a(n) := *; t(n) := 0;
-      ?(a(n) > -B & a(n) < A & 
+      ?(a(n) >= -B & a(n) <= A & 
          (e(n) = 1 ==>
-
            (forall l : C. 
             (e(l) = 1 & id(n) <= id(l) ==> 
               x(n) < x(l) & 

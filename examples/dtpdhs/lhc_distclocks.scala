@@ -268,7 +268,7 @@ val tyltct = composelistT(
     parseFormula(
       "eps() > 0 & A() > 0 & B() > 0 &" +
       "(forall i : C. (  " + 
-      "t(i) >= 0 & a(i) > -B()))" )))<(
+      "t(i) >= 0 & a(i) >= -B()))" )))<(
         
         // initially valid
         composelistT(
@@ -511,7 +511,7 @@ val controltct =
 
 val loopinv = parseFormula(
   "eps() > 0 & A() > 0 & B() > 0 & " +
-  "(forall i : C. (  a(i) > -B() & v(i) >= 0 & " + 
+  "(forall i : C. (  a(i) >= -B() & v(i) >= 0 & " + 
   "t(i) >= 0 & t(i) <= eps()   )) & " +
   "(forall f : C. forall l : C. " +
    "(e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
