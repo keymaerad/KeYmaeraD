@@ -261,7 +261,6 @@ val instT =   instantiatebyT(St("C")) (List(("i", List("f", "l")),
                                             ("f", List("f")), 
                                             ("l", List("l"))))
 
-
 val tyltct = composelistT(
   hpalpha1T*,
   tryruleT(diffStrengthen(
@@ -368,7 +367,27 @@ val tyltct = composelistT(
                           ),
                           composelistT(
                             alphaT*,
+                            // get rid of all formulas with t(l$XX)
+                            ( new Tactic("") {
+                              import Nodes._
+                               def apply(nd: OrNode) = {
+                                 val Sequent(sig,s,c) = nd.goal
+                                 sig.keys.toList.filter(k => Prover.ununiqify(k) == "l")
+                                  match {
+                                    case List(lname) =>
+                                       val matches : Formula => Boolean = fm => 
+                                            (Prover.hasFn_Formula(lname, fm) &&
+                                             Prover.hasFn_Formula("t", fm))
+                                       tryrulepredT(hide)(matches)(nd)
+                                    case _ => None
+                                  }
+                               }
+                              }
+                            )*, 
+                            
                             nullarizeT*,
+                            hidehasfnT("id")*,
+                            hidehasfnT("A")*,
                             alleasyT
                           )
                         )

@@ -860,7 +860,6 @@ object Tactics {
     tryrulepredT(hide)(matches)
   }
 
-
   val hidehasfnT : String => Tactic = fname => new Tactic ("hidehasfn") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val Sequent(sig,cs,ss) = nd.goal
