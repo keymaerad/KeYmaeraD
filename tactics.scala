@@ -283,7 +283,6 @@ object Tactics {
   val substT : Tactic = new Tactic("substitute") {
     def apply(nd: OrNode): Option[List[NodeID]] = nd.goal match {
       case sq@Sequent(sig, c,s) =>
-
       
         for (i <- c.indices) {
             val pos = LeftP(i)
@@ -295,7 +294,6 @@ object Tactics {
                 ()
             }
         }
-        
 
         return None
 

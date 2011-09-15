@@ -251,8 +251,8 @@ val diffinv = parseFormula(
 "  ( (v(f) + a(f) * (eps() - t(f)) >= 0 & " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
      " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
-" (v(f) + a(f) * (eps() - t(f)) <= 0  & " +
-" 2 * B() * a(f)^2 * x(f) - B() * v(f)^2 * a(f)   < 2 * B() * a(f)^2 * x(f) + a(f)^2 * v(f)^2   ))  "
+" (v(f) + a(f) * (eps() - t(f)) < 0  & " +
+" 2 * B() * a(f)^2 * x(f) - B() * v(f)^2 * a(f)   < 2 * B() * a(f)^2 * x(l) + a(f)^2 * v(l)^2   ))  "
  )
 
 
@@ -481,7 +481,9 @@ val controltct =
         hpalpha1T*,
         instantiatebyT(St("C"))(List(("f", List("f")),
                                      ("l", List("l")),
-                                     ("j", List("f","l"))))*,
+                                     ("j", List("f","l")),
+                                     ("i", List("f","l"))
+                                   ))*,
         cutT(StandardKeepCut,
              parseFormula("~ F = N ==> T1 = T2"), 
              parseFormula("~ F = N")) < (
@@ -489,6 +491,7 @@ val controltct =
                  vacuousT*,
                  tryruleT( impLeft)*,
                  alphaT*,
+                 tryruleT(orLeft)*,
                  instantiatebyT(St("C"))(List(("f", List("f")),
                                               ("l", List("l")),
                                               ("j", List("f","l"))))*,
@@ -519,8 +522,8 @@ val loopinv = parseFormula(
 "  ((v(f) + a(f) * (eps() - t(f)) >= 0 &  " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
      " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
-" (v(f) + a(f) * (eps() - t(f)) <= 0  &  " +
-" 2 * B() * a(f)^2 * x(f) - B() * v(f)^2 * a(f)   <  2 * B() * a(f)^2 * x(f) + a(f)^2 * v(f)^2   )))  "
+" (v(f) + a(f) * (eps() - t(f)) < 0  &  " +
+" 2 * B() * a(f)^2 * x(f) - B() * v(f)^2 * a(f)   <  2 * B() * a(f)^2 * x(l) + a(f)^2 * v(l)^2   )))  "
  )
 
 
