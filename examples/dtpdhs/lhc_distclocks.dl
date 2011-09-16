@@ -26,7 +26,8 @@ forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
            (  
             (v(n) + a(n) * (eps() - t(n)) >= 0 & 
               2 * B() *  x(l)  > 2 *  B() * x(n) + v(n)^2 - v(l)^2 
-                + (a(n) + B()) * (a(n) * (eps() - t(n) )^2 + 2 * (eps() - t(n) ) * v(n)))  |
+                + (a(n) + B()) * (a(n) * (eps() - t(n) )^2 
+                                  + 2 * (eps() - t(n) ) * v(n)))  |
              (v(n) + a(n) * (eps() - t(n)) < 0  &
               2 * B() * a(n)^2 * x(n) - B() * v(n)^2 * a(n) 
               <  2 * B() * a(n)^2 * x(n) + a(n) * v(n)^2 * a(n) )))))
@@ -45,11 +46,11 @@ forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
            // May choose any other acceleration compatible with the invariant.
            (forall l : C. 
             (e(l) = 1 & id(n) <= id(l) ==> 
-              x(n) < x(l) & 
               (
                (v(n) + a(n) * (eps() - t(n)) >= 0 & 
                 2 * B() *  x(l)  > 2 *  B() * x(n) + v(n)^2 - v(l)^2 
-                  + (a(n) + B()) * (a(n) * (eps() - t(n) )^2 + 2 * (eps() - t(n) ) * v(n)))  |
+                  + (a(n) + B()) * (a(n) * (eps() - t(n) )^2
+                                    + 2 * (eps() - t(n) ) * v(n)))  |
                (v(n) + a(n) * (eps() - t(n)) < 0  & 
                  2 * B() * a(n)^2 * x(n) - B() * v(n)^2 * a(n) 
                  < 2 * B() * a(n)^2 * x(n) + a(n)^2 * v(n)^2 )))))))
@@ -59,9 +60,9 @@ forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
  forall i : C {x(i)' = v(i), 
                v(i)' = a(i), 
                t(i)' = 1; v(i) >= 0 &  t(i) <= eps }
-                         @solution( forall s . x(s, i) = (1/2)  *a(i) * s^2 + v(i) * s + x(i),
-                                    forall s . v(s, i) = a(i) * s + v(i),
-                                    forall s . t(s, i) = s + t(i) )
+                 @solution(forall s . x(s, i) = (1/2) * a(i) * s^2 + v(i) * s + x(i),
+                           forall s . v(s, i) = a(i) * s + v(i),
+                           forall s . t(s, i) = s + t(i) )
   )
 }*
 ]
