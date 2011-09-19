@@ -3,6 +3,7 @@
  -NoClassDefFoundError
  -test1.dl not parsing
  -how is Automaton#Location called and what diff exactly w Location
+ -assert instead of exception in patern matching? -- afaik assert for internal error, exception for usage error
 
 ---parallel
 -how powerfull/weak is the translation
@@ -19,11 +20,12 @@
 -make bouncing ball work
 -adapt transition guards to spaceex
 -adapt location invariants to spaceex
+-spaceex doesn't cope with multiple tags
 
 
 === example lists
 -simple.dl -- works
 -simpler.dl -- works
--bouncingball.dl -- false positive
--water_tank.dl -- false positive
+-bouncingball.dl -- works
+-water_tank.dl -- works
 -TRM-essentials.dl -- too weak: * assignement

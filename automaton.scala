@@ -62,26 +62,31 @@ object Deparse {
     }
     //}}}
 
-    v match {
+    def doIt(w:Any):String = w match {
       case ee:(_,_) => {
         ee._1 match {
           case x:Fn => ee._2 match {
             case tm:Term => {
               assert(x.ps.size==0) //not sure if this is catched earlier / if Exception should be used
-              apply(termToXmlString(x)+"' == "+termToXmlString(tm),xmlTagName,prefix,suffix)
+              doIt(termToXmlString(x)+"' == "+termToXmlString(tm))
             }
             case _ => throw new Exception("(Fn,Term) expected")
           }
           case _ => throw new Exception("(Fn,Term) expected")
         }
       }
-      case f  :Formula  => apply(formulatoXmlString(f),xmlTagName,prefix,suffix)
-      case l  :List[_]  => l.map(el => apply(el,xmlTagName,prefix,suffix)).mkString(if(xmlTagName.length==0) " & " else "")
-      case str:String   => prefix+(if(xmlTagName.length>0) "<" +xmlTagName+">" else "")+str+(if(xmlTagName.length>0) "</"+xmlTagName+">" else "")+suffix
+      case f  :Formula  => doIt(formulatoXmlString(f))
+    //case l  :List[_]  => l.map(el => doIt(el)).mkString(if(xmlTagName.length==0) " & " else "")
+      case l  :List[_]  => l.map(el => doIt(el)).mkString(if(xmlTagName.length==0) " & " else "&amp;")
+    //case str:String   => prefix+(if(xmlTagName.length>0) "<" +xmlTagName+">" else "")+str+(if(xmlTagName.length>0) "</"+xmlTagName+">" else "")+suffix
+      case str:String   => str
       case None         => ""
-      case Some(el:Any) => apply(el,xmlTagName,prefix,suffix)
+      case Some(el:Any) => doIt(el)
       case _            => throw new Exception()
     }
+
+    //doIt(v)
+    prefix+(if(xmlTagName.length>0) "<" +xmlTagName+">" else "")+doIt(v)+(if(xmlTagName.length>0) "</"+xmlTagName+">" else "")+suffix
   }
 //}}}
 }
