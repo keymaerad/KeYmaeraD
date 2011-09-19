@@ -1,18 +1,21 @@
 LIBRARIES= ./commons-cli-1.2/commons-cli-1.2.jar
+TEST=examples/
 
 all:
+	#make run FILE=examples/simpler.dl
+	#make run FILE=examples/simple.dl
+	#make run FILE=examples/bouncingball.dl
+	make run FILE=examples/water_tank.dl
+	#make run FILE=examples/TRM-essentials.dl
+
+compile:
 	#rm -r -f DLBanyan
 	#fsc *.scala -unchecked -deprecation
 	fsc *.scala -unchecked -deprecation -cp $(LIBRARIES) 
-	make run
+	make
 
 run:
-	#scala DLBanyan.Test --input examples/simpler.dl
-	#scala DLBanyan.Test examples/simpler.dl
-	#scala DLBanyan.Test examples/simple.dl
-	#scala DLBanyan.Test examples/bouncingball.dl
-	scala DLBanyan.Test examples/water_tank.dl
-	#scala DLBanyan.Test examples/TRM-essentials.dl
+	scala DLBanyan.Test $(FILE)
 
 input:
 	vi DLBanyan/_.xml DLBanyan/_.cfg

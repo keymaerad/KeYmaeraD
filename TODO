@@ -1,5 +1,3 @@
--feed big ddl formula to check
-
 -ask david if he could check the scala code style
  -get rid of the two warnings
  -NoClassDefFoundError
@@ -20,3 +18,12 @@
 -branch of main impl
 -make bouncing ball work
 -adapt transition guards to spaceex
+-adapt location invariants to spaceex
+
+
+=== example lists
+-simple.dl -- works
+-simpler.dl -- works
+-bouncingball.dl -- false positive
+-water_tank.dl -- false positive
+-TRM-essentials.dl -- too weak: * assignement

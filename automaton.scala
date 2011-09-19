@@ -412,7 +412,7 @@ object Spaceex {
       res+="scenario = \"phaver\"\n"
       res+="directions = \"uni32\"\n"
       res+="time-horizon = 4\n"
-      res+="iter-max = 1\n"
+      res+="iter-max = -1\n"
       res+="rel-err = 1.0e-12\n"
       res+="abs-err = 1.0e-15\n"
       res+="output-format = TXT"
@@ -443,7 +443,7 @@ object Spaceex {
             var init = Deparse(g.ctxt)
             if(init!="") init+= " & "
             init+= "loc()==l"+a.getId(a.start)
-            var forb = Deparse(DNFize.simplify(phi))
+            var forb = Deparse(DNFize.simplify(Not(phi)))
             assert(a.ends.length>0)
             forb+= " & ("+a.ends.map(end => "loc()==l"+a.getId(end)).mkString(" | ")+")"
             //endstate
@@ -484,6 +484,7 @@ object Test {
 
     Spaceex(cmd.getOptionValue("input"))
     */
+    if(args.length==0) throw new Exception("argument required: dl file required");
     Spaceex(args(0))
   }
 }
