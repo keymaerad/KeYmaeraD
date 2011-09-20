@@ -1,3 +1,6 @@
+-catch non linearity
+-nice-ize code
+
 -ask david if he could check the scala code style
  -get rid of the two warnings
  -NoClassDefFoundError
@@ -7,6 +10,10 @@
 
 ---parallel
 -how powerfull/weak is the translation
+
+---eventually
+-make more powerfull
+ -e.g. indepedent hybrid systems -> several indepedent spaceex runs
 
 ---done
 -spaceex unexpected output
@@ -20,12 +27,28 @@
 -make bouncing ball work
 -adapt transition guards to spaceex
 -adapt location invariants to spaceex
--spaceex doesn't cope with multiple tags
+-spaceex doesn't cope multiple tags
 
 
-=== example lists
+=== examples
 -simple.dl -- works
 -simpler.dl -- works
+-test1_[.]*.dl -- works
 -bouncingball.dl -- works
 -water_tank.dl -- works
+-creation.dl -- too weak: distributed
+-arith-safety-lemma.dl -- too weak: non linear
+-ETCS-essentials.dl -- too weak: non linear
+-distributed-car-essentials(0?).dl: too weak: non linear
+-headache.dl -- too weak: non linear
+-llcsimple[.]*.dl -- too weak: distributed
+-locallanecontrol.dl -- too weak: distributed
+-one_lane_simple(0?).dl -- too weak: non linear
+-QdlSimpleDiff.dl -- too weak: distributed
+-safety-lemma.dl -- too weak: non linear
+-sarah.dl -- too weak: non linear
+-switchstab-param.dl -- too weak: non linear
+-test.dl -- too weak: distributed
+-to_prove_one_bf.dl -- too weak: non linear
 -TRM-essentials.dl -- too weak: * assignement
+-tylenol.dl -- too weak: distributed
