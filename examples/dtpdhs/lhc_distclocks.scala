@@ -55,7 +55,7 @@ val diffinv = parseFormula(
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
      " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
 " (v(f) + a(f) * (eps() - t(f)) < 0  & " +
-" 2 * B() * a(f)^2 * x(f) - B() * v(f)^2 * a(f)   < 2 * B() * a(f)^2 * x(l) + a(f)^2 * v(l)^2   ))  "
+" 2 * B() * a(f)^2 * x(f) - B() * a(f) * v(f)^2 < 2 * B() * a(f)^2 * x(l) + a(f)^2 * v(l)^2   ))  "
  )
 
 
@@ -63,6 +63,15 @@ val diffinv = parseFormula(
 val instT =   instantiatebyT(St("C")) (List(("i", List("f", "l")), 
                                             ("f", List("f")), 
                                             ("l", List("l"))))
+
+val cutdiffinv2 = cutT(
+  DirectedCut,
+  parseFormula("2 * B() * A^2 * X1 - B() * A * V1^2 < "+
+              "2 * B() * A^2 * X2 + A^2 * V2^2"),
+  parseFormula("2 * B() * A * X1 - B() * V1^2 > "+
+              "2 * B() * A * X2 + A * V2^2")
+)
+
 
 val tyltct = composelistT(
   hpalpha1T*,
@@ -191,6 +200,7 @@ val tyltct = composelistT(
                             nullarizeT*,
                             hidehasfnT("id")*,
                             hidehasfnT("A")*,
+                            cutdiffinv2,
                             alleasyT
                           )
                         )
@@ -345,7 +355,7 @@ val loopinv = parseFormula(
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
      " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
 " (v(f) + a(f) * (eps() - t(f)) < 0  &  " +
-" 2 * B() * a(f)^2 * x(f) - B() * v(f)^2 * a(f)   <  2 * B() * a(f)^2 * x(l) + a(f)^2 * v(l)^2   )))  "
+" 2 * B() * a(f)^2 * x(f) - B() * a(f) * v(f)^2 < 2 * B() * a(f)^2 * x(l) + a(f)^2 * v(l)^2   )))  "
  )
 
 
