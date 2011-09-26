@@ -1,18 +1,5 @@
 dl('load, "examples/dtpdhs/lhc_distclocks.dl")
 
-val cuttct = cutT(
-  DirectedCut,
-  parseFormula(
-    "2*B()*X1>2*B()*X2+ V2^2 - V1^2 +" + 
-     "(A()+B())*(A()*eps()^2+2 * eps()*V2)"
-  ),
-  parseFormula(
-    "2*B()*X1>2*B()*X2+ V2^2 - V1^2 +" + 
-     "(A()+B())*(A()*s()^2+2 * s()*V2)"
-  )
-)
-
-
 val okcuttctfm1 = 
   parseFormula(
    "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A+B())*(A *" +
@@ -77,7 +64,7 @@ val tyltct = composelistT(
   hpalpha1T*,
   tryruleT(diffStrengthen(
     parseFormula(
-      "eps() > 0 & A() > 0 & B() > 0 &" +
+      "eps() > 0 & B() > 0 &" +
       "(forall i : C. (  " + 
       "t(i) >= 0 & a(i) >= -B()))" )))<(
         
@@ -345,7 +332,7 @@ val controltct =
   )
 
 val loopinv = parseFormula(
-  "eps() > 0 & A() > 0 & B() > 0 & " +
+  "eps() > 0 & B() > 0 & " +
   "(forall i : C. (  a(i) >= -B() & v(i) >= 0 & " + 
   "t(i) >= 0 & t(i) <= eps()   )) & " +
   "(forall f : C. forall l : C. " +
