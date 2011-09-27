@@ -6,14 +6,16 @@ this is a proof of concept, many details are not well written
 
  === limitations
 modeling:
--formula to verify needs to be changed to the form: h->[hp]f
--not distributed; no quantified assignements / differential equations
--invariants/guards formulas restriced to conjunctions of linear inequalities/equations
+-non linear -- spaceex only supports linear equations although spaceex has plans to support non-linear equations
+-not distributed -- technically speaking no quantified assignements/differential_equations supported
+-no way found to support invariants/guards beeing an hybrid system -- technically speaking no modalities in invariants/guards supported
+-diamond hybrid program
+-existencial quantifier
 proveness:
--LGG formally not sound
--only proves stable systems
+-spaceex's LGG scenario formally not sound
+-spaceex only proves stable systems
 platform:
--command line only on linux otherwise virtual machine
+-spaceex only call-able via command line only on linux otherwise virtual machine needed
 
  === assumptions
-inv_hints and sols parameters of Evolve and Loop are ignorable -- see types.scala
+inv_hints and sols parameters of Evolve and Loop are ignore-able -- see types.scala

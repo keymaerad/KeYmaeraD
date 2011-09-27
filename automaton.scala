@@ -91,7 +91,63 @@ object Deparse {
 //}}}
 }
 
-class Automaton(hp: HP) {
+object DNFize {
+//{{{
+//conjunction of equations <=> no Not,Quantifier,Modality + dnf
+  private def negateAtom(a:Atom):Atom = a match
+  //{{{
+  {
+    case Atom(R(rel,tmS)) => rel match {
+      case ">"  => Atom(R("<=",tmS))
+      case "<"  => Atom(R(">=",tmS))
+      case ">=" => Atom(R("<" ,tmS))
+      case "<=" => Atom(R(">" ,tmS))
+      case "==" => Atom(R("!=",tmS))
+      case "!=" => Atom(R("==",tmS))
+      case _ => throw new TODO("lookup all relations / their syntax -- context: "+a)
+    }
+  }
+  //}}}
+  //eleminates Not,Imp,Iff and catches Quantifier,Modality
+  def simplify(f:Formula):Formula = f match {
+  //{{{
+    case Atom(_) | True | False => f
+    case Binop(Iff,f1,f2) => simplify(Binop(Or,Binop(And,f1,f2),Binop(And,Not(f1),Not(f2))))
+    case Binop(Imp,f1,f2) => simplify(Binop(Or,Not(f1),f2))
+    case Binop(c,f1,f2) => Binop(c,simplify(f1),simplify(f2))
+    case Not(Binop(Or ,f1,f2)) =>   simplify(Binop(And,Not(f1),Not(f2)))
+    case Not(Binop(And,f1,f2)) =>   simplify(Binop(Or ,Not(f1),Not(f2)))
+    case Not(Binop(c,f1,f2))   =>   simplify(Not(simplify(Binop(c,f1,f2))))
+    case Not(Atom(p)) => negateAtom(Atom(p))
+    case Not(True) => False
+    case Not(False) => True
+    case Not(Not(g)) => g
+    case Not(g) => {simplify(g);throw new Exception("this should never have been called -- instead another Exception should have been thrown befor")}
+    case Quantifier(_,Real,_,_) => throw new NotImplemented("quantifiers not supported")
+    case Quantifier(_,_,_,_) => throw new TooWeak("distributed quantifier")
+    case Modality(_,_,_) => throw new NotImplemented("multiple modalities not supported")
+  }
+  //}}}
+  def apply(f:Formula):List[Formula] = {
+    val g = simplify(f)
+    g match {
+      case Binop(Or ,f1,f2) => apply(f1) ::: apply(f2)
+      case Binop(And,f1,f2) => {
+        var res:List[Formula] = List()
+          apply(f1).foreach(fleft => {
+            apply(f2).foreach(fright => res = Binop(And,fleft,fright)::res)
+          })
+        res
+      }
+      case Atom(_) | True | False => List(g)
+      case Binop(Iff,_,_) | Binop(Imp,_,_) | Not(_) | Quantifier(_,_,_,_) | Modality(_,_,_) => throw new Exception("these classes should have been eliminted by simplify before")
+    }
+  }
+//}}}
+}
+
+class Automaton {
+//{{{
   class Location {
     //{{{
     // None value for {inv, evolve, assign} ~= identity funtion
@@ -114,8 +170,9 @@ class Automaton(hp: HP) {
   var locations : List[Automaton#Location] = Nil
   var start : Automaton#Location = new Location //will always be overriden
   var ends : List[Automaton#Location] = Nil //only used for translation
+  var forb : Formula = True
 
-  hp match {
+  def this(hp: HP) = hp match {
     //{{{
     case Check(h: Formula) => 
       locations = List(new Location,new Location)
@@ -147,9 +204,9 @@ class Automaton(hp: HP) {
     case Choose(p1: HP, p2: HP) =>
       val a1 = new Automaton(p1)
       val a2 = new Automaton(p2)
-      locations = new Location :: a1.locations ::: a2.locations
+      start = new Location
+      locations = start :: a1.locations ::: a2.locations
       ends  = a1.ends ::: a2.ends
-      start = locations(0)
       start.add_transition(a1.start)
       start.add_transition(a2.start)
       this
@@ -167,6 +224,80 @@ class Automaton(hp: HP) {
       this
     case _ => throw new TooWeak("automaton simulate * assignments and quantified assignments / diff eqS")
     //}}}
+  }
+
+  def this(f: Formula) = {
+  //{{{
+      private def get_atoms(h:Formula):List[Formula] = h match {
+        case Binop(And,f1,f2) => List(f1,f2).map(get_atoms).reduce(_:::_)
+        case True => List()
+        case Binop(_,_,_) | Not(_) => throw new Exception
+        case _ => List(h)
+        //case Atom(R(_,_)) | Modality | False => List(h)
+      }
+
+      private def choice_automaton(automatons: List[Automaton],c:Connective) : Automaton = {
+        start = new Location
+        locations = start :: automatons.map(a => a.locations).reduce(_:::_)
+        automatons.foreach(a => start.add_transition(a.start))
+        TODO
+        //make DNFize handle modality
+        //couple forbS with endsS -- e.g. map: end state -> forb
+        //forb = automatons.map(a => a.forb).reduce((f1,f2) => Binop(c,f1,f2))
+        this
+      }
+
+      val clauses = DNFize(f)
+      assert(clauses.length>0)
+      if(clauses.length>1) choice_automaton(clauses.map(h => this(h)),Or)
+      else
+      {
+        val atoms = get_atoms(clauses(0))
+        assert(atoms.length>0)
+        if(atoms.length>1) choice_automaton(atoms.map(h => this(h)),And)
+        else
+        {
+          val h = atoms[0]
+          h match {
+            case Atom(R(_,_)) | False | True => {
+              start = new Loation
+              locations = List(start)
+              ends      = List(start)
+              TODO -- set forb
+              //forb
+            }
+            case Modality(_,hp,phi) => {
+              val a = this(hp)
+              TODO -- append this(phi)
+              //this(phi)
+            }
+            case Quantifier(Forall,_,_) => throw new TODO
+            case Quantifier(Exists,_,_) => throw new TooWeak("existencial quantifier")
+            case _ => throw new Exception
+          }
+
+        }
+      }
+
+
+      var init = Deparse(g.ctxt)
+      if(init!="") init+= " & "
+      init+= "loc()==l"+a.getId(a.start)
+      var forb = Deparse(DNFize.simplify(Not(phi)))
+      assert(a.ends.length>0)
+      forb+= " & ("+a.ends.map(end => "loc()==l"+a.getId(end)).mkString(" | ")+")"
+      //endstate
+      //init+= " & isendstate=="+(if(a.isEnd(a.start)) "1" else "0")
+      //forb+= " & isendstate==1"
+
+
+        h match {
+          case Modality(Box,hp,phi) => {
+            val a = this(hp)
+          }
+          case Modality(Diamond,_,_) => throw new TooWeak("Diamond modality")
+        }
+  //}}}
   }
 
   def add_location():Automaton#Location = {val newL=new Location;locations=locations:+newL;newL}
@@ -215,65 +346,11 @@ class Automaton(hp: HP) {
     res
   //}}}
   }
+//}}}
 }
 
 object Spaceex {
 //{{{
-  private object DNFize {
-  //{{{
-  //conjunction of equations <=> no Not,Quantifier,Modality + dnf
-    private def negateAtom(a:Atom):Atom = a match
-    //{{{
-    {
-      case Atom(R(rel,tmS)) => rel match {
-        case ">"  => Atom(R("<=",tmS))
-        case "<"  => Atom(R(">=",tmS))
-        case ">=" => Atom(R("<" ,tmS))
-        case "<=" => Atom(R(">" ,tmS))
-        case "==" => Atom(R("!=",tmS))
-        case "!=" => Atom(R("==",tmS))
-        case _ => throw new TODO("lookup all relations / their syntax -- context: "+a)
-      }
-    }
-    //}}}
-    //eleminates Not,Imp,Iff and catches Quantifier,Modality
-    def simplify(f:Formula):Formula = f match {
-    //{{{
-      case Atom(_) | True | False => f
-      case Binop(Iff,f1,f2) => simplify(Binop(Or,Binop(And,f1,f2),Binop(And,Not(f1),Not(f2))))
-      case Binop(Imp,f1,f2) => simplify(Binop(Or,Not(f1),f2))
-      case Binop(c,f1,f2) => Binop(c,simplify(f1),simplify(f2))
-      case Not(Binop(Or ,f1,f2)) =>   simplify(Binop(And,Not(f1),Not(f2)))
-      case Not(Binop(And,f1,f2)) =>   simplify(Binop(Or ,Not(f1),Not(f2)))
-      case Not(Binop(c,f1,f2))   =>   simplify(Not(simplify(Binop(c,f1,f2))))
-      case Not(Atom(p)) => negateAtom(Atom(p))
-      case Not(True) => False
-      case Not(False) => True
-      case Not(Not(g)) => g
-      case Not(g) => {simplify(g);throw new Exception("this should never have been called -- instead another Exception should have been thrown befor")}
-      case Quantifier(_,Real,_,_) => throw new NotImplemented("quantifiers not supported")
-      case Quantifier(_,_,_,_) => throw new TooWeak("distributed quantifier")
-      case Modality(_,_,_) => throw new NotImplemented("multiple modalities not supported")
-    }
-    //}}}
-    def apply(f:Formula):List[Formula] = {
-      val g = simplify(f)
-      g match {
-        case Binop(Or ,f1,f2) => apply(f1) ::: apply(f2)
-        case Binop(And,f1,f2) => {
-          var res:List[Formula] = List()
-            apply(f1).foreach(fleft => {
-              apply(f2).foreach(fright => res = Binop(And,fleft,fright)::res)
-            })
-          res
-        }
-        case Atom(_) | True | False => List(g)
-        case Binop(Iff,_,_) | Binop(Imp,_,_) | Not(_) | Quantifier(_,_,_,_) | Modality(_,_,_) => throw new Exception("these classes should have been eliminted by simplify before")
-      }
-    }
-  }
-  //}}}
-
   private def toSpaceexAutomaton(a:Automaton):Unit =
   //{{{
   {
@@ -382,49 +459,50 @@ object Spaceex {
   //}}}
   }
 
+  object Util
+  {
+    def str2file(file:String,text:String){
+      //{{{
+        def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
+            val p = new java.io.PrintWriter(f)
+              try { op(p) } finally { p.close() }
+        }
+        import java.io._
+        val data = Array(text)
+        printToFile(new File(file))(p => {
+            data.foreach(p.println)
+        })
+      //}}}
+    }
+
+    def runCmd(cmd:String) = {
+    //{{{
+      import sys.process._ //requires 2.9
+      val stdout = cmd !!;
+      stdout
+    //}}}
+    }
+  }
+
+  def configFile(init:String,forbidden:String):String = {
+    //{{{
+    var res=""
+    res+="initially = \""+init+"\"\n"
+    res+="forbidden = \""+forbidden+"\"\n"
+    res+="scenario = \"phaver\"\n"
+    res+="directions = \"uni32\"\n"
+    res+="time-horizon = 4\n"
+    res+="iter-max = -1\n"
+    res+="rel-err = 1.0e-12\n"
+    res+="abs-err = 1.0e-15\n"
+    res+="output-format = TXT"
+    res
+    //sampling-time = 0.5
+    //}}}
+  }
+
+
   def apply(filename: String):Unit = {
-
-    object Util
-    {
-      def str2file(file:String,text:String){
-        //{{{
-          def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
-              val p = new java.io.PrintWriter(f)
-                try { op(p) } finally { p.close() }
-          }
-          import java.io._
-          val data = Array(text)
-          printToFile(new File(file))(p => {
-              data.foreach(p.println)
-          })
-        //}}}
-      }
-
-      def runCmd(cmd:String) = {
-      //{{{
-        import sys.process._ //requires 2.9
-        val stdout = cmd !!;
-        stdout
-      //}}}
-      }
-    }
-
-    def configFile(init:String,forbidden:String):String = {
-      //{{{
-      var res=""
-      res+="initially = \""+init+"\"\n"
-      res+="forbidden = \""+forbidden+"\"\n"
-      res+="scenario = \"phaver\"\n"
-      res+="directions = \"uni32\"\n"
-      res+="time-horizon = 4\n"
-      res+="iter-max = -1\n"
-      res+="rel-err = 1.0e-12\n"
-      res+="abs-err = 1.0e-15\n"
-      res+="output-format = TXT"
-      res
-      //sampling-time = 0.5
-      //}}}
-    }
 
     val fi = 
       new java.io.FileInputStream(filename)
@@ -433,36 +511,24 @@ object Spaceex {
 
     dlp.result match {
       case Some(g:Sequent) => {
+
         //val print_fm = (fm:Formula) => println(Printing.stringOfFormula(fm))
         //g.ctxt .foreach(print_fm)
         //g.scdts.foreach(print_fm)
-        if(g.scdts.size !=1) throw new NotImplemented("Sequent with one goal expected")
-        var h = g.scdts(0)
-        h match {
-          case Modality(Box,hp,phi) => {
-            val a = new Automaton(hp)
-            toSpaceexAutomaton(a)
-            println(a.toStr('txt))
-            Util.str2file("DLBanyan/_.dot",a.toStr('graph))
 
-            var init = Deparse(g.ctxt)
-            if(init!="") init+= " & "
-            init+= "loc()==l"+a.getId(a.start)
-            var forb = Deparse(DNFize.simplify(Not(phi)))
-            assert(a.ends.length>0)
-            forb+= " & ("+a.ends.map(end => "loc()==l"+a.getId(end)).mkString(" | ")+")"
-            //endstate
-            //init+= " & isendstate=="+(if(a.isEnd(a.start)) "1" else "0")
-            //forb+= " & isendstate==1"
-            Util.str2file("DLBanyan/_.cfg",configFile(init,forb))
-            Util.str2file("DLBanyan/_.xml",toSX(a).toString())
+        val h : Formula = (g.ctxt.map(f => Not(f)) ::: g.scdts).reduce((f1,f2) => Binop(Or,f1,f2))
+        val a = new Automaton(h)
+        toSpaceexAutomaton(a)
 
-            val spaceex_path=System.getenv("SPACEEX")
-            assert(spaceex_path!=null && spaceex_path.length>0,"set SPACEEX env var")
-            println(Util.runCmd(spaceex_path+" -m DLBanyan/_.xml --config DLBanyan/_.cfg"))
-          }
-          case _ => throw new TooWeak("Diamond modality")
-        }
+        println(a.toStr('txt))
+        Util.str2file("DLBanyan/_.dot",a.toStr('graph))
+
+        Util.str2file("DLBanyan/_.cfg",configFile("",Deparse(a.forb)))
+        Util.str2file("DLBanyan/_.xml",toSX(a).toString())
+
+        val spaceex_path=System.getenv("SPACEEX")
+        throw new Exception(spaceex_path!=null && spaceex_path.length>0,"set SPACEEX env var")
+        println(Util.runCmd(spaceex_path+" -m DLBanyan/_.xml --config DLBanyan/_.cfg"))
       }
       case None => throw new Exception("DLParser.result didn't returned a sequent")
     }
@@ -475,6 +541,7 @@ object Test {
   def main(args: Array[String]) {
 
     /* uncomment -> java.lang.NoClassDefFoundError: org/apache/commons/cli/Options
+    //{{{
     import org.apache.commons.cli.Options
     import org.apache.commons.cli.CommandLine
 
@@ -488,6 +555,7 @@ object Test {
     val cmd = parse()
 
     Spaceex(cmd.getOptionValue("input"))
+    //}}}
     */
     if(args.length==0) throw new Exception("argument required: dl file required");
     Spaceex(args(0))

@@ -4,10 +4,10 @@ TEST=examples/
 all:
 	#make run FILE=examples/simpler.dl
 	#make run FILE=examples/simple.dl
-	make run FILE=examples/test1_true.dl
-	make run FILE=examples/test1_false.dl
+	#make run FILE=examples/test1_true.dl
+	#make run FILE=examples/test1_false.dl
 	#make run FILE=examples/bouncingball.dl
-	#make run FILE=examples/water_tank.dl
+	make run FILE=examples/water_tank.dl
 	#make run FILE=examples/TRM-essentials.dl
 
 compile:

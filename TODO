@@ -1,3 +1,26 @@
+-every formula -> spaceex
+-* assignments
+
+-examples
+ -keymaera
+ -niko
+ -literature
+  -spaceex examples
+-speeder
+ -linear diff eqS?
+-more powerfull
+ -linearize
+  -ask goran non linear
+  -not a priority since spaceex will eventually linearize?
+ -other forumla forms -- when keymaeraD transforms the forumla + multiple hybrid systems interacting
+  -on automata level
+  -on hybrid program level
+  -on run level
+
+
+-optimasation
+ -unfold *
+
 -catch non linearity
 -nice-ize code
 
@@ -14,6 +37,8 @@
 ---eventually
 -make more powerfull
  -e.g. indepedent hybrid systems -> several indepedent spaceex runs
+-simulate * assignement by not setting flow in spaceex xml input
+-sanetize varS && quantifier -- make sure every var has unique name and eliminate forall quantifiers
 
 ---done
 -spaceex unexpected output

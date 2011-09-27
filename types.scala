@@ -42,7 +42,6 @@ case class Modality(m: ModalityType, hp: HP, rest: Formula) extends Formula
 
 
 
-
 sealed abstract class HP
 case class Assign( vs : List[(Fn, Term)]) extends HP
 case class AssignAny(v: Fn) extends HP
