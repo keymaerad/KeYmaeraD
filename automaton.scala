@@ -108,28 +108,29 @@ object DNFize {
     }
   }
   //}}}
-  //eleminates Not,Imp,Iff and catches Quantifier,Modality
-  def simplify(f:Formula):Formula = f match {
+  //eleminates Not,Imp,Iff and catches Quantifier,Modality(Diamond,_,_)
+  def normalize(f:Formula):Formula = f match {
   //{{{
-    case Atom(_) | True | False => f
-    case Binop(Iff,f1,f2) => simplify(Binop(Or,Binop(And,f1,f2),Binop(And,Not(f1),Not(f2))))
-    case Binop(Imp,f1,f2) => simplify(Binop(Or,Not(f1),f2))
-    case Binop(c,f1,f2) => Binop(c,simplify(f1),simplify(f2))
-    case Not(Binop(Or ,f1,f2)) =>   simplify(Binop(And,Not(f1),Not(f2)))
-    case Not(Binop(And,f1,f2)) =>   simplify(Binop(Or ,Not(f1),Not(f2)))
-    case Not(Binop(c,f1,f2))   =>   simplify(Not(simplify(Binop(c,f1,f2))))
+    case Atom(_) | True | False | Modality(Box,_,_) => f
+    case Binop(Iff,f1,f2) => normalize(Binop(Or,Binop(And,f1,f2),Binop(And,Not(f1),Not(f2))))
+    case Binop(Imp,f1,f2) => normalize(Binop(Or,Not(f1),f2))
+    case Binop(c,f1,f2) => Binop(c,normalize(f1),normalize(f2))
+    case Not(Binop(Or ,f1,f2)) =>   normalize(Binop(And,Not(f1),Not(f2)))
+    case Not(Binop(And,f1,f2)) =>   normalize(Binop(Or ,Not(f1),Not(f2)))
+    case Not(Binop(c,f1,f2))   =>   normalize(Not(normalize(Binop(c,f1,f2))))
     case Not(Atom(p)) => negateAtom(Atom(p))
     case Not(True) => False
     case Not(False) => True
     case Not(Not(g)) => g
-    case Not(g) => {simplify(g);throw new Exception("this should never have been called -- instead another Exception should have been thrown befor")}
-    case Quantifier(_,Real,_,_) => throw new NotImplemented("quantifiers not supported")
+    case Not(g) => {normalize(g);throw new Exception("this should never have been called -- instead another Exception should have been thrown befor")}
+    case Quantifier(Forall,Real,_,_) => throw new TODO("forall quantifiers not supported")
+    case Quantifier(Exists,Real,_,_) => throw new TooWeak("existencial quantifier")
     case Quantifier(_,_,_,_) => throw new TooWeak("distributed quantifier")
-    case Modality(_,_,_) => throw new NotImplemented("multiple modalities not supported")
+    case Modality(Diamond,_,_) => throw new TooWeak("Diamond Modality")
   }
   //}}}
   def apply(f:Formula):List[Formula] = {
-    val g = simplify(f)
+    val g = normalize(f)
     g match {
       case Binop(Or ,f1,f2) => apply(f1) ::: apply(f2)
       case Binop(And,f1,f2) => {
@@ -140,11 +141,16 @@ object DNFize {
         res
       }
       case Atom(_) | True | False => List(g)
-      case Binop(Iff,_,_) | Binop(Imp,_,_) | Not(_) | Quantifier(_,_,_,_) | Modality(_,_,_) => throw new Exception("these classes should have been eliminted by simplify before")
+      case Modality(Box,_,_) => throw new Exception("should have been could before")
+      case Binop(Iff,_,_) | Binop(Imp,_,_) | Not(_) | Quantifier(_,_,_,_) | Modality(Diamond,_,_) => throw new Exception("these classes should have been eliminted by normalize before")
     }
   }
 //}}}
 }
+
+sealed abstract class Forb
+case class EndsEq(f:Formula   ,l:List[Automaton#Location]) extends Forb
+case class Choice(c:Connective,forbS:List[Forb]) extends Forb
 
 class Automaton {
 //{{{
@@ -170,81 +176,113 @@ class Automaton {
   var locations : List[Automaton#Location] = Nil
   var start : Automaton#Location = new Location //will always be overriden
   var ends : List[Automaton#Location] = Nil //only used for translation
-  var forb : Formula = True
+//var init : Formula = True
+  var forb : Forb = EndsEq(False,List())
 
-  def this(hp: HP) = hp match {
-    //{{{
-    case Check(h: Formula) => 
-      locations = List(new Location,new Location)
-      locations(0).add_transition(locations(1)).check = Some(h)
-      start = locations(0)
-      ends  = List(locations(1))
-      this
-    case Assign(vs) => //vs: List[(Fn,Term)]
-      locations = List(new Location,new Location)
-      locations(0).add_transition(locations(1)).assign = Some(vs)
-      start = locations(0)
-      ends  = List(locations(1))
-      this
-    case Evolve(derivs, h,_,_) => //derivs: List[(Fn,Term)], h: Formula
-      locations = List(new Location)
-      locations(0).inv = Some(h)
-      locations(0).evolve = Some(derivs)
-      start = locations(0)
-      ends  = List(locations(0))
-      this
-    case Seq(p1: HP, p2: HP) => 
-      val a1 = new Automaton(p1)
-      val a2 = new Automaton(p2)
-      locations = a1.locations ::: a2.locations
-      start = a1.start
-      ends  = a2.ends
-      a1.ends.foreach( end => end.add_transition(a2.start))
-      this
-    case Choose(p1: HP, p2: HP) =>
-      val a1 = new Automaton(p1)
-      val a2 = new Automaton(p2)
-      start = new Location
-      locations = start :: a1.locations ::: a2.locations
-      ends  = a1.ends ::: a2.ends
-      start.add_transition(a1.start)
-      start.add_transition(a2.start)
-      this
-    case Loop(p1: HP,_,_) =>
-      /*
-      var a1 = new Automaton(p1)
-      a1.ends.foreach(end => end.add_transition(a1.start))
-      a1
-      */
-      val a1      = new Automaton(p1)
-      locations   = a1.locations
-      ends        = a1.ends
-      start       = a1.start
-      ends.foreach(end => end.add_transition(a1.start))
-      this
-    case _ => throw new TooWeak("automaton simulate * assignments and quantified assignments / diff eqS")
-    //}}}
+  def this(hp: HP) = {
+  //{{{
+    this
+    hp match {
+      case Check(h: Formula) => 
+        locations = List(new Location,new Location)
+        locations(0).add_transition(locations(1)).check = Some(h)
+        start = locations(0)
+        ends  = List(locations(1))
+      case Assign(vs) => //vs: List[(Fn,Term)]
+        locations = List(new Location,new Location)
+        locations(0).add_transition(locations(1)).assign = Some(vs)
+        start = locations(0)
+        ends  = List(locations(1))
+      case Evolve(derivs, h,_,_) => //derivs: List[(Fn,Term)], h: Formula
+        locations = List(new Location)
+        locations(0).inv = Some(h)
+        locations(0).evolve = Some(derivs)
+        start = locations(0)
+        ends  = List(locations(0))
+      case Seq(p1: HP, p2: HP) => 
+        val a1 = new Automaton(p1)
+        val a2 = new Automaton(p2)
+        locations = a1.locations ::: a2.locations
+        start = a1.start
+        ends  = a2.ends
+        a1.ends.foreach( end => end.add_transition(a2.start))
+      case Choose(p1: HP, p2: HP) =>
+        val a1 = new Automaton(p1)
+        val a2 = new Automaton(p2)
+        start = new Location
+        locations = start :: a1.locations ::: a2.locations
+        ends  = a1.ends ::: a2.ends
+        start.add_transition(a1.start)
+        start.add_transition(a2.start)
+      case Loop(p1: HP,_,_) =>
+        /*
+        var a1 = new Automaton(p1)
+        a1.ends.foreach(end => end.add_transition(a1.start))
+        a1
+        */
+        val a1      = new Automaton(p1)
+        locations   = a1.locations
+        ends        = a1.ends
+        start       = a1.start
+        ends.foreach(end => end.add_transition(a1.start))
+      case _ => throw new TooWeak("automaton simulate * assignments and quantified assignments / diff eqS")
+    }
+    this
+  //}}}
   }
 
   def this(f: Formula) = {
   //{{{
-      private def get_atoms(h:Formula):List[Formula] = h match {
+      this
+
+      def negate_connection(c:Connective):Connective = c match {
+        case Or => And
+        case And => Or
+        case _ => throw new Exception("should have been cought by normalize")
+      }
+
+      val f_normalized = DNFize.normalize(f)
+
+      f_normalized match {
+        case Binop(c,f1,f2) => {
+          val automatons = List(new Automaton(f1),new Automaton(f2))
+          start = new Location
+          locations = start :: automatons.map(a1 => a1.locations).reduce(_:::_)
+          forb = Choice(negate_connection(c),automatons.map(a1 => a1.forb))
+          automatons.foreach(a1 => start.add_transition(a1.start))
+          ends = automatons.map(a1 => a1.ends).reduce(_:::_)
+          this
+        }
+        case Atom(R(_,_)) | True | False => {
+          locations = List(new Location,new Location)
+          start = locations(0)
+          ends  = List(locations(1))
+          forb = EndsEq(True,ends)
+          val t = start.add_transition(ends(0))
+          t.check = Some(Not(f_normalized))
+          this
+        }
+        case Modality(Box,hp,phi) => {
+          val a1 = new Automaton(hp)
+          val a2 = new Automaton(phi)
+          a1.ends.foreach(end => end.add_transition(a2.start))
+          ends = a2.ends
+          forb = a2.forb
+          this
+        }
+        case Modality(Diamond,_,_) => throw new TooWeak("Diamond modality")
+        case _ => throw new Exception("should have been eleminited by normalize")
+      }
+
+      /*
+      //{{{
+
+      def get_atoms(h:Formula):List[Formula] = h match {
         case Binop(And,f1,f2) => List(f1,f2).map(get_atoms).reduce(_:::_)
         case True => List()
         case Binop(_,_,_) | Not(_) => throw new Exception
         case _ => List(h)
         //case Atom(R(_,_)) | Modality | False => List(h)
-      }
-
-      private def choice_automaton(automatons: List[Automaton],c:Connective) : Automaton = {
-        start = new Location
-        locations = start :: automatons.map(a => a.locations).reduce(_:::_)
-        automatons.foreach(a => start.add_transition(a.start))
-        TODO
-        //make DNFize handle modality
-        //couple forbS with endsS -- e.g. map: end state -> forb
-        //forb = automatons.map(a => a.forb).reduce((f1,f2) => Binop(c,f1,f2))
-        this
       }
 
       val clauses = DNFize(f)
@@ -271,32 +309,21 @@ class Automaton {
               TODO -- append this(phi)
               //this(phi)
             }
-            case Quantifier(Forall,_,_) => throw new TODO
-            case Quantifier(Exists,_,_) => throw new TooWeak("existencial quantifier")
-            case _ => throw new Exception
           }
 
         }
       }
-
-
       var init = Deparse(g.ctxt)
       if(init!="") init+= " & "
       init+= "loc()==l"+a.getId(a.start)
-      var forb = Deparse(DNFize.simplify(Not(phi)))
+      var forb = Deparse(DNFize.normalize(Not(phi)))
       assert(a.ends.length>0)
       forb+= " & ("+a.ends.map(end => "loc()==l"+a.getId(end)).mkString(" | ")+")"
       //endstate
       //init+= " & isendstate=="+(if(a.isEnd(a.start)) "1" else "0")
       //forb+= " & isendstate==1"
-
-
-        h match {
-          case Modality(Box,hp,phi) => {
-            val a = this(hp)
-          }
-          case Modality(Diamond,_,_) => throw new TooWeak("Diamond modality")
-        }
+      //}}}
+      */
   //}}}
   }
 
@@ -501,6 +528,13 @@ object Spaceex {
     //}}}
   }
 
+  def forb_to_string(forb: Forb,a: Automaton):String = forb match {
+  //{{{
+    case EndsEq(f,locations) => "("+Deparse(f)+") & "+locations.map(l => "loc()==l"+a.getId(l)).mkString(" | ")
+    case Choice(c,forbS) => forbS.map(forbS => "("+forb_to_string(forbS,a)+")").mkString(if(c==Or) " | " else " & ")
+  //}}}
+  }
+
 
   def apply(filename: String):Unit = {
 
@@ -523,11 +557,11 @@ object Spaceex {
         println(a.toStr('txt))
         Util.str2file("DLBanyan/_.dot",a.toStr('graph))
 
-        Util.str2file("DLBanyan/_.cfg",configFile("",Deparse(a.forb)))
+        Util.str2file("DLBanyan/_.cfg",configFile("",forb_to_string(a.forb,a)))
         Util.str2file("DLBanyan/_.xml",toSX(a).toString())
 
         val spaceex_path=System.getenv("SPACEEX")
-        throw new Exception(spaceex_path!=null && spaceex_path.length>0,"set SPACEEX env var")
+        if(spaceex_path!=null && spaceex_path.length>0) throw new Exception("set SPACEEX env var")
         println(Util.runCmd(spaceex_path+" -m DLBanyan/_.xml --config DLBanyan/_.cfg"))
       }
       case None => throw new Exception("DLParser.result didn't returned a sequent")
