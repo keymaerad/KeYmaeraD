@@ -75,5 +75,5 @@
 -switchstab-param.dl -- too weak: non linear
 -test.dl -- too weak: distributed
 -to_prove_one_bf.dl -- too weak: non linear
--TRM-essentials.dl -- too weak: * assignement
+-TRM-essentials.dl -- too weak: * assignement & non linear
 -tylenol.dl -- too weak: distributed

@@ -4,6 +4,7 @@ class TooWeak       (e:String) extends Exception("no way found to support "+e)
 class NotImplemented(e:String) extends Exception(e)
 class TODO          (e:String) extends Exception(e)
 
+/*
 object Deparse {
 //{{{
 //deparse ~= parse^-1 -- not sure which of de- and un- would be the right prefix tho q-:
@@ -41,7 +42,6 @@ object Deparse {
     def formulatoXmlString(f: Formula):List[String] =
     //{{{
     {
-      //var quantified_varS: List[String] = Nil
       f match {
         case Atom(R(_,_)) | True | False => {
           val res = Printing.stringOfFormula(f)
@@ -49,15 +49,12 @@ object Deparse {
           //List(escapeXml(res.replaceAll("([^<>!=])=","$1==")).replaceAll("\\.",""))
           List(spaceexizeSyntax(res))
         }
-        //case Quantifier(Forall,Real,v,g) => assert(quantified_varS.indexOf(v)== -1);quantified_varS=quantified_varS:+v;formulatoXmlString(g)
-        case Quantifier(_,Real,_,_) => throw new NotImplemented("quantifiers not supported")
-        case Quantifier(Forall,_   ,_,_) => throw new TooWeak("distributed quantifier")
         case Binop(And, f1, f2) => formulatoXmlString(f1) ::: formulatoXmlString(f2)
         case Binop(Or , f1, f2) => List("("+formulatoXmlString(f1).mkString(" & ") +")|("+ formulatoXmlString(f2).mkString(" & ")+")")
-        case Binop(_,_,_) => throw new TODO("Not supported yet "+f)
-        case Not(_) => throw new TODO("Not not supported yet -- "+f)
+        case Binop(_,_,_) | Not(_) => throw new Exception("use normalize to get rid of Not,Imp,Iff")
+        case Quantifier(_,Real,_,_) => throw new NotImplemented("quantifiers not supported")
+        case Quantifier(Forall,_   ,_,_) => throw new TooWeak("distributed quantifier")
         case Quantifier(Exists,_,_,_) | Modality(_,_,_) => throw new TooWeak("Exists quantifier and modality")
-        //case _ => throw new Exception("i should have covered every case")
       }
     }
     //}}}
@@ -87,6 +84,104 @@ object Deparse {
 
     //doIt(v)
     prefix+(if(xmlTagName.length>0) "<" +xmlTagName+">" else "")+doIt(v)+(if(xmlTagName.length>0) "</"+xmlTagName+">" else "")+suffix
+  }
+//}}}
+}
+*/
+
+//TODO
+//-rewrite this termToStr -- make string converstion manually -- rewrite retrieve_varS
+//-seperate to string code and spaceex specific code
+object Deparse {
+//{{{
+  var varS : List[String] = Nil
+  //assumptions:
+  //-char . is only used for Fn(_,Nil) by docOfTerm
+  //-char . is only used for forall/exists by docOfFormula (or by calling docOfTerm)
+  //-always a space between . and forall/exists
+  //-Printing fcts make returns char . only by calling docOfTerm or docOfFormula
+  private def retrieve_varS(s:String):Unit = {varS = varS ::: "[a-zA-Z]+(?=\\.)".r.findAllIn(s).toList }
+
+  def apply(v:Any, xmlTagName:String="", prefix:String="", suffix:String=""):String = {
+
+    def formulaToStr(f:Formula):String = {
+    //{{{
+      def connectiveToStr(c:Connective):String = c match
+      {
+        case Or  => "|"
+        case And => "&"
+        case Imp => "=>"
+        case Iff => "<=>"
+      }
+      f match {
+        case Binop(c,f1,f2) => "("+formulaToStr(f1)+") "+connectiveToStr(c)+" ("+formulaToStr(f2)+")"
+        case True    => "true"
+        case False   => "false"
+        case Not(f1) => "! ("+formulaToStr(f1)+")"
+        case Atom(R(rStr,terms)) => {
+          assert(terms.length==2,"until now only relations with arity 2 used")
+          termToStr(terms(0))+" "+rStr+" "+termToStr(terms(1))
+        }
+        case Quantifier(_,_,_,_) | Modality(_,_,_) => throw new Exception("shoudn't be needed -- should have been eleminted/handled before calling this")
+      }
+    //}}}
+    }
+
+    def termToStr(tm:Term):String = {
+    //{{{
+      def spaceexizeSyntax(s:String):String = {
+      //{{{
+        //TODO: not thought through solution according to "0 -" -> "-" -- probably some case where it won't do like "x - 0 - y"
+        def escapeXml(s:String):String = if(xmlTagName=="") s else s.replaceAll("<","&lt;").replaceAll(">","&gt;")
+        escapeXml(s.replaceAll("0 -","-").replaceAll("([^<>!=])=","$1==").replaceAll("\\.",""))
+       }
+     //}}}
+
+      val sw = new java.io.StringWriter()
+      val d = Printing.docOfTerm(tm)
+      d.format(70, sw)
+      val res = sw.toString
+      retrieve_varS(res)
+      spaceexizeSyntax(res)
+    //}}}
+    }
+
+    def formulaToStrFlat(f: Formula): List[String] = f match {
+    //{{{
+        case Binop(And,f1,f2) => formulaToStrFlat(f1) ::: formulaToStrFlat(f2)
+        case _ => List(formulaToStr(f))
+    //}}}
+    }
+
+    def doIt(w:Any):String = w match {
+      case ee:(_,_) => {
+        ee._1 match {
+          case x:Fn => ee._2 match {
+            case tm:Term => {
+              assert(x.ps.size==0) //not sure if this is catched earlier / if Exception should be used
+              doIt(termToStr(x)+"' == "+termToStr(tm))
+            }
+            case _ => throw new Exception("(Fn,Term) expected")
+          }
+          case _ => throw new Exception("(Fn,Term) expected")
+        }
+      }
+      case f  :Formula  => doIt(formulaToStrFlat(f))
+      case l  :List[_]  => l.map(el => doIt(el)).mkString(" & ")
+      case str:String   => str
+      case None         => ""
+      case Some(el:Any) => doIt(el)
+      case _            => throw new Exception
+    }
+
+    var res = doIt(v)
+    if(xmlTagName!="")
+    {
+      res = res.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      res =  "<" +xmlTagName+">" + res
+      res += "</"+xmlTagName+">"
+    }
+    prefix+res+suffix
   }
 //}}}
 }
@@ -251,7 +346,6 @@ class Automaton {
           forb = Choice(negate_connection(c),automatons.map(a1 => a1.forb))
           automatons.foreach(a1 => start.add_transition(a1.start))
           ends = automatons.map(a1 => a1.ends).reduce(_:::_)
-          this
         }
         case Atom(R(_,_)) | True | False => {
           locations = List(new Location,new Location)
@@ -260,21 +354,22 @@ class Automaton {
           forb = EndsEq(True,ends)
           val t = start.add_transition(ends(0))
           t.check = Some(Not(f_normalized))
-          this
         }
         case Modality(Box,hp,phi) => {
           val a1 = new Automaton(hp)
           val a2 = new Automaton(phi)
+          locations = a1.locations ::: a2.locations
+          start = a1.start
           a1.ends.foreach(end => end.add_transition(a2.start))
           ends = a2.ends
           forb = a2.forb
-          this
         }
         case Modality(Diamond,_,_) => throw new TooWeak("Diamond modality")
         case _ => throw new Exception("should have been eleminited by normalize")
       }
+      this
 
-      /*
+      /* flat way
       //{{{
 
       def get_atoms(h:Formula):List[Formula] = h match {
@@ -313,15 +408,6 @@ class Automaton {
 
         }
       }
-      var init = Deparse(g.ctxt)
-      if(init!="") init+= " & "
-      init+= "loc()==l"+a.getId(a.start)
-      var forb = Deparse(DNFize.normalize(Not(phi)))
-      assert(a.ends.length>0)
-      forb+= " & ("+a.ends.map(end => "loc()==l"+a.getId(end)).mkString(" | ")+")"
-      //endstate
-      //init+= " & isendstate=="+(if(a.isEnd(a.start)) "1" else "0")
-      //forb+= " & isendstate==1"
       //}}}
       */
   //}}}
@@ -530,7 +616,7 @@ object Spaceex {
 
   def forb_to_string(forb: Forb,a: Automaton):String = forb match {
   //{{{
-    case EndsEq(f,locations) => "("+Deparse(f)+") & "+locations.map(l => "loc()==l"+a.getId(l)).mkString(" | ")
+    case EndsEq(f,locations) => "("+Deparse(DNFize.normalize(f))+") & "+locations.map(l => "loc()==l"+a.getId(l)).mkString(" | ")
     case Choice(c,forbS) => forbS.map(forbS => "("+forb_to_string(forbS,a)+")").mkString(if(c==Or) " | " else " & ")
   //}}}
   }
@@ -552,16 +638,16 @@ object Spaceex {
 
         val h : Formula = (g.ctxt.map(f => Not(f)) ::: g.scdts).reduce((f1,f2) => Binop(Or,f1,f2))
         val a = new Automaton(h)
+        println(a.toStr('txt))
+
         toSpaceexAutomaton(a)
 
-        println(a.toStr('txt))
         Util.str2file("DLBanyan/_.dot",a.toStr('graph))
-
-        Util.str2file("DLBanyan/_.cfg",configFile("",forb_to_string(a.forb,a)))
+        Util.str2file("DLBanyan/_.cfg",configFile("loc()==l"+a.getId(a.start),forb_to_string(a.forb,a)))
         Util.str2file("DLBanyan/_.xml",toSX(a).toString())
 
         val spaceex_path=System.getenv("SPACEEX")
-        if(spaceex_path!=null && spaceex_path.length>0) throw new Exception("set SPACEEX env var")
+        if(spaceex_path==null || spaceex_path.length==0) throw new Exception("set SPACEEX env var")
         println(Util.runCmd(spaceex_path+" -m DLBanyan/_.xml --config DLBanyan/_.cfg"))
       }
       case None => throw new Exception("DLParser.result didn't returned a sequent")
