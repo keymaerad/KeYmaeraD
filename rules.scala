@@ -146,6 +146,8 @@ object Rules {
       (p,fm) match {
         case (RightP(_), Atom(R("=", List(t1,t2)))) if t1 == t2 =>           
           Some((List(Sequent(fs,Nil,List(True))),Nil)) // proved!
+        case (LeftP(_), Atom(R("/=", List(t1,t2)))) if t1 == t2 =>           
+          Some((List(Sequent(fs,Nil,List(True))),Nil)) // proved!
         case _ => None
       }
     }

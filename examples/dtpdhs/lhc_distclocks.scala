@@ -37,7 +37,7 @@ val okcuttct2 = cutT(
 
 val diffinv = parseFormula(
   "forall f : C. forall l : C. " +
-   "(e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
+   "(f /= l & e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
 "  ( (v(f) + a(f) * (eps() - t(f)) >= 0 & " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
      " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
@@ -145,13 +145,13 @@ val tyltct = composelistT(
                                 okcuttct2<(
                                   composelistT(
                                     hidematchT(List(okcuttctfm1)),
-                                    alleasyT
+                                    hidethencloseT
                                   ),
                                   composelistT(
                                     hidenotmatchT(List(okcuttct2fm1, 
                                                        okcuttct2fm2,
                                                        okcuttctfm2))*,
-                                    alleasyT
+                                    hidethencloseT
                                   )
                                 )
                               ),
@@ -160,7 +160,7 @@ val tyltct = composelistT(
                                 hidehasfnT("t")*,
                                 hidehasfnT("id")*,
                                 hidehasfnT("eps")*,
-                                alleasyT
+                                hidethencloseT
                               )
                             )
                           ),
@@ -188,7 +188,7 @@ val tyltct = composelistT(
                             hidehasfnT("id")*,
                             hidehasfnT("A")*,
                             cutdiffinv2,
-                            alleasyT
+                            hidethencloseT
                           )
                         )
                       ),
@@ -264,7 +264,7 @@ val createtct =
                  alphaT*,
                  substT*,
                  nullarizeT*,
-                 hidethencloseT
+                 alleasyT
                ),
                composelistT(
                  impleftknownT*,
@@ -272,6 +272,7 @@ val createtct =
                  alphaT*,
                  substT*,
                  nullarizeT*,
+                 (nonarithcloseT | alphaT | betaT )*,
                  hidethencloseT
                )
              )
@@ -336,7 +337,7 @@ val loopinv = parseFormula(
   "(forall i : C. (  a(i) >= -B() & v(i) >= 0 & " + 
   "t(i) >= 0 & t(i) <= eps()   )) & " +
   "(forall f : C. forall l : C. " +
-   "(e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
+   "(f /= l & e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
 " x(f) < x(l) & " + 
 "  ((v(f) + a(f) * (eps() - t(f)) >= 0 &  " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +

@@ -8,7 +8,7 @@
  t : (C) -> Real
 }
 B > 0,
-A > 0, 
+A > 0,
 eps > 0,
 forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
 |-
