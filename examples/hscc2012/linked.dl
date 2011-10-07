@@ -1,0 +1,76 @@
+{
+ x : (C) -> Real,
+ v : (C) -> Real,
+ a : (C) -> Real,
+ id : (C) -> Real, // ID number.
+ e : (C) -> Real,
+ n : () -> C,
+ t : (C) -> Real,
+ next : (C) -> C,
+ prev : (C) -> C,
+ none : () -> C
+}
+B > 0,
+eps > 0,
+forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
+|-
+[
+{
+     // Delete a car.
+     (n := *; ?(e(n) = 1); e(n) := 0)
+
+     // Create a car.
+ ++  (n := *; ?(e(n) = 0 & v(n) >= 0 & a(n) >= -B);
+      e(n) := 1; id(n) := *; t(n) := 0;
+        ?(forall l : C. 
+          (e(l) = 1 & id(n) <= id(l) ==> 
+            x(n) < x(l) & 
+           (  
+            (v(n) + a(n) * (eps() - t(n)) >= 0 & 
+              2 * B() *  x(l)  > 2 *  B() * x(n) + v(n)^2 - v(l)^2 
+                + (a(n) + B()) * (a(n) * (eps() - t(n) )^2 
+                                  + 2 * (eps() - t(n) ) * v(n)))  |
+             (v(n) + a(n) * (eps() - t(n)) < 0  &
+              2 * B() * a(n)^2 * x(n) - B() * a(n) * v(n)^2  
+              <  2 * B() * a(n)^2 * x(l) + a(n)^2 * v(l)^2  )))))
+
+    // Control a car.
+ ++ (n := *; a(n) := *; t(n) := 0;
+      ?(a(n) >= -B & 
+         (e(n) = 1 ==>
+
+           // May always brake.
+           a(n) = -B | 
+
+           // If stopped, may remain stopped.
+           (v(n) = 0 & a(n) = 0) |
+
+           // May choose any other acceleration compatible with the invariant.
+           ( next(n) /= 0 & e(next(n)) = 1 ==>
+              (
+               (v(n) + a(n) * (eps() - t(n)) >= 0 & 
+                2 * B() *  x(next(n))  > 2 *  B() * x(n) + v(n)^2 - v(next(n))^2 
+                  + (a(n) + B()) * (a(n) * (eps() - t(n) )^2
+                                    + 2 * (eps() - t(n) ) * v(n)))  |
+               (v(n) + a(n) * (eps() - t(n)) < 0  & 
+                 2 * B() * a(n)^2 * x(n) - B() * a(n) * v(n)^2  
+                 < 2 * B() * a(n)^2 * x(next(n)) + a(n)^2 * v(next(n))^2 ))))))
+
+    // Dynamics.
+ ++ (
+ forall i : C {x(i)' = v(i), 
+               v(i)' = a(i), 
+               t(i)' = 1; v(i) >= 0 &  t(i) <= eps }
+                 @solution(forall s . x(s, i) = (1/2) * a(i) * s^2 + v(i) * s + x(i),
+                           forall s . v(s, i) = a(i) * s + v(i),
+                           forall s . t(s, i) = s + t(i) )
+  )
+}*
+]
+(
+forall f : C. 
+  forall l : C. 
+   (e(f) = 1 & e(l) = 1 & id(f) <= id(l) )  ==>
+        x(f) < x(l)    
+        )
+
