@@ -294,6 +294,7 @@ val controltct =
           alphaT*,
           substT*,
           nullarizeT*,
+          (nonarithcloseT | alphaT | betaT )*,
           hidethencloseT
         )
       ),
@@ -317,6 +318,7 @@ val controltct =
                                               ("j", List("f","l"))))*,
                  substT*,
                  nullarizeT*,
+                 (nonarithcloseT | alphaT | betaT )*,
                  hidethencloseT
                ),
                composelistT(
@@ -325,6 +327,7 @@ val controltct =
                  alphaT*,
                  substT*,
                  nullarizeT*,
+                 (nonarithcloseT | alphaT | betaT )*,
                  hidethencloseT
                )
              )
