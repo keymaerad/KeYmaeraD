@@ -378,17 +378,31 @@ val starttct =
     ),
     // post condition
     composelistT(
-      hpalphaT*,
-      instantiatebyT(St("C"))
-                    (List(("i", List("f", "l")), 
-                          ("f", List("f")), 
-                          ("l", List("l"))))*,
-      nullarizeT*,
-      alleasyT
-      
-      
+      tryruleT(directedCut(parseFormula(
+         "forall f : C. forall l : C. "+
+         "(f /= l & e(f) = 1 & e(l) = 1 & id(f) <= id(l) )  ==> x(f) < x(l)")))<(
+           composelistT(
+             hpalphaT*,
+             instantiatebyT(St("C"))
+               (List(("i", List("f", "l")), 
+                     ("f", List("f")), 
+                     ("l", List("l"))))*,
+              nullarizeT*,
+              (nonarithcloseT | alphaT | betaT)*,
+              hidethencloseT),
+           composelistT(
+             hpalphaT*,
+             instantiatebyT(St("C"))
+               (List(("f", List("f", "l")), 
+                     ("l", List("f", "l"))))*,
+             (nonarithcloseT | alphaT | betaT | commuteequalsT)*,
+             nullarizeT*,
+             hidethencloseT
+
+           )
+         )
     )
-  )
+  )    
 
 
 dl('gotoroot)

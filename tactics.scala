@@ -936,4 +936,23 @@ object Tactics {
       nullarizeT*,
       hidethencloseT)
 
+  val commuteequalsT : Tactic = new Tactic("commuteequals") {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val Sequent(sig,cs,ss) = nd.goal
+      // Just do the expensive quadratic thing.
+      for (i <- cs.indices) {
+        for (j <- ss.indices) {
+          (cs(i), ss(j)) match {
+            case (Atom(R("/=", List(x1, y1))), Atom(R("/=", List(x2, y2))))
+            if x1 == y2 && y1 == x2 =>
+              return tryruleatT(commuteEquals)(LeftP(i))(nd)
+            case _ => ()
+          }
+        }
+      
+      }
+      return None
+    }
+
+  }
 }

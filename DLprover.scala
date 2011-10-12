@@ -91,7 +91,7 @@ final object Prover {
   def canQE(fm: Formula, sig : Map[String,(List[Sort],Sort)]): Boolean 
    = fm match {
     case True | False => true
-    case Atom(R(r,ps)) if List("=","<", ">", ">=", "<=").contains(r) => 
+    case Atom(R(r,ps)) if List("/=", "=","<", ">", ">=", "<=").contains(r) => 
       ps.forall(canQE_Term(sig))
     case Not(f) => canQE(f,sig)
     case Binop(_,f1,f2) => 

@@ -68,7 +68,7 @@ forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
 (
 forall f : C. 
   forall l : C. 
-   (f /= l & e(f) = 1 & e(l) = 1 & id(f) <= id(l) )  ==>
-        x(f) < x(l)    
+   (f /= l & e(f) = 1 & e(l) = 1 )  ==>
+        x(f) /= x(l)    
         )
 
