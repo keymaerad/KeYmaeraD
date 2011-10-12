@@ -251,7 +251,8 @@ val createtct =
         )
       ),
       composelistT(
-        hpalpha1T*,
+        (nonarithcloseT | hpalpha1T)* ))) 
+/* ,
         instantiatebyT(St("C"))(List(("f", List("f")),
                                      ("l", List("l")),
                                      ("j", List("f","l"))))*,
@@ -281,6 +282,7 @@ val createtct =
       )
     )
   )
+  */ 
 
 val controltct = 
   composelistT(

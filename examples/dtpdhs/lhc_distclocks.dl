@@ -20,7 +20,7 @@ forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
  ++  (n := *; ?(e(n) = 0 & v(n) >= 0 & a(n) >= -B);
       e(n) := 1; id(n) := *; t(n) := 0;
         ?(forall f: C. forall l : C. 
-          (f /= l & e(l) = 1 & id(f) <= id(l) ==> 
+          (f /= l & e(f) = 1 & e(l) = 1 & id(f) <= id(l) ==> 
             x(f) < x(l) & 
            (  
             (v(f) + a(f) * (eps() - t(f)) >= 0 & 
