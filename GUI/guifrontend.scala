@@ -250,6 +250,8 @@ class FrontEnd(fa: Actor)
       val disprovedIcon = loadicon("icons/disproved.png", closedIcon)
       val abortedIcon = loadicon("icons/aborted.png", closedIcon)
 
+
+
       override def getTreeCellRendererComponent(tree: JTree,
                                                 value: Object,
                                                 sel: Boolean,
@@ -299,7 +301,7 @@ object FE {
 
   var recentFiles : List[String] = Nil;
 
-  var mf: Any = null;
+  var mf: Frame = null;
 
   def createAndShowGUI(fa: Actor) : Unit =  {
 
@@ -367,6 +369,8 @@ object FE {
       pack()
       visible = true
     }
+
+
   }
 
 
