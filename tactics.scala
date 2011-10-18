@@ -812,6 +812,7 @@ object Tactics {
                            Not(Atom(R("=", List(f1,f2))))),
                      fm) if f1 == f2 =>
                        return tryruleatT(hide)(LeftP(i))(nd)
+
           case Binop(Imp, 
                      Binop(And,
                            Not(Atom(R("=", List(f1,f2)))),

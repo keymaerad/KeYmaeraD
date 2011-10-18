@@ -247,11 +247,77 @@ val createtct =
           alphaT*,
           substT*,
           nullarizeT*,
-          alleasyT
+          (nonarithcloseT | alphaT | betaT )*,
+          hidethencloseT
         )
       ),
       composelistT(
-        (nonarithcloseT | hpalpha1T)* ))) 
+        (nonarithcloseT | hpalpha1T)*,
+        instantiatebyT(St("C"))(List(("f", List("f")),
+                                     ("l", List("l")),
+                                     ("i", List("f", "l")),
+                                     ("j", List("f","l"))))*,
+        alphaT*,
+        nonarithcloseT*,
+        cutT(StandardKeepCut,
+             parseFormula("~ F = N ==> T1 = T2"), 
+             parseFormula("~ F = N")) < (
+               composelistT(
+                 vacuousT*,
+                 alphaT*,
+                 cutT(StandardKeepCut,
+                      parseFormula("~ L = N ==> T1 = T2"), 
+                      parseFormula("~ L = N")) < (
+                        composelistT(
+                          vacuousT*,
+                          alphaT*,
+                          substT*,
+                          nonarithcloseT
+                        ),
+                        composelistT(
+                          impleftknownT*,
+                          alphaT*,
+                          substT*,
+                          nullarizeT*,
+                          tryruleatT(hide)(LeftP(0)),
+                          tryruleatT(hide)(LeftP(8)),
+                          (nonarithcloseT | alphaT | betaT | commuteequalsT)*,
+                          hidethencloseT
+
+                        )
+                      )
+               ),
+               composelistT(
+                 impleftknownT*,
+                 cutT(StandardKeepCut,
+                      parseFormula("~ L = N ==> T1 = T2"), 
+                      parseFormula("~ L = N")) < (
+                        composelistT(
+                          vacuousT*,
+                          alphaT*,
+                          substT*,
+                          nullarizeT*,
+                          tryruleatT(hide)(LeftP(0)),
+                          tryruleatT(hide)(LeftP(9)),
+                          (nonarithcloseT | alphaT | betaT | commuteequalsT)*,
+                          hidethencloseT
+                        ),
+                        composelistT(
+                          impleftknownT*,
+                          substT*,
+                          nullarizeT*,
+                          tryruleatT(hide)(LeftP(11)),
+                          tryruleatT(hide)(LeftP(11)),
+                          (nonarithcloseT | alphaT | betaT | commuteequalsT)*,
+                          hidethencloseT
+
+
+                         
+                        )
+                      )
+               )
+             )
+      )))
 /* ,
         instantiatebyT(St("C"))(List(("f", List("f")),
                                      ("l", List("l")),

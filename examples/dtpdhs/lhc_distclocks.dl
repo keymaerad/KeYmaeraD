@@ -3,6 +3,8 @@
  v : (C) -> Real,
  a : (C) -> Real,
  id : (C) -> Real, // ID number.
+ ID : () -> Real, // ID test value.
+ A : () -> Real,   // Acceleration test value.
  e : (C) -> Real,
  n : () -> C,
  t : (C) -> Real
@@ -17,42 +19,53 @@ forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
      (n := *; ?(e(n) = 1); e(n) := 0)
 
      // Create a car.
- ++  (n := *; ?(e(n) = 0);
-      e(n) := 1; id(n) := *; t(n) := 0;
-        ?(forall f: C. forall l : C. 
-          (f /= l & e(f) = 1 & e(l) = 1 & id(f) <= id(l) ==> 
-            x(f) < x(l) & 
-           (  
-            (v(f) + a(f) * (eps() - t(f)) >= 0 & 
-              2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 
-                + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 
-                                  + 2 * (eps() - t(f) ) * v(f)))  |
-             (v(f) + a(f) * (eps() - t(f)) < 0  &
-              2 * B() * a(f)^2 * x(f) - B() * a(f) * v(f)^2  
-              <  2 * B() * a(f)^2 * x(l) + a(f)^2 * v(l)^2  )))))
+ ++  (n := *; ID := *;
+      ?(e(n) = 0 & 
+         (forall i: C.
+           (i /= n & e(i) = 1 ==>
+            (( id(i) < ID & x(i) < x(n) & 
+             ( // i is behind n
+              (v(i) + a(i) * (eps() - t(i)) >= 0 & 
+               2 * B() *  x(n)  > 2 *  B() * x(i) + v(i)^2 - v(n)^2 
+                 + (a(i) + B()) * (a(i) * (eps() - t(i) )^2 
+                                   + 2 * (eps() - t(i) ) * v(i)))  |
+              (v(i) + a(i) * (eps() - t(i)) < 0  &
+               2 * B() * a(i)^2 * x(i) - B() * a(i) * v(i)^2  
+                <  2 * B() * a(i)^2 * x(n) + a(i)^2 * v(n)^2  ))) | 
+             ( ID < id(i) & x(n) < x(i) &
+              ( // i is in front of n
+               (v(n) + a(n) * eps() >= 0 & 
+                2 * B() * x(i) > 2 *  B() * x(n) + v(n)^2 - v(i)^2 
+                  + (a(n) + B()) * (a(n) * eps()^2 
+                                    + 2 * (eps()) * v(n)))  |
+               (v(n) + a(n) * eps() < 0  &
+                2 * B() * a(n)^2 * x(n) - B() * a(n) * v(n)^2  
+                 <  2 * B() * a(n)^2 * x(i) + a(n)^2 * v(i)^2 )))))));
+     e(n) := 1; id(n) := ID; t(n) := 0)
 
     // Control a car.
- ++ (n := *; a(n) := *; t(n) := 0;
-      ?(a(n) >= -B & 
+ ++ (n := *; A := *;
+      ?(A >= -B & 
          (e(n) = 1 ==>
 
            // May always brake.
-           a(n) = -B | 
+           A = -B | 
 
            // If stopped, may remain stopped.
-           (v(n) = 0 & a(n) = 0) |
+           (v(n) = 0 & A = 0) |
 
            // May choose any other acceleration compatible with the invariant.
            (forall l : C. 
             (n /= l & e(l) = 1 & id(n) <= id(l) ==> 
               (
-               (v(n) + a(n) * (eps() - t(n)) >= 0 & 
+               (v(n) + A * eps() >= 0 & 
                 2 * B() *  x(l)  > 2 *  B() * x(n) + v(n)^2 - v(l)^2 
-                  + (a(n) + B()) * (a(n) * (eps() - t(n) )^2
-                                    + 2 * (eps() - t(n) ) * v(n)))  |
-               (v(n) + a(n) * (eps() - t(n)) < 0  & 
-                 2 * B() * a(n)^2 * x(n) - B() * a(n) * v(n)^2  
-                 < 2 * B() * a(n)^2 * x(l) + a(n)^2 * v(l)^2 )))))))
+                  + (A + B()) * (A * eps()^2
+                                    + 2 * eps() * v(n)))  |
+               (v(n) + A * eps() < 0  & 
+                 2 * B() * A^2 * x(n) - B() * A * v(n)^2  
+                 < 2 * B() * A^2 * x(l) + A^2 * v(l)^2 ))))));
+      a(n) := A; t(n) := 0 )
 
     // Dynamics.
  ++ (
