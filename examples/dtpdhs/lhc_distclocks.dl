@@ -25,11 +25,11 @@ forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
            (i /= n & e(i) = 1 ==>
             (( id(i) < ID & x(i) < x(n) & 
              ( // i is behind n
-              (v(i) + a(i) * (eps() - t(i)) >= 0 & 
+              (v(i) + a(i) * eps()  >= 0 & 
                2 * B() *  x(n)  > 2 *  B() * x(i) + v(i)^2 - v(n)^2 
-                 + (a(i) + B()) * (a(i) * (eps() - t(i) )^2 
-                                   + 2 * (eps() - t(i) ) * v(i)))  |
-              (v(i) + a(i) * (eps() - t(i)) < 0  &
+                 + (a(i) + B()) * (a(i) * eps()^2 
+                                   + 2 * eps()* v(i)))  |
+              (v(i) + a(i) * eps()  < 0  &
                2 * B() * a(i)^2 * x(i) - B() * a(i) * v(i)^2  
                 <  2 * B() * a(i)^2 * x(n) + a(i)^2 * v(n)^2  ))) | 
              ( ID < id(i) & x(n) < x(i) &
