@@ -16,7 +16,7 @@ forall i : C. (e(i) = 0 & a(i) > -B & v(i) >= 0 & t(i) >= 0 & t(i) <= eps )
 [
 {
      // Delete a car.
-     (n := *; ?(e(n) = 1); e(n) := 0)
+     (n := *; ?(e(n) = 1); e(n) := 0; t(n) := 0)
 
      // Create a car.
  ++  (n := *; ID := *;

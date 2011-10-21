@@ -217,22 +217,74 @@ val deletetct =
         composelistT(
           hpalpha1T*,
           instantiatebyT(St("C"))(List(("i", List("i")), ("j", List("i")))),
+          tryruleT( impLeft)*, 
+          alphaT*,
+          substT*,
           nullarizeT*,
-          alleasyT
+          (nonarithcloseT | alphaT | betaT )*,
+          hidethencloseT
         )
       ),
       composelistT(
         hpalpha1T*,
         instantiatebyT(St("C"))(List(("f", List("f")),
                                      ("l", List("l")),
-                                     ("j", List("f","l"))))*,
-        impleftgoalT,
-        tryruleT(impLeft)*,
-        alleasyT
+                                     ("j", List("f","l")),
+                                     ("i", List("f", "l"))))*,
+        alphaT*,
+        nonarithcloseT*,
+        cutT(StandardKeepCut,
+             parseFormula("~ F = N ==> T1 = T2"), 
+             parseFormula("~ F = N")) < (
+               composelistT(
+                 vacuousT*,
+                 alphaT*,
+                 cutT(StandardKeepCut,
+                      parseFormula("~ L = N ==> T1 = T2"), 
+                      parseFormula("~ L = N")) < (
+                        composelistT(
+                          vacuousT*,
+                          alphaT*,
+                          substT*,
+                          nonarithcloseT
+                        ),
+                        composelistT(
+                          alphaT*,
+                          substT,
+                          substT,
+                          hidethencloseT
+
+                        )
+                      )
+
+               ),
+               composelistT(
+                 impleftknownT*,
+                 cutT(StandardKeepCut,
+                      parseFormula("~ L = N ==> T1 = T2"), 
+                      parseFormula("~ L = N")) < (
+                        composelistT(
+                          vacuousT*,
+                          alphaT*,
+                          substT*,
+                          nullarizeT*,
+                          (nonarithcloseT | alphaT | betaT )*,
+                          hidethencloseT
+                        ),
+                        composelistT(
+                          alphaT*,
+                          substT*,
+                          nullarizeT*,
+                          (nonarithcloseT | alphaT | betaT )*,
+                          hidethencloseT
+                        )
+                      )
+               )
+             )
       )
     )
   )
-
+ 
 val createtct = 
   composelistT(
     hpalpha1T*,
