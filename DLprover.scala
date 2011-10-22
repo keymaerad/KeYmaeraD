@@ -148,7 +148,7 @@ final object Prover {
         case None => Num(Exact.Integer(0))
         case Some(ii) =>
           assoc(Fn(f, List(Var(ii))), d) match {
-            // XXX
+            // XXX what if your differential invariant has free vars?
             case Some(x) => substitute_Term(ii, i, x)
             case None => Num(Exact.Integer(0))
           }
