@@ -3,7 +3,12 @@ TEST=examples/
 
 all:
 	#make run FILE=examples/bouncingball.dl
-	make run FILE=examples/simple.dl
+	#make run FILE=examples/simple.dl
+	#make run FILE=examples/simpler.dl
+	#make run FILE=examples/or.dl
+	#make run FILE=examples/and_true.dl
+	#make run FILE=examples/and_false.dl
+	make run FILE=examples/test2_false_simpler.dl
 
 test:
 	make run FILE=examples/simpler.dl
@@ -30,4 +35,6 @@ spaceex:
 	${SPACEEX} -m DLBanyan/_.xml --config DLBanyan/_.cfg
 
 graph:
-	dot DLBanyan/_.dot -Tps | gv -
+	#dot DLBanyan/_.dot -Tps | gv -
+	dot DLBanyan/_.dot -Tps > /tmp/ddl_graph.ps
+	evince /tmp/ddl_graph.ps

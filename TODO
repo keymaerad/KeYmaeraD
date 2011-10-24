@@ -1,3 +1,11 @@
+-also usefull in sense that formula modelisation easier then automata modelisation?
+
+-contact
+ -austria guy
+ -nick
+ -goran fresh
+ -phou
+
 -every formula -> spaceex
 -* assignments
 
@@ -25,11 +33,13 @@
 -nice-ize code
 
 -ask david if he could check the scala code style
+ -locations.foreach(l => l.autom = this) kinda ugly
  -get rid of the two warnings
  -NoClassDefFoundError
  -test1.dl not parsing
  -how is Automaton#Location called and what diff exactly w Location
  -assert instead of exception in patern matching? -- afaik assert for internal error, exception for usage error
+ -declare but define later
 
 ---parallel
 -how powerfull/weak is the translation
