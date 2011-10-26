@@ -438,7 +438,7 @@ class FrontActor extends Actor {
       println("failed to load file " + filename)
       println("due to " + e)
   }
-  finally {fi.close}
+  //@TODO finally {fi.close}
 }
 
 
