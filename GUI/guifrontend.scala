@@ -17,6 +17,7 @@ import javax.swing.event.TreeSelectionListener;
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.awt.Toolkit
+import java.awt.Font
 import javax.swing.KeyStroke
 
 import scala.actors.Actor
@@ -29,6 +30,7 @@ import KeYmaeraD._
 import java.net.URL
 import java.io.File
 import java.io.IOException
+import java.io._
 import java.awt.Dimension
 import java.awt.GridLayout
 
@@ -298,20 +300,36 @@ class PopupMenu extends Component
 }
 
 object FE {
+  val propertiesFiles = System.getProperty("user.home") + File.separator + ".keymaerad";
 
   var recentFiles : List[String] = Nil;
 
   var mf: Frame = null;
 
-  def createAndShowGUI(fa: Actor) : Unit =  {
+  var fe : FrontEnd = null;
 
+  def createAndShowGUI(fa: Actor) : Unit =  {
     //Create and set up the window.
     mf = new Frame {
       title="KeYmaeraD";
       val keymask = toolkit.getMenuShortcutKeyMask();
       //Add content to the window.
-      contents = new FrontEnd(fa)
+      fe = new FrontEnd(fa)
+      contents = fe
       val recent = new Menu("Open Recent")
+	  // read properties
+      try {
+        val props = new ObjectInputStream(new FileInputStream(propertiesFiles))
+        recentFiles = props.readObject().asInstanceOf[List[String]]
+        props.close()
+        recentFiles.foreach(pth => recent.contents += new MenuItem(Action(pth){
+              fa ! ('load, pth)
+          }))
+      } catch {
+	    case e:FileNotFoundException => Nil
+	    case e:IOException => e.printStackTrace();
+      }
+
       menuBar = new MenuBar {
 	contents += new Menu("File") {
 	  val open = new MenuItem(Action("Open") {
@@ -321,8 +339,16 @@ object FE {
               val pth = chooser.selectedFile.getCanonicalPath
               recentFiles = pth :: recentFiles
               recent.contents += new MenuItem(Action(pth){
- 		fa ! ('load, pth)
+                  fa ! ('load, pth)
               })
+              // write properties
+              try {
+                val props = new ObjectOutputStream(new FileOutputStream(propertiesFiles))
+                props.writeObject(recentFiles)
+                props.close()
+		      } catch {
+			    case e:IOException => e.printStackTrace();
+			  }
  	      fa ! ('load, pth)
  	    };
 	  })
@@ -340,6 +366,10 @@ object FE {
 	  quit.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
     	    contents += quit
         }
+	contents += new Menu("View") {
+		contents += new MenuItem(Action("Font Size Smaller") {fe.htmlPane.setFont( fe.htmlPane.getFont().deriveFont(fe.htmlPane.getFont().getSize()*0.8f))})
+		contents += new MenuItem(Action("Font Size Larger") {fe.htmlPane.setFont( fe.htmlPane.getFont().deriveFont(fe.htmlPane.getFont().getSize()*1.25f))})
+	}
 	contents += new Menu("Prove") {
 	  val tstop = new MenuItem(Action("Stop")
                                    {fa ! ('abortall)})
