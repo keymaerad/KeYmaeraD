@@ -17,6 +17,7 @@ import javax.swing.event.TreeSelectionListener;
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.awt.Toolkit
+import java.awt.Font
 import javax.swing.KeyStroke
 
 import scala.actors.Actor
@@ -303,6 +304,8 @@ object FE {
 
   var mf: Frame = null;
 
+  var fe : FrontEnd = null;
+
   def createAndShowGUI(fa: Actor) : Unit =  {
 
     //Create and set up the window.
@@ -310,7 +313,8 @@ object FE {
       title="KeYmaeraD";
       val keymask = toolkit.getMenuShortcutKeyMask();
       //Add content to the window.
-      contents = new FrontEnd(fa)
+      fe = new FrontEnd(fa)
+      contents = fe
       val recent = new Menu("Open Recent")
       menuBar = new MenuBar {
 	contents += new Menu("File") {
@@ -321,7 +325,7 @@ object FE {
               val pth = chooser.selectedFile.getCanonicalPath
               recentFiles = pth :: recentFiles
               recent.contents += new MenuItem(Action(pth){
- 		fa ! ('load, pth)
+                  fa ! ('load, pth)
               })
  	      fa ! ('load, pth)
  	    };
@@ -340,6 +344,10 @@ object FE {
 	  quit.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
     	    contents += quit
         }
+	contents += new Menu("View") {
+		contents += new MenuItem(Action("Font Size Smaller") {fe.htmlPane.setFont( fe.htmlPane.getFont().deriveFont(fe.htmlPane.getFont().getSize()*0.8f))})
+		contents += new MenuItem(Action("Font Size Larger") {fe.htmlPane.setFont( fe.htmlPane.getFont().deriveFont(fe.htmlPane.getFont().getSize()*1.25f))})
+	}
 	contents += new Menu("Prove") {
 	  val tstop = new MenuItem(Action("Stop")
                                    {fa ! ('abortall)})
