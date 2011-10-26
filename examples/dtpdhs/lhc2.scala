@@ -1,6 +1,24 @@
 
 object Script  {
 
+
+def run = {
+  dl('load, "examples/dtpdhs/lhc2.dl")
+  dl('gotoroot)
+  dl('tactic, wholeproof)
+}
+
+
+val loopinv 
+  = parseFormula(
+    "(A() > 0 & B() > 0 & eps() > 0) & " +
+ "((forall i : C. e(i) = 1 ==> v(i) >= 0)&(" +
+ "forall f : C. " +
+ "forall l : C." +
+  "(e(f) = 1 & e(l) = 1 & x(f) <= x(l) &  (~ (f = l)))  ==>" + 
+        "(2 * B() * x(l) > 2 *  B() * x(f) + v(f) ^2 - v(l)^2 &" +
+  "        x(f) < x(l)       )))")
+
 val cuttct = cutT(
   DirectedCut,
   parseFormula(
@@ -228,27 +246,12 @@ val provelemma =
     )
   )
 
-
-val veltct = new Tactic("veltct"){
-  def apply(nd:Nodes.OrNode) = {
-    val Sequent(sig, cs, ss) = nd.goal
-    ss match {
-      case List(Atom(R(">=", List(Fn(v,List(i)), _)))) =>
-        tryruleT(allLeft(i))(nd)
-      case _ => None
-    }
-  }
-}
-
 val velpos = 
   composelistT(
     hpalpha1T*,
-    veltct,
-    alphaT*,
-    tryruleT(impLeft)<(
-      tryruleT(close),
-      tryruleT(close)
-    )
+    instantiatebyT(St("C"))(
+      List(("i",List("i"))))*,
+    alleasyT
   )
 
 val tyltct = composelistT(
@@ -256,13 +259,16 @@ val tyltct = composelistT(
   diffsolveT(RightP(0),Endpoint),
   hpalpha1T*,
   tryruleT(andRight)<(
-    velpos,
-    composelistT(
-      hpalpha1T*,
-      instantiate3T,
-      okcuttct<(
-        provelemma,
-        uselemma
+    alleasyT,
+    tryruleT(andRight)<(
+      velpos,
+      composelistT(
+        hpalpha1T*,
+        instantiate3T,
+        okcuttct<(
+          provelemma,
+          uselemma
+        )
       )
     )
   )
@@ -277,49 +283,26 @@ val deletetct =
     tryruleT(andRight)<(
       composelistT(
         hpalpha1T*,
-        instantiate5T(St("C")),
-        hideunivsT(St("C")),
-        tryruleatT(impLeft)(LeftP(0))<(
-          tryruleT(close),
-          tryruleatT(impLeft)(LeftP(0))<(
-            ((alphaT*) & (substT*) & nonarithcloseT  ),
-            ((alphaT*) & (substT*) & nonarithcloseT  )
-          )
-        )
+        (nonarithcloseT | alphaT | betaT)*
       ),
-      composelistT(
-        alphaT*,
-        tryruleatT(commuteEquals)(RightP(0)),
-        instantiate4T,
-        tryruleatT(impLeft)(LeftP(0))<(
-          tryruleT(close),
-          composelistT(
-            instantiate1T(St("C")),
-            hideunivsT(St("C")),
-            tryruleT(andRight)<(
-              tryruleT(andRight)<(
-                tryruleT(andRight)<(
-                  tryruleatT(impLeft)(LeftP(3))<(
-                    ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) & nonarithcloseT  )
-                  ),
-                  tryruleatT(impLeft)(LeftP(1))<(
-                    ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) & nonarithcloseT  )
-                  )
-                ),
-                tryruleT(close)
-              ),
-              (tryruleT(not) & tryruleT(commuteEquals) & tryruleT(close))
-            )
-          )
+      tryruleT(andRight)<(
+        composelistT(
+          alphaT*,
+          instantiatebyT(St("C"))(List(("i", List("i")),
+                                       ("j", List("i"))))*,
+          (nonarithcloseT | alphaT | betaT | substT)*
+        ),
+        composelistT(
+          alphaT*,
+          instantiatebyT(St("C"))(List(("i", List("f", "l")),
+                                       ("j", List("f", "l")),
+                                       ("f", List("f")),
+                                       ("l", List("l"))))*,
+          (nonarithcloseT | alphaT | betaT | substT)*
         )
       )
     )
   )
-
-
-
 
 val createtct = 
   composelistT(
@@ -327,46 +310,46 @@ val createtct =
     tryruleT(andRight)<(
       composelistT(
         hpalpha1T*,
-        instantiate5T(St("C")),
-        hideunivsT(St("C")),
-        tryruleatT(impLeft)(LeftP(2))<(
-          (substT*)  & (tryruleatT(impLeft)(LeftP(1))   )  & nonarithcloseT ,
-          tryruleatT(impLeft)(LeftP(0))<(
-            ((alphaT*) & (substT*) & nonarithcloseT  ),
-            ((alphaT*) & (substT*) & nonarithcloseT  )
-          )
-        )
+        (nonarithcloseT | alphaT | betaT)*
       ),
-      composelistT(
-        alphaT*,
-        tryruleatT(commuteEquals)(RightP(0)),
-        instantiate4T,
-        tryruleatT(impLeft)(LeftP(0))<(
-          tryruleT(close),
-          composelistT(
-            instantiate1T(St("C")),
-            hideunivsT(St("C")),
-            impleftknownT*,
-            tryruleT(andRight)<(
+      tryruleT(andRight)<(
+        composelistT(
+          alphaT*,
+          instantiatebyT(St("C"))(List(("i", List("i")),
+                                       ("j", List("i"))))*,
+          (nonarithcloseT | alphaT | betaT | substT)*
+        ),
+        composelistT(
+          alphaT*,
+          tryruleatT(commuteEquals)(RightP(0)),
+          instantiate4T,
+          tryruleatT(impLeft)(LeftP(0))<(
+            tryruleT(close),
+            composelistT(
+              instantiate1T(St("C")),
+              hideunivsT(St("C")),
+              impleftknownT*,
               tryruleT(andRight)<(
                 tryruleT(andRight)<(
-                  tryruleatT(impLeft)(LeftP(5))<(
-                    ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) &  (tryruleatT(impLeft)(LeftP(1))<(
-                      nonarithcloseT,
-                      (tryruleT(andRight)) & (alphaT* ) & nonarithcloseT)))
+                  tryruleT(andRight)<(
+                    tryruleatT(impLeft)(LeftP(5))<(
+                      ((substT*) & nonarithcloseT),
+                      ((alphaT*) & (substT*) &  (tryruleatT(impLeft)(LeftP(1))<(
+                        nonarithcloseT,
+                        (tryruleT(andRight)) & (alphaT* ) & nonarithcloseT)))
+                    ),
+                    tryruleatT(impLeft)(LeftP(2))<(
+                      ((substT*) & nonarithcloseT),
+                      ((alphaT*) & (substT*) &  (tryruleatT(impLeft)(LeftP(3))<(
+                        nonarithcloseT,
+                        (tryruleT(andRight))<(nonarithcloseT, 
+                                              alphaT & tryruleT(commuteEquals) & nonarithcloseT))))
+                    )
                   ),
-                  tryruleatT(impLeft)(LeftP(2))<(
-                    ((substT*) & nonarithcloseT),
-                    ((alphaT*) & (substT*) &  (tryruleatT(impLeft)(LeftP(3))<(
-                      nonarithcloseT,
-                      (tryruleT(andRight))<(nonarithcloseT, 
-                                            alphaT & tryruleT(commuteEquals) & nonarithcloseT))))
-                  )
+                  tryruleT(close)
                 ),
-                tryruleT(close)
-              ),
-              (tryruleT(not) & tryruleT(commuteEquals) & tryruleT(close))
+                (tryruleT(not) & tryruleT(commuteEquals) & tryruleT(close))
+              )
             )
           )
         )
@@ -377,24 +360,57 @@ val createtct =
 
 
 
-val starttct = 
+val initiallytrue = 
   composelistT(
-    hpalpha1T*,
-    tryruleT(andRight)<(
-      composelistT(
-        tryruleT(choose),
-        tryruleT(andRight)<(
-          deletetct,
-          createtct)
-      ),
-      tyltct
-    )      
+    (nonarithcloseT | alphaT | betaT)*,
+    instantiatebyT(St("C"))(
+       List((("i"), List("i", "f", "l"))))*,
+    nullarizeT*,
+    hidethencloseT
   )
 
-def run = {
-  dl('load, "examples/dtpdhs/lhc.dl")
-  dl('gotoroot)
-  dl('tactic, starttct)
-}
+
+
+val postcondition = 
+  composelistT(
+    alphaT*,
+    instantiatebyT(St("C"))(
+      List(
+           (("f"), List("f")),
+           (("l"), List("l"))))*,
+    (nonarithcloseT | alphaT | betaT)*,
+    nullarizeT*,
+    hidethencloseT
+  )
+
+
+
+
+val wholeproof = 
+  composelistT(
+    tryruleT(loopInduction(loopinv))<(
+
+      // Invariant is initially true.
+      initiallytrue,
+
+      // Induction Step.
+      composelistT(
+        hpalpha1T*,
+        tryruleT(andRight)<(
+          composelistT(
+            tryruleT(choose),
+            tryruleT(andRight)<(
+              deletetct,
+              createtct)
+          ),
+          tyltct
+        )      
+      ),
+      
+      // Invariant implies postcondition.
+      postcondition
+    )
+
+  )
 
 }
