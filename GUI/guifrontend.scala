@@ -30,6 +30,7 @@ import KeYmaeraD._
 import java.net.URL
 import java.io.File
 import java.io.IOException
+import java.io._
 import java.awt.Dimension
 import java.awt.GridLayout
 
@@ -299,6 +300,7 @@ class PopupMenu extends Component
 }
 
 object FE {
+  val propertiesFiles = System.getProperty("user.home") + File.separator + ".keymaerad";
 
   var recentFiles : List[String] = Nil;
 
@@ -307,7 +309,6 @@ object FE {
   var fe : FrontEnd = null;
 
   def createAndShowGUI(fa: Actor) : Unit =  {
-
     //Create and set up the window.
     mf = new Frame {
       title="KeYmaeraD";
@@ -316,6 +317,19 @@ object FE {
       fe = new FrontEnd(fa)
       contents = fe
       val recent = new Menu("Open Recent")
+	  // read properties
+      try {
+        val props = new ObjectInputStream(new FileInputStream(propertiesFiles))
+        recentFiles = props.readObject().asInstanceOf[List[String]]
+        props.close()
+        recentFiles.foreach(pth => recent.contents += new MenuItem(Action(pth){
+              fa ! ('load, pth)
+          }))
+      } catch {
+	    case e:FileNotFoundException => Nil
+	    case e:IOException => e.printStackTrace();
+      }
+
       menuBar = new MenuBar {
 	contents += new Menu("File") {
 	  val open = new MenuItem(Action("Open") {
@@ -327,6 +341,14 @@ object FE {
               recent.contents += new MenuItem(Action(pth){
                   fa ! ('load, pth)
               })
+              // write properties
+              try {
+                val props = new ObjectOutputStream(new FileOutputStream(propertiesFiles))
+                props.writeObject(recentFiles)
+                props.close()
+		      } catch {
+			    case e:IOException => e.printStackTrace();
+			  }
  	      fa ! ('load, pth)
  	    };
 	  })

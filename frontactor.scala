@@ -424,6 +424,7 @@ class FrontActor extends Actor {
         treemodel.map(_.fireNewRoot(nd))// GUI
       case None =>
         println("failed to parse file " + filename)
+        //@TODO Display an error. Notify the GUI of the error, which should display the message
 
     }
 
@@ -434,6 +435,7 @@ class FrontActor extends Actor {
       println("failed to load file " + filename)
       println("due to " + e)
   }
+  finally {fi.close}
 }
 
 
