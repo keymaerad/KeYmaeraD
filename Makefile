@@ -25,5 +25,5 @@ specialoptions :
 
 clean :
 	rm -f specialoptions
-	rm -rf DLBanyan/
+	rm -rf KeYmaeraD/
 	$(SCALAC) -shutdown -verbose

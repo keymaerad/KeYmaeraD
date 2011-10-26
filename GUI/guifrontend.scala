@@ -1,4 +1,4 @@
-package DLBanyan.GUI
+package KeYmaeraD.GUI
 
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -22,9 +22,9 @@ import javax.swing.KeyStroke
 import scala.actors.Actor
 import scala.actors.Actor._
 
-import DLBanyan.Nodes._
-import DLBanyan.Tactics._
-import DLBanyan._
+import KeYmaeraD.Nodes._
+import KeYmaeraD.Tactics._
+import KeYmaeraD._
 
 import java.net.URL
 import java.io.File
@@ -37,7 +37,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
   import javax.swing.event.TreeModelEvent
   import javax.swing.event.TreeModelListener
 
-  import DLBanyan.Nodes._
+  import KeYmaeraD.Nodes._
 
   val frontend = fe
 

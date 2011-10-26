@@ -41,14 +41,14 @@ SUCH DAMAGE.
 */
 
 
-package DLBanyan
+package KeYmaeraD
 
 
 import scala.actors.Actor
 import scala.actors.Actor._
 //import scala.actors.TIMEOUT
 
-import DLBanyan.Util._
+import KeYmaeraD.Util._
 
 
 

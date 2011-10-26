@@ -1,4 +1,4 @@
-package DLBanyan
+package KeYmaeraD
 
 object MathematicaUtil {
   import com.wolfram.jlink._

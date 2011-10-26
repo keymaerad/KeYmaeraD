@@ -1,4 +1,4 @@
-package DLBanyan
+package KeYmaeraD
 
 sealed abstract class Term
 case class Var(s: String) extends Term

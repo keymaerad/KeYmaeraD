@@ -1,4 +1,4 @@
-package DLBanyan
+package KeYmaeraD
 
 
 object Tactics {
@@ -345,7 +345,7 @@ object Tactics {
   //@todo could add cheap close earlier.
   val alleasyT: Tactic = composelistT(repeatT(eitherT(hpeasyT, alphaT)),
                                       repeatT(substT),
-                                      repeatT(eitherT(alphaT,betaT)),        
+                                      repeatT(eitherT(hpalpha1T,betaT)),        
                                       closeOrArithT)
 
 

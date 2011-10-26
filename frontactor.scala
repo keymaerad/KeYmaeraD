@@ -1,5 +1,5 @@
-package DLBanyan
 
+package KeYmaeraD
 import scala.actors.Actor
 import scala.actors.Actor._
 import java.io.InputStream
@@ -36,7 +36,7 @@ object TreeActions {
   var hereNode: ProofNode = nullNode
 
 
-  var treemodel: Option[DLBanyan.GUI.TreeModel] = None
+  var treemodel: Option[KeYmaeraD.GUI.TreeModel] = None
 
   def getnodethen(ndID: NodeID, f: (ProofNode) => Unit ): Unit = 
     nodeTable.get(ndID) match {
@@ -255,9 +255,9 @@ class FrontActor extends Actor {
           System.exit(0) 
           exit
         case 'gui => 
-          val fe = DLBanyan.GUI.FE.start(self)
+          val fe = KeYmaeraD.GUI.FE.start(self)
           sender ! ()
-        case ('registergui, tm: DLBanyan.GUI.TreeModel) => 
+        case ('registergui, tm: KeYmaeraD.GUI.TreeModel) => 
           treemodel = Some(tm)
         case ('findworkers, number:Int) =>   
           var i = 1

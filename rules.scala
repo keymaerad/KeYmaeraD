@@ -2,7 +2,7 @@
  * This file is soundness critical. Don't touch without review!
  * @soundness
  */
-package DLBanyan
+package KeYmaeraD
 
 
 object RulesUtil {

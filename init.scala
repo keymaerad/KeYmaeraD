@@ -1,11 +1,11 @@
-import DLBanyan.CommandLine._
-import DLBanyan.Rules._
-import DLBanyan.RulesUtil.RightP
-import DLBanyan.RulesUtil.LeftP
-import DLBanyan.Tactics._
-import DLBanyan.P._
+import KeYmaeraD.CommandLine._
+import KeYmaeraD.Rules._
+import KeYmaeraD.RulesUtil.RightP
+import KeYmaeraD.RulesUtil.LeftP
+import KeYmaeraD.Tactics._
+import KeYmaeraD.P._
 
-import DLBanyan._
+import KeYmaeraD._
 
 :load _args.scala
 

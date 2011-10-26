@@ -1,4 +1,4 @@
-package DLBanyan
+package KeYmaeraD
 /*
 import java.io.BufferedWriter
 import java.io.OutputStreamWriter
@@ -11,7 +11,7 @@ import scala.collection.immutable.HashSet
 import scala.collection.mutable.HashMap
 
 
-import DLBanyan.Util._
+import KeYmaeraD.Util._
 
 final object Prover {
 

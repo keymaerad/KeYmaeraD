@@ -1,4 +1,4 @@
-package DLBanyan
+package KeYmaeraD
 
 object Procedures {
   import Prover._
