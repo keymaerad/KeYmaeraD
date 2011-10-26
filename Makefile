@@ -17,7 +17,11 @@ OPTIONS=
 ALLOPTIONS=${OPTIONS} -deprecation -unchecked
 
 
-all : specialoptions $(SCALAFILES)
+all : prover
+
+.PHONY : prover
+
+prover : specialoptions $(SCALAFILES)
 	$(SCALAC)  -classpath $(LIBRARIES) $(SCALAFILES) $(ALLOPTIONS)
 
 specialoptions : 	
@@ -27,3 +31,9 @@ clean :
 	rm -f specialoptions
 	rm -rf KeYmaeraD/
 	$(SCALAC) -shutdown -verbose
+
+# We should allow the tactics library to be compiled separately. 
+#.PHONY : tacticlib
+#tacticlib : KeYmaeraD/TacticLib/*.class
+#KeYmaeraD/TacticLib/*.class : TacticLib/*.scala
+#	$(SCALAC)  -classpath $(LIBRARIES) TacticLib/*.scala $(ALLOPTIONS)

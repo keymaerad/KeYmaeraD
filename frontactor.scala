@@ -11,7 +11,7 @@ import Nodes._
 
 
 object TreeActions {
-  
+
   import RulesUtil._
   import Procedures._
 
@@ -230,6 +230,9 @@ class FrontActor extends Actor {
   import RulesUtil._
 
   import Tactics.Tactic
+
+//  val scriptRunner = scala.tools.nsc.ScriptRunner
+  
 
   def act(): Unit = {
     println("acting")
