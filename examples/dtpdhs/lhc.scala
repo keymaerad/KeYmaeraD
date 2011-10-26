@@ -1,4 +1,13 @@
-dl('load, "examples/dtpdhs/lhc.dl")
+import KeYmaeraD.CommandLine._
+import KeYmaeraD.Rules._
+import KeYmaeraD.RulesUtil.RightP
+import KeYmaeraD.RulesUtil.LeftP
+import KeYmaeraD.Tactics._
+import KeYmaeraD.P._
+
+import KeYmaeraD._
+
+object Script  {
 
 val cuttct = cutT(
   DirectedCut,
@@ -390,6 +399,10 @@ val starttct =
     )      
   )
 
+def run = {
+  dl('load, "examples/dtpdhs/lhc.dl")
+  dl('gotoroot)
+  dl('tactic, starttct)
+}
 
-dl('gotoroot)
-dl('tactic, starttct)
+}

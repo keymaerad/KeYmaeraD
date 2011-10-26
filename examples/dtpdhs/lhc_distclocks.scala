@@ -1,4 +1,6 @@
-dl('load, "examples/dtpdhs/lhc_distclocks.dl")
+
+//object Script { 
+  dl('load, "examples/dtpdhs/lhc_distclocks.dl")
 
 val okcuttctfm1 = 
   parseFormula(
@@ -522,6 +524,8 @@ val starttct =
     )
   )    
 
-
-dl('gotoroot)
-dl('tactic, starttct)
+//def run {
+  dl('gotoroot)
+  dl('tactic, starttct)
+//}
+//}
