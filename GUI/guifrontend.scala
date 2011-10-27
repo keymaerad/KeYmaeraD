@@ -27,6 +27,15 @@ import KeYmaeraD.Nodes._
 import KeYmaeraD.Tactics._
 import KeYmaeraD._
 
+import scala.collection.JavaConversions._
+import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.Transferable
+import java.awt.datatransfer.UnsupportedFlavorException
+import java.awt.dnd.DropTarget
+import java.awt.dnd.DropTargetAdapter
+import java.awt.dnd.DropTargetDropEvent
+import java.awt.dnd.DropTargetListener
+
 import java.net.URL
 import java.io.File
 import java.io.IOException
@@ -304,9 +313,12 @@ object FE {
 
   var recentFiles : List[String] = Nil;
 
+  var recent : Menu = null;
+
   var mf: Frame = null;
 
   var fe : FrontEnd = null;
+  
 
   def createAndShowGUI(fa: Actor) : Unit =  {
     //Create and set up the window.
@@ -316,7 +328,7 @@ object FE {
       //Add content to the window.
       fe = new FrontEnd(fa)
       contents = fe
-      val recent = new Menu("Open Recent")
+      recent = new Menu("Open Recent")
 	  // read properties
       try {
         val props = new ObjectInputStream(new FileInputStream(propertiesFiles))
@@ -336,20 +348,8 @@ object FE {
 	    val chooser = new FileChooser(new File("."))
 	    if (chooser.showOpenDialog(menuBar) == 
               FileChooser.Result.Approve) {
-              val pth = chooser.selectedFile.getCanonicalPath
-              recentFiles = pth :: recentFiles
-              recent.contents += new MenuItem(Action(pth){
-                  fa ! ('load, pth)
-              })
-              // write properties
-              try {
-                val props = new ObjectOutputStream(new FileOutputStream(propertiesFiles))
-                props.writeObject(recentFiles)
-                props.close()
-		      } catch {
-			    case e:IOException => e.printStackTrace();
-			  }
- 	      fa ! ('load, pth)
+              val pth = chooser.selectedFile
+              loadProblem(fa, pth)
  	    };
 	  })
 	  open.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, keymask));
@@ -387,7 +387,7 @@ object FE {
 
 	}
 
-      }
+    }
       
       override def close = {
 	fa ! ('quit)
@@ -398,11 +398,66 @@ object FE {
 
       pack()
       visible = true
-    }
+      }
+    
+      var fileOpener = new DropTargetAdapter() {
+        def drop(event: DropTargetDropEvent) = {
+          try {
+            val transferable = event.getTransferable()
+            if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+              try {
+                event.acceptDrop(event.getSourceActions());
+                val files = transferable.getTransferData(DataFlavor.javaFileListFlavor)
+                files match {
+	              case l:java.util.List[File] => l.foreach(
+                    file => file match {
+                      case f:File => loadProblem(fa, f)
+                      case _ => event.dropComplete(false)
+                    })
+	                event.dropComplete(true);
+	              case l:List[File] => l.foreach(
+                    file => file match {
+                      case f:File => loadProblem(fa, f)
+                      case _ => event.dropComplete(false)
+                    })
+	                event.dropComplete(true);
+                  case _ => println("Don't understand drag and drop type" + files.getClass);
+                    event.dropComplete(false)
+                }
+              }
+            } else {
+              event.rejectDrop()
+            }
+          } catch {
+	        case e:IOException => event.rejectDrop()
+            case e:UnsupportedFlavorException => event.rejectDrop()
+          }
+        }
+      }
+      val fileDropTarget = new DropTarget(mf.peer, fileOpener);
+      mf.peer.setDropTarget(fileDropTarget);
 
 
   }
-
+  
+  def loadProblem(fa: Actor, path: File) : Unit = {
+	val pth = path.getCanonicalPath
+    if (!recentFiles.contains(pth)) {
+	    recentFiles = pth :: recentFiles
+      recent.contents += new MenuItem(Action(pth){
+          fa ! ('load, pth)
+      })
+      // write properties
+      try {
+        val props = new ObjectOutputStream(new FileOutputStream(propertiesFiles))
+        props.writeObject(recentFiles)
+        props.close()
+      } catch {
+	    case e:IOException => e.printStackTrace();
+	  }	
+	}
+	fa ! ('load, pth)
+  }
 
   def start(fa: Actor) : Unit = {
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
