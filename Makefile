@@ -1,9 +1,11 @@
-SCALAFILES= types.scala rational.scala logicutil.scala arithmetic.scala \
+BACKENDSOURCES= types.scala rational.scala logicutil.scala arithmetic.scala \
 	parse.scala printing.scala \
 	nodes.scala mathematicautil.scala \
 	rules.scala procedures.scala jobs.scala \
-	frontend.scala frontactor.scala \
-	DLprover.scala tactics.scala GUI/guifrontend.scala
+	DLprover.scala 
+
+FRONTENDSOURCES= frontend.scala frontactor.scala GUI/guifrontend.scala \
+	tactics.scala 	
 
 
 LIBRARIES= .:$(JLINK)/JLink.jar:./commons-cli-1.2/commons-cli-1.2.jar
@@ -17,12 +19,19 @@ OPTIONS=
 ALLOPTIONS=${OPTIONS} -deprecation -unchecked
 
 
-all : prover
+all : backend frontend
 
 .PHONY : prover
+.PHONY : backend
 
-prover : specialoptions $(SCALAFILES)
-	$(SCALAC)  -classpath $(LIBRARIES) $(SCALAFILES) $(ALLOPTIONS)
+backend : KeYmaeraD/rules.class
+frontend : KeYmaeraD/frontend.class 
+
+KeYmaeraD/rules.class : specialoptions $(BACKENDSOURCES)
+	$(SCALAC)  -classpath $(LIBRARIES) $(BACKENDSOURCES) $(ALLOPTIONS)
+
+KeYmaeraD/frontend.class  : specialoptions $(FRONTENDSOURCES)
+	$(SCALAC)  -classpath $(LIBRARIES) $(FRONTENDSOURCES) $(ALLOPTIONS)
 
 specialoptions : 	
 	$(SCALAC) -version 2>&1 | python specialoptions.py > specialoptions

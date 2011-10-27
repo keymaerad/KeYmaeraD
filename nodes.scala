@@ -168,6 +168,8 @@ object Nodes {
   
   var rootNode = nullNode
 
+  var sourceFileName: Option[String] = None
+
   def getnode(ndID: NodeID) : ProofNode = nodeTable.get(ndID) match {
     case Some(nd) =>
       nd

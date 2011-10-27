@@ -1,5 +1,5 @@
-
 package KeYmaeraD
+
 import scala.actors.Actor
 import scala.actors.Actor._
 import java.io.InputStream
@@ -280,6 +280,9 @@ class FrontActor extends Actor {
         case 'here =>
           displayThisNode
           sender ! ()
+        case 'reload =>
+          reloadfile
+          sender ! ()
         case ('load, filename:String) =>
           loadfile(filename)
           sender ! ()
@@ -406,6 +409,13 @@ class FrontActor extends Actor {
 
 //  def parseformula(fms : String) : Formula
 
+  def reloadfile : Unit = {
+    sourceFileName match {
+        case None => ()
+        case Some(filename) => loadfile(filename)
+    }
+  }
+
   def loadfile(filename: String) : Unit = try {
     // kill pending jobs.
     for( (ndID, t) <- jobs) {
@@ -424,6 +434,7 @@ class FrontActor extends Actor {
         register(nd)
         hereNode = nd
         rootNode = nd 
+        sourceFileName = Some(filename)
         treemodel.map(_.fireNewRoot(nd))// GUI
       case None =>
         println("failed to parse file " + filename)

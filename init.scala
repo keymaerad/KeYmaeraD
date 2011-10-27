@@ -19,4 +19,6 @@ if (args.length > 0)
 if (workers > 0)
 	dl('findworkers, workers)
 
+//println("Starting power Scala power mode...")
+//:power
 

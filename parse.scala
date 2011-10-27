@@ -292,11 +292,11 @@ class DLParser(ins : String)
      val ls = new lexical.Scanner(ins);
      phrase(sequent)(ls) match {
        case Success(r,next) if next.atEnd => 
-         println("success! ")
+         println("successful parse! ")
          println(r)
          Some(r)
        case Success(r,next)  => 
-         println("failure! Leftover input. only parsed: " )
+         println("parse failure! Leftover input. only parsed: " )
          println(r)
          None
        case f => 
@@ -314,7 +314,7 @@ class DLParser(ins : String)
        case Success(r,next) if next.atEnd => 
          Some(r)
        case Success(r,next)  => 
-         println("failure! Left over input. only parsed: " )
+         println("parse failure! Left over input. only parsed: " )
          println(r)
          None
        case f => 

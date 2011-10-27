@@ -355,6 +355,13 @@ object FE {
 	  open.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, keymask));
 	  contents += open
           
+          val reopen = new MenuItem(Action("Reopen") {
+            fa ! 'reload
+          })
+          reopen.action.accelerator =
+            Some(KeyStroke.getKeyStroke(KeyEvent.VK_R, keymask));
+          contents += reopen
+
 	  contents += new Separator
           contents += recent
 
