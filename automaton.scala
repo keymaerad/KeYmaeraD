@@ -588,6 +588,7 @@ object Spaceex {
           }
         }
       })
+
       a.locations = newLocations
     })
   }
