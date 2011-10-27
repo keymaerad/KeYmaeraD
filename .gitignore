@@ -1,4 +1,6 @@
 KeYmaeraD/
 specialoptions
+_args.scala
+worker*.out
 .DS_Store
 **/.DS_Store
