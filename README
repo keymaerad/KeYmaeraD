@@ -11,6 +11,7 @@ modeling:
 -no way found to support invariants/guards beeing an hybrid system -- technically speaking no modalities in invariants/guards supported
 -diamond hybrid program
 -existencial quantifier
+-[hp]([hp1]f1 \/ [hp2]f2)
 proveness:
 -spaceex's LGG scenario formally not sound
 -spaceex only proves stable systems

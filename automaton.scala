@@ -1,12 +1,24 @@
+//TODO
+//-toSpaceexAutomaton
+//-compute init and forb
+//-set start loop for composition
+//-set param equal at init
+//-alter deparse for assign
+//TOTHINK
+//-flat composition instead of hiearchical composition
+
 package DLBanyan
 
 class TooWeak       (e:String) extends Exception("no way found to support "+e)
 class NotImplemented(e:String) extends Exception(e)
 class TODO          (e:String) extends Exception(e)
+casss AssertFail               extends Exception
 
-object DNFize {
+def INAME(idStr:String) = "i_"+idStr
+def LNAME(idStr:String) = "l" +idStr
+
+object Util_Formula {
 //{{{
-//conjunction of equations <=> no Not,Quantifier,Modality + dnf
   private def negateAtom(a:Atom):Atom = a match
   //{{{
   {
@@ -22,6 +34,7 @@ object DNFize {
     }
   }
   //}}}
+
   //eleminates Not,Imp,Iff and catches Quantifier,Modality(Diamond,_,_)
   def normalize(f:Formula):Formula = f match {
   //{{{
@@ -43,7 +56,10 @@ object DNFize {
     case Modality(Diamond,_,_) => throw new TooWeak("Diamond Modality")
   }
   //}}}
-  def apply(f:Formula):List[Formula] = {
+
+  //conjunction of equations <=> no Not,Quantifier,Modality + dnf
+  def DNFize(f:Formula):List[Formula] = {
+  //{{{
     val g = normalize(f)
     g match {
       case Binop(Or ,f1,f2) => apply(f1) ::: apply(f2)
@@ -58,9 +74,193 @@ object DNFize {
       case Modality(Box,_,_) => throw new Exception("should have been could before")
       case Binop(Iff,_,_) | Binop(Imp,_,_) | Not(_) | Quantifier(_,_,_,_) | Modality(Diamond,_,_) => throw new Exception("these classes should have been eliminted by normalize before")
     }
+  //}}}
+  }
+
+  isLinearCombination(f:Formula) = {
+  //{{{
+    f match {
+      case Modality(_,_,_) => false
+      case Binop (c,f1,f2) => isLinearCombination(f1) & isLinearCombination(f2)
+      case Quantifier(_,_,_,_) => throw new TODO("get rid of quantifiers")
+      case _ => true
+    }
+  //}}}
   }
 //}}}
 }
+
+class Location(var transitions : List[Transition]        = Nil,
+               val evolve      : Option[List[(Fn,Term)]] = None,
+               val inv         : Option[Formula]         = None
+              )
+
+class Transition(val to     : Location
+                 val check  : Option[Formula]          = None,
+                 val assign : Option[List[(Fn, Term)]] = None
+                )
+
+class Automaton_Base(var locations : List[Location],
+                     val start     : Location,
+                     val ends      : List[Location],
+                     val forb      : Formula = True
+                    )
+
+sealed abstract class Automaton_Composite
+  case class Automaton_Base()                                                      extends Automaton_Composite
+  case class Fork(c:Connective,left:Automaton_Composite,right:Automaton_Composite) extends Automaton_Composite
+
+def toAutomaton(f: Formula):Automaton_Composite = {
+//{{{
+  def hpToAutomaton(hp: HP):Automaton_Base = {
+    hp match {
+      case Check(h: Formula) => 
+        val end   = new Location
+        val start = new Location(new Transition(end,Some(h)))
+        Automaton_Base(List(start,end),start,List(end))
+      /* TODO tbs */
+      case _ => throw new TooWeak("automaton simulate * assignments and quantified assignments / diff eqS")
+    }
+  }
+
+  if(Util_Formula.isLinearCombination(f)) return hpToAutomaton(Check(f))
+
+  val f_normalized = Util_Formula.normalize(f)
+
+  f_normalized match {
+    case Binop(c,f1,f2) => Fork(c,toAutomaton(f1),toAutomaton(f2))
+    case Modality(Box,hp,phi) => {
+      val phiAutomaton = toAutomaton(phi)
+      phiAutomaton match {
+        case Automaton_Base => hpToAutomaton(Seq(hp,//TODO tbs
+        case _ => throw new TODO("subclass of formulas are simulate-able")
+      }
+    }
+    case Modality(Diamond,_,_) => throw new TooWeak("Diamond modality")
+    case _ => throw new Exception("this should have been catched by isLinearCombination()")
+  }
+//}}}
+}
+
+def isStart(a:Automaton_Base,loc:Location) = a.ends.indexOf(loc)!= -1
+def isEnd  (a:Automaton_Base,loc:Location) = a.start == loc
+
+def retrieve_base_automata(ac:Automaton_Composite):List(Automaton_Base) = ac match {
+//{{{
+  case Automaton_Base => List(ac)
+  case Fork(c,l,r)    => retrieve_base_automata(l) ::: retrieve_base_automata(r)
+//}}}
+}
+
+def retrieve_varS(ac:Automaton_Composite):Set[String] = ac match {
+//{{{
+  case Fork(_,_,_) => Set()
+  case a:Automaton_Base => {
+    def retrieve(v:Any):List[String] = v match {
+    //{{{
+      case None => List()
+      case Some(v_:Any) => retrieve(v_)
+      case Term => v match {
+        case Fn(symbolStr:String,l:List[Term]) => {
+          if(l.size==0)
+            List(symbolStr)
+          else
+            l.map(retrieve).reduce(_:::_)
+        }
+        case Var => throw new AssertFail //never saw Var occur before
+        case Num => List()
+      }
+      case f:Formula => f match {
+        case Atom(R(_,terms)) => {
+          assert(terms.length==2,"until now only relations with arity 2 used")
+          terms.map(retrieve).reduce(_:::_)
+          terms(0) match {
+            case Fn(varName:String,l:List[_]) => {assert(l.size==0);List(varName)}
+            case _ => throw new AssertFail
+          }
+        }
+        case Binop(_,f1,f2) => retrieve(f1) ::: retrieve(f2)
+        case Not(f1) => retrieve(f1)
+        case True | False => List()
+        case Quantifier | Modality => throw new AssertFail
+      }
+      case _ => throw new AssertFail
+    //}}}
+    }
+    val res = List()
+    a.locations.foreach(l => {
+      res = res ::: retrieve(l.evolve)
+      res = res ::: retrieve(l.inv)
+      l.transitions(t => {
+        res = res ::: retrieve(t.check)
+        res = res ::: retrieve(t.assign)
+      })
+    })
+    res.toSet
+  }
+//}}}
+}
+
+def getIdStr(v1:Any,v2:Any):Int = {
+//{{{
+  def prefill(maxI:String,i:String):String = {var res=i;while(maxI.size>res.size) res = "0"+res;res}
+  v1 match {
+    case a:Automaton_Base => v2 match {
+      case loc:Location => {
+        val res = a.locations.indexOf(loc)
+        assert(res!= -1)
+        res
+      }
+      case _ => throw new AssertFail
+    }
+    case ac:Automaton_Composite => v2 match {
+      case a:Automaton_Base => {
+        val aS = retrieve_base_automata(ac)
+        val i = aS.indexOf(a)
+        assert(i!= -1)
+        prefill((aS.size-1).toString,i.toString)
+      }
+      case Fork(c,l,r) => getIdStr(ac,l) + getIdStr(ac,r)
+      case _ => throw new AssertFail
+    }
+    case _ => throw new AssertFail
+  }
+//}}}
+}
+
+def toStr(ac:Automaton_Composite,stringifier: Any => (String,String)):String = {
+//{{{
+  var res = ""
+
+  retrieve_base_automata(ac).foreach(a => {
+    stringifier((ac,a))._1
+    locations.foreach(loc => {
+      res += stringifier((ac,a,loc))._1
+      if(l.evolve != None) res += stringifier('evolve,l.evolve.get)._1
+      if(l.inv    != None) res += stringifier('inv   ,l.inv   .get)._1
+      res += stringifier((ac,a,loc))._2
+    })
+    locations.foreach(loc => loc.transitions.foreach(t = {
+      res += stringifier((ac,a,loc,t.to))._1
+      if(l.check  != None) res += stringifier('check ,l.check )._1
+      if(l.assign != None) res += stringifier('assign,l.assign)._1
+      res += stringifier((ac,a,loc,t.to))._2
+    }))
+    stringifier((ac,a))._2
+  })
+
+  def traverse(ac_:Automaton_Composite):Unit = ac_ match {
+    case Fork(c,ac_1,ac_2) => {
+      traverse(ac_1)
+      traverse(ac_2)
+      res += stringifier(ac,c,ac_,ac_1,ac_2)._1
+    }
+    case Automaton_Base => Unit
+  }
+  traverse(ac)
+  res
+}
+//}}}
 
 class Automaton {
 //{{{
@@ -68,144 +268,9 @@ class Automaton {
   case class EndsEq(f:Formula   ,l:List[Automaton#Location]) extends Forb
   case class Choice(c:Connective,forbS:List[Automaton#Forb]) extends Forb
 
-  class Location {
-    //{{{
-    var autom = Automaton.this
-
-    // None value for {inv, evolve, assign} ~= identity funtion
-    var evolve : Option[List[(Fn,Term)]] = None
-    var inv    : Option[Formula]         = None
-    var transitions :   List[Transition] = Nil
-
-    class Transition(val to: Automaton#Location) {
-      val from = Location.this
-      var check:  Option[Formula]          = None
-      var assign: Option[List[(Fn, Term)]] = None
-    }
-
-    def add_transition(to: Automaton#Location): Transition = {
-      val t = new Transition(to)
-      transitions = t :: transitions
-      t
-    }
-
-    def id      = {val res = autom.locations.indexOf(this);assert(res!= -1);res}
-    def isEnd   = autom.ends.indexOf(this)!= -1
-    def isStart = autom.start==this
-    //}}}
-  }
-  var locations : List[Automaton#Location] = Nil
-  var start : Automaton#Location = new Location //will always be overriden
-  var ends : List[Automaton#Location] = Nil //only used for translation
-  private var forb : Automaton#Forb = EndsEq(False,List())
-
-  def this(hp: HP) = {
-  //{{{
-    this
-    hp match {
-      case Check(h: Formula) => 
-        locations = List(new Location,new Location)
-        locations(0).add_transition(locations(1)).check = Some(h)
-        start = locations(0)
-        ends  = List(locations(1))
-      case Assign(vs) => //vs: List[(Fn,Term)]
-        locations = List(new Location,new Location)
-        locations(0).add_transition(locations(1)).assign = Some(vs)
-        start = locations(0)
-        ends  = List(locations(1))
-      case Evolve(derivs, h,_,_) => //derivs: List[(Fn,Term)], h: Formula
-        locations = List(new Location)
-        locations(0).inv = Some(h)
-        locations(0).evolve = Some(derivs)
-        start = locations(0)
-        ends  = List(locations(0))
-      case Seq(p1: HP, p2: HP) => 
-        val a1 = new Automaton(p1)
-        val a2 = new Automaton(p2)
-        locations = a1.locations ::: a2.locations
-        locations.foreach(l => l.autom = this)
-        start = a1.start
-        ends  = a2.ends
-        a1.ends.foreach( end => end.add_transition(a2.start))
-      case Choose(p1: HP, p2: HP) =>
-        val a1 = new Automaton(p1)
-        val a2 = new Automaton(p2)
-        start = new Location
-        locations = start :: a1.locations ::: a2.locations
-        locations.foreach(l => l.autom = this)
-        ends  = a1.ends ::: a2.ends
-        start.add_transition(a1.start)
-        start.add_transition(a2.start)
-      case Loop(p1: HP,_,_) =>
-        val a1      = new Automaton(p1)
-        locations   = a1.locations
-        locations.foreach(l => l.autom = this)
-        ends        = a1.ends
-        start       = a1.start
-        ends.foreach(end => end.add_transition(a1.start))
-      case _ => throw new TooWeak("automaton simulate * assignments and quantified assignments / diff eqS")
-    }
-    this
-  //}}}
-  }
-
-  def this(f: Formula) = {
-  //{{{
-      this
-
-      val f_normalized = DNFize.normalize(f)
-
-      f_normalized match {
-        case Binop(c,f1,f2) => {
-          val automatons = List(new Automaton(f1),new Automaton(f2))
-          start = new Location
-          locations = start :: automatons.map(a1 => a1.locations).reduce(_:::_)
-          locations.foreach(l => l.autom = this)
-          forb = Choice(c,automatons.map(a1 => a1.forb))
-          automatons.foreach(a1 => start.add_transition(a1.start))
-          ends = automatons.map(a1 => a1.ends).reduce(_:::_)
-        }
-        case Atom(R(_,_)) | True | False => {
-          locations = List(new Location,new Location)
-          locations.foreach(l => l.autom = this)
-          start = locations(0)
-          ends  = List(locations(1))
-          forb = EndsEq(True,ends)
-          val t = start.add_transition(ends(0))
-          t.check = Some(Not(f_normalized))
-        }
-        case Modality(Box,hp,phi) => {
-          val a1 = new Automaton(hp)
-          val a2 = new Automaton(phi)
-          locations = a1.locations ::: a2.locations
-          locations.foreach(l => l.autom = this)
-          start = a1.start
-          a1.ends.foreach(end => end.add_transition(a2.start))
-          ends = a2.ends
-          forb = a2.forb
-        }
-        case Modality(Diamond,_,_) => throw new TooWeak("Diamond modality")
-        case _ => throw new Exception("should have been eleminited by normalize")
-      }
-      this
-  //}}}
-  }
-
   def add_location():Automaton#Location = {val newL=new Location;locations=locations:+newL;newL}
 
   def size = locations.size
-
-  def toStr(Stringifier : Any => String): String = {
-  //{{{
-    var res = ""
-    locations.foreach(loc => {
-      res += Stringifier(loc)
-      loc.transitions.foreach(t => res+= Stringifier(t))
-      res += "\n"
-    })
-    res
-  //}}}
-  }
 
   def forb_to_formula():Formula = {
   //{{{
@@ -238,6 +303,12 @@ class Automaton {
     toFormula(forb)._1
   //}}}
   }
+
+  def forb_to_composition():List(Automaton) = {
+  //{{{
+    (c
+  //}}}
+  }
 //}}}
 }
 
@@ -246,7 +317,7 @@ object Spaceex {
   //TODO
   //-rewrite this termToStr -- make string converstion manually -- rewrite retrieve_varS
   //-seperate to string code and spaceex specific code
-  object Deparse {
+  object spaceexDeparse {
   //{{{
     var varS : List[String] = Nil
     //assumptions:
@@ -343,28 +414,27 @@ object Spaceex {
 
   object Stringify {
 
-    //Deparse required
     def toSX(a:Automaton) = {
     //{{{
       //
-      assert(Deparse.varS.length>0,"assumption that toSX would be called max one time apparently false")
+      assert(spaceexDeparse.varS.length>0,"assumption that toSX would be called max one time apparently false")
 
       //only purpose of following paragraph is to set varS
       for(l <- a.locations)
       {
-        Deparse(l.inv)
-        Deparse(l.evolve)
+        spaceexDeparse(l.inv)
+        spaceexDeparse(l.evolve)
         for(t <- l.transitions)
         {
-          Deparse(t.check)
-          Deparse(t.assign)
+          spaceexDeparse(t.check)
+          spaceexDeparse(t.assign)
         }
       }
 
       def make_evolve_explicit(v: Any):List[(Fn,Term)] = v match
       {
         case l:List[(Fn,Term)] => {
-          var varS_todo:Set[String] = Deparse.varS.toSet
+          var varS_todo:Set[String] = spaceexDeparse.varS.toSet
           l.foreach(tuple => varS_todo=varS_todo-(tuple._1.f))
           var res = l
           varS_todo.foreach(v => res=((Fn(v,Nil),Num(Exact.zero)))::res )
@@ -382,24 +452,24 @@ object Spaceex {
       {
         val id = l.id.toString()
         locations_str+= "  <location id=\""+id+"\" name=\"l"+id+"\">\n"
-        locations_str+= Deparse(l.inv,"invariant","    ","\n")
-      //locations_str+= Deparse(l.evolve,"flow","    ","\n")
-        locations_str+= Deparse(make_evolve_explicit(l.evolve),"flow","    ","\n")
+        locations_str+= spaceexDeparse(l.inv,"invariant","    ","\n")
+      //locations_str+= spaceexDeparse(l.evolve,"flow","    ","\n")
+        locations_str+= spaceexDeparse(make_evolve_explicit(l.evolve),"flow","    ","\n")
         locations_str+= "  </location>\n"
         for(t <- l.transitions)
         {
           transitions_str+= "  <transition source=\""+id+"\" target=\""+t.to.id.toString()+"\">\n"
-          transitions_str+= Deparse(t.check ,                                                                    "guard"     ,"    ","\n")
-          transitions_str+= Deparse(t.assign,                                                                    "assignment","    ","\n")
+          transitions_str+= spaceexDeparse(t.check ,                                                                    "guard"     ,"    ","\n")
+          transitions_str+= spaceexDeparse(t.assign,                                                                    "assignment","    ","\n")
         ////no assertion that var isendstate is already used
-        //transitions_str+= Deparse(List((Fn("isendstate",Nil),Num((if(t.to.isEnd)Exact.one else Exact.zero)))),"assignment","    ","\n")
+        //transitions_str+= spaceexDeparse(List((Fn("isendstate",Nil),Num((if(t.to.isEnd)Exact.one else Exact.zero)))),"assignment","    ","\n")
           transitions_str+= "  </transition>\n"
         }
       }
 
       var res = ""
       def xmlParam(v:String,t:String) = "  <param name=\""+v+"\" type=\""+t+"\" d1=\"1\" d2=\"1\" local=\"true\" dynamics=\"any\"/>\n"
-      Deparse.varS.toSet.foreach((v: String) => res+=xmlParam(v,"real"))
+      spaceexDeparse.varS.toSet.foreach((v: String) => res+=xmlParam(v,"real"))
 
       res+=locations_str
       res+=transitions_str
@@ -408,60 +478,64 @@ object Spaceex {
     //}}}
     }
 
-    //Deparse required
-    def graphStr(a: Automaton):String = {
+    //spaceexDeparse required
+    def str_sx(ac:Automaton_Composite):String = {
+    //{{{
+      def stringifier_sx(v: Any):String = {
+      //{{{
+        v match {
+          case (ac:Automaton_Composite,c:Connective,ac0:Automaton_Composite,ac1:Automaton_Composite,ac2:Automaton_Composite) = {
+            def bindStr(idStr:String):String = "<bind component=\""+idStr+"\" as=\""+INAME(idStr)+"\"></bind>"
+            (bindStr(getIdStr(ac,ac1))+"\n"+bindStr(getIdStr(ac,ac2)),"")
+          }
+          case (ac:Automaton_Composite,a:Automaton_Base) => ("<component id=\""+getIdStr(ac,a)+"\">\n"+retrieve_varS(a).map(varStr => "<param name=\""+varStr+"\" type=\"real\" d1=\"1\" d1=\"2\" local=\"true\" dynamics=\"any\" controlled=\"false\">").mkString("\n")+"\n"),"\n</component>")
+          case (ac:Automaton_Composite,a:Automaton_Base,loc:Location) =>
+            ("<location id=\""+getIdStr(a,loc)+"\" name=\""+LNAME(getIdStr(a,loc))+"\">\n","\n</location>")
+          case (ac:Automaton_Composite,a:Automaton_Base,from:Location,to:Location) =>
+            ("<transition source=\""+getIdStr(a,from)+"\" target=\""+getIdStr(a,to)+"\">\n,"\n</transition>")
+          case (type:Symbol,v:Any) => ("<"+(type.toString() drop 1)+">"+spaceexDeparse(v)+"</"(type.toString() drop 1)+">","")
+          case _ => throw new AssertFail
+        }
+      //}}}
+      }
+
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<sspaceex xmlns=\"http://www-verimag.imag.fr/xml-namespaces/sspaceex\" version=\"0.2\" math=\"SpaceEx\">\n"+toStr(ac,stringifier_sx)+"\n</sspaceex>"
+     //}}}
+    }
+    def str_graph(ac: Automaton_Composite):String = {
     //{{{
       //graphviz format
       def stringifier_graph(v: Any):String = {
-        //{{{
-        var res = ""
+      //{{{
+        def getIdAbsolute(ac:Automaton_Composite,a:Automaton_Base,loc:Location) = getIdStr(ac,a)+"_"+getIdStr(a,loc)
         v match {
-          case l:Automaton#Location => {
-            res += l.id+" [label=\""+l.id
+          case (ac:Automaton_Composite,c:Connective,ac0:Automaton_Composite,ac1:Automaton_Composite,ac2:Automaton_Composite) = {
+            def getNodeId(ac_:Automaton_Composite) = ac_ match {
+              case a:Automaton_Base => getIdAbsolute(ac,a,a.start)
+              case Fork => getIdStr(ac,ac_)
+            }
+            (getIdStr(ac,ac0)+" [label=\""+c.toString+"]\n"+getNodeId(ac0)+"->"+getNodeId(ac1)+"\n"+getNodeId(ac0)+"->"+getNodeId(ac2),"")
+          }
+          case (ac:Automaton_Composite,a:Automaton_Base) => ("","")
+          case (ac:Automaton_Composite,a:Automaton_Base,loc:Location) => {
+            val locId = getIdAbsolute(ac,a,loc)
+            val pre = locId+" [label=\""+locId
 
-            if(l.evolve != None) res+= " -- evolve: " + Deparse(l.evolve)
-            if(l.inv    != None) res+= " -- inv: "    + Deparse(l.inv   )
+            val post = ""
+            if(isEnd(a,loc)) post+= "\" shape=\"doublecircle"
+            post+= "\"]\n"
+            if(isStart(a,loc)) post+= "\nE->"+locId
 
-            if(l.isEnd) res+= "\" shape=\"doublecircle"
-            res+= "\"]"
-            if(l.isStart) res+= "\nE->"+l.id
+            (pre,post)
           }
-          case t:Automaton#Location#Transition => {
-            res+= "\n"+t.from.id+"->"+t.to.id
-            res+= " [label=\""
-            if(t.check  != None) res+= "check: " +Deparse(t.check )
-            if(t.check!=None && t.assign!=None) res+= " -- "
-            if(t.assign != None) res+= "assign: "+Deparse(t.assign)
-            res+= "\"]"
-          }
+          case (ac:Automaton_Composite,a:Automaton_Base,from:Location,to:Location) =>
+             ("\n"+getIdAbsolute(ac,a,from)+"->"+getIdAbsolute(ac,a,to)+" [label=\"" , "\"]")
+          case (type:Symbol,v:Any) => (" "+(type.toString() drop 1)+":"+spaceexDeparse(v),"")
+          case _ => throw new AssertFail
         }
-        res
-        //}}}
+      //}}}
       }
-      "digraph hybrid_automata {\nE[label=\"\" shape=none]\n"+a.toStr(stringifier_graph)+"}"
-    //}}}
-    }
-    def txtStr(a: Automaton):String = {
-    //{{{
-      def stringifier_txt(v: Any):String = {
-        //{{{
-        var res = ""
-        v match {
-          case l:Automaton#Location => {
-            res +=  "===Loc"+l.id
-            if(l.evolve != None) res+= "\nevolve: " + Deparse(l.evolve)
-            if(l.inv    != None) res+= "\ninv: "    + Deparse(l.inv   )
-          }
-          case t:Automaton#Location#Transition => {
-            res+= "\n"+t.from.id+"->"+t.to.id
-            if(t.check  != None) res+= " | check: " +Deparse(t.check )
-            if(t.assign != None) res+= " | assign: "+Deparse(t.assign)
-          }
-        }
-        res
-        //}}}
-      }
-      a.toStr(stringifier_txt);
+      "digraph hybrid_automata {\nE[label=\"\" shape=none]\n"+toStr(ac,stringifier_graph)+"}"
     //}}}
     }
   }
@@ -491,6 +565,33 @@ object Spaceex {
     }
   }
 
+  private def spaceexize(ac:Automaton_Composite) = {
+    retrieve_base_automata(ac).foreach(a => {
+      var newLocations = a.locations
+      a.locations.foreach({ loc => 
+        if(loc.inv != None)
+        {
+          val inv_dnf = UTtil_Formula.DNFize(loc.inv.get)
+          assert(inv_dnf.length>0)
+          if(inv_dnf.length==1)
+            loc.inv = Some(inv_dnf(0))
+          else
+          {
+            for(i <- 0 to inv_dnf.length-1)
+            {
+              val newLoc = new Location(List(new Transition(loc)),loc.evolve,Some(inv_dnf(i)))
+              loc.transitions = loc.transitions :+ new Transition(newLoc)
+              newLocations = :+ newLoc
+            }
+            loc.inv = None
+            loc.evolve = None
+          }
+        }
+      })
+      a.locations = newLocations
+    })
+  }
+
   private def toSpaceexAutomaton(a:Automaton):Unit =
   //{{{
   {
@@ -498,29 +599,12 @@ object Spaceex {
     {
       if(l.inv != None)
       {
-        val inv_dnf = DNFize(l.inv.get)
-        assert(inv_dnf.length>0)
-        if(inv_dnf.length==1)
-          l.inv = Some(inv_dnf(0))
-        else
-        {
-          for(i <- 0 to inv_dnf.length-1)
-          {
-            val newL = a.add_location()
-            newL.inv = Some(inv_dnf(i))
-            newL.evolve = l.evolve
-            l.add_transition(newL)
-            newL.add_transition(l)
-          }
-          l.inv = None
-          l.evolve = None
-        }
       }
       for(t <- l.transitions)
       {
         if(t.check != None)
         {
-          val check_dnf = DNFize(t.check.get)
+          val check_dnf = UTtil_Formula.DNFize(t.check.get)
           assert(check_dnf.length>0)
           t.check = Some(check_dnf(0))
           for(i <- 1 to check_dnf.length-1)
@@ -534,7 +618,6 @@ object Spaceex {
     }
   }
   //}}}
-
 
   def configFile(init:String,forbidden:String):String = {
     //{{{
@@ -568,14 +651,14 @@ object Spaceex {
         //g.scdts.foreach(print_fm)
 
         val h : Formula = (g.ctxt.map(f => Not(f)) ::: g.scdts).reduce((f1,f2) => Binop(Or,f1,f2))
-        val a = new Automaton(h)
-        println(Stringify.txtStr(a))
+        val ac = toAutomaton(h)
+        //println(Stringify.str_txt(ac))
 
-        toSpaceexAutomaton(a)
+        toSpaceexAutomaton(ac)
 
-        Util.str2file("DLBanyan/_.dot",Stringify.graphStr(a))
-        Util.str2file("DLBanyan/_.cfg",configFile("loc()==l"+a.start.id,Deparse(a.forb_to_formula)))
-        Util.str2file("DLBanyan/_.xml",Stringify.toSX(a))
+        Util.str2file("DLBanyan/_.dot",Stringify.str_graph(ac))
+        //Util.str2file("DLBanyan/_.cfg",configFile("loc()==l"+a.start.id,spaceexDeparse(a.forb_to_formula)))
+        Util.str2file("DLBanyan/_.xml",Stringify.str_sx(ac))
 
         val spaceex_path=System.getenv("SPACEEX")
         if(spaceex_path==null || spaceex_path.length==0) throw new Exception("set SPACEEX env var")

@@ -1,3 +1,14 @@
+-replace == with := for assignments
+-replace x' with x for assignments, afaik ' only means derivate in assignement and flows otherwise means post value
+-x != 0 in spaceex not working
+-add examples
+ -id edges and id locations
+ -disjunktion in guard / invariant
+ -every hybrid program operator
+ -reursive and & or
+ -disjunktion in linear constraint
+
+
 -also usefull in sense that formula modelisation easier then automata modelisation?
 
 -contact
@@ -87,3 +98,9 @@
 -to_prove_one_bf.dl -- too weak: non linear
 -TRM-essentials.dl -- too weak: * assignement & non linear
 -tylenol.dl -- too weak: distributed
+
+
+=== SpaceEx notes
+-composition: a jump in one base automaton requires a jump in all other automata
+-multiple same tag: SpaceEx will only consider last tag and ignore the others
+-use := instead of == in <assignment>
