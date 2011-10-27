@@ -186,6 +186,11 @@ val oror1tct =
     hidethencloseT
   )
 
+val demotactic = 
+  cuttct<(
+    hideforprovecut & hidethencloseT, 
+    hidethencloseT)
+
 val oror2tct = 
   composelistT(
     alphaT*,
@@ -195,9 +200,8 @@ val oror2tct =
     substT*,
     tryruleT(impLeft)<(
       tryruleT(impLeft)<(
-        cuttct<(
-          hideforprovecut & hidethencloseT, 
-          hidethencloseT),
+        // Put demotactic here.
+        hidethencloseT,
         precond
       ),
       precond
@@ -245,6 +249,7 @@ val provelemma =
       composelistT(tryruleT(not), tryruleT(close))
     )
   )
+
 
 val velpos = 
   composelistT(
