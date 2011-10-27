@@ -436,6 +436,7 @@ object FE {
       }
       val fileDropTarget = new DropTarget(mf.peer, fileOpener);
       mf.peer.setDropTarget(fileDropTarget);
+      fe.htmlPane.setDropTarget(fileDropTarget);
 
 
   }
