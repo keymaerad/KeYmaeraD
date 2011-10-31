@@ -280,7 +280,8 @@ class DLParser(ins : String)
 
   def functionsorts : Parser[Map[String,(List[Sort],Sort)]] = 
     "{" ~> repsep(functionsort, ",") <~ "}" ^^ 
-       {case fnsrts => scala.collection.immutable.HashMap.empty ++ fnsrts }
+       {case fnsrts => scala.collection.immutable.HashMap.empty ++ fnsrts } |
+        success(scala.collection.immutable.HashMap.empty)
 
 
    def sequent : Parser[Sequent] = 
