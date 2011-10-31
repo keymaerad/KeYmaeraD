@@ -1,5 +1,5 @@
 BACKENDSOURCES= types.scala rational.scala logicutil.scala arithmetic.scala \
-	parse.scala printing.scala \
+	parse.scala keyparse.scala printing.scala \
 	nodes.scala mathematicautil.scala \
 	rules.scala procedures.scala jobs.scala \
 	DLprover.scala 
@@ -9,6 +9,7 @@ FRONTENDSOURCES= frontend.scala frontactor.scala GUI/guifrontend.scala \
 
 
 LIBRARIES= .:$(JLINK)/JLink.jar:./commons-cli-1.2/commons-cli-1.2.jar
+
 
 ifndef SCALAC
 SCALAC= fsc

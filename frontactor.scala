@@ -431,10 +431,7 @@ class FrontActor()//repl: scala.tools.nsc.interpreter.ILoop)
 
       val fi = 
         new java.io.FileInputStream(filename)
-
-      val dlp = new DLParser(fi)
-
-      if (filename.endsWith(".dl")) {
+    if (filename.endsWith(".dl")) {
     val dlp = new DLParser(fi)
     dlp.result match {
       case Some(g) =>
