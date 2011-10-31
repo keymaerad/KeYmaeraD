@@ -12,4 +12,4 @@ do if [ "$i" -ne "0" ]; then
 done
 args="$args)"
 echo $args > _args.scala ;
-scala -cp .:$JLINK/JLink.jar `cat specialoptions` -i init.scala
+cat init.scala - | scala -cp .:$JLINK/JLink.jar `cat specialoptions` -Dscala.repl.power
