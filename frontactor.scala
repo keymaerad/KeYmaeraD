@@ -224,7 +224,8 @@ class WorkerTracer(id: Int, ins: InputStream) extends BlockingActor {
 }
 
 
-class FrontActor extends Actor {
+class FrontActor()//repl: scala.tools.nsc.interpreter.ILoop)
+   extends Actor {
 
   import TreeActions._  
   import RulesUtil._
@@ -416,40 +417,47 @@ class FrontActor extends Actor {
     }
   }
 
-  def loadfile(filename: String) : Unit = try {
-    // kill pending jobs.
-    for( (ndID, t) <- jobs) {
-      jobmaster ! ('abort, ndID)
-    }
-    jobs.clear
+  def loadfile(filename: String) : Unit = {
+    // switch on the suffix of the filename.
+    if (filename.endsWith(".scala")) {
+      
+      println("UNIMPLEMENTED")
+    } else try {
+      // kill pending jobs.
+      for( (ndID, t) <- jobs) {
+        jobmaster ! ('abort, ndID)
+      }
+      jobs.clear
 
-    val fi = 
-      new java.io.FileInputStream(filename)
+      val fi = 
+        new java.io.FileInputStream(filename)
 
-    val dlp = new DLParser(fi)
+      val dlp = new DLParser(fi)
 
-    dlp.result match {
-      case Some(g) =>
-        val nd = new OrNode("loaded from " + filename, g)
+      dlp.result match {
+        case Some(g) =>
+          val nd = new OrNode("loaded from " + filename, g)
         register(nd)
         hereNode = nd
         rootNode = nd 
         sourceFileName = Some(filename)
         treemodel.map(_.fireNewRoot(nd))// GUI
-      case None =>
-        println("failed to parse file " + filename)
+        case None =>
+          println("failed to parse file " + filename)
         //@TODO Display an error. Notify the GUI of the error, which should display the message
+      }
 
+      ()
+
+    } catch {
+      case e => 
+        println("failed to load file " + filename)
+        println("due to " + e)
     }
-
-    ()
-
-  } catch {
-    case e => 
-      println("failed to load file " + filename)
-      println("due to " + e)
   }
+
   //@TODO finally {fi.close}
+  // (not strictly necessary becuase fi's finalizer calls close())
 }
 
 

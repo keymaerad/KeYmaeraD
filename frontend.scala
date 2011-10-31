@@ -5,10 +5,16 @@ import scala.actors.Actor._
 
 object CommandLine {
 
-  var frontactor = new FrontActor;
+  var frontactor : FrontActor = null;
 
-  println ("KeYmaeraD frontend loaded.")
-  frontactor.start()
+  def initFrontActor {//repl: scala.tools.nsc.interpreter.ILoop) {
+    frontactor = new FrontActor() //(repl);
+    println ("KeYmaeraD frontend loaded.")
+    frontactor.start()
+
+  }
+
+
 
   def dl(cmd: Symbol): Unit = {
     frontactor !? cmd
