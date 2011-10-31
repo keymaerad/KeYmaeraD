@@ -208,6 +208,11 @@ class FrontEnd(fa: Actor)
     //Create the HTML viewing pane.
     htmlPane = new JEditorPane()
     htmlPane.setEditable(false)
+    tm.getRoot() match {
+       case (nd : ProofNode) =>
+         htmlPane.setText(nd.toPrettyString)
+       case _ => null
+      }
     val htmlView = new JScrollPane(htmlPane);
 
     //Add the scroll panes to a split pane.
