@@ -434,31 +434,62 @@ class FrontActor()//repl: scala.tools.nsc.interpreter.ILoop)
 
       val dlp = new DLParser(fi)
 
-      dlp.result match {
-        case Some(g) =>
-          val nd = new OrNode("loaded from " + filename, g)
+      if (filename.endsWith(".dl")) {
+    val dlp = new DLParser(fi)
+    dlp.result match {
+      case Some(g) =>
+        val nd = new OrNode("loaded from " + filename, g)
         register(nd)
         hereNode = nd
-        rootNode = nd 
-        sourceFileName = Some(filename)
+        rootNode = nd
         treemodel.map(_.fireNewRoot(nd))// GUI
-        case None =>
-          println("failed to parse file " + filename)
+      case None =>
+        val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
+        register(nd)
+        hereNode = nd
+        rootNode = nd
+        treemodel.map(_.fireNewRoot(nd))// GUI
+        println("failed to parse file " + filename)
         //@TODO Display an error. Notify the GUI of the error, which should display the message
-      }
 
-      ()
-
-    } catch {
-      case e => 
-        println("failed to load file " + filename)
-        println("due to " + e)
     }
+    }
+    else if (filename.endsWith(".key")){
+    val keyp = new KEYParser(fi)
+    keyp.result match {
+      case Some(g) =>
+        val nd = new OrNode("loaded from " + filename, g)
+        register(nd)
+        hereNode = nd
+        rootNode = nd
+        treemodel.map(_.fireNewRoot(nd))// GUI
+      case None =>
+      val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
+        register(nd)
+        hereNode = nd
+        rootNode = nd
+        treemodel.map(_.fireNewRoot(nd))// GUI
+       println("failed to parse file " + filename)
+
+    }
+    }
+
+    ()
+
+  } catch {
+    case e =>
+      println("failed to load file " + filename)
+      println("due to " + e)
   }
+}
+
 
   //@TODO finally {fi.close}
   // (not strictly necessary becuase fi's finalizer calls close())
 }
+
+
+
 
 
 
