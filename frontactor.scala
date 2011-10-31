@@ -442,6 +442,7 @@ class FrontActor()//repl: scala.tools.nsc.interpreter.ILoop)
         register(nd)
         hereNode = nd
         rootNode = nd
+        sourceFileName = Some(filename)
         treemodel.map(_.fireNewRoot(nd))// GUI
       case None =>
         val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
@@ -462,6 +463,7 @@ class FrontActor()//repl: scala.tools.nsc.interpreter.ILoop)
         register(nd)
         hereNode = nd
         rootNode = nd
+        sourceFileName = Some(filename)
         treemodel.map(_.fireNewRoot(nd))// GUI
       case None =>
       val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
