@@ -224,7 +224,7 @@ class WorkerTracer(id: Int, ins: InputStream) extends BlockingActor {
 }
 
 
-class FrontActor()//repl: scala.tools.nsc.interpreter.ILoop)
+class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
    extends Actor {
 
   import TreeActions._  
@@ -322,8 +322,14 @@ class FrontActor()//repl: scala.tools.nsc.interpreter.ILoop)
             case ornd@OrNode(_,_) =>
               tct(ornd)
             case _ => 
-              println("cannot apply rule here")
+              println("cannot apply tactic here")
           }
+          sender ! ()
+
+        case 'scriptrun =>
+          gotonode(rootNode)
+// Erg. How can I do this without creating deadlock?
+//          repl.command("Script.main(hereNode)")
           sender ! ()
 
 
@@ -420,8 +426,14 @@ class FrontActor()//repl: scala.tools.nsc.interpreter.ILoop)
   def loadfile(filename: String) : Unit = {
     // switch on the suffix of the filename.
     if (filename.endsWith(".scala")) {
+
+      val dlfilename = filename.substring(0, filename.length - 5) + "dl"
+      println("loading dl file " + dlfilename)
+      loadfile(dlfilename)
       
-      println("UNIMPLEMENTED")
+      val res1 = repl.command(":load " + filename)
+
+
     } else try {
       // kill pending jobs.
       for( (ndID, t) <- jobs) {

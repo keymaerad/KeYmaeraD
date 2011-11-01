@@ -391,8 +391,9 @@ val starttct =
     )      
   )
 
+val main = starttct
+
 def run = {
-  dl('load, "examples/dtpdhs/lhc.dl")
   dl('gotoroot)
   dl('tactic, starttct)
 }

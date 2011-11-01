@@ -7,8 +7,8 @@ object CommandLine {
 
   var frontactor : FrontActor = null;
 
-  def initFrontActor {//repl: scala.tools.nsc.interpreter.ILoop) {
-    frontactor = new FrontActor() //(repl);
+  def initFrontActor (repl: scala.tools.nsc.interpreter.ILoop) {
+    frontactor = new FrontActor(repl);
     println ("KeYmaeraD frontend loaded.")
     frontactor.start()
 

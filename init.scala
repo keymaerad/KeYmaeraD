@@ -7,7 +7,7 @@ import KeYmaeraD.P._
 import KeYmaeraD._
 :load _args.scala
 
-initFrontActor
+initFrontActor(repl)
 
 dl('load, "examples/simple.dl")
 dl('gui)
