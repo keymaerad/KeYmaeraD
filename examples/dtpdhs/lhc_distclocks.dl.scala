@@ -1,6 +1,5 @@
 
-//object Script { 
-  dl('load, "examples/dtpdhs/lhc_distclocks.dl")
+object Script { 
 
 val okcuttctfm1 = 
   parseFormula(
@@ -372,37 +371,6 @@ val createtct =
                )
              )
       )))
-/* ,
-        instantiatebyT(St("C"))(List(("f", List("f")),
-                                     ("l", List("l")),
-                                     ("j", List("f","l"))))*,
-        alphaT*,
-        nonarithcloseT*,
-        cutT(StandardKeepCut,
-             parseFormula("~ F = N ==> T1 = T2"), 
-             parseFormula("~ F = N")) < (
-               composelistT(
-                 vacuousT*,
-                 tryruleT( impLeft)*,
-                 alphaT*,
-                 substT*,
-                 nullarizeT*,
-                 alleasyT
-               ),
-               composelistT(
-                 impleftknownT*,
-                 tryruleT( impLeft)*,
-                 alphaT*,
-                 substT*,
-                 nullarizeT*,
-                 (nonarithcloseT | alphaT | betaT )*,
-                 hidethencloseT
-               )
-             )
-      )
-    )
-  )
-  */ 
 
 val controltct = 
   composelistT(
@@ -522,10 +490,8 @@ val starttct =
            )
          )
     )
-  )    
+  )
 
-//def run {
-  dl('gotoroot)
-  dl('tactic, starttct)
-//}
-//}
+val main = starttct
+
+}

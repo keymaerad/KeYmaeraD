@@ -15,7 +15,6 @@ object CommandLine {
   }
 
 
-
   def dl(cmd: Symbol): Unit = {
     frontactor !? cmd
   }

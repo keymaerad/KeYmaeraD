@@ -233,7 +233,8 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
   import Tactics.Tactic
 
 //  val scriptRunner = scala.tools.nsc.ScriptRunner
-  
+
+  var scripttactic = Tactics.nilT
 
   def act(): Unit = {
     println("acting")
@@ -326,10 +327,17 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
           }
           sender ! ()
 
-        case 'scriptrun =>
+        case ('ASYNCsetscripttactic, tct: Tactic) =>
+          scripttactic = tct
+
+        case 'runscripttactic =>
           gotonode(rootNode)
-// Erg. How can I do this without creating deadlock?
-//          repl.command("Script.main(hereNode)")
+          hereNode  match {
+            case ornd@OrNode(_,_) =>
+              scripttactic(ornd)
+            case _ => 
+              println("cannot apply tactic here")
+          }
           sender ! ()
 
 
@@ -424,15 +432,21 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
   }
 
   def loadfile(filename: String) : Unit = {
-    // switch on the suffix of the filename.
-    if (filename.endsWith(".scala")) {
 
-      val dlfilename = filename.substring(0, filename.length - 5) + "dl"
-      println("loading dl file " + dlfilename)
-      loadfile(dlfilename)
+    // switch on the suffix of the filename.
+    if (filename.endsWith(".scala")||
+        filename.endsWith(".proof")) {
+
+      val problemfilename = filename.substring(0, filename.length - 6)
+      println("loading file " + problemfilename)
+      loadfile(problemfilename)
       
       val res1 = repl.command(":load " + filename)
 
+      val res2 = 
+        repl.command("frontactor ! ('ASYNCsetscripttactic, Script.main)")
+
+      println("Press cmd-u to use the loaded script.")
 
     } else try {
       // kill pending jobs.
@@ -451,7 +465,6 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
         register(nd)
         hereNode = nd
         rootNode = nd
-        sourceFileName = Some(filename)
         treemodel.map(_.fireNewRoot(nd))// GUI
       case None =>
         val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
@@ -472,7 +485,6 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
         register(nd)
         hereNode = nd
         rootNode = nd
-        sourceFileName = Some(filename)
         treemodel.map(_.fireNewRoot(nd))// GUI
       case None =>
       val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
@@ -492,6 +504,11 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
       println("failed to load file " + filename)
       println("due to " + e)
   }
+
+    // Do this last, so that if we are loading a script,
+    // that's what we remember.
+  sourceFileName = Some(filename)
+
 }
 
 

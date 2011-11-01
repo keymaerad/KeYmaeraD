@@ -383,9 +383,18 @@ object FE {
 		contents += new MenuItem(Action("Font Size Larger") {fe.htmlPane.setFont( fe.htmlPane.getFont().deriveFont(fe.htmlPane.getFont().getSize()*1.25f))})
 	}
 	contents += new Menu("Prove") {
+
+          val trunscript = new MenuItem(Action("Scripted Tactic")
+                                        {fa ! ('runscripttactic)})
+          trunscript.peer.setAccelerator(  
+            KeyStroke.getKeyStroke(KeyEvent.VK_U, keymask));
+          contents += trunscript
+
 	  val tstop = new MenuItem(Action("Stop")
                                    {fa ! ('abortall)})
-	  tstop.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+	  tstop.action.accelerator = Some(KeyStroke.getKeyStroke(
+            KeyEvent.VK_Z, 
+            ActionEvent.CTRL_MASK));
 	  contents += tstop
 		 
 	  val teasy = new MenuItem(Action("All Easy") 
