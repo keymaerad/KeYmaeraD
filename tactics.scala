@@ -163,18 +163,44 @@ object Tactics {
     }
   }
 
+
   def diffsolveT(pos: Position, md: DiffSolveMode): Tactic = 
       new Tactic("diffsolveT " + md) {
+
+    type Mat = Array[Array[Term]]
+      
+    type Vec = Array[Term]
+
+    // Variable names, homogeneous part, constant part
+    type Sys = (List[Fn], Mat, Vec)
+
+    def derivsToSystem (derivs : List[(Fn,Term)]) : Sys = {
+//      val (vs) = derives.unzip
+      (Nil, Array(), Array())
+    }
+        
+        
+
     def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
+
+      case Modality(Box,Evolve(derivs, h, inv_hints, Nil), phi) =>
+
+        // TODO construct solutions here
+
+        None
+
       case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
         val sol_rule1 = diffSolve(md)(sols)
         applyrule(nd,pos,sol_rule1) 
+
       case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
         val sol_rule1 = qDiffSolve(md)(sols)
         applyrule(nd,pos,sol_rule1)         
       case _ => None
     }
   }
+
+
 
 
   val hpeasy = List(seq, choose, check, 
@@ -956,4 +982,7 @@ object Tactics {
     }
 
   }
+
+
+
 }
