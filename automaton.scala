@@ -1,9 +1,9 @@
 package DLBanyan
 
-class TooWeak       (e:String) extends Exception("no way found to support "+e)
-class NotImplemented(e:String) extends Exception(e)
-class TODO          (e:String) extends Exception(e)
-class AssertFail               extends Exception
+class TooWeak       (e:String)    extends Exception("no way found to support "+e)
+class NotImplemented(e:String)    extends Exception(e)
+class TODO          (e:String)    extends Exception(e)
+class AssertFail    (e:String="") extends Exception(e)
 
 object Util_Formula {
 //{{{
@@ -65,11 +65,11 @@ object Util_Formula {
   //}}}
   }
 
-  def isLinearCombination(f:Formula):Boolean = {
+  def isArithmetic(f:Formula):Boolean = {
   //{{{
     f match {
       case Modality(_,_,_) => false
-      case Binop (c,f1,f2) => isLinearCombination(f1) & isLinearCombination(f2)
+      case Binop (c,f1,f2) => isArithmetic(f1) & isArithmetic(f2)
       case Quantifier(_,_,_,_) => throw new TODO("get rid of quantifiers")
       case _ => true
     }
@@ -88,14 +88,6 @@ class Transition(val to     : Location,
                  val assign : Option[List[(Fn, Term)]] = None
                 )
 
-/*
-class Automaton_Base(var locations : List[Location],
-                     var start     : Location,
-                     val ends      : List[Location],
-                     val forb      : Formula = True
-                    )
-*/
-
 sealed abstract class Automaton_Composite
   case class Automaton_Base(var locations : List[Location],
                             var start     : Location,
@@ -104,7 +96,7 @@ sealed abstract class Automaton_Composite
                            )                                                       extends Automaton_Composite
   case class Fork(c:Connective,left:Automaton_Composite,right:Automaton_Composite) extends Automaton_Composite
 
-object aF {
+object aFcts {
   def toAutomaton(f: Formula):Automaton_Composite = {
   //{{{
     def seqAutomata(a1:Automaton_Base,a2:Automaton_Base):Automaton_Base = {
@@ -139,7 +131,7 @@ object aF {
     //}}}
     }
 
-    if(Util_Formula.isLinearCombination(f)) return hpToAutomaton(Check(f))
+    if(Util_Formula.isArithmetic(f)) return hpToAutomaton(Check(f))
 
     val f_normalized = Util_Formula.normalize(f)
 
@@ -153,7 +145,7 @@ object aF {
         }
       }
       case Modality(Diamond,_,_) => throw new TooWeak("Diamond modality")
-      case _ => throw new Exception("this should have been catched by isLinearCombination()")
+      case _ => throw new Exception("this should have been catched by isArithmetic()")
     }
   //}}}
   }
@@ -172,7 +164,7 @@ object aF {
   //{{{
     case Some(v1:Any) => retrieve_varS(v1)
     case None => Set()
-    case Fork(_,_,_) => Set()
+    case Fork(_,l,r) => retrieve_varS(l) | retrieve_varS(r)
     case a:Automaton_Base => {
       var res:Set[String] = Set()
       a.locations.foreach(l => {
@@ -183,17 +175,21 @@ object aF {
           res = res | retrieve_varS(t.assign)
         })
       })
-      res.toSet
+      res
     }
 
-    case Fn(symbolStr:String,l:List[Term]) => {
-      if(l.size==0)
-        Set(symbolStr)
-      else
-        l.map(retrieve_varS).reduce(_|_)
+    case t:Term => t match {
+      case Fn(symbolStr:String,l:List[Term]) => {
+        if(l.size==0)
+          Set(symbolStr)
+        else
+          l.map(retrieve_varS).reduce(_|_)
+      }
+      case Num(_) => Set()
+      case Var(_) => throw new AssertFail //never saw Var occur
     }
-    case Var => throw new AssertFail //never saw Var occur before
-    case Num => Set()
+    case Tuple2(l,r) => retrieve_varS(l) | retrieve_varS(r)
+    case l:List[_] => (l.map(retrieve_varS) ::: List(Set[String]())).reduce(_|_) // List().reduce => exception
 
     case f:Formula => f match {
       case Atom(R(_,terms:List[_])) => {
@@ -209,12 +205,38 @@ object aF {
       case True | False => Set()
       case Quantifier(_,_,_,_) | Modality(_,_,_) => throw new AssertFail
     }
+    case _ => throw new AssertFail(v.asInstanceOf[AnyRef].getClass.getName())
   //}}}
   }
 
   def getIdStr(v1:Any,v2:Any):String = {
   //{{{
     def prefill(maxI:String,i:String):String = {var res=i;while(maxI.size>res.size) res = "0"+res;res}
+    v2 match {
+      case loc:Location => v1 match {
+        case a:Automaton_Base => {
+          val res = a.locations.indexOf(loc)
+          assert(res!= -1)
+          res.toString
+        }
+        case _ => throw new AssertFail
+      }
+      case ac_2:Automaton_Composite => v1 match {
+        case ac:Automaton_Composite => ac_2 match {
+          case a:Automaton_Base => {
+            val aS = retrieve_base_automata(ac)
+            val i = aS.indexOf(a)
+            assert(i!= -1)
+            prefill((aS.size-1).toString,i.toString)
+          }
+          case Fork(c,l,r) => getIdStr(ac,l) + getIdStr(ac,r)
+        }
+        case _ => throw new AssertFail
+      }
+      case _ => throw new AssertFail
+    }
+
+    /*
     v1 match {
       case a:Automaton_Base => v2 match {
         case loc:Location => {
@@ -236,6 +258,7 @@ object aF {
       }
       case _ => throw new AssertFail
     }
+    */
   //}}}
   }
 
@@ -244,7 +267,7 @@ object aF {
     var res = ""
 
     retrieve_base_automata(ac).foreach(a => {
-      stringifier((ac,a))._1
+      res += stringifier((ac,a))._1
       a.locations.foreach(loc => {
         res += stringifier((ac,a,loc))._1
         if(loc.evolve != None) res += stringifier(('evolve,loc.evolve.get))._1
@@ -257,7 +280,7 @@ object aF {
         if(t.assign != None) res += stringifier(('assign,t.assign))._1
         res += stringifier((ac,a,loc,t.to))._2
       }))
-      stringifier((ac,a))._2
+      res += stringifier((ac,a))._2
     })
 
     def traverse(ac_x:Automaton_Composite):Unit = ac_x match {
@@ -377,20 +400,20 @@ object Spaceex {
         v match {
           case (ac:Automaton_Composite,c:Connective,ac0:Automaton_Composite,ac1:Automaton_Composite,ac2:Automaton_Composite) => {
             def bindStr(idStr:String):String = "<bind component=\""+idStr+"\" as=\""+INAME(idStr)+"\"></bind>"
-            (bindStr(aF.getIdStr(ac,ac1))+"\n"+bindStr(aF.getIdStr(ac,ac2)),"")
+            (bindStr(aFcts.getIdStr(ac,ac1))+"\n"+bindStr(aFcts.getIdStr(ac,ac2)),"")
           }
-          case (ac:Automaton_Composite,a:Automaton_Base) => ("<component id=\""+aF.getIdStr(ac,a)+"\">\n"+aF.retrieve_varS(a).map(varStr => "<param name=\""+varStr+"\" type=\"real\" d1=\"1\" d1=\"2\" local=\"true\" dynamics=\"any\" controlled=\"false\">").mkString("\n")+"\n","\n</component>")
+          case (ac:Automaton_Composite,a:Automaton_Base) => ("\n<component id=\""+aFcts.getIdStr(ac,a)+"\">\n"+aFcts.retrieve_varS(a).map(varStr => "  <param name=\""+varStr+"\" type=\"real\" d1=\"1\" d2=\"1\" local=\"true\" dynamics=\"any\" controlled=\"false\"/>").mkString("\n"),"\n</component>")
           case (ac:Automaton_Composite,a:Automaton_Base,loc:Location) =>
-            ("<location id=\""+aF.getIdStr(a,loc)+"\" name=\""+LNAME(aF.getIdStr(a,loc))+"\">\n","\n</location>")
+            ("\n  <location id=\""+aFcts.getIdStr(a,loc)+"\" name=\""+LNAME(aFcts.getIdStr(a,loc))+"\">","\n  </location>")
           case (ac:Automaton_Composite,a:Automaton_Base,from:Location,to:Location) =>
-            ("<transition source=\""+aF.getIdStr(a,from)+"\" target=\""+aF.getIdStr(a,to)+"\">\n","\n</transition>")
-          case (typi:Symbol,v:Any) => ("<"+(typi.toString() drop 1)+">"+spaceexDeparse(v,(if(typi=='assign) " := " else "' == "))+"</"+(typi.toString() drop 1)+">","")
+            ("\n  <transition source=\""+aFcts.getIdStr(a,from)+"\" target=\""+aFcts.getIdStr(a,to)+"\">","\n  </transition>")
+          case (typi:Symbol,v:Any) => ("\n    <"+(typi.toString() drop 1)+">"+spaceexDeparse(v,(if(typi=='assign) " := " else "' == "))+"</"+(typi.toString() drop 1)+">","")
           case _ => throw new AssertFail
         }
       //}}}
       }
 
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<sspaceex xmlns=\"http://www-verimag.imag.fr/xml-namespaces/sspaceex\" version=\"0.2\" math=\"SpaceEx\">\n"+aF.toStr(ac,stringifier_sx)+"\n</sspaceex>"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<sspaceex xmlns=\"http://www-verimag.imag.fr/xml-namespaces/sspaceex\" version=\"0.2\" math=\"SpaceEx\">"+aFcts.toStr(ac,stringifier_sx)+"\n</sspaceex>"
      //}}}
     }
     def str_graph(ac: Automaton_Composite):String = {
@@ -398,14 +421,14 @@ object Spaceex {
       //graphviz format
       def stringifier_graph(v: Any):(String,String) = {
       //{{{
-        def getIdAbsolute(ac:Automaton_Composite,a:Automaton_Base,loc:Location) = aF.getIdStr(ac,a)+"_"+aF.getIdStr(a,loc)
+        def getIdAbsolute(ac:Automaton_Composite,a:Automaton_Base,loc:Location) = aFcts.getIdStr(ac,a)+"_"+aFcts.getIdStr(a,loc)
         v match {
           case (ac:Automaton_Composite,c:Connective,ac0:Automaton_Composite,ac1:Automaton_Composite,ac2:Automaton_Composite) => {
             def getNodeId(ac_x:Automaton_Composite) = ac_x match {
               case a:Automaton_Base => getIdAbsolute(ac,a,a.start)
-              case Fork(_,_,_) => aF.getIdStr(ac,ac_x)
+              case Fork(_,_,_) => aFcts.getIdStr(ac,ac_x)
             }
-            (aF.getIdStr(ac,ac0)+" [label=\""+c.toString+"]\n"+getNodeId(ac0)+"->"+getNodeId(ac1)+"\n"+getNodeId(ac0)+"->"+getNodeId(ac2),"")
+            (aFcts.getIdStr(ac,ac0)+" [label=\""+c.toString+"]\n"+getNodeId(ac0)+"->"+getNodeId(ac1)+"\n"+getNodeId(ac0)+"->"+getNodeId(ac2),"")
           }
           case (ac:Automaton_Composite,a:Automaton_Base) => ("","")
           case (ac:Automaton_Composite,a:Automaton_Base,loc:Location) => {
@@ -413,9 +436,9 @@ object Spaceex {
             val pre = locId+" [label=\""+locId
 
             var post = ""
-            if(aF.isEnd(a,loc)) post+= "\" shape=\"doublecircle"
+            if(aFcts.isEnd(a,loc)) post+= "\" shape=\"doublecircle"
             post+= "\"]\n"
-            if(aF.isStart(a,loc)) post+= "\nE->"+locId
+            if(aFcts.isStart(a,loc)) post+= "\nE->"+locId
 
             (pre,post)
           }
@@ -426,7 +449,7 @@ object Spaceex {
         }
       //}}}
       }
-      "digraph hybrid_automata {\nE[label=\"\" shape=none]\n"+aF.toStr(ac,stringifier_graph)+"}"
+      "digraph hybrid_automata {\nE[label=\"\" shape=none]\n"+aFcts.toStr(ac,stringifier_graph)+"}"
     //}}}
     }
   }
@@ -456,30 +479,33 @@ object Spaceex {
     }
   }
 
+  //getIdStr(ac,ac) is the system component
+  def getIdStr_cfg(ac:Automaton_Composite,a:Automaton_Base) = if(aFcts.getIdStr(ac,ac)==aFcts.getIdStr(ac,a)) "" else aFcts.getIdStr(ac,a)
+
   private def init(ac:Automaton_Composite):String = {
   //{{{
     var init_constraints:List[String] = Nil
     var freeVars:List[(Automaton_Base,Set[String])] = Nil
-    aF.retrieve_base_automata(ac).foreach(a => {
-      init_constraints = init_constraints :+ "loc("+aF.getIdStr(ac,a)+")=="+aF.getIdStr(a,a.start)
-      freeVars = freeVars :+ (a,aF.retrieve_varS(a))
+    aFcts.retrieve_base_automata(ac).foreach(a => {
+      init_constraints = init_constraints :+ "loc("+getIdStr_cfg(ac,a)+")==l"+aFcts.getIdStr(a,a.start)
+      freeVars = freeVars :+ (a,aFcts.retrieve_varS(a))
     })
     for(i <- 1 to freeVars.length-1)
       for(j <- i to freeVars.length-1)
-        init_constraints = init_constraints ::: freeVars(i)._2.intersect(freeVars(j)._2).map(varStr => aF.getIdStr(ac,freeVars(i)._1)+"."+varStr+"=="+aF.getIdStr(ac,freeVars(j)._1)+"."+varStr).toList
+        init_constraints = init_constraints ::: freeVars(i)._2.intersect(freeVars(j)._2).map(varStr => aFcts.getIdStr(ac,freeVars(i)._1)+"."+varStr+"=="+aFcts.getIdStr(ac,freeVars(j)._1)+"."+varStr).toList
     init_constraints.mkString(" & ")
   //}}}
   }
   private def forb(ac:Automaton_Composite):String = ac match {
   //{{{
     case Fork(c,ac1,ac2) => "( "+forb(ac1)+" "+spaceexDeparse.connectiveToStr(c)+" "+forb(ac2)+" )"
-    case a:Automaton_Base => "("+a.ends.map(end => "loc("+aF.getIdStr(ac,a)+")=="+aF.getIdStr(a,end)).mkString(" | ")+") & "+spaceexDeparse(a.forb)
+    case a:Automaton_Base => "("+a.ends.map(end => "loc("+getIdStr_cfg(ac,a)+")==l"+aFcts.getIdStr(a,end)).mkString(" | ")+") & "+spaceexDeparse(a.forb)
   //}}}
   }
 
   private def spaceexize(ac:Automaton_Composite):Unit = {
   //{{{
-    aF.retrieve_base_automata(ac).foreach(a => {
+    aFcts.retrieve_base_automata(ac).foreach(a => {
       var newLocations = a.locations
       a.locations.foreach({ loc => 
         if(loc.inv != None)
@@ -519,8 +545,8 @@ object Spaceex {
       //explicit evolve -- for uncontrolled vars -- for now all are uncontrolled
       a.locations.foreach(loc => {
         if(loc.evolve == None) loc.evolve = Some(Nil)
-        assert(aF.retrieve_varS(loc.evolve).size==aF.retrieve_varS(loc.evolve).diff(aF.retrieve_varS(a)).size)
-        aF.retrieve_varS(a).diff(aF.retrieve_varS(loc.evolve)).foreach(varStr =>
+        assert(aFcts.retrieve_varS(loc.evolve).size==aFcts.retrieve_varS(loc.evolve).intersect(aFcts.retrieve_varS(a)).size)
+        aFcts.retrieve_varS(a).diff(aFcts.retrieve_varS(loc.evolve)).foreach(varStr =>
           loc.evolve = Some(loc.evolve.get :+ (Fn(varStr,Nil),Num(Exact.zero)))
         )
       })
@@ -567,13 +593,13 @@ object Spaceex {
         //g.scdts.foreach(print_fm)
 
         val h : Formula = (g.ctxt.map(f => Not(f)) ::: g.scdts).reduce((f1,f2) => Binop(Or,f1,f2))
-        val ac = aF.toAutomaton(h)
+        val ac = aFcts.toAutomaton(h)
         //println(Stringify.str_txt(ac))
 
         spaceexize(ac)
 
         Util.str2file("DLBanyan/_.dot",Stringify.str_graph(ac))
-        Util.str2file("DLBanyan/_.cfg",configFile(init(ac),forb(ac),aF.getIdStr(ac,ac)))
+        Util.str2file("DLBanyan/_.cfg",configFile(init(ac),forb(ac),aFcts.getIdStr(ac,ac)))
         Util.str2file("DLBanyan/_.xml",Stringify.str_sx(ac))
 
         val spaceex_path=System.getenv("SPACEEX")
