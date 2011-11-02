@@ -530,21 +530,21 @@ class KEYParser(ins : String)
    */
 
    def sequent : Parser[Sequent] =
-    sorts ~> functionsorts ~ repsep(formula00, ",") ~ ("==>" ~> repsep(formula00,",")) ^^
+    sorts ~> functionsorts ~ repsep(formula, ",") ~ ("==>" ~> repsep(formula,",")) ^^
         {case fnsrts ~ c ~ s => Sequent(fnsrts, c,s)}  |
-    sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> formula00 <~ "}") ^^
+    sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> formula <~ "}") ^^
        {case fnsrts ~ s => Sequent(fnsrts, Nil, List(s))}   |
-    sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> "\\[" ~> variablesorts <~ "\\]") ~ (formula00 <~ "}") ^^
+    sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> "\\[" ~> variablesorts <~ "\\]") ~ (formula <~ "}") ^^
         {case fnsrts ~ varsrts ~ s => Sequent(fnsrts ++ varsrts, Nil, List(s))}  |
-    sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> "\\[" ~> variablesorts <~ ";" <~ "\\]") ~ (formula00 <~ "}") ^^
+    sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> "\\[" ~> variablesorts <~ ";" <~ "\\]") ~ (formula <~ "}") ^^
         {case fnsrts ~ varsrts ~ s => Sequent(fnsrts ++ varsrts, Nil, List(s))}  |
    // sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> "\\[" ~> variablesorts <~ ";") ~ (repsep(hp | formula00, ";") <~ "\\]") ~ (formula00 <~ "}") ^^
-    sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> "\\[" ~> variablesorts <~ ";") ~ (hp <~ "\\]") ~ (formula00 <~ "}") ^^
+    sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> "\\[" ~> variablesorts <~ ";") ~ (hp <~ "\\]") ~ (formula <~ "}") ^^
        {case fnsrts ~ varsrts ~ a ~ s => Sequent(fnsrts ++ varsrts, Nil, List(Modality(Box,a,s)))} |
    //     {case fnsrts ~ varsrts ~ hp ~ s => Sequent(fnsrts ++ varsrts, Nil, List(s))} |
    // sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> "\\[" ~> variablesorts <~ ";") ~ (repsep(hp | formula00, ";") <~ ";" <~ "\\]") ~ (formula00 <~ "}") ^^
    //     {case fnsrts ~ varsrts ~ hp ~ s => Sequent(fnsrts ++ varsrts, Nil, List(s))}
-    sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> "\\[" ~> variablesorts <~ ";") ~ (hp <~ ";" <~ "\\]") ~ (formula00 <~ "}") ^^
+    sorts ~> functionsorts ~ ("\\problem" ~> "{" ~> "\\[" ~> variablesorts <~ ";") ~ (hp <~ ";" <~ "\\]") ~ (formula <~ "}") ^^
        {case fnsrts ~ varsrts ~ a ~ s => Sequent(fnsrts ++ varsrts, Nil, List(Modality(Box, a, s)))}
 
    def result : Option[Sequent] = {
