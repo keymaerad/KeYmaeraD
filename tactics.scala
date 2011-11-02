@@ -163,20 +163,14 @@ object Tactics {
     }
   }
 
+  object LinearAlgebra {
 
-  def diffsolveT(pos: Position, md: DiffSolveMode): Tactic = 
-      new Tactic("diffsolveT " + md) {
-
-    import Prover._
-
-
-    type Mat = List[List[Term]]
-      
+    type Mat = List[List[Term]]      
     type Vec = List[Term]
 
-    // Variable names, homogeneous part, constant part
-    type Sys = (List[Fn], Mat, Vec)
 
+    val zero = Num(Exact.Integer(0))
+    val one = Num(Exact.Integer(1))
 
     def transpose(mat : Mat) : Mat = {
       // If all rows are nil, we are done.
@@ -194,6 +188,7 @@ object Tactics {
      }
     }
 
+ 
     def dot(v1 : Vec, v2 : Vec) : Term = {
       val v3 = v1.zip(v2).map({case (t1, t2) => Fn("*", List(t1,t2))})
       v3.foldRight[Term](Num(Exact.Integer(0)))((t1,t2) => 
@@ -207,11 +202,50 @@ object Tactics {
           AM.tsimplify(dot(row, col))))
     }
 
+    def plusV(v1 : Vec, v2: Vec) : Vec = {
+      v1.zip(v2).map({case(t1,t2) =>
+        AM.tsimplify(Fn("+", List(t1,t2)))})
+    }
+
+    def plusM(m1 : Mat, m2 : Mat) : Mat = {
+      m1.zip(m2).map({case(v1,v2) =>
+        plusV(v1,v2)})
+    }
+
+   def scalarV(v : Vec, c : Term) : Vec = {
+     v.map(e => AM.tsimplify(Fn("*", List(c, e))))
+   }
+
+   def scalarM(m : Mat, c : Term) : Mat = {
+     m.map(row => scalarV(row, c))
+   }
+
+    def eye(n: Int) : Mat = {
+      if (n <= 0) {
+        Nil
+      } else {
+        val eye0 = eye(n-1)
+        val eye01 = eye0.map(row => zero :: row)
+        (one :: (Range(0,n-1).map(x => zero)).toList) :: eye01
+       }
+    }
+
+
+  }
+
+  def diffsolveT(pos: Position, md: DiffSolveMode): Tactic = 
+      new Tactic("diffsolveT " + md) {
+
+    import Prover._
+    import LinearAlgebra._
+
+
+    // Variable names, homogeneous part, constant part
+    type Sys = (List[Fn], Mat, Vec)
+
     def derivsToSystem (derivs : List[(Fn,Term)]) : Sys = {
       val (vs, thetas) = derivs.unzip
       val n = vs.length
-      val zero = Num(Exact.Integer(0))
-      val one = Num(Exact.Integer(1))
       //  y' = Ay + b
       val b =  thetas.map(theta =>
                 AM.tsimplify(
@@ -234,6 +268,7 @@ object Tactics {
                      ))))
       println(A)
       println(mult(A, A))
+      println(eye(4))
       (vs, A, b)
     }
         
