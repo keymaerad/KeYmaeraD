@@ -177,6 +177,36 @@ object Tactics {
     // Variable names, homogeneous part, constant part
     type Sys = (List[Fn], Mat, Vec)
 
+
+    def transpose(mat : Mat) : Mat = {
+      // If all rows are nil, we are done.
+     if (mat.exists(row => row.size == 0)) {
+       return Nil
+     } else {
+       val splt = mat.map(row => row match {
+         case ent::ents => (ent,ents)
+         case  _ => throw new Error("impossible")
+       })
+       val (nr,rest) = splt.unzip
+       
+       nr::transpose(rest)
+       
+     }
+    }
+
+    def dot(v1 : Vec, v2 : Vec) : Term = {
+      val v3 = v1.zip(v2).map({case (t1, t2) => Fn("*", List(t1,t2))})
+      v3.foldRight[Term](Num(Exact.Integer(0)))((t1,t2) => 
+        Fn("+", List(t1,t2)))
+    }
+
+    def mult(m1 : Mat, m2 : Mat) : Mat = {
+      val m2T = transpose(m2)
+      m1.map(row =>
+        m2T.map(col =>
+          AM.tsimplify(dot(row, col))))
+    }
+
     def derivsToSystem (derivs : List[(Fn,Term)]) : Sys = {
       val (vs, thetas) = derivs.unzip
       val n = vs.length
@@ -203,10 +233,12 @@ object Tactics {
                            {extract_Term(v1, th1)(zero)}
                      ))))
       println(A)
+      println(mult(A, A))
       (vs, A, b)
     }
         
         
+
 
     def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
 
