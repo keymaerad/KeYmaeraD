@@ -167,16 +167,43 @@ object Tactics {
   def diffsolveT(pos: Position, md: DiffSolveMode): Tactic = 
       new Tactic("diffsolveT " + md) {
 
-    type Mat = Array[Array[Term]]
+    import Prover._
+
+
+    type Mat = List[List[Term]]
       
-    type Vec = Array[Term]
+    type Vec = List[Term]
 
     // Variable names, homogeneous part, constant part
     type Sys = (List[Fn], Mat, Vec)
 
     def derivsToSystem (derivs : List[(Fn,Term)]) : Sys = {
-//      val (vs) = derives.unzip
-      (Nil, Array(), Array())
+      val (vs, thetas) = derivs.unzip
+      val n = vs.length
+      val zero = Num(Exact.Integer(0))
+      val one = Num(Exact.Integer(1))
+      //  y' = Ay + b
+      val b =  thetas.map(theta =>
+                AM.tsimplify(
+                  vs.foldRight[Term](theta)(
+                    (v:Fn, th1:Term) => extract_Term(v, th1)(zero))))
+      println(b)
+
+      val homog = thetas.zip(b).map(x => x match {
+        case (theta, bi) => Fn("-", List(theta, bi))})
+
+      val A = homog.map(theta =>
+                 vs.map(v =>
+                   AM.tsimplify(
+                     vs.foldRight[Term](theta)(
+                       (v1:Fn, th1:Term) => 
+                         if(v1 == v) 
+                           {extract_Term(v1, th1)(one)}
+                         else
+                           {extract_Term(v1, th1)(zero)}
+                     ))))
+      println(A)
+      (vs, A, b)
     }
         
         
@@ -184,8 +211,8 @@ object Tactics {
     def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
 
       case Modality(Box,Evolve(derivs, h, inv_hints, Nil), phi) =>
-
-        // TODO construct solutions here
+        val sys = derivsToSystem(derivs)
+        // TODO construct solutions here.
 
         None
 
