@@ -131,14 +131,14 @@ object aFcts {
     //}}}
     }
 
-    if(Util_Formula.isArithmetic(f)) return hpToAutomaton(Check(f))
+    if(Util_Formula.isArithmetic(f)) return hpToAutomaton(Check(Not(f)))
 
     val f_normalized = Util_Formula.normalize(f)
 
     f_normalized match {
       case Binop(c,f1,f2) => Fork(c,toAutomaton(f1),toAutomaton(f2))
       case Modality(Box,hp,phi) => {
-        val phiAutomaton = toAutomaton(phi)
+        val phiAutomaton = toAutomaton(Not(phi))
         phiAutomaton match {
           case a:Automaton_Base => seqAutomata(hpToAutomaton(hp),a)
           case _ => throw new TODO("subclass of formulas are simulate-able")
@@ -310,9 +310,9 @@ object Spaceex {
     //-always a space between . and forall/exists
     //-Printing fcts make returns char . only by calling docOfTerm or docOfFormula
 
-    def connectiveToStr(c:Connective):String = c match {
+    def connectiveToStr(c:Connective,isConfig:Boolean=true):String = c match {
       case Or  => "|"
-      case And => "&"
+      case And => if(isConfig) " & " else " &amp; "
       case Imp => "=>"
       case Iff => "<=>"
     }
@@ -322,13 +322,14 @@ object Spaceex {
       def formulaToStr(f:Formula):String = {
       //{{{
         f match {
-          case Binop(c,f1,f2) => "("+formulaToStr(f1)+") "+connectiveToStr(c)+" ("+formulaToStr(f2)+")"
+          case Binop(c,f1,f2) => "("+formulaToStr(f1)+") "+connectiveToStr(c,isConfig)+" ("+formulaToStr(f2)+")"
           case True    => "true"
           case False   => "false"
           case Not(f1) => "! ("+formulaToStr(f1)+")"
           case Atom(R(rStr,terms)) => {
             assert(terms.length==2,"until now only relations with arity 2 used")
-            termToStr(terms(0))+" "+(if(rStr=="=") "==" else rStr)+" "+termToStr(terms(1))
+            val rStrSpaceex = if(rStr=="=") "==" else (if(!isConfig & (rStr(0).toString=="<" | rStr(0).toString==">")) rStr.replace("<","&lt;").replace(">","&gt;") else rStr)
+            termToStr(terms(0))+" "+rStrSpaceex+" "+termToStr(terms(1))
           }
           case Quantifier(_,_,_,_) | Modality(_,_,_) => throw new Exception("shoudn't be needed -- should have been eleminted/handled before calling this")
         }
@@ -337,19 +338,12 @@ object Spaceex {
 
       def termToStr(tm:Term):String = {
       //{{{
-        def spaceexizeSyntax(s:String):String = {
-        //{{{
-          //TODO: not thought through solution according to "0 -" -> "-" -- probably some case where it won't do like "x - 0 - y"
-          def escapeXml(s:String):String = if(isConfig) s else s.replaceAll("<","&lt;").replaceAll(">","&gt;")
-          escapeXml(s.replaceAll("0 -","-").replaceAll("([^<>!=])=","$1==").replaceAll("\\.",""))
-         }
-       //}}}
-
         val sw = new java.io.StringWriter()
         val d = Printing.docOfTerm(tm)
         d.format(70, sw)
         val res = sw.toString
-        spaceexizeSyntax(res)
+        //res.replaceAll("0 -","-").replaceAll("([^<>!=])=","$1==").replaceAll("\\.","")
+        res.replaceAll("0 -","-").replaceAll("\\.","")
       //}}}
       }
 
@@ -375,11 +369,11 @@ object Spaceex {
         }
       //case f  :Formula  => doIt(formulaToStrFlat(f))
         case f  :Formula  => doIt(formulaToStr(f))
-        case l  :List[_]  => l.map(el => doIt(el)).mkString(" & ")
+        case l  :List[_]  => l.map(el => doIt(el)).mkString(connectiveToStr(And,isConfig))
         case str:String   => str
         case None         => ""
         case Some(el:Any) => doIt(el)
-        case _            => throw new Exception
+        case _            => throw new AssertFail
       }
 
       doIt(v)
@@ -388,13 +382,19 @@ object Spaceex {
   }
 
   object Stringify {
-  //def todel(idStr:String) = idStr+"we"
-    def INAME(idStr:String) = "i_"+idStr
-    def LNAME(idStr:String) = "l" +idStr
-
     //spaceexDeparse required
     def str_sx(ac:Automaton_Composite):String = {
     //{{{
+      def INAME(idStr:String) = "i_"+idStr
+      def LNAME(idStr:String) = "l" +idStr
+      def sx_termi(ddl_termi:Symbol) = ddl_termi match {
+        case 'evolve => "flow"
+        case 'assign => "assignment"
+        case 'check  => "guard"
+        case 'inv    => "invariant"
+        case _ => throw new AssertFail
+      }
+
       def stringifier_sx(v: Any):(String,String) = {
       //{{{
         v match {
@@ -407,7 +407,7 @@ object Spaceex {
             ("\n  <location id=\""+aFcts.getIdStr(a,loc)+"\" name=\""+LNAME(aFcts.getIdStr(a,loc))+"\">","\n  </location>")
           case (ac:Automaton_Composite,a:Automaton_Base,from:Location,to:Location) =>
             ("\n  <transition source=\""+aFcts.getIdStr(a,from)+"\" target=\""+aFcts.getIdStr(a,to)+"\">","\n  </transition>")
-          case (typi:Symbol,v:Any) => ("\n    <"+(typi.toString() drop 1)+">"+spaceexDeparse(v,(if(typi=='assign) " := " else "' == "))+"</"+(typi.toString() drop 1)+">","")
+          case (typi:Symbol,v:Any) => ("\n    <"+sx_termi(typi)+">"+spaceexDeparse(v,(if(typi=='assign) " := " else "' == "))+"</"+sx_termi(typi)+">","")
           case _ => throw new AssertFail
         }
       //}}}
@@ -542,6 +542,12 @@ object Spaceex {
       })
       a.locations = newLocations
 
+      //add self loop start location for composition
+      val newLoc = new Location
+      newLoc.transitions = List(new Transition(newLoc),new Transition(a.start))
+      a.locations = newLoc :: a.locations
+      a.start     = newLoc
+
       //explicit evolve -- for uncontrolled vars -- for now all are uncontrolled
       a.locations.foreach(loc => {
         if(loc.evolve == None) loc.evolve = Some(Nil)
@@ -550,12 +556,6 @@ object Spaceex {
           loc.evolve = Some(loc.evolve.get :+ (Fn(varStr,Nil),Num(Exact.zero)))
         )
       })
-
-      //add self loop start location for composition
-      val newLoc = new Location
-      newLoc.transitions = List(new Transition(newLoc),new Transition(a.start))
-      a.locations = newLoc :: a.locations
-      a.start     = newLoc
     })
   }
   //}}}
@@ -605,7 +605,7 @@ object Spaceex {
 
         val spaceex_path=System.getenv("SPACEEX")
         if(spaceex_path==null || spaceex_path.length==0) throw new Exception("set SPACEEX env var")
-        println(Util.runCmd(spaceex_path+" -m DLBanyan/_.xml --config DLBanyan/_.cfg"))
+        println(Util.runCmd(spaceex_path+" -m DLBanyan/_.xml --config DLBanyan/_.cfg -v 0"))
       }
       case None => throw new Exception("DLParser.result didn't returned a sequent")
     }
