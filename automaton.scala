@@ -150,8 +150,8 @@ object aFcts {
   //}}}
   }
 
-  def isStart(a:Automaton_Base,loc:Location) = a.ends.indexOf(loc)!= -1
-  def isEnd  (a:Automaton_Base,loc:Location) = a.start == loc
+  def isStart(a:Automaton_Base,loc:Location) = a.start == loc
+  def isEnd  (a:Automaton_Base,loc:Location) = a.ends.indexOf(loc)!= -1
 
   def retrieve_base_automata(ac:Automaton_Composite):List[Automaton_Base] = ac match {
   //{{{
@@ -421,7 +421,7 @@ object Spaceex {
       //graphviz format
       def stringifier_graph(v: Any):(String,String) = {
       //{{{
-        def getIdAbsolute(ac:Automaton_Composite,a:Automaton_Base,loc:Location) = aFcts.getIdStr(ac,a)+"_"+aFcts.getIdStr(a,loc)
+        def getIdAbsolute(ac:Automaton_Composite,a:Automaton_Base,loc:Location) = "c"+aFcts.getIdStr(ac,a)+"l"+aFcts.getIdStr(a,loc)
         v match {
           case (ac:Automaton_Composite,c:Connective,ac0:Automaton_Composite,ac1:Automaton_Composite,ac2:Automaton_Composite) => {
             def getNodeId(ac_x:Automaton_Composite) = ac_x match {
@@ -433,11 +433,11 @@ object Spaceex {
           case (ac:Automaton_Composite,a:Automaton_Base) => ("","")
           case (ac:Automaton_Composite,a:Automaton_Base,loc:Location) => {
             val locId = getIdAbsolute(ac,a,loc)
-            val pre = locId+" [label=\""+locId
+            val pre = "\n"+locId+" [label=\""
 
             var post = ""
             if(aFcts.isEnd(a,loc)) post+= "\" shape=\"doublecircle"
-            post+= "\"]\n"
+            post+= "\"]"
             if(aFcts.isStart(a,loc)) post+= "\nE->"+locId
 
             (pre,post)
@@ -449,7 +449,7 @@ object Spaceex {
         }
       //}}}
       }
-      "digraph hybrid_automata {\nE[label=\"\" shape=none]\n"+aFcts.toStr(ac,stringifier_graph)+"}"
+      "digraph hybrid_automata {\nE[label=\"\" shape=none]"+aFcts.toStr(ac,stringifier_graph)+"}"
     //}}}
     }
   }
@@ -596,9 +596,10 @@ object Spaceex {
         val ac = aFcts.toAutomaton(h)
         //println(Stringify.str_txt(ac))
 
+        Util.str2file("DLBanyan/_.dot",Stringify.str_graph(ac))
+
         spaceexize(ac)
 
-        Util.str2file("DLBanyan/_.dot",Stringify.str_graph(ac))
         Util.str2file("DLBanyan/_.cfg",configFile(init(ac),forb(ac),aFcts.getIdStr(ac,ac)))
         Util.str2file("DLBanyan/_.xml",Stringify.str_sx(ac))
 
