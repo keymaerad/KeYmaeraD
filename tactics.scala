@@ -188,7 +188,6 @@ object Tactics {
      }
     }
 
- 
     def dot(v1 : Vec, v2 : Vec) : Term = {
       val v3 = v1.zip(v2).map({case (t1, t2) => Fn("*", List(t1,t2))})
       v3.foldRight[Term](Num(Exact.Integer(0)))((t1,t2) => 
@@ -204,7 +203,7 @@ object Tactics {
 
     def plusV(v1 : Vec, v2: Vec) : Vec = {
       v1.zip(v2).map({case(t1,t2) =>
-        AM.tsimplify(Fn("+", List(t1,t2)))})
+        AM.tsimplify(Fn("+", List(t1, t2)))})
     }
 
     def plusM(m1 : Mat, m2 : Mat) : Mat = {
@@ -230,6 +229,32 @@ object Tactics {
        }
     }
 
+    def pow(m : Mat, n : Int) : Mat = {
+      if (n <= 0 ) {
+        eye(m.length)
+      } else {
+        mult(m, pow(m, n-1))
+      }
+    }
+    
+    def factorial(n: Int) : Int = {
+      if (n <= 0 ) {
+        1
+      } else {
+        n * factorial(n-1)
+      }
+    }
+    
+    def exp(m : Mat) : Mat = {
+      val n = m.length
+      val ks = Range(1, n + 1).toList
+      ks.foldLeft[Mat](eye(n))( (r, k) =>
+      {
+        plusM(r, scalarM(pow(m, k),
+                         Num(Exact.Rational(1,factorial(k)))))
+        
+      })
+    }
 
   }
 
@@ -267,8 +292,13 @@ object Tactics {
                            {extract_Term(v1, th1)(zero)}
                      ))))
       println(A)
+      println(pow(A,1))
       println(mult(A, A))
-      println(eye(4))
+      println(plusM(A, A))
+      println(pow(eye(2),1))
+      val t = Fn("t", Nil)
+      println(exp( scalarM(A,t)))
+      println(scalarM(A,t))
       (vs, A, b)
     }
         
