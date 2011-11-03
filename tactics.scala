@@ -326,14 +326,16 @@ object Tactics {
       sols
     }
 
-        
-
 
     def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
 
       case Modality(Box,Evolve(derivs, h, inv_hints, Nil), phi) =>
-        val sols = derivsToSols(derivs)
-        applyrule(nd, pos, diffSolve(md)(sols))
+        try {
+          val sols = derivsToSols(derivs)
+          applyrule(nd, pos, diffSolve(md)(sols))
+        } catch {
+          case _ => None
+        }
 
       case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
         val sol_rule1 = diffSolve(md)(sols)
@@ -432,6 +434,7 @@ object Tactics {
       case _ => None
     }
   }
+
 
 
   def repeatT(t: Tactic) : Tactic = new Tactic("repeat " + t.toString) {
@@ -1128,6 +1131,12 @@ object Tactics {
     }
 
   }
+
+
+  val easiestT : Tactic =
+    (nonarithcloseT | alphaT | trylistofrulesT(hpalpha) |
+     diffsolveT(RightP(0), Endpoint) | usehintsT(RightP(0)) | hpeasyT | 
+     betaT | arithT)*
 
 
 
