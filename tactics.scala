@@ -194,6 +194,10 @@ object Tactics {
         Fn("+", List(t1,t2)))
     }
 
+    def multMV(m : Mat, v : Vec) : Vec = {
+      m.map(row => dot(row, v))
+    }
+
     def mult(m1 : Mat, m2 : Mat) : Mat = {
       val m2T = transpose(m2)
       m1.map(row =>
@@ -292,16 +296,32 @@ object Tactics {
                            {extract_Term(v1, th1)(zero)}
                      ))))
       println(A)
-      println(pow(A,1))
-      println(mult(A, A))
-      println(plusM(A, A))
-      println(pow(eye(2),1))
-      val t = Fn("t", Nil)
-      println(exp( scalarM(A,t)))
-      println(scalarM(A,t))
+      val t1 = Fn(uniqify("t"), Nil)
+      val t2name = uniqify("t")
+      val t2 = Var(t2name)
+      println(t1)
+      println(t2)
+      val A1 = exp(scalarM(A,t1))
+      println(A1)
+      // use |vs| as the initial values
+      val v1 = multMV(A1, vs)
+      println(v1)
+      val v2 = multMV(exp(scalarM(A,t2)), b)
+      println(v2)
+      val v2I = v2.map(e => AM.Integrate.integrate(t2, e))
+      println(v2I)
+
+      // This is not quite what we want. But close.
+      val v2S = v2I.map(e => substitute_Term(t2name, 
+                                             t1,
+                                             e))
+      println(v2S)
+      val vsol = plusV(v1, v2S)
+      println(vsol)
+
+
       (vs, A, b)
     }
-        
         
 
 

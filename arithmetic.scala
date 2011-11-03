@@ -83,8 +83,68 @@ final object AM {
 
 
 
+  object Integrate {
+    def productForm(t: Term): Term = t match {
+      case Fn("*", List(t1, Fn("+", List(t2, t3)))) =>
+        productForm(
+          Fn("+", List(Fn("*", List(t1, t2)),
+                       Fn("*", List(t1, t3)))))
+      case Fn("*", List(Fn("+", List(t2, t3)), t1)) =>
+        productForm(
+          Fn("+", List(Fn("*", List(t2, t1)),
+                       Fn("*", List(t3, t1)))))
+      case Fn("*", List(t1, Fn("-", List(t2, t3)))) =>
+        productForm(
+          Fn("-", List(Fn("*", List(t1, t2)),
+                       Fn("*", List(t1, t3)))))
+      case Fn("*", List(Fn("-", List(t2, t3)), t1)) =>
+        productForm(
+          Fn("-", List(Fn("*", List(t2, t1)),
+                       Fn("*", List(t3, t1)))))
+      case Fn(f, ts) =>
+        Fn(f, ts.map(productForm))
+      case Num(n) => Num(n)
+      case Var(x) => Var(x)
+    }
+
+    // How many times does tocc appear in t?
+    def countOccurences(tocc : Term, t : Term): Int = {
+      if (t == tocc) { 1 } else {
+        t match {
+          case Fn(f, ts) => ts.map(x => countOccurences(tocc, x)).sum
+          case _ => 0
+        }
+      }
+    }
+
+    // Compute the symbolic integral of t with respect to v.
+    def integrate1(v : Term, t : Term) : Term = t match {
+      case Fn("+", List(t1,t2)) =>
+        Fn("+", List(integrate(v, t1), integrate(v,t2)))
+      case Fn("-", List(t1,t2)) =>
+        Fn("-", List(integrate(v, t1), integrate(v,t2)))
+      case Fn("*", ts) => 
+        val n = countOccurences(v, t)
+        Fn("*", List(Num(Exact.Rational(1, n+1)),
+                     Fn("*", List(v, t))))
+      case Fn(f, Nil) => Fn("*", List(t, v))
+      case Num(n) => Fn("*", List(t, v))
+      case _ => 
+        println("unimplemented")
+        throw new Error("unimplemented")
+    }
+
+    def integrate(v : Term, t : Term) : Term = {
+      tsimplify(integrate1(v, productForm(t)))
+    }
+
+  } // object Integrate
+
+
 /* Simplification.
  */
+
+
 
   def tsimplify1( t: Term): Term = t match {
     case Fn("+",List(Num(m), Num(n))) => Num(m + n)
