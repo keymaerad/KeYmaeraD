@@ -352,7 +352,15 @@ object Util {
       
   }
 
-
+  def subFormulas(fm: Formula): List[Formula] = fm match {
+    case False | True | Atom(_) => List(fm)
+    case Not(p) => union(List(fm), subFormulas(p))
+    case Binop(_,p,q) => union(List(fm), union(subFormulas(p), subFormulas(q)))
+    case Quantifier(_,_,_,p) => union(List(fm), subFormulas(p))
+    case Modality(_,_,p) => union(List(fm), subFormulas(p)) //may need to be modified!!!
+    case _ =>
+      throw new Error("nonfirstorder arithmetic")
+  }
 
 
 
