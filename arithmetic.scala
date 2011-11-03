@@ -170,7 +170,9 @@ final object AM {
       Fn("*",List(tsimplify(e1), tsimplify(e2))))
     // Added this case to help diffsolveT.
     case Fn("-",List(tm1, tm2)) if tm1 == tm2 => zero
-    // There should probably be cases for - and / here.
+    case Fn("-",List(e1, e2)) => tsimplify1(
+      Fn("-",List(tsimplify(e1), tsimplify(e2))))
+    // There should probably be a case for / here.
     case _ => tsimplify1(t)
   }
 

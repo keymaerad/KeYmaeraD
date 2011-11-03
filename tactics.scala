@@ -260,6 +260,7 @@ object Tactics {
       })
     }
 
+
   }
 
   def diffsolveT(pos: Position, md: DiffSolveMode): Tactic = 
@@ -269,10 +270,7 @@ object Tactics {
     import LinearAlgebra._
 
 
-    // Variable names, homogeneous part, constant part
-    type Sys = (List[Fn], Mat, Vec)
-
-    def derivsToSystem (derivs : List[(Fn,Term)]) : Sys = {
+    def derivsToSols (derivs : List[(Fn,Term)]) : List[Formula] = {
       val (vs, thetas) = derivs.unzip
       val n = vs.length
       //  y' = Ay + b
@@ -296,7 +294,8 @@ object Tactics {
                            {extract_Term(v1, th1)(zero)}
                      ))))
       println(A)
-      val t1 = Fn(uniqify("t"), Nil)
+      val t1name = uniqify("t")
+      val t1 = Var(t1name)
       val t2name = uniqify("t")
       val t2 = Var(t2name)
       println(t1)
@@ -311,27 +310,30 @@ object Tactics {
       val v2I = v2.map(e => AM.Integrate.integrate(t2, e))
       println(v2I)
 
-      // This is not quite what we want. But close.
-      val v2S = v2I.map(e => substitute_Term(t2name, 
-                                             t1,
-                                             e))
+      val v2S = v2I.map(e =>
+        AM.tsimplify(Fn("-",
+                        List(substitute_Term(t2name, zero, e),
+                             substitute_Term(t2name, t1, e)))))
       println(v2S)
       val vsol = plusV(v1, v2S)
       println(vsol)
 
-
-      (vs, A, b)
+      
+      val sols = vs.zip(vsol).map({case (Fn(v, Nil), tm) => 
+        Quantifier(Forall, Real, t1name,
+                   Atom(R("=", List(Fn(v, List(Var(t1name))),
+                                    tm))))})
+      sols
     }
+
         
 
 
     def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
 
       case Modality(Box,Evolve(derivs, h, inv_hints, Nil), phi) =>
-        val sys = derivsToSystem(derivs)
-        // TODO construct solutions here.
-
-        None
+        val sols = derivsToSols(derivs)
+        applyrule(nd, pos, diffSolve(md)(sols))
 
       case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
         val sol_rule1 = diffSolve(md)(sols)
