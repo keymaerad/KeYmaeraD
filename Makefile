@@ -1,7 +1,14 @@
-LIBRARIES= ./commons-cli-1.2/commons-cli-1.2.jar
-TEST=examples/
+#LIBRARIES= ./commons-cli-1.2/commons-cli-1.2.jar
 
 all:
+	#make run FILE=examples/simpler.dl
+	#make run FILE=examples/simple.dl
+	#make run FILE=examples/test1_true.dl
+	#make run FILE=examples/test1_false.dl
+	#make run FILE=examples/bouncingball.dl
+	#make run FILE=examples/water_tank.dl
+	#make run FILE=examples/TRM-essentials.dl
+	#==
 	#make run FILE=examples/bouncingball.dl
 	#make run FILE=examples/simple.dl
 	#make run FILE=examples/simpler.dl
@@ -11,19 +18,13 @@ all:
 	make run FILE=examples/test2_false_simpler.dl
 
 test:
-	make run FILE=examples/simpler.dl
-	make run FILE=examples/simple.dl
-	make run FILE=examples/test1_true.dl
-	make run FILE=examples/test1_false.dl
-	make run FILE=examples/bouncingball.dl
-	make run FILE=examples/water_tank.dl
-	#make run FILE=examples/TRM-essentials.dl
+	make run
 
 compile:
 	rm -r -f DLBanyan
-	#fsc *.scala -unchecked -deprecation
-	fsc *.scala -unchecked -deprecation -cp $(LIBRARIES) 
-	make
+	fsc *.scala -unchecked -deprecation
+	#fsc *.scala -unchecked -deprecation -cp $(LIBRARIES) 
+	make test
 
 run:
 	scala DLBanyan.Test $(FILE)
