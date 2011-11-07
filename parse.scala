@@ -48,11 +48,11 @@ class DLParser(ins : String)
      var ins1 = ""
      var ln = br.readLine()
      while (ln != null){
-       println( ln)
+       //println( ln)
        ins1 = ins1 + ln + "\n"
        ln = br.readLine()
      }
-     println("input = " + ins1)
+     //println("input = " + ins1)
      ins1
      })
    }
@@ -292,8 +292,8 @@ class DLParser(ins : String)
      val ls = new lexical.Scanner(ins);
      phrase(sequent)(ls) match {
        case Success(r,next) if next.atEnd => 
-         println("success! ")
-         println(r)
+         //println("success! ")
+         //println(r)
          Some(r)
        case Success(r,next)  => 
          println("failure! Leftover input. only parsed: " )

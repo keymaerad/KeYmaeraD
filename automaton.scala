@@ -227,7 +227,7 @@ object aFcts {
             val aS = retrieve_base_automata(ac)
             val i = aS.indexOf(a)
             assert(i!= -1)
-            prefill((aS.size-1).toString,i.toString)
+            "c"+prefill((aS.size-1).toString,i.toString)
           }
           case Fork(c,l,r) => getIdStr(ac,l) + getIdStr(ac,r)
         }
@@ -287,7 +287,7 @@ object aFcts {
       case Fork(c,ac_1,ac_2) => {
         traverse(ac_1)
         traverse(ac_2)
-        res += stringifier(ac,c,ac_x,ac_1,ac_2)._1
+        res += stringifier(ac,ac_x)._1 + stringifier(ac,c,ac_x,ac_1,ac_2)._1 + stringifier(ac,ac_x)._2
       }
       case Automaton_Base(_,_,_,_) => Unit
     }
@@ -410,12 +410,12 @@ object Test {
     //}}}
     }
 
+    def LNAME(idStr:String) = "l"+idStr
+
     object Stringify {
       //spaceexDeparse required
       def str_sx(ac:Automaton_Composite):String = {
       //{{{
-        def INAME(idStr:String) = "i_"+idStr
-        def LNAME(idStr:String) = "l" +idStr
         def sx_termi(ddl_termi:Symbol) = ddl_termi match {
           case 'evolve => "flow"
           case 'assign => "assignment"
@@ -428,8 +428,8 @@ object Test {
         //{{{
           v match {
             case (ac:Automaton_Composite,c:Connective,ac0:Automaton_Composite,ac1:Automaton_Composite,ac2:Automaton_Composite) => {
-              def bindStr(idStr:String):String = "<bind component=\""+idStr+"\" as=\""+INAME(idStr)+"\"></bind>"
-              (bindStr(aFcts.getIdStr(ac,ac1))+"\n"+bindStr(aFcts.getIdStr(ac,ac2)),"")
+              def bindStr(idStr:String):String = "\n  <bind component=\""+idStr+"\" as=\""+idStr+"\"></bind>"
+              (bindStr(aFcts.getIdStr(ac,ac1))+bindStr(aFcts.getIdStr(ac,ac2)),"")
             }
             case (ac:Automaton_Composite,ac0:Automaton_Composite) => {
               var res = ("\n<component id=\""+aFcts.getIdStr(ac,ac0)+"\">","\n</component>")
@@ -498,19 +498,22 @@ object Test {
       var init_constraints:List[String] = Nil
       var freeVars:List[(Automaton_Base,Set[String])] = Nil
       aFcts.retrieve_base_automata(ac).foreach(a => {
-        init_constraints = init_constraints :+ "loc("+getIdStr_cfg(ac,a)+")==l"+aFcts.getIdStr(a,a.start)
+        init_constraints = init_constraints :+ "loc("+getIdStr_cfg(ac,a)+")=="+LNAME(aFcts.getIdStr(a,a.start))
         freeVars = freeVars :+ (a,aFcts.retrieve_varS(a))
       })
-      for(i <- 1 to freeVars.length-1)
-        for(j <- i to freeVars.length-1)
+      for(i <- 0 to freeVars.length-2)
+        for(j <- i+1 to freeVars.length-1)
           init_constraints = init_constraints ::: freeVars(i)._2.intersect(freeVars(j)._2).map(varStr => aFcts.getIdStr(ac,freeVars(i)._1)+"."+varStr+"=="+aFcts.getIdStr(ac,freeVars(j)._1)+"."+varStr).toList
       init_constraints.mkString(" & ")
     //}}}
     }
-    private def forb(ac:Automaton_Composite):String = ac match {
+    private def forb(ac_root:Automaton_Composite):String = {
     //{{{
-      case Fork(c,ac1,ac2) => "( "+forb(ac1)+" "+spaceexDeparse.connectiveToStr(c)+" "+forb(ac2)+" )"
-      case a:Automaton_Base => "("+a.ends.map(end => "loc("+getIdStr_cfg(ac,a)+")==l"+aFcts.getIdStr(a,end)).mkString(" | ")+") & "+spaceexDeparse(a.forb)
+      def doIt(ac:Automaton_Composite):String = ac match {
+        case Fork(c,ac1,ac2) => "( "+doIt(ac1)+" "+spaceexDeparse.connectiveToStr(c)+" "+doIt(ac2)+" )"
+        case a:Automaton_Base => "(("+a.ends.map(end => "loc("+getIdStr_cfg(ac_root,a)+")=="+LNAME(aFcts.getIdStr(a,end))).mkString(" | ")+") & "+spaceexDeparse(a.forb)+")"
+      }
+      doIt(ac_root)
     //}}}
     }
 
