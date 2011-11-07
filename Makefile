@@ -1,21 +1,9 @@
 #LIBRARIES= ./commons-cli-1.2/commons-cli-1.2.jar
 
 all:
-	#make run FILE=examples/simpler.dl
-	#make run FILE=examples/simple.dl
-	#make run FILE=examples/test1_true.dl
-	#make run FILE=examples/test1_false.dl
-	#make run FILE=examples/bouncingball.dl
 	#make run FILE=examples/water_tank.dl
-	#make run FILE=examples/TRM-essentials.dl
-	#==
 	#make run FILE=examples/bouncingball.dl
-	#make run FILE=examples/simple.dl
-	#make run FILE=examples/simpler.dl
-	#make run FILE=examples/or.dl
-	#make run FILE=examples/and_true.dl
-	#make run FILE=examples/and_false.dl
-	make run FILE=examples/test2_false_simpler.dl
+	make run FILE=tests/test2_false.dl
 
 test:
 	make run

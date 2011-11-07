@@ -646,8 +646,8 @@ object Test {
     Spaceex(cmd.getOptionValue("input"))
     //}}}
     */
-    val test_dir = "examples/"
-    if(args.length==0) Util.runCmd("ls "+test_dir).split("\n").filter(input => input.size>9).filter(input => input.substring(input.size-8,input.size-3)=="_true"|input.substring(input.size-9,input.size-3)=="_false").foreach(input => println(input+": "+(if((Spaceex(test_dir+input)=="")==(input.substring(input.size-5,input.size)=="_true")) "check" else "fail")))
+    val TEST_DIR = "tests/"
+    if(args.length==0) Util.runCmd("ls "+TEST_DIR).split("\n").filter(input => input.size>9).filter(input => input.substring(input.size-8,input.size-3)=="_true"|input.substring(input.size-9,input.size-3)=="_false").foreach(input => println(input+": "+(if((Spaceex(TEST_DIR+input)=="")==(input.substring(input.size-5,input.size)=="_true")) "check" else "fail")))
     else println(Spaceex(args(0)))
   }
 }
