@@ -42,6 +42,7 @@ object Util_Formula {
     case Quantifier(Exists,Real,_,_) => throw new TooWeak("existencial quantifier")
     case Quantifier(_,_,_,_) => throw new TooWeak("distributed quantifier")
     case Modality(Diamond,_,_) => throw new TooWeak("Diamond Modality")
+    case _ => throw new AssertFail
   }
   //}}}
 
@@ -101,7 +102,7 @@ object aFcts {
   //{{{
     def seqAutomata(a1:Automaton_Base,a2:Automaton_Base):Automaton_Base = {
       a1.ends.foreach(end => end.transitions = end.transitions :+ new Transition(a2.start))
-      Automaton_Base(a1.locations ::: a2.locations,a1.start,a2.ends)
+      Automaton_Base(a1.locations ::: a2.locations,a1.start,a2.ends,a2.forb)
     }
     def hpToAutomaton(hp: HP):Automaton_Base = {
     //{{{
@@ -138,7 +139,7 @@ object aFcts {
     f_normalized match {
       case Binop(c,f1,f2) => Fork(c,toAutomaton(f1),toAutomaton(f2))
       case Modality(Box,hp,phi) => {
-        val phiAutomaton = toAutomaton(Not(phi))
+        val phiAutomaton = toAutomaton(phi)
         phiAutomaton match {
           case a:Automaton_Base => seqAutomata(hpToAutomaton(hp),a)
           case _ => throw new TODO("subclass of formulas are simulate-able")
