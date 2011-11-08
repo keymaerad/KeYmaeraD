@@ -135,6 +135,18 @@ object Tactics {
               }
           }
 
+  // To check if this goal can be proved (success or failure).
+
+  //  def proved(sq: Sequent): Option[Sequent]
+
+    //To check if this goal can be proved in tm; and we close the node if it cannot be proved in tm.
+
+   // def proved(sq: Sequent, tm: Long): Option[Sequent]
+
+    // To abort
+
+   // def abort: Unit
+
   def usehintsT(pos: Position): Tactic = new Tactic("usehints") {
     def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
       /* case Modality(Box,Loop(hp, True, inv_hints), phi) =>
