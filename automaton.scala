@@ -7,41 +7,58 @@ class AssertFail    (e:String="") extends Exception(e)
 
 object Util_Formula {
 //{{{
-  private def negateAtom(a:Atom):Atom = a match
+  //-eleminates Not,Imp,Iff
+  //- x!=tm ~> x<tm|x>tm
+  //-catches Quantifier,Modality(Diamond,_,_)
+  def normalize(f:Formula):Formula = {
   //{{{
-  {
-    case Atom(R(rel,tmS)) => rel match {
-      case ">"  => Atom(R("<=",tmS))
-      case "<"  => Atom(R(">=",tmS))
-      case ">=" => Atom(R("<" ,tmS))
-      case "<=" => Atom(R(">" ,tmS))
-      case "==" => Atom(R("!=",tmS))
-      case  "=" => Atom(R("!=",tmS))
-      case "!=" => Atom(R("==",tmS))
-      case _ => throw new TODO("lookup all relations / their syntax -- context: "+a)
+    def negateAtom(a:Atom):Atom = a match
+    //{{{
+    {
+      case Atom(R(rel,tmS)) => rel match {
+        case ">"  => Atom(R("<=",tmS))
+        case "<"  => Atom(R(">=",tmS))
+        case ">=" => Atom(R("<" ,tmS))
+        case "<=" => Atom(R(">" ,tmS))
+        case "==" => Atom(R("!=",tmS))
+        case  "=" => Atom(R("!=",tmS))
+        case "!=" => Atom(R("==",tmS))
+        case _ => throw new TODO("lookup all relations / their syntax -- context: "+a)
+      }
+    }
+    //}}}
+
+    f match {
+      case True | False | Modality(Box,_,_) => f
+      case Atom(R(rel,tmS)) => rel match {
+        case "!=" => Binop(Or,Atom(R("<",tmS)),Atom(R(">",tmS)))
+        case _    => f
+      }
+      case Binop(Iff,f1,f2) => normalize(Binop(Or,Binop(And,f1,f2),Binop(And,Not(f1),Not(f2))))
+      case Binop(Imp,f1,f2) => normalize(Binop(Or,Not(f1),f2))
+      case Binop(c,f1,f2) => Binop(c,normalize(f1),normalize(f2))
+      case Not(Binop(Or ,f1,f2)) =>   normalize(Binop(And,Not(f1),Not(f2)))
+      case Not(Binop(And,f1,f2)) =>   normalize(Binop(Or ,Not(f1),Not(f2)))
+      case Not(Binop(c,f1,f2))   =>   normalize(Not(normalize(Binop(c,f1,f2))))
+      case Not(Atom(p)) => normalize(negateAtom(Atom(p)))
+      case Not(True) => False
+      case Not(False) => True
+      case Not(Not(g)) => g
+      case Not(g) => {normalize(g);throw new Exception("this should never have been called -- instead another Exception should have been thrown befor")}
+      case Quantifier(Forall,Real,_,_) => throw new TODO("forall quantifiers not supported")
+      case Quantifier(Exists,Real,_,_) => throw new TooWeak("existencial quantifier")
+      case Quantifier(_,_,_,_) => throw new TooWeak("distributed quantifier")
+      case Modality(Diamond,_,_) => throw new TooWeak("Diamond Modality")
+      case _ => throw new AssertFail
     }
   }
   //}}}
 
-  //eleminates Not,Imp,Iff and catches Quantifier,Modality(Diamond,_,_)
-  def normalize(f:Formula):Formula = f match {
+  def negateConnective(c:Connective):Connective = c match 
   //{{{
-    case Atom(_) | True | False | Modality(Box,_,_) => f
-    case Binop(Iff,f1,f2) => normalize(Binop(Or,Binop(And,f1,f2),Binop(And,Not(f1),Not(f2))))
-    case Binop(Imp,f1,f2) => normalize(Binop(Or,Not(f1),f2))
-    case Binop(c,f1,f2) => Binop(c,normalize(f1),normalize(f2))
-    case Not(Binop(Or ,f1,f2)) =>   normalize(Binop(And,Not(f1),Not(f2)))
-    case Not(Binop(And,f1,f2)) =>   normalize(Binop(Or ,Not(f1),Not(f2)))
-    case Not(Binop(c,f1,f2))   =>   normalize(Not(normalize(Binop(c,f1,f2))))
-    case Not(Atom(p)) => negateAtom(Atom(p))
-    case Not(True) => False
-    case Not(False) => True
-    case Not(Not(g)) => g
-    case Not(g) => {normalize(g);throw new Exception("this should never have been called -- instead another Exception should have been thrown befor")}
-    case Quantifier(Forall,Real,_,_) => throw new TODO("forall quantifiers not supported")
-    case Quantifier(Exists,Real,_,_) => throw new TooWeak("existencial quantifier")
-    case Quantifier(_,_,_,_) => throw new TooWeak("distributed quantifier")
-    case Modality(Diamond,_,_) => throw new TooWeak("Diamond Modality")
+  {
+    case Or  => And
+    case And => Or
     case _ => throw new AssertFail
   }
   //}}}
@@ -161,52 +178,56 @@ object aFcts {
   //}}}
   }
 
-  def retrieve_varS(v:Any):Set[String] = v match {
+  def retrieve_varS(v:Any,only_defined_varS:Boolean=false):Set[String] = {
   //{{{
-    case Some(v1:Any) => retrieve_varS(v1)
-    case None => Set()
-    case Fork(_,l,r) => retrieve_varS(l) | retrieve_varS(r)
-    case a:Automaton_Base => {
-      var res:Set[String] = Set()
-      a.locations.foreach(l => {
-        res = res | retrieve_varS(l.evolve)
-        res = res | retrieve_varS(l.inv)
-        l.transitions.foreach(t => {
-          res = res | retrieve_varS(t.check)
-          res = res | retrieve_varS(t.assign)
+    def doIt(v:Any):Set[String] = v match {
+      case Some(v1:Any) => doIt(v1)
+      case None => Set()
+      case Fork(_,l,r) => doIt(l) | doIt(r)
+      case a:Automaton_Base => {
+        var res:Set[String] = Set()
+        a.locations.foreach(l => {
+          res = res | doIt(l.evolve)
+          res = res | doIt(l.inv)
+          l.transitions.foreach(t => {
+            res = res | doIt(t.check)
+            res = res | doIt(t.assign)
+          })
         })
-      })
-      res
-    }
-
-    case t:Term => t match {
-      case Fn(symbolStr:String,l:List[Term]) => {
-        if(l.size==0)
-          Set(symbolStr)
-        else
-          l.map(retrieve_varS).reduce(_|_)
+        res
       }
-      case Num(_) => Set()
-      case Var(_) => throw new AssertFail //never saw Var occur
-    }
-    case Tuple2(l,r) => retrieve_varS(l) | retrieve_varS(r)
-    case l:List[_] => (l.map(retrieve_varS) ::: List(Set[String]())).reduce(_|_) // List().reduce => exception
 
-    case f:Formula => f match {
-      case Atom(R(_,terms:List[_])) => {
-        assert(terms.length==2,"until now only relations with arity 2 used")
-        terms.map(retrieve_varS).reduce(_|_)
-        terms(0) match {
-          case Fn(varName:String,l:List[_]) => {assert(l.size==0);Set(varName)}
-          case _ => throw new AssertFail
+      case t:Term => t match {
+        case Fn(symbolStr:String,l:List[Term]) => {
+          if(l.size==0)
+            Set(symbolStr)
+          else
+            l.map(doIt).reduce(_|_)
         }
+        case Num(_) => Set()
+        case Var(_) => throw new AssertFail //never saw Var occur
       }
-      case Binop(_,f1,f2) => retrieve_varS(f1) | retrieve_varS(f2)
-      case Not(f1) => retrieve_varS(f1)
-      case True | False => Set()
-      case Quantifier(_,_,_,_) | Modality(_,_,_) => throw new AssertFail
+      case Tuple2(l,r) => if(only_defined_varS) doIt(l) else doIt(l) | doIt(r)
+      case l:List[_] => (l.map(doIt) ::: List(Set[String]())).reduce(_|_) // List().reduce => exception
+
+      case f:Formula => f match {
+        case Atom(R(_,terms:List[_])) => {
+          assert(terms.length==2,"until now only relations with arity 2 used")
+          terms.map(doIt).reduce(_|_)
+          terms(0) match {
+            case Fn(varName:String,l:List[_]) => {assert(l.size==0);Set(varName)}
+            case _ => throw new AssertFail
+          }
+        }
+        case Binop(_,f1,f2) => doIt(f1) | doIt(f2)
+        case Not(f1) => doIt(f1)
+        case True | False => Set()
+        case Quantifier(_,_,_,_) | Modality(_,_,_) => throw new AssertFail
+      }
+      case _ => throw new AssertFail(v.asInstanceOf[AnyRef].getClass.getName())
     }
-    case _ => throw new AssertFail(v.asInstanceOf[AnyRef].getClass.getName())
+
+    doIt(v)
   //}}}
   }
 
@@ -373,7 +394,7 @@ object Test {
           d.format(70, sw)
           val res = sw.toString
           //res.replaceAll("0 -","-").replaceAll("([^<>!=])=","$1==").replaceAll("\\.","")
-          res.replaceAll("0 -","-").replaceAll("\\.","")
+          res.replaceAll("0 -","-").replaceAll("\\.","").replaceAll("- ","-")
         //}}}
         }
 
@@ -435,7 +456,7 @@ object Test {
             case (ac:Automaton_Composite,ac0:Automaton_Composite) => {
               var res = ("\n<component id=\""+aFcts.getIdStr(ac,ac0)+"\">","\n</component>")
               ac0 match {
-                case a:Automaton_Base => res = (res._1+aFcts.retrieve_varS(a).map(varStr => "\n  <param name=\""+varStr+"\" type=\"real\" d1=\"1\" d2=\"1\" local=\"true\" dynamics=\"any\" controlled=\"false\"/>").mkString(""),res._2)
+                case a:Automaton_Base => res = (res._1+aFcts.retrieve_varS(a).map(varStr => "\n  <param name=\""+varStr+"\" type=\"real\" d1=\"1\" d2=\"1\" local=\"true\" dynamics=\"any\" controlled=\"true\"/>").mkString(""),res._2)
                 case _ => Unit
               }
               res
@@ -511,7 +532,7 @@ object Test {
     private def forb(ac_root:Automaton_Composite):String = {
     //{{{
       def doIt(ac:Automaton_Composite):String = ac match {
-        case Fork(c,ac1,ac2) => "( "+doIt(ac1)+" "+spaceexDeparse.connectiveToStr(c)+" "+doIt(ac2)+" )"
+        case Fork(c,ac1,ac2) => "( "+doIt(ac1)+" "+spaceexDeparse.connectiveToStr(Util_Formula.negateConnective(c))+" "+doIt(ac2)+" )"
         case a:Automaton_Base => "(("+a.ends.map(end => "loc("+getIdStr_cfg(ac_root,a)+")=="+LNAME(aFcts.getIdStr(a,end))).mkString(" | ")+") & "+spaceexDeparse(a.forb)+")"
       }
       doIt(ac_root)
@@ -567,7 +588,7 @@ object Test {
         a.locations.foreach(loc => {
           if(loc.evolve == None) loc.evolve = Some(Nil)
           assert(aFcts.retrieve_varS(loc.evolve).size==aFcts.retrieve_varS(loc.evolve).intersect(aFcts.retrieve_varS(a)).size)
-          aFcts.retrieve_varS(a).diff(aFcts.retrieve_varS(loc.evolve)).foreach(varStr =>
+          aFcts.retrieve_varS(a).diff(aFcts.retrieve_varS(loc.evolve,true)).foreach(varStr =>
             loc.evolve = Some(loc.evolve.get :+ (Fn(varStr,Nil),Num(Exact.zero)))
           )
         })
@@ -648,7 +669,7 @@ object Test {
     //}}}
     */
     val TEST_DIR = "tests/"
-    if(args.length==0) Util.runCmd("ls "+TEST_DIR).split("\n").filter(input => input.size>9).filter(input => input.substring(input.size-8,input.size-3)=="_true"|input.substring(input.size-9,input.size-3)=="_false").foreach(input => println(input+": "+(if((Spaceex(TEST_DIR+input)=="")==(input.substring(input.size-5,input.size)=="_true")) "check" else "fail")))
+    if(args.length==0) Util.runCmd("ls "+TEST_DIR).split("\n").filter(input => input.size>9).filter(input => input.substring(input.size-8,input.size-3)=="_true"|input.substring(input.size-9,input.size-3)=="_false").foreach(input => println(input+": "+(if((Spaceex(TEST_DIR+input)=="{}\n")==(input.substring(input.size-8,input.size-3)=="_true")) "check" else "fail")))
     else println(Spaceex(args(0)))
   }
 }

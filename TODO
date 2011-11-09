@@ -1,16 +1,4 @@
-//merge with main branch
-
-//TOTHINK
-//-flat composition instead of hiearchical composition
-
--x != 0 in spaceex not working
--add examples
- -id edges and id locations
- -disjunktion in guard / invariant
- -every hybrid program operator
- -reursive and & or
- -disjunktion in linear constraint
-
+-merge with main branch
 
 -also usefull in sense that formula modelisation easier then automata modelisation?
 
@@ -40,9 +28,10 @@
   -on run level
 
 
--optimasation
+-possible optimasation
  -insert loop for composition at end states instead of start state
  -unfold *
+ -flat composition instead of hiearchical composition
 
 -catch non linearity
 -nice-ize code
@@ -78,6 +67,13 @@
 -adapt transition guards to spaceex
 -adapt location invariants to spaceex
 -spaceex doesn't cope multiple tags
+-add examples
+ -id edges and id locations
+ -disjunktion in guard&invariant
+ -every hybrid program operator
+ -reursive and & or
+ -x != 0 in spaceex not working
+
 
 
 === examples
@@ -108,3 +104,5 @@
 -composition: a jump in one base automaton requires a jump in all other automata
 -multiple same tag: SpaceEx will only consider last tag and ignore the others
 -for <assignment>: use := instead of ==   +  x' means derivate not post value
+-if no controlled attributed defined then implicitly set as true
+-<flow>x' == - 1</flow> != <flow>x' == -1</flow>
