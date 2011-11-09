@@ -552,12 +552,15 @@ object Test {
               loc.inv = Some(inv_dnf(0))
             else
             {
-              for(i <- 0 to inv_dnf.length-1)
-              {
-                val newLoc = new Location(List(new Transition(loc)),loc.evolve,Some(inv_dnf(i)))
-                loc.transitions = loc.transitions :+ new Transition(newLoc)
-                newLocations = newLocations :+ newLoc
-              }
+              val newLocies = inv_dnf.map(inv => new Location(loc.transitions,loc.evolve,Some(inv)))
+              loc.transitions = newLocies.map(loc => new Transition(loc))
+              for(i <- 0 to newLocies.length-2)
+                for(j <- i+1 to newLocies.length-1)
+                {
+                  newLocies(i).transitions = newLocies(i).transitions :+ new Transition(newLocies(j))
+                  newLocies(j).transitions = newLocies(j).transitions :+ new Transition(newLocies(i))
+                }
+              newLocations = newLocations ::: newLocies
               loc.inv    = None
               loc.evolve = None
             }
