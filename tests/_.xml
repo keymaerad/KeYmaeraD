@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sspaceex xmlns="http://www-verimag.imag.fr/xml-namespaces/sspaceex" version="0.2" math="SpaceEx">
+<component id="system">
+  <param name="y" type="real" d1="1" d2="1" local="true" dynamics="any" controlled="true"/>
+  <param name="v" type="real" d1="1" d2="1" local="true" dynamics="any" controlled="true"/>
+  <param name="g" type="real" d1="1" d2="1" local="true" dynamics="any" controlled="true"/>
+  <param name="h" type="real" d1="1" d2="1" local="true" dynamics="any" controlled="true"/>
+  <location id="1" name="l1">
+    <flow>y' == v &amp; v' == -1 &amp; g' == 0 &amp; h' == 0</flow>
+    <invariant>y &gt;= 0</invariant>
+  </location>
+  <transition source="1" target="1">
+    <guard>y == 0</guard>
+    <assignment>v := -0.75*v</assignment>
+  </transition>
+</component>
+</sspaceex>
