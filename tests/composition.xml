@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sspaceex xmlns="http://www-verimag.imag.fr/xml-namespaces/sspaceex" version="0.2" math="SpaceEx">
+<component id="right">
+  <param name="lim"     type="real" d1="1" d2="1" local="false" dynamics="const"/>
+  <param name="x_local" type="real" d1="1" d2="1" local="true"  dynamics="any" controlled="true"/>
+  <location id="0" name="l0">
+    <flow>x_local' == 0</flow>
+  </location>
+  <location id="1" name="l1">
+    <flow>x_local' == 0</flow>
+  </location>
+  <transition source="0" target="0">
+  </transition>
+  <transition source="0" target="1">
+    <guard>x_local == lim</guard>
+  </transition>
+</component>
+
+<component id="system_sub">
+  <param name="x"    type="real"  d1="1" d2="1" local="true" dynamics="any"/>
+  <param name="sync" type="label" local="true"/>
+  <bind component="right" as="i1">
+    <map key="lim">1</map>
+  </bind>
+  <bind component="right" as="i2">
+    <map key="lim">1</map>
+  </bind>
+</component>
+
+<component id="system">
+  <param name="x"    type="real"  d1="1" d2="1" local="true" dynamics="any"/>
+  <param name="sync" type="label" local="true"/>
+  <bind component="system_sub" as="bla1">
+  </bind>
+  <note>replacing 1 with -1 will correct-ly negate output of spaceex</note>
+  <bind component="right" as="i3">
+    <map key="lim">1</map>
+  </bind>
+</component>
+</sspaceex>

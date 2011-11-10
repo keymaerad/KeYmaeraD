@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sspaceex xmlns="http://www-verimag.imag.fr/xml-namespaces/sspaceex" version="0.2" math="SpaceEx">
+<component id="c0">
+  <param name="z" type="real" d1="1" d2="1" local="true" dynamics="any" controlled="true"/>
+  <param name="v" type="real" d1="1" d2="1" local="true" dynamics="any" controlled="true"/>
+  <param name="a" type="real" d1="1" d2="1" local="true" dynamics="any" controlled="true"/>
+  <note>
+    reachable
+    a==2 invariant | a replaced with 2 => not reachable
+    <invariant>a==2</invariant>
+  </note>
+  <location id="1" name="l1">
+    <flow>z' == v &amp; v' == a &amp; a' == 0</flow>
+  </location>
+</component>
+</sspaceex>
