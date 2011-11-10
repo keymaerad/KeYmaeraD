@@ -486,9 +486,9 @@ object Test {
                 case a:Automaton_Base => getIdAbsolute(ac,a,a.start)
                 case Fork(_,_,_) => aFcts.getIdStr(ac,ac_x)
               }
-              (aFcts.getIdStr(ac,ac0)+" [label=\""+c.toString+"]\n"+getNodeId(ac0)+"->"+getNodeId(ac1)+"\n"+getNodeId(ac0)+"->"+getNodeId(ac2),"")
+              ("\n"+aFcts.getIdStr(ac,ac0)+" [label=\""+c.toString+"\"]\n"+getNodeId(ac0)+"->"+getNodeId(ac1)+"\n"+getNodeId(ac0)+"->"+getNodeId(ac2),"")
             }
-            case (ac:Automaton_Composite,ac0:Automaton_Composite) => ("","")
+            case (ac:Automaton_Composite,ac0:Automaton_Composite) => ("\nE"+aFcts.getIdStr(ac,ac0)+"[label=\"\" shape=none]","")
             case (ac:Automaton_Composite,a:Automaton_Base,loc:Location) => {
               val locId = getIdAbsolute(ac,a,loc)
               val pre = "\n"+locId+" [label=\""
@@ -496,18 +496,18 @@ object Test {
               var post = ""
               if(aFcts.isEnd(a,loc)) post+= "\" shape=\"doublecircle"
               post+= "\"]"
-              if(aFcts.isStart(a,loc)) post+= "\nE->"+locId
+              if(aFcts.isStart(a,loc)) post+= "\nE"+aFcts.getIdStr(ac,a)+"->"+locId
 
               (pre,post)
             }
             case (ac:Automaton_Composite,a:Automaton_Base,from:Location,to:Location) =>
                ("\n"+getIdAbsolute(ac,a,from)+"->"+getIdAbsolute(ac,a,to)+" [label=\"" , "\"]")
-            case (typi:Symbol,v:Any) => (" "+(typi.toString() drop 1)+":"+spaceexDeparse(v),"")
+            case (typi:Symbol,v:Any) => (" "+(typi.toString() drop 1)+":"+spaceexDeparse(v,(if(typi=='assign) " := " else "' == ")),"")
             case _ => throw new AssertFail
           }
         //}}}
         }
-        "digraph hybrid_automata {\nE[label=\"\" shape=none]"+aFcts.toStr(ac,stringifier_graph)+"}"
+        "digraph hybrid_automata {"+aFcts.toStr(ac,stringifier_graph)+"\n}"
       //}}}
       }
     }
