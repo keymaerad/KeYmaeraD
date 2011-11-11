@@ -7,6 +7,8 @@ object Tactics {
   import TreeActions._
   import RulesUtil._
   import Rules._
+  import Util._
+  import AM._
 
 
   // A tactic returns a list of the new open leaves that it spawns.
