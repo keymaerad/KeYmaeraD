@@ -323,8 +323,7 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
           sender ! ()
 
         case ('rule, nd: NodeID, pos: Position, rl: ProofRule) =>
-          throw new Error("unimplemented")
-//          sender ! applyrule(getnode(nd), pos, rl)
+          sender ! applyrulegen(getnode(nd), pos, rl)
 
 
         case ('tactic, tct: Tactic) =>

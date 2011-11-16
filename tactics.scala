@@ -1,5 +1,16 @@
 package KeYmaeraD
 
+class TacticActor extends scala.actors.Actor {
+
+  import scala.actors.Actor._
+
+  def act() : Unit = {
+  // TODO. only communicate asynchronously with the frontactor.
+  
+  }
+
+}
+
 
 object Tactics {
 
@@ -1141,3 +1152,5 @@ object Tactics {
 
 
 }
+
+
