@@ -108,6 +108,15 @@ object TreeActions {
       None
   }
 
+  def applyrulegen(nd: ProofNode,
+                   p: Position,
+                   rl: ProofRule): Option[List[NodeID]] = {
+    nd match {
+      case ornd@OrNode(_,_) => applyrule(ornd, p, rl)
+      case _ => None
+    }
+  }
+
   // Returns true if successfully submitted. 
   def submitproc(ornd: OrNode, proc: String): Boolean
   = procs.get(proc) match {
@@ -236,11 +245,11 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
 
   var scripttactic = Tactics.nilT
 
-  def act(): Unit = {
+  def act(): Unit = try {
     println("acting")
     link(jobmaster)
 
-    while(true){
+    while(true) {
       receive {
         case 'quit =>
           println("frontactor quitting")
@@ -302,21 +311,21 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
           gotonode(rootNode)
           shownode(rootNode)
           sender ! ()
+
         case ('rule, pos: Position, rl: ProofRule) =>
-          hereNode  match {
-            case ornd@OrNode(_,_) =>
-              val r = applyrule(ornd,pos,rl)
+          val r = applyrulegen(hereNode,pos,rl)
               r match {
                 case Some(_) => 
                    println("success")
                 case None => 
                   println("rule cannot be applied there")    
               }
-
-            case _ => 
-              println("cannot apply rule here")
-          }
           sender ! ()
+
+        case ('rule, nd: NodeID, pos: Position, rl: ProofRule) =>
+          throw new Error("unimplemented")
+//          sender ! applyrule(getnode(nd), pos, rl)
+
 
         case ('tactic, tct: Tactic) =>
           hereNode  match {
@@ -412,8 +421,11 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
           println("got message: " + msg)
           sender ! ()
       }
-    }
+    } 
     
+  } catch {
+      case e => 
+        println( "can't do that due to " + e)
   }
 
 
