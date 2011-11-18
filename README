@@ -20,7 +20,7 @@ MATHKERNEL (=/Applications/Mathematica.app/Contents/MacOS/MathKernel)
 To compile, navigate to the KeYmaeraD root directory and type "make".
 
 To run, use the "runprover" script:
-./runprover [# workers]
+./runprover [-w (# workers)]  [-nogui]
 
 The default number of workers is the number of available processors on
 your machine, determined by a call to Runtime.getRuntime().availableProcessors().
