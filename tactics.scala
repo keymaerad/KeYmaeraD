@@ -281,6 +281,7 @@ object Tactics {
     import LinearAlgebra._
 
 
+        // N.B. This only works for linear systems.
     def derivsToSols (derivs : List[(Fn,Term)]) : List[Formula] = {
       val (vs, thetas) = derivs.unzip
       val n = vs.length
