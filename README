@@ -5,7 +5,7 @@ Original author: David Renshaw
 
 
 Requires: 
-   - Scala 2.8.0 or higher
+   - Scala 2.9.0 or higher
    - Mathematica, if you want to use the good backend.
 
 
