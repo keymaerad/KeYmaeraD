@@ -9,32 +9,42 @@ object CommandLine {
   opts.addOption("workers", true, "number of worker subproceses")
   opts.addOption("nogui", /* hasArg = */ false, "turn gui off")
 
+  val message = "options:\n-workers\n-nogui "
 
   var frontactor : FrontActor = null;
 
   def initFrontActor (args : Array[String],
-                      repl: scala.tools.nsc.interpreter.ILoop) {
+                      repl: scala.tools.nsc.interpreter.ILoop) = try {
     frontactor = new FrontActor(repl);
     println ("KeYmaeraD frontend loaded.")
     frontactor.start()
 
     val parser = new org.apache.commons.cli.GnuParser();
-    val cmd = parser.parse(opts, args)
-
-    if (!cmd.hasOption("nogui")) {
-      dl('gui)
-    }
 
     var workers = 1;
-    if (!cmd.hasOption("workers")) {
-      workers = Runtime.getRuntime().availableProcessors();
-    } else {
-      workers = java.lang.Integer.parseInt(cmd.getOptionValue("workers", "1"))
+
+    try {
+      val cmd = parser.parse(opts, args, false)
+      if (!cmd.hasOption("nogui")) {
+        dl('gui)
+      }
+
+      if (!cmd.hasOption("workers")) {
+        workers = Runtime.getRuntime().availableProcessors();
+      } else {
+        workers = java.lang.Integer.parseInt(cmd.getOptionValue("workers", "1"))
+      }
+    } catch {
+      case e: org.apache.commons.cli.UnrecognizedOptionException =>
+        println("\nGot a bad option.")
+        println(message)
     }
+
     println("Starting " + workers + " workers.")
     if (workers > 0) dl('findworkers, workers);
 
-  }
+  } 
+
 
 
   def dl(cmd: Symbol): Unit = {
