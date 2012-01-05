@@ -6,11 +6,13 @@
 /* Parameters
    NAV being the map of fields
    A   being the differential equation matrix
+   AP  being the real numbers precision
 */
 var NAV = [[-2, 2, 4],
            [ 4, 3, 4],
            [ 2, 2,-1]];
 var A = [-1.2,0.1,0.1,-1.2];
+var AP = 10000;
 
 /* Generator
 */
@@ -18,11 +20,18 @@ var forb;
 
 function vdize(i,key) {
   if(i===-2) forb = key;
-  if(i<0) return false;
-  var AP = 10000;
-  //function round(n) { return ((n*AP)|0)/AP}
-  function round(n) { return "("+((n*AP)|0)+"/"+AP+")"}
-  return [round(Math.sin(i*Math.PI/4)),round(Math.cos(i*Math.PI/4))];
+  if(!i || i<0) return false;
+  function all(n) {
+    function quot(n) {
+      var divisor = (n+"").indexOf(".");
+      if(divisor<0) return n+"";
+      divisor = Math.pow(10,(n+"").length-divisor);
+      return "("+(n*divisor)+"/"+divisor+")";
+    }
+    function round(n) { return ((n*AP)|0)/AP}
+    return quot(round(n));
+    }
+  return [all(Math.sin(i*Math.PI/4)),all(Math.cos(i*Math.PI/4))];
 }
 
 function println(msg){print(msg+"\n")}
@@ -32,15 +41,16 @@ function field(i) {
   }
 
 function toStr(vd,i){
+  if(!vd) return vd;
   function quot(i) {return "("+(i*10)+"/10)"}
-  function opize(n){return n<0?"- "+n.toString().substring(1):"+ "+n}
-  var diffEq = "v1' = "+quot(A[0])+"*(v1 "+opize(vd[0])+") + "+quot(A[1])+"*(v2 "+opize(vd[1])+") , "+
-               "v2' = "+quot(A[2])+"*(v1 "+opize(vd[0])+") + "+quot(A[3])+"*(v2 "+opize(vd[1])+")";
+  function a(n){return n<0?"- "+n.toString().substring(1):"+ "+n}
+  var diffEq = "v1' = "+quot(A[0])+"*(v1 "+a(vd[0])+") + "+quot(A[1])+"*(v2 "+a(vd[1])+") , "+
+               "v2' = "+quot(A[2])+"*(v1 "+a(vd[0])+") + "+quot(A[3])+"*(v2 "+a(vd[1])+") , "+
+               "x1' = v1 , x2' = v2";
   return "{"+diffEq+"; "+field(i)+"}";
-         
 }
 
-var hp = NAV.reduce(function(a, b){return a.concat(b);}).filter(vdize).map(vdize).map(toStr).reduce(function(a,b){return a+" ++\n"+b});
+var hp = NAV.reduce(function(a, b){return a.concat(b);}).map(vdize).map(toStr).filter(vdize).reduce(function(a,b){return a+" ++\n"+b});
 
 forb = "~("+field(forb)+")";
 
