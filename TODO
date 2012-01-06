@@ -115,4 +115,5 @@ look up
 -multiple same tag: SpaceEx will only consider last tag and ignore the others
 -for <assignment>: use := instead of ==   +  x' means derivate not post value
 -if no controlled attributed defined then implicitly set as true
--<flow>x' == - 1</flow> != <flow>x' == -1</flow>
+-<flow>x' = 1</flow> != <flow> x' == 1</flow>
+-<flow>x' == - 1</flow> != <flow>x' == -1</flow> -- use the latter one

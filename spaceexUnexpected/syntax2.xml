@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sspaceex xmlns="http://www-verimag.imag.fr/xml-namespaces/sspaceex" version="0.2" math="SpaceEx">
+<component id="c1">
+  <param name="v" type="real" d1="1" d2="1" local="true" dynamics="any" controlled="true"/>
+  <location id="1" name="l1">
+  <note>
+    following 3 lines behave unexpectedly
+    <flow>v' == -v</flow>
+    <flow>v' == -(1*v)</flow>
+    <flow>v' == -1*v</flow>
+  </note>
+    <flow>v' == -1*v</flow>
+  </location>
+</component>
+</sspaceex>

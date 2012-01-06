@@ -1,3 +1,8 @@
+<note>
+when bouncing instead of decreasing the velocity of the ball is increasing.
+Hence the ball should be able to reach an arbitrary high position but SpaceEx says otherwise. Even though when plotting SpaceEx is drawing arbitrary heights for the position of the ball.
+These example is supposed to illustrate that but I can't remember exactly the details of this example
+</note>
 <?xml version="1.0" encoding="UTF-8"?>
 <sspaceex xmlns="http://www-verimag.imag.fr/xml-namespaces/sspaceex" version="0.2" math="SpaceEx">
 <component id="system">
