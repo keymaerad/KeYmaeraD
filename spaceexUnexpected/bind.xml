@@ -1,0 +1,29 @@
+<sspaceex xmlns="http://www-verimag.imag.fr/xml-namespaces/sspaceex" version="0.2" math="SpaceEx">
+<component id="c0">
+  <note>
+  this doesn't terminate.
+  terminate if:
+  -only c1 is bind -- compare to increment.*
+  -x' == 1 changed to x' == -1 -- both variables are local
+  </note>
+  <param name="x" type="real" d1="1" d2="1" local="true" dynamics="any" controlled="true"/>
+  <location id="0" name="l0">
+    <flow>x' == 1</flow>
+  </location>
+  <note>
+  </note>
+</component>
+<component id="c1">
+  <param name="x" type="real" d1="1" d2="1" local="true" dynamics="any" controlled="true"/>
+  <location id="0" name="l0">
+    <flow>x' == 0</flow>
+  </location>
+  <transition source="0" target="0">
+    <assignment>x := x + 1</assignment>
+  </transition>
+</component>
+<component id="c0c1">
+  <bind component="c0" as="c0"></bind>
+  <bind component="c1" as="c1"></bind>
+</component>
+</sspaceex>
