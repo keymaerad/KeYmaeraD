@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<sspaceex xmlns="http://www-verimag.imag.fr/xml-namespaces/sspaceex" version="0.2" math="SpaceEx">
+  <component id="NavigationSystem">
+    <param name="v1" type="real" d1="1" d2="1" local="false" dynamics="any" controlled="true" />
+    <param name="v2" type="real" d1="1" d2="1" local="false" dynamics="any" controlled="true" />
+    <location id="3" name="loc_3">
+      <note>
+      <flow>v1' == -1.2*(v1 - 1) + 0.1*v2 &amp; v2' == 0.1*(v1 - 1) + -1.2*v2</flow>
+      <flow>v1' == 0 &amp; v2' == 0</flow>
+      </note>
+      <flow>v1' == -1.2*(v1 - 1) + 0.1*v2 &amp; v2' == 0.1*(v1 - 1) + -1.2*v2</flow>
+    </location>
+  </component>
+</sspaceex>
+

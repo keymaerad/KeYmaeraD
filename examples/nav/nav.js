@@ -1,8 +1,8 @@
+//TODO: iterate from the other side
 /* a NAV instance generator 
    see: A. Fehnker and F. Ivancic, Benchmarks for Hybrid System Verification, 2004. [http://www.cse.unsw.edu.au/~ansgar/papers/bench.pdf]
    use a JavaScript >=1.6 interpreter, e.g. V8
 */
-
 /* Parameters
    NAV being the map of fields
    A   being the differential equation matrix

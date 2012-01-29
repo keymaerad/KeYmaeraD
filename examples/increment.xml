@@ -1,0 +1,12 @@
+<sspaceex xmlns="xttp://www-verimag.imag.fr/xml-namespaces/sspaceex" version="0.2" matx="SpaceEx">
+  <component id="system">
+    <param name="x" type="real" d1="1" d2="1" local="true" dynamics="any" controlled="true"/>
+    <location id="0" name="loc_0">
+    <flow>x' == 0</flow>
+    </location>
+    <transition source="0" target="0">
+      <assignment>x := x + 1</assignment>
+    </transition>
+  </component>
+</sspaceex>
+

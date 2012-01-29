@@ -5,7 +5,8 @@ all:
 	#make run FILE=examples/bouncingball.dl
 	#make run FILE=tests/test2_false.dl
 	#make run FILE=tests/composite_rec_false.dl
-	make run FILE=examples/nav.dl
+	#make run FILE=examples/nav.dl
+	make run FILE=tests/usecase_untermi.dl
 
 test:
 	make run
