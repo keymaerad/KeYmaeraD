@@ -48,9 +48,9 @@ forall i : C . (
 [{ (ii := *;
       /* ii in a ca maneuver */ 
      ( (ca(ii) := 1; om(ii) := *;
+        c1(ii) := *; c2(ii) := *;
         d1(ii) := -om(ii) * (x2(ii) - c2(ii));
         d2(ii) := om(ii) * (x1(ii) - c1(ii));
-        c1(ii) := *; c2(ii) := *;
         ?( (c1(ii) - x1(ii))^2 + (c2(ii) - x2(ii))^2 = minr()^2);
         ?( (c1(ii) - disc1(ii))^2 + (c2(ii) - disc2(ii))^2 = minr()^2);
         discom(ii) := 0;
@@ -81,53 +81,4 @@ forall i : C . (
             (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2) 
       & (forall i : C . (c1(i) -x1(i))^2 + (c2(i) - x2(i))^2 = minr()^2)
       & (forall i : C . (c1(i) - disc1(i))^2 + (c2(i) - disc2(i))^2 = minr()^2))
-
-
-
-//	   )*@invariant((xdisc1 - ydisc1)^2 + (xdisc2 - ydisc2)^2 >= (4*minr + protectedzone)^2 &
-//   (cx1 - x1)^2 + (cx2 - x2)^2 = minr^2 &
-//   (cx1 - xdisc1)^2 + (cx2 - xdisc2)^2 = minr^2 &
-//   (cy1 - y1)^2 + (cy2 - y2)^2 = minr^2 &
- //  (cy1 - ydisc1)^2 + (cy2 - ydisc2)^2 = minr^2 &
-//   (
-	/* x in a ca maneuver */
-//    (cax = 1 &
-//	 d1=-omx*(x2-cx2) &
-//	 d2=omx*(x1-cx1)  &
-//	 xdiscom = 0 &
-//	 ddisc1 = 0 &
-//	 ddisc2 = 0	)
-//	|
-//	/* x NOT in ca maneuver */
-//	(cax = 0  
-//	 & x1 = xdisc1
-//	 & x2 = xdisc2
-//	 & d1 = ddisc1
-//	 & d2 = ddisc2
-//	 & omx = xdiscom)
-  // )
-//   &
-//   (
-//	/* y in a ca maneuver */
- //   (cay = 1 &
-//	 e1=-omy*(y2-cy2) &
-//	 e2=omy*(y1-cy1)  &
-//	 ydiscom = 0 &
-//	 edisc1 = 0 &
-//	 edisc2 = 0	)
-//	|
-//	/* y NOT in ca maneuver */
-//	(cay = 0  
-//	 & y1 = ydisc1
-//	 & y2 = ydisc2
-//	 & e1 = edisc1
-//	 & e2 = edisc2
-//	 & omy = ydiscom)
-  // ));
-//	 \] (
-//       (x1-xdisc1)^2 + (x2-xdisc2)^2 <= (2*minr)^2
-//	   & (y1-ydisc1)^2 + (y2-ydisc2)^2 <= (2*minr)^2
-//	   & (xdisc1 - ydisc1)^2 + (xdisc2 - ydisc2)^2 >= (4*minr + protectedzone)^2
-//    )
-//  )
 

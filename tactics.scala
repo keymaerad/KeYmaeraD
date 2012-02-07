@@ -467,18 +467,24 @@ object Tactics {
 
   }
 
+
+
   val substT : Tactic = new Tactic("substitute") {
     def apply(nd: OrNode): Option[List[NodeID]] = nd.goal match {
       case sq@Sequent(sig, c,s) =>
-      
+        val rigidfns = List("+", "-", "/", "*", "^")
         for (i <- c.indices) {
             val pos = LeftP(i)
-            substitute.apply(pos)(sq) match {
-              case Some(_) =>
-                 return applyrule(nd,pos,substitute);
-                ()
-              case None => 
-                ()
+            lookup(pos, sq) match {
+              case Atom(R("=", List(Fn(f1, args1), t2))) if !rigidfns.contains(f1) =>
+                substitute.apply(pos)(sq) match {
+                  case Some(_) =>
+                    return applyrule(nd,pos,substitute);
+                  ()
+                  case None => 
+                    ()
+                }
+              case _ => ()
             }
         }
 

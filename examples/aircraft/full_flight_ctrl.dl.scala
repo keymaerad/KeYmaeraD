@@ -21,16 +21,54 @@ val inv1 =
   )
 
 
-val entercatct = 
-  composelistT(
-    hpalpha1T*
-  )
-
-
 val cut1 = cutT(
   StandardKeepCut,
   parseFormula("~ I = II  ==> D1 = D2"),
   parseFormula("~I = II"))
+
+
+val doasgns = 
+  composelistT(
+    alphaT*,
+    instantiatebyT(St("C"))(List (("i", List("i")),
+                                  ("j", List("i")))),
+    hideunivsT(St("C")),
+    cut1<(
+      composelistT(
+        alphaT*,
+        substT,
+        vacuousT*,
+        alleasyT
+      ),
+      composelistT(
+        (tryruleT(impLeft) & (tryruleT(close)*))*,
+        alleasyT
+      )
+    )
+
+  )
+
+
+
+
+val entercatct = 
+  composelistT(
+    hpalpha1T*,
+    tryruleT(andRight)<(
+      composelistT(
+        tryruleT(andRight)<(
+          tryruleT(andRight)<(
+            tryruleT(close),
+            doasgns
+          ),
+          doasgns
+        )
+      ),
+      nilT
+    )
+  )
+
+
 
 val exitcatct = 
    composelistT(
