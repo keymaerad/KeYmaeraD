@@ -136,7 +136,7 @@ object Printing {
                        docOfFormulaAux(pr1)(fm))
     case Modality(Box, h,fm) =>
       val pr1 = 14;
-      bracket("[","]", docOfHP(h)) :: docOfFormulaAux(pr1)(fm)
+      bracket("[","]", docOfHP(h)) :/: docOfFormulaAux(pr1)(fm)
     case Modality(Diamond, h,fm) =>
       val pr1 = 14;
       bracket("<",">", docOfHP(h)) :: docOfFormulaAux(pr1)(fm)
