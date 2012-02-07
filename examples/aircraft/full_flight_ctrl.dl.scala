@@ -3,23 +3,28 @@ object Script {
 
 val maininv = 
   parseFormula (
-   "((forall i : C ." +
+   "forall i : C ." +
          "forall j : C ."+
-            "(disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2) "+
-      "& (forall i : C . (c1(i) -x1(i))^2 + (c2(i) - x2(i))^2 = minr()^2)" +
-      "& (forall i : C . (c1(i) - disc1(i))^2 + (c2(i) - disc2(i))^2 = minr()^2))")
+            "(disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2")
+
 
 val inv1 = 
   parseFormula (
-   "forall i : C . " +
-   "(ca(i) = 1 & d1(i) = -om(i) * (x2(i) - c2(i)) & "+
-   " d2(i) = om(i) * (x1(i) - c1(i)) & " +
-   "discom(i) = 0 & ddisc1(i) = 0 & ddisc2(i) = 0"+
+   "forall k : C . " +
+   "(ca(k) = 1 & d1(k) = -om(k) * (x2(k) - c2(k)) & "+
+   " d2(k) = om(k) * (x1(k) - c1(k)) & " +
+   "discom(k) = 0 & ddisc1(k) = 0 & ddisc2(k) = 0 &"+
+   " (c1(k) -x1(k))^2 + (c2(k) - x2(k))^2 = minr()^2 &" +
+    "(c1(k) - disc1(k))^2 + (c2(k) - disc2(k))^2 = minr()^2" +
     ") | (" +
-    " ca(i) = 0 & x1(i) = disc1(i) & x2(i) = disc2(i) & d1(i) = ddisc1(i) & d2(i) = ddisc2(i)" +
-   " & om(i) = discom(i))"
+    " ca(k) = 0 & x1(k) = disc1(k) & x2(k) = disc2(k) & d1(k) = ddisc1(k) & d2(k) = ddisc2(k)" +
+   " & om(k) = discom(k))"
   )
 
+val constinv = 
+  parseFormula (
+    "minr() > 0 & protectedzone() > 0"
+ )
 
 val cut1 = cutT(
   StandardKeepCut,
@@ -99,17 +104,38 @@ val exitcatct =
 val controltct = composelistT(hpalphaT*,
                               tryruleT(andRight)<(entercatct, exitcatct))
 
-val evolvetct = nilT
+val evolvetct = 
+     tryruleT(diffStrengthen(inv1))<(
+       tryruleT(close),
+       composelistT(
+         alphaT*,
+         hideunivsT(St("C")),
+         nullarizeT*
+       ),
+       nilT
+     )
 
 val indtct =
   composelistT(hpalphaT*,
                tryruleT(andRight)<(controltct, evolvetct))
 
+val postconditiontct = 
+  composelistT(
+    alphaT*,
+    instantiatebyT(St("C"))(List(("i", List("i")),
+                                 ("j", List("j")),
+                                 ("k", List("i", "j"))))*,
+    nullarizeT*,
+    (alphaT | betaT)*,
+    substT*
+
+  )
+
 val starttct =
-   tryruleT(loopInduction(Binop(And,maininv, inv1)))<(
+   tryruleT(loopInduction(Binop(And, Binop(And,maininv, inv1), constinv)))<(
      easiestT,
      indtct,
-     easiestT)
+     postconditiontct)
 
 val main = starttct
 

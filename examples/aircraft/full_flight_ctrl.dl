@@ -21,10 +21,6 @@ forall i : C .
    forall j : C .
       (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2,
 
-forall i : C . (c1(i) -x1(i))^2 + (c2(i) - x2(i))^2 = minr()^2,
-
-forall i : C . (c1(i) - disc1(i))^2 + (c2(i) - disc2(i))^2 = minr()^2,
-
 forall i : C . (	
 	/* i in a ca maneuver */
     (ca(i) = 1 &
@@ -32,7 +28,10 @@ forall i : C . (
 	 d2(i)=om(i)*(x1(i)-c1(i))  &
 	 discom(i) = 0 &
 	 ddisc1(i) = 0 &
-	 ddisc2(i) = 0	)
+	 ddisc2(i) = 0 &
+         (c1(i) -x1(i))^2 + (c2(i) - x2(i))^2 = minr()^2 &
+         (c1(i) - disc1(i))^2 + (c2(i) - disc2(i))^2 = minr()^2
+	)
 	|
 	/* i NOT in ca maneuver */
 	(ca(i) = 0  
@@ -68,7 +67,7 @@ forall i : C . (
    )
      ++
   (forall i : C
-       {x1(i)' = d1(i), x2(i)' = d2(i), d1(i)' = -omx(i) * d2(i), d2(i)' = omx(i) * d1(i), 
+       {x1(i)' = d1(i), x2(i)' = d2(i), d1(i)' = -om(i) * d2(i), d2(i)' = om(i) * d1(i), 
         disc1(i)' = ddisc1(i), disc2(i)' = ddisc2(i),
         ddisc1(i)' = -discom(i) * ddisc2(i), ddisc2(i)' = discom(i) * ddisc1(i);
         forall j : C.
@@ -76,9 +75,15 @@ forall i : C . (
             (disc1(i) - disc1(j))^2 + (disc2(i) - ydisc2(j))^2 >= (4*minr() + protectedzone())^2)
         	})
 
- }*] ((forall i : C .
+ }*] 
+ (forall i : C .
+    forall j : C .(x1(i) - x1(j))^2 + (x2(i) - x2(j))^2 >= protectedzone()^2)
+
+/*
+((forall i : C .
          forall j : C .
             (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2) 
       & (forall i : C . (c1(i) -x1(i))^2 + (c2(i) - x2(i))^2 = minr()^2)
       & (forall i : C . (c1(i) - disc1(i))^2 + (c2(i) - disc2(i))^2 = minr()^2))
+*/
 
