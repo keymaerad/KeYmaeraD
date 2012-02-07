@@ -1,5 +1,6 @@
 object Script {
 
+
 val maininv = 
   parseFormula (
    "((forall i : C ." +
@@ -20,9 +21,42 @@ val inv1 =
   )
 
 
-val entercatct = nilT
+val entercatct = 
+  composelistT(
+    hpalpha1T*
+  )
 
-val exitcatct = nilT
+
+val cut1 = cutT(
+  StandardKeepCut,
+  parseFormula("~ I = II  ==> D1 = D2"),
+  parseFormula("~I = II"))
+
+val exitcatct = 
+   composelistT(
+    hpalpha1T*,
+    tryruleT(andRight)<(
+      easiestT,
+      composelistT(
+        hpalpha1T*,
+        instantiatebyT(St("C"))(List (("i", List("i")),
+                                      ("j", List("i")))),
+        hideunivsT(St("C")),
+        cut1<(
+          composelistT(
+            alphaT*,
+            substT,
+            vacuousT*,
+            alleasyT
+          ),
+          composelistT(
+            (tryruleT(impLeft) & (tryruleT(close)*))*,
+            alleasyT
+          )
+        )
+      )
+    )
+   )
 
 val controltct = composelistT(hpalphaT*,
                               tryruleT(andRight)<(entercatct, exitcatct))
