@@ -28,8 +28,8 @@ forall i : C . (
          discom(i) = (1 - ca(i)) * om(i) &
 	 ddisc1(i) = (1 - ca(i)) * d1(i) &
          ddisc2(i) = (1 - ca(i)) * d2(i) &
-         (c1(i) - x1(i))^2 + (c2(i) - x2(i))^2 * ca(i) = minr()^2 * ca(i) &
-         (c1(i) - disc1(i))^2 + (c2(i) - disc2(i))^2 * ca(i) = minr()^2 * ca(i) & 
+         ((c1(i) - x1(i))^2 + (c2(i) - x2(i))^2) * ca(i) = minr()^2 * ca(i) &
+         ((c1(i) - disc1(i))^2 + (c2(i) - disc2(i))^2) * ca(i) = minr()^2 * ca(i) & 
 	 (1 - ca(i)) * x1(i) = (1 - ca(i)) * disc1(i) &
 	 (1 - ca(i)) * x2(i) = (1 - ca(i)) * disc2(i)
      ),

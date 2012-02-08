@@ -17,8 +17,8 @@ val inv1 =
     "discom(k) = (1 - ca(k)) * om(k) &" +
     "ddisc1(k) = (1 - ca(k)) * d1(k) &" +
     "ddisc2(k) = (1 - ca(k)) * d2(k) &"+
-    "(c1(k) - x1(k))^2 + (c2(k) - x2(k))^2 * ca(k) = minr()^2 * ca(k) &"+
-    "(c1(k) - disc1(k))^2 + (c2(k) - disc2(k))^2 * ca(k) = minr()^2 * ca(k) & "+
+    "((c1(k) - x1(k))^2 + (c2(k) - x2(k))^2) * ca(k) = minr()^2 * ca(k) &"+
+    "((c1(k) - disc1(k))^2 + (c2(k) - disc2(k))^2) * ca(k) = minr()^2 * ca(k) & "+
     "(1 - ca(k)) * x1(k) = (1 - ca(k)) * disc1(k) &"+
     "(1 - ca(k)) * x2(k) = (1 - ca(k)) * disc2(k)")
 
@@ -45,7 +45,8 @@ val doasgns =
         alphaT*,
         substT,
         vacuousT*,
-        alleasyT
+        nullarizeT*,
+        easiestT
       ),
       composelistT(
         (tryruleT(impLeft) & (tryruleT(close)*))*,
@@ -53,8 +54,6 @@ val doasgns =
       )
     )
   )
-
-
 
 
 val entercatct = 
@@ -68,7 +67,6 @@ val entercatct =
       (tryruleT(close) | alphaT | betaT)*
     )
   )
-
 
 
 val exitcatct = 
