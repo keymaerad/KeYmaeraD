@@ -84,16 +84,41 @@ val exitcatct =
 val controltct = composelistT(hpalphaT*,
                               tryruleT(andRight)<(entercatct, exitcatct))
 
+val diffinv1 = parseFormula("forall k : C . (ca(k) = 0 | ca(k) = 1)")
+
+val diffinv2 = 
+  parseFormula (
+   "forall k : C . " +
+    "d1(k) * ca(k) = -om(k) * (x2(k) - c2(k) ) * ca(k) &" +
+    "d2(k) * ca(k) = om(k) * (x1(k) - c1(k) ) * ca(k) &" +
+    "discom(k) = (1 - ca(k)) * om(k) &" +
+    "ddisc1(k) = (1 - ca(k)) * d1(k) &" +
+    "ddisc2(k) = (1 - ca(k)) * d2(k) &"+
+    "((c1(k) - x1(k))^2 + (c2(k) - x2(k))^2) * ca(k) = minr()^2 * ca(k) &"+
+    "((c1(k) - disc1(k))^2 + (c2(k) - disc2(k))^2) * ca(k) = minr()^2 * ca(k) & "+
+    "(1 - ca(k)) * x1(k) = (1 - ca(k)) * disc1(k) &"+
+    "(1 - ca(k)) * x2(k) = (1 - ca(k)) * disc2(k)")
+
+
 val evolvetct = 
-     tryruleT(diffStrengthen(inv1))<(
-       tryruleT(close),
+   tryruleT(diffStrengthen(constinv))<(
+     easiestT,
+     easiestT,
+     tryruleT(diffStrengthen(diffinv1))<(
        composelistT(
          alphaT*,
+         instantiatebyT(St("C"))(List(("k", List("k")))),
          hideunivsT(St("C")),
-         nullarizeT*
+         easiestT
        ),
-       nilT
+       easiestT,
+       tryruleT(diffStrengthen(diffinv2))<(
+         nilT,
+         nilT,
+         nilT
+       )
      )
+   )
 
 val indtct =
   composelistT(hpalphaT*,
