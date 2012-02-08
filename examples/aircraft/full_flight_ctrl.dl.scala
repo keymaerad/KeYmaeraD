@@ -89,9 +89,20 @@ val diffinv1 = parseFormula("forall k : C . (ca(k) = 0 | ca(k) = 1)")
 val diffinv2 = 
   parseFormula (
    "forall k : C . " +
+    "discom(k) = (1 - ca(k)) * om(k)")
+
+
+val diffinv3 = 
+  parseFormula (
+   "forall k : C . " +
+    "ddisc1(k) = (1 - ca(k)) * d1(k) &" +
+    "ddisc2(k) = (1 - ca(k)) * d2(k) ")
+
+val diffinv4 = 
+  parseFormula (
+   "forall k : C . " +
     "d1(k) * ca(k) = -om(k) * (x2(k) - c2(k) ) * ca(k) &" +
     "d2(k) * ca(k) = om(k) * (x1(k) - c1(k) ) * ca(k) &" +
-    "discom(k) = (1 - ca(k)) * om(k) &" +
     "ddisc1(k) = (1 - ca(k)) * d1(k) &" +
     "ddisc2(k) = (1 - ca(k)) * d2(k) &"+
     "((c1(k) - x1(k))^2 + (c2(k) - x2(k))^2) * ca(k) = minr()^2 * ca(k) &"+
@@ -122,9 +133,28 @@ val evolvetct =
          composelistT(
            alphaT*,
            (alphaT | instantiatebyT(St("C"))(List(("k", List("k")),
-                                                  ("i", List("k")))))*
+                                                  ("i", List("k")),
+                                                  ("j", List("k")))))*,
+           nullarizeT*,
+           arithT
          ),
-         nilT
+         tryruleT(diffStrengthen(diffinv3))<(
+           composelistT(
+             alphaT*,
+             instantiatebyT(St("C"))(List(("k", List("k")))),
+             hideunivsT(St("C")),
+             easiestT
+           ),
+           composelistT(
+             alphaT*,
+             (alphaT | instantiatebyT(St("C"))(List(("k", List("k")),
+                                                    ("i", List("k")),
+                                                    ("j", List("k")))))*,
+             nullarizeT*,
+             arithT
+           ),
+           nilT
+         )
        )
      )
    )
