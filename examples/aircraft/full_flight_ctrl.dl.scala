@@ -113,8 +113,17 @@ val evolvetct =
        ),
        easiestT,
        tryruleT(diffStrengthen(diffinv2))<(
-         nilT,
-         nilT,
+         composelistT(
+           alphaT*,
+           instantiatebyT(St("C"))(List(("k", List("k")))),
+           hideunivsT(St("C")),
+           easiestT
+         ),
+         composelistT(
+           alphaT*,
+           (alphaT | instantiatebyT(St("C"))(List(("k", List("k")),
+                                                  ("i", List("k")))))*
+         ),
          nilT
        )
      )

@@ -684,7 +684,7 @@ object Rules {
                           phi) =>
               val (ind_asm, ind_cons) = 
                 (List(Quantifier(Forall, st, i, h)), 
-                 Quantifier(Forall, st, i, Prover.totalDeriv(Some(i), derivs, inv)))
+                 Prover.totalDeriv(Some(i), derivs, inv))
               val fm1 = Modality(Box,
                                  EvolveQuantified(i, st,
                                                   derivs, 
