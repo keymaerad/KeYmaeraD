@@ -35,8 +35,9 @@ val cut1 = cutT(
 val doasgns = 
   composelistT(
     alphaT*,
-    instantiatebyT(St("C"))(List (("i", List("i")),
-                                  ("j", List("i")))),
+    instantiatebyT(St("C"))(List (("i", List("k")),
+                                  ("k", List("k")),
+                                  ("j", List("k")))),
     hideunivsT(St("C")),
     cut1<(
       composelistT(
@@ -50,7 +51,6 @@ val doasgns =
         alleasyT
       )
     )
-
   )
 
 
@@ -60,16 +60,11 @@ val entercatct =
   composelistT(
     hpalpha1T*,
     tryruleT(andRight)<(
-      composelistT(
-        tryruleT(andRight)<(
-          tryruleT(andRight)<(
-            tryruleT(close),
-            doasgns
-          ),
-          doasgns
-        )
+      tryruleT(andRight)<(
+        tryruleT(close),
+        doasgns
       ),
-      doasgns
+      (tryruleT(close) | alphaT | betaT)*
     )
   )
 
@@ -79,8 +74,14 @@ val exitcatct =
    composelistT(
     hpalpha1T*,
     tryruleT(andRight)<(
-      easiestT,
-      composelistT(
+      tryruleT(andRight)<(
+        tryruleT(close),
+        doasgns
+      ),
+      (tryruleT(close) | alphaT | betaT)*
+    )
+)
+/*      composelistT(
         hpalpha1T*,
         instantiatebyT(St("C"))(List (("i", List("i")),
                                       ("j", List("i")))),
@@ -99,7 +100,7 @@ val exitcatct =
         )
       )
     )
-   )
+   )*/
 
 val controltct = composelistT(hpalphaT*,
                               tryruleT(andRight)<(entercatct, exitcatct))

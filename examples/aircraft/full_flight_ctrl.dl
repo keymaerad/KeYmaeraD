@@ -40,7 +40,10 @@ forall i : C . (
 	 & d1(i) = ddisc1(i)
 	 & d2(i) = ddisc2(i)
 	 & om(i) = discom(i))
-     )
+     ),
+
+minr() > 0,
+protectedzone() > 0
 
 |-   
 
