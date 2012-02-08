@@ -22,24 +22,16 @@ forall i : C .
       (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2,
 
 forall i : C . (	
-	/* i in a ca maneuver */
-    (ca(i) = 1 &
-	 d1(i)=-om(i)*(x2(i)-c2(i)) &
-	 d2(i)=om(i)*(x1(i)-c1(i))  &
-	 discom(i) = 0 &
-	 ddisc1(i) = 0 &
-	 ddisc2(i) = 0 &
-         (c1(i) -x1(i))^2 + (c2(i) - x2(i))^2 = minr()^2 &
-         (c1(i) - disc1(i))^2 + (c2(i) - disc2(i))^2 = minr()^2
-	)
-	|
-	/* i NOT in ca maneuver */
-	(ca(i) = 0  
-	 & x1(i) = disc1(i)
-	 & x2(i) = disc2(i)
-	 & d1(i) = ddisc1(i)
-	 & d2(i) = ddisc2(i)
-	 & om(i) = discom(i))
+         (ca(i) = 0 | ca(i) = 1) &
+       	 d1(i) * ca(i) = -om(i) * (x2(i) - c2(i) ) * ca(i) &
+	 d2(i) * ca(i) = om(i) * (x1(i) - c1(i) ) * ca(i) &
+         discom(i) = (1 - ca(i)) * om(i) &
+	 ddisc1(i) = (1 - ca(i)) * d1(i) &
+         ddisc2(i) = (1 - ca(i)) * d2(i) &
+         (c1(i) - x1(i))^2 + (c2(i) - x2(i))^2 * ca(i) = minr()^2 * ca(i) &
+         (c1(i) - disc1(i))^2 + (c2(i) - disc2(i))^2 * ca(i) = minr()^2 * ca(i) & 
+	 (1 - ca(i)) * x1(i) = (1 - ca(i)) * disc1(i) &
+	 (1 - ca(i)) * x2(i) = (1 - ca(i)) * disc2(i)
      ),
 
 minr() > 0,
