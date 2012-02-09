@@ -135,15 +135,18 @@ val evolvetct =
            di2tct,
            tryruleT(diffStrengthen(diffinv4))<(
              composelistT(
+               tryruleatT(hide)(LeftP(0)),
                (alphaT | instantiatebyT(St("C"))(List(("i", List("i")),
                                                       ("j", List("j")),
                                                       ("k", List("i", "j")))))*,
-               easiestT
+               nullarizeT*,
+               easiestT*
              ),
              composelistT(
                (alphaT | instantiatebyT(St("C"))(List(("i", List("i")),
                                                       ("j", List("j")),
                                                       ("k", List("i", "j")))))*,
+               nullarizeT*,
                easiestT
              ),
              composelistT(
@@ -155,7 +158,8 @@ val evolvetct =
                      (alphaT | instantiatebyT(St("C"))(List(("i", List("i")),
                                                             ("j", List("j")),
                                                             ("k", List("i", "j")))))*,
-                     nilT
+                     nullarizeT*,
+                     easiestT
                    ),
                    composelistT(
                      alphaT*,
