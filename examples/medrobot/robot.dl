@@ -59,7 +59,7 @@ e() > 0
   fy' = fyp(),
   t' = 1;
   t() <= e()}
- @solution(forall s. qx(s) = qx() + K() * (fx() - gx()) * s() + (1/2) * K() * fxp() * s^2,
+  @solution(forall s. qx(s) = qx() + K() * (fx() - gx()) * s() + (1/2) * K() * fxp() * s^2,
            forall s. qy(s) = qy() + K() * (fy() - gy()) * s() + (1/2) * K() * fyp() * s^2,
            forall s. fx(s) = fx() + fxp() * s,
            forall s. fy(s) = fy() + fyp() * s,
@@ -73,5 +73,11 @@ qy >= 0
 XXX     
 automatic diffsolving
 fails to prove this. bug?
+
+qx. + t$51. *  K. * fx. 
++ (t$51. * (K. * gx$4.) + 
+   (1/2 * (t$51. * (t$51. * K. * fxp$4.)) - 
+    1/2 * (t$51. * (t$51. * (K. * gx$4.) * fxp$4.)) - 
+    1/2 * (t$51. * (t$51. * (K. * gx$4.) * fxp$4.))))
 */
 

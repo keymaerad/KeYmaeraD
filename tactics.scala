@@ -281,7 +281,7 @@ object Tactics {
     import LinearAlgebra._
 
 
-        // N.B. This only works for linear systems.
+        // N.B. This only works for linear nilpotent systems.
     def derivsToSols (derivs : List[(Fn,Term)]) : List[Formula] = {
       val (vs, thetas) = derivs.unzip
       val n = vs.length
@@ -290,7 +290,7 @@ object Tactics {
                 AM.tsimplify(
                   vs.foldRight[Term](theta)(
                     (v:Fn, th1:Term) => extract_Term(v, th1)(zero))))
-      println(b)
+      println("b = " + b)
 
       val homog = thetas.zip(b).map(x => x match {
         case (theta, bi) => Fn("-", List(theta, bi))})
@@ -305,7 +305,7 @@ object Tactics {
                          else
                            {extract_Term(v1, th1)(zero)}
                      ))))
-      println(A)
+      println("A = " + A)
       val t1name = uniqify("t")
       val t1 = Var(t1name)
       val t2name = uniqify("t")
