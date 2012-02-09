@@ -1,0 +1,80 @@
+{
+ /*  position of tip */
+ qx : () -> Real,
+ qy : () -> Real,
+
+ K : () -> Real,
+ fx : () -> Real,
+ fy : () -> Real,
+ fxp : () -> Real,
+ e : () -> Real,
+ t : () -> Real,
+ gx : () -> Real,
+ gy : () -> Real,
+ qyfin : () -> Real,
+ dis : () -> Real,
+ tmp : () -> Real
+}
+
+K() > 0, 
+qy() > 0,
+e() > 0 
+
+|-
+
+[
+{
+ (fxp := *;
+  fyp := *;
+  qyfin := qy() + K() * (fy() * e() + (1/2) * fyp() * e()^2);
+  dis := (( K() * fy())^2 - 2 * K() * fyp() * qy());
+  gx := 0);
+
+  ((? (fyp() <= 0 & qyfin() >= 0); gy :=0)
+  ++
+   (?(fyp() <= 0 & qyfin() <= 0);
+    tmp := *;
+    (? tmp() * K() * e() = 1);
+    gy:= fy() + ((qy() + (1/2)*K() * fyp() * (e()^2)) * tmp())
+  ) 
+  ++
+  ( (? fyp() >= 0 & fy() <= 0 & dis() >= 0);
+    tmp := *;
+    (? tmp * tmp * K = 2 * qy() * fyp() & tmp() >= 0);
+    gy := fy() + tmp()
+  ) 
+  ++
+  ( (? fyp() >= 0 & fy() <= 0 & dis() <= 0);
+    gy := 0
+  )
+  ++
+  ( (? fyp() >= 0 & fy() >= 0);
+    gy := 0
+  ) 
+ );
+ t() := 0;
+ {qx' = K() * (fx() - gx()), 
+  qy' = K() * (fy() - gy()),
+  fx' = fxp(),
+  fy' = fyp(),
+  t' = 1;
+  t() <= e()}
+ @solution(forall s. qx(s) = qx() + K() * (fx() - gx()) * s() + (1/2) * K() * fxp() * s^2,
+           forall s. qy(s) = qy() + K() * (fy() - gy()) * s() + (1/2) * K() * fyp() * s^2,
+           forall s. fx(s) = fx() + fxp() * s,
+           forall s. fy(s) = fy() + fyp() * s,
+           forall s. t(s) = t() + s)
+
+}*
+] 
+qy >= 0
+
+/*
+XXX     
+automatic diffsolving
+fails to prove this. bug?
+*/
+
+/*
+(set-face-attribute 'default nil :height 150)
+*/
