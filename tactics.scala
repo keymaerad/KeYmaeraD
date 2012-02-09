@@ -313,22 +313,22 @@ object Tactics {
       println(t1)
       println(t2)
       val A1 = exp(scalarM(A,t1))
-      println(A1)
+      println("A1 = " + A1)
       // use |vs| as the initial values
       val v1 = multMV(A1, vs)
-      println(v1)
+      println("v1 = " + v1)
       val v2 = multMV(exp(scalarM(A,t2)), b)
-      println(v2)
+      println("v2 = " + v2)
       val v2I = v2.map(e => AM.Integrate.integrate(t2, e))
-      println(v2I)
+      println("v2I = " + v2I)
 
       val v2S = v2I.map(e =>
         AM.tsimplify(Fn("-",
-                        List(substitute_Term(t2name, zero, e),
-                             substitute_Term(t2name, t1, e)))))
-      println(v2S)
+                        List(substitute_Term(t2name, t1, e),
+                             substitute_Term(t2name, zero, e)))))
+      println("v2S = " + v2S)
       val vsol = plusV(v1, v2S)
-      println(vsol)
+      println("vsol = " + vsol)
 
       
       val sols = vs.zip(vsol).map({case (Fn(v, Nil), tm) => 

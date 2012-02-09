@@ -153,7 +153,7 @@ final object AM {
     case Fn("/",List(Num(m), Num(n))) => Num(m / n)
     case Fn("+",List(Num(n), x)) if n.is_zero => x
     case Fn("+",List(x,Num(n))) if n.is_zero => x
-    case Fn("-",List(Num(n), x)) if n.is_zero => Fn("-", List(x))
+//    case Fn("-",List(Num(n), x)) if n.is_zero => Fn("-", List(x))
     case Fn("-",List(x, Num(n))) if n.is_zero => x
     case Fn("*",List(Num(n), x)) if n.is_zero => zero
     case Fn("/",List(Num(n), x)) if n.is_zero => zero

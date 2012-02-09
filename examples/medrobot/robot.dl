@@ -65,19 +65,8 @@ e() > 0
            forall s. fy(s) = fy() + fyp() * s,
            forall s. t(s) = t() + s)
 
+
 }*
 ] 
 qy >= 0
-
-/*
-XXX     
-automatic diffsolving
-fails to prove this. bug?
-
-qx. + t$51. *  K. * fx. 
-+ (t$51. * (K. * gx$4.) + 
-   (1/2 * (t$51. * (t$51. * K. * fxp$4.)) - 
-    1/2 * (t$51. * (t$51. * (K. * gx$4.) * fxp$4.)) - 
-    1/2 * (t$51. * (t$51. * (K. * gx$4.) * fxp$4.))))
-*/
 
