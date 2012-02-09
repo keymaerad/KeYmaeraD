@@ -75,6 +75,3 @@ automatic diffsolving
 fails to prove this. bug?
 */
 
-/*
-(set-face-attribute 'default nil :height 150)
-*/
