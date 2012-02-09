@@ -8,9 +8,6 @@
   om : (C) -> Real,
   disc1 : (C) -> Real,
   disc2 : (C) -> Real,
-  ddisc1 : (C) -> Real,
-  ddisc2 : (C) -> Real,
-  discom : (C) -> Real,
   c1 : (C) -> Real,
   c2 : (C) -> Real,
   ca : (C) -> Real,
@@ -25,9 +22,6 @@ forall i : C . (
          (ca(i) = 0 | ca(i) = 1) &
        	 d1(i) * ca(i) = -om(i) * (x2(i) - c2(i) ) * ca(i) &
 	 d2(i) * ca(i) = om(i) * (x1(i) - c1(i) ) * ca(i) &
-         discom(i) = (1 - ca(i)) * om(i) &
-	 ddisc1(i) = (1 - ca(i)) * d1(i) &
-         ddisc2(i) = (1 - ca(i)) * d2(i) &
          ((c1(i) - x1(i))^2 + (c2(i) - x2(i))^2) * ca(i) = minr()^2 * ca(i) &
          ((c1(i) - disc1(i))^2 + (c2(i) - disc2(i))^2) * ca(i) = minr()^2 * ca(i) & 
 	 (1 - ca(i)) * x1(i) = (1 - ca(i)) * disc1(i) &
@@ -46,28 +40,24 @@ protectedzone() > 0
         d1(ii) := -om(ii) * (x2(ii) - c2(ii));
         d2(ii) := om(ii) * (x1(ii) - c1(ii));
         ?( (c1(ii) - x1(ii))^2 + (c2(ii) - x2(ii))^2 = minr()^2);
-        ?( (c1(ii) - disc1(ii))^2 + (c2(ii) - disc2(ii))^2 = minr()^2);
-        discom(ii) := 0;
-        ddisc1(ii) := 0;
-        ddisc2(ii) := 0
+        ?( (c1(ii) - disc1(ii))^2 + (c2(ii) - disc2(ii))^2 = minr()^2)
         )
 
        /* ii NOT in a ca maneuver */    
      ++ ( ? (x1(ii) = disc1(ii) & x2(ii) = disc2(ii));
           ca(ii) :=0;
           om(ii) := *;
-          d1(ii) := *; d2(ii) := *;
-          discom(ii) := om(ii); ddisc1(ii) := d1(ii); ddisc2(ii) := d2(ii)
+          d1(ii) := *; d2(ii) := *
       ))
    )
      ++
   (forall i : C
        {x1(i)' = d1(i), x2(i)' = d2(i), d1(i)' = -om(i) * d2(i), d2(i)' = om(i) * d1(i), 
-        disc1(i)' = ddisc1(i), disc2(i)' = ddisc2(i),
-        ddisc1(i)' = -discom(i) * ddisc2(i), ddisc2(i)' = discom(i) * ddisc1(i);
+        disc1(i)' = (1 - ca(i)) * d1(i),
+        disc2(i)' = (1 - ca(i)) * d2(i);
         forall j : C.
         ((ca (i) = 0 | ca (j) = 0) ==>
-            (disc1(i) - disc1(j))^2 + (disc2(i) - ydisc2(j))^2 >= (4*minr() + protectedzone())^2)
+            (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2)
         	})
 
  }*] 

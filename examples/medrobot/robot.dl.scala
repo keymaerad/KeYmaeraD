@@ -5,9 +5,9 @@ val loopInv =
 
 val main =
    tryruleT(loopInduction(loopInv))<(
-     nilT,
-     nilT,
-     nilT
+     easiestT,
+     easiestT,
+     easiestT
    )
 
 }
