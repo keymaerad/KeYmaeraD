@@ -190,8 +190,18 @@ val postconditiontct =
                                  ("k", List("i", "j"))))*,
     alphaT*,
     nullarizeT*,
-    (alphaT | betaT)*,
-    substT*
+    tryruleT(orLeft)<(
+      tryruleT(orLeft)<(
+        arithT,
+        composelistT(
+          substT*
+        )
+      ),
+      tryruleT(orLeft)<(
+        nilT,
+        nilT
+      )
+    )
 
   )
 
