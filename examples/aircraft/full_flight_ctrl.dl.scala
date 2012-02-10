@@ -189,20 +189,14 @@ val simpcut =
 
                    
 
-val postconditiontct = 
-  composelistT(
-    alphaT*,
-    instantiatebyT(St("C"))(List(("i", List("i")),
-                                 ("j", List("j")),
-                                 ("k", List("i", "j"))))*,
-    alphaT*,
+val postors = 
     tryruleT(orLeft)<(
       tryruleT(orLeft)<(
         ((nullarizeT*) &  arithT),
         composelistT(
           substT*,
           simpcut<(
-            arithT,
+            ((nullarizeT*) &  arithT),
             simpcut<(
               ((nullarizeT*) &  arithT),
               composelistT(
@@ -214,17 +208,31 @@ val postconditiontct =
                 )<(
                   composelistT(
                     nullarizeT*,
-                    tryruleatT(hide)(LeftP(1)),
-                    tryruleatT(hide)(LeftP(1)),
-                    tryruleatT(hide)(LeftP(1)),
-                    tryruleatT(hide)(LeftP(1)),
-                    tryruleatT(hide)(LeftP(1)),
-                    tryruleatT(hide)(LeftP(1)),
-                    tryruleatT(hide)(LeftP(1)),
-                    tryruleatT(hide)(LeftP(2)),
-                    tryruleatT(hide)(LeftP(2))
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(4)),
+                    tryruleatT(hide)(LeftP(4)),
+                    arithT
                   ),
-                  nilT
+                  composelistT(
+                    nullarizeT*,
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(3)),
+                    tryruleatT(hide)(LeftP(3)),
+
+                    tryruleatT(hide)(LeftP(4)),
+                    tryruleatT(hide)(LeftP(4)),
+                    tryruleatT(hide)(LeftP(4)),
+                    arithT
+                  )
                 )
               )
             )
@@ -237,7 +245,31 @@ val postconditiontct =
       )
     )
 
+
+
+
+val postconditiontct = 
+  composelistT(
+    alphaT*,
+    instantiatebyT(St("C"))(List(("i", List("i")),
+                                 ("j", List("j")),
+                                 ("k", List("i", "j"))))*,
+    alphaT*,
+    // The things I do to make Mathematica happy...
+    // Apparently it helps to move these assumptions to the front.
+    cutT(StandardCut,
+      parseFormula("minr() > Y"),
+      parseFormula("minr() > Y"))<(
+        easiestT,
+        cutT(StandardCut,
+             parseFormula("protectedzone() > Y"),
+             parseFormula("protectedzone() > Y"))<(
+               easiestT,
+               postors
+             )
+      )
   )
+                
 
 val starttct =
    tryruleT(loopInduction(Binop(And, Binop(And,maininv, inv1), constinv)))<(
