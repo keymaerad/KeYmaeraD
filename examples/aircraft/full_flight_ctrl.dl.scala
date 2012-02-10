@@ -182,6 +182,13 @@ val indtct =
   composelistT(hpalphaT*,
                tryruleT(andRight)<(controltct, evolvetct))
 
+val simpcut =
+  cutT(DirectedCut,
+       parseFormula(" (1 - 0) * X  = (1 - 0) * D"),
+       parseFormula("X  = D"))
+
+                   
+
 val postconditiontct = 
   composelistT(
     alphaT*,
@@ -189,12 +196,39 @@ val postconditiontct =
                                  ("j", List("j")),
                                  ("k", List("i", "j"))))*,
     alphaT*,
-    nullarizeT*,
     tryruleT(orLeft)<(
       tryruleT(orLeft)<(
-        arithT,
+        ((nullarizeT*) &  arithT),
         composelistT(
-          substT*
+          substT*,
+          simpcut<(
+            arithT,
+            simpcut<(
+              ((nullarizeT*) &  arithT),
+              composelistT(
+                substT*,
+                cutT(
+                  DirectedCut,
+                  parseFormula(" (disc1(I) - disc1(J))^2 + (disc2(I) - disc2(J))^2 >= ( 4 * R  + P)^2"),
+                  parseFormula(" (c1(J) - disc1(I))^2 + (c2(J) - disc2(I))^2 >= ( 2 * R  + P)^2")
+                )<(
+                  composelistT(
+                    nullarizeT*,
+                    tryruleatT(hide)(LeftP(1)),
+                    tryruleatT(hide)(LeftP(1)),
+                    tryruleatT(hide)(LeftP(1)),
+                    tryruleatT(hide)(LeftP(1)),
+                    tryruleatT(hide)(LeftP(1)),
+                    tryruleatT(hide)(LeftP(1)),
+                    tryruleatT(hide)(LeftP(1)),
+                    tryruleatT(hide)(LeftP(2)),
+                    tryruleatT(hide)(LeftP(2))
+                  ),
+                  nilT
+                )
+              )
+            )
+          )
         )
       ),
       tryruleT(orLeft)<(
