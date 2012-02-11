@@ -197,7 +197,7 @@ val postors =
           substT*,
           simpcut<(
             ((nullarizeT*) &  arithT),
-            simpcut<(
+              simpcut<(
               ((nullarizeT*) &  arithT),
               composelistT(
                 substT*,
@@ -227,7 +227,6 @@ val postors =
                     tryruleatT(hide)(LeftP(3)),
                     tryruleatT(hide)(LeftP(3)),
                     tryruleatT(hide)(LeftP(3)),
-
                     tryruleatT(hide)(LeftP(4)),
                     tryruleatT(hide)(LeftP(4)),
                     tryruleatT(hide)(LeftP(4)),
@@ -240,8 +239,110 @@ val postors =
         )
       ),
       tryruleT(orLeft)<(
-        nilT,
-        nilT
+        composelistT(
+          substT*,
+          simpcut<(
+            ((nullarizeT*) &  arithT),
+              simpcut<(
+                ((nullarizeT*) &  arithT),
+                composelistT(
+                  substT*,
+                  tryruleatT(hide)(LeftP(3)),
+                  tryruleatT(hide)(LeftP(3)),
+                  tryruleatT(hide)(LeftP(5)),
+                  tryruleatT(hide)(LeftP(5)),
+                  tryruleatT(hide)(LeftP(5)),
+                  tryruleatT(hide)(LeftP(5)),
+                  tryruleatT(hide)(LeftP(5)),
+                  tryruleatT(hide)(LeftP(5)),
+                  cutT(
+                    DirectedCut,
+                    parseFormula(" (disc1(I) - disc1(J))^2 + (disc2(I) - disc2(J))^2 >= ( 4 * R  + P)^2"),
+                    parseFormula(" (c1(I) - disc1(J))^2 + (c2(I) - disc2(J))^2 >= ( 2 * R  + P)^2")
+                  )<(
+                    composelistT(
+                      nullarizeT*,
+                      tryruleatT(hide)(LeftP(3)),
+                      arithT
+                    ),
+                    composelistT(
+                      nullarizeT*,
+                      tryruleatT(hide)(LeftP(4)),
+                      arithT
+                    )
+                  )
+                )
+              )
+          )
+        ),
+        composelistT(
+          substT*,
+          tryruleatT(hide)(LeftP(3)),
+          tryruleatT(hide)(LeftP(3)),
+          tryruleatT(hide)(LeftP(5)),
+          tryruleatT(hide)(LeftP(5)),
+          tryruleatT(hide)(LeftP(5)),
+          tryruleatT(hide)(LeftP(5)),
+          cutT(
+            DirectedCut,
+            parseFormula(" (disc1(I) - disc1(J))^2 + (disc2(I) - disc2(J))^2 >= ( 4 * R  + P)^2"),
+            parseFormula(" (c1(J) - disc1(I))^2 + (c2(J) - disc2(I))^2 >= ( 3 * R  + P)^2")
+          )<(
+            composelistT(
+              nullarizeT*,
+              tryruleatT(hide)(LeftP(3)),
+              tryruleatT(hide)(LeftP(3)),
+              tryruleatT(hide)(LeftP(3)),
+              arithT
+            ),
+            cutT(
+              DirectedCut,
+              parseFormula(" (c1(J) - disc1(I))^2 + (c2(J) - disc2(I))^2 >= ( 3 * R  + P)^2"),
+              parseFormula(" (x1(J) - disc1(I))^2 + (x2(J) - disc2(I))^2 >= ( 2 * R  + P)^2")
+            )<(
+              composelistT(
+                nullarizeT*,
+                tryruleatT(hide)(LeftP(3)),
+                tryruleatT(hide)(LeftP(3)),
+                tryruleatT(hide)(LeftP(4)),
+                arithT
+              ),
+              cutT(
+                DirectedCut,
+                parseFormula(" (x1(J) - disc1(I))^2 + (x2(J) - disc2(I))^2 >= ( 2 * R  + P)^2"),
+                parseFormula(" (c1(I) - x1(J))^2 + (c2(I) - x2(J) )^2 >= (1 * R  + P)^2")
+              )<(
+                composelistT(
+                  nullarizeT*,
+                  tryruleatT(hide)(LeftP(3)),
+                  tryruleatT(hide)(LeftP(4)),
+                  tryruleatT(hide)(LeftP(4)),
+
+                  tryruleatT(hide)(LeftP(4)),
+                  tryruleatT(hide)(LeftP(4)),
+                  tryruleatT(hide)(LeftP(4)),
+                  tryruleatT(hide)(LeftP(4)),
+                  
+                  arithT
+                ),
+                cutT(
+                  DirectedCut,
+                  parseFormula(" (c1(I) - x1(J))^2 + (c2(I) - x2(J) )^2 >= (1 *  R  + P)^2"),
+                  parseFormula(" (x1(I) - x1(J))^2 + (x2(I) - x2(J) )^2 >= (P)^2")
+                )<(
+                  composelistT(
+                    nullarizeT*,
+                    tryruleatT(hide)(LeftP(4)),
+                    tryruleatT(hide)(LeftP(4)),
+                    tryruleatT(hide)(LeftP(4)),
+                    arithT
+                  ),
+                  tryruleT(close)
+                )
+              )
+            )
+          )
+        )
       )
     )
 
