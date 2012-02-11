@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--Generated SpaceEx XML output file.-->
+<sspaceex xmlns="http://www-verimag.imag.fr/xml-namespaces/sspaceex" version="0.2" math="SpaceEx">
+  <component id="NavigationTemplate">
+    <note>Basic system for a navigation benchmark.</note>
+    <param name="x1" type="real" d1="1" d2="1" local="false" dynamics="any" />
+    <param name="x2" type="real" d1="1" d2="1" local="false" dynamics="any" />
+    <param name="v1" type="real" d1="1" d2="1" local="false" dynamics="any" />
+    <param name="v2" type="real" d1="1" d2="1" local="false" dynamics="any" />
+    <param name="a11" type="real" d1="1" d2="1" local="false" dynamics="const" />
+    <param name="a12" type="real" d1="1" d2="1" local="false" dynamics="const" />
+    <param name="a21" type="real" d1="1" d2="1" local="false" dynamics="const" />
+    <param name="a22" type="real" d1="1" d2="1" local="false" dynamics="const" />
+    <param name="eps" type="real" d1="1" d2="1" local="false" dynamics="const" />
+    <location id="0" name="loc_0" x="202.0" y="663.0">
+      <invariant>x1 &gt;= 0  &amp; x1 &lt;= 1 + eps &amp; x2 &gt;= 0 &amp; x2 &lt;= 1 + eps</invariant>
+      <flow>x1' == v1 &amp; x2' == v2 &amp; v1' == a11*(v1 + 0.70710678) + a12*(v2 - 0.70710678) &amp; v2' == a21*(v1 + 0.70710678) + a22*(v2 - 0.70710678)</flow>
+    </location>
+    <location id="1" name="loc_1" x="421.0" y="663.0">
+      <invariant>x1 &gt;= 1 - eps &amp; x1 &lt;= 2 + eps &amp; x2 &gt;= 0 &amp; x2 &lt;= 1 + eps</invariant>
+      <flow>x1' == v1 &amp; x2' == v2 &amp; v1' == a11*(v1 + 0.70710678) + a12*(v2 - 0.70710678) &amp; v2' == a21*(v1 + 0.70710678) + a22*(v2 - 0.70710678)</flow>
+    </location>
+    <location id="2" name="loc_2" x="648.0" y="658.0">
+      <invariant>x1 &gt;= 2 - eps &amp; x1 &lt;= 3 + eps &amp; x2 &gt;= 0 &amp; x2 &lt;= 1 + eps</invariant>
+      <flow>x1' == v1 &amp; x2' == v2 &amp; v1' == a11*(v1 + 0.70710678) + a12*(v2 - 0.70710678) &amp; v2' == a21*(v1 + 0.70710678) + a22*(v2 - 0.70710678)</flow>
+    </location>
+    <location id="3" name="loc_3" x="202.0" y="505.0">
+      <invariant>x1 &gt;= 0 &amp; x1 &lt;= 1 + eps &amp; x2 &gt;= 1 - eps &amp; x2 &lt;= 2 + eps</invariant>
+      <flow>x1' == v1 &amp; x2' == v2 &amp; v1' == a11*(v1 - 0.00000000) + a12*(v2 + 1.00000000) &amp; v2' == a21*(v1 - 0.00000000) + a22*(v2 + 1.00000000)</flow>
+    </location>
+    <location id="4" name="loc_4" x="422.0" y="504.0">
+      <invariant>x1 &gt;= 1 - eps &amp; x1 &lt;= 2 + eps &amp; x2 &gt;= 1 - eps &amp; x2 &lt;= 2 + eps</invariant>
+      <flow>x1' == v1 &amp; x2' == v2 &amp; v1' == a11*(v1 - 0.70710678) + a12*(v2 + 0.70710678) &amp; v2' == a21*(v1 - 0.70710678) + a22*(v2 + 0.70710678)</flow>
+    </location>
+    <location id="5" name="loc_5" x="644.0" y="499.0">
+      <invariant>x1 &gt;= 2 - eps &amp; x1 &lt;= 3 + eps &amp; x2 &gt;= 1 - eps &amp; x2 &lt;= 2 + eps</invariant>
+      <flow>x1' == v1 &amp; x2' == v2 &amp; v1' == a11*(v1 - 0.00000000) + a12*(v2 + 1.00000000) &amp; v2' == a21*(v1 - 0.00000000) + a22*(v2 + 1.00000000)</flow>
+    </location>
+    <location id="6" name="loc_6" x="205.0" y="342.0">
+      <invariant>x1 &gt;= 0 &amp; x1 &lt;= 1 + eps &amp; x2 &gt;= 2 - eps &amp; x2 &lt;= 3 + eps</invariant>
+      <flow>x1' == 0 &amp; x2' == 0 &amp; v1' == 0 &amp; v2' == 0</flow>
+    </location>
+    <location id="7" name="loc_7" x="419.0" y="343.0">
+      <invariant>x1 &gt;= 1 - eps &amp; x1 &lt;= 2 + eps &amp; x2 &gt;= 2 - eps &amp; x2 &lt;= 3 + eps</invariant>
+      <flow>x1' == v1 &amp; x2' == v2 &amp; v1' == a11*(v1 - 1.00000000) + a12*(v2 - 0.00000000) &amp; v2' == a21*(v1 - 1.00000000) + a22*(v2 - 0.00000000)</flow>
+    </location>
+    <location id="8" name="loc_8" x="647.0" y="342.0">
+      <invariant>x1 &gt;= 2 - eps &amp; x1 &lt;= 3 + eps &amp; x2 &gt;= 2 - eps &amp; x2 &lt;= 3 + eps</invariant>
+      <flow>x1' == v1 &amp; x2' == v2 &amp; v1' == a11*(v1 - 0.00000000) + a12*(v2 + 1.00000000) &amp; v2' == a21*(v1 - 0.00000000) + a22*(v2 + 1.00000000)</flow>
+    </location>
+    <transition source="0" target="1">
+      <guard>x1 &gt;= 1 - eps &amp; v1&gt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="0.0" y="0.0" />
+      <middlepoint x="311.5" y="703.0" />
+    </transition>
+    <transition source="0" target="3">
+      <guard>x2 &gt;= 1 - eps &amp; v2&gt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="1.0" y="-7.0" />
+      <middlepoint x="233.0" y="588.0" />
+    </transition>
+    <transition source="1" target="0">
+      <guard>x1 &lt;= 1 + eps &amp; v1&lt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="0.0" y="0.0" />
+      <middlepoint x="311.5" y="626.0" />
+    </transition>
+    <transition source="1" target="2">
+      <guard>x1 &gt;= 2 - eps &amp; v1&gt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="-16.0" y="21.0" />
+    </transition>
+    <transition source="1" target="4">
+      <guard>x2 &gt;= 1 - eps &amp; v2&gt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="9.0" y="-8.0" />
+      <middlepoint x="446.5" y="588.5" />
+    </transition>
+    <transition source="3" target="4">
+      <guard>x1 &gt;= 1 - eps &amp; v1&gt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="-14.0" y="-5.0" />
+      <middlepoint x="312.5" y="536.0" />
+    </transition>
+    <transition source="3" target="0">
+      <guard>x2 &lt;= 1 + eps &amp; v2&lt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="-42.0" y="-6.0" />
+      <middlepoint x="161.0" y="591.0" />
+    </transition>
+    <transition source="3" target="6">
+      <guard>x2 &gt;= 2 - eps &amp; v2&gt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="0.0" y="0.0" />
+    </transition>
+    <transition source="4" target="3">
+      <guard>x1 &lt;= 1 + eps &amp; v1&lt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="-17.0" y="-2.0" />
+      <middlepoint x="318.5" y="464.0" />
+    </transition>
+    <transition source="4" target="5">
+      <guard>x1 &gt;= 2 - eps &amp; v1&gt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="-17.0" y="-2.0" />
+      <middlepoint x="534.0" y="447.5" />
+    </transition>
+    <transition source="4" target="1">
+      <guard>x2 &lt;= 1 + eps &amp; v2&lt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="-50.0" y="-6.0" />
+      <middlepoint x="390.5" y="585.5" />
+    </transition>
+    <transition source="4" target="7">
+      <guard>x2 &gt;= 2 - eps &amp; v2&gt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="11.0" y="-22.0" />
+      <middlepoint x="447.5" y="427.5" />
+    </transition>
+    <transition source="5" target="4">
+      <guard>x1 &lt;= 2 + eps &amp; v1&lt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="-18.0" y="-61.0" />
+      <middlepoint x="536.0" y="568.5" />
+    </transition>
+    <transition source="5" target="2">
+      <guard>x2 &lt;= 1 + eps &amp; v2&lt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="0.0" y="0.0" />
+    </transition>
+    <transition source="5" target="8">
+      <guard>x2 &gt;= 2 - eps &amp; v2&gt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="5.0" y="-25.0" />
+      <middlepoint x="681.5" y="426.5" />
+    </transition>
+    <transition source="7" target="6">
+      <guard>x1 &lt;= 1 + eps &amp; v1&lt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="-14.0" y="2.0" />
+    </transition>
+    <transition source="7" target="8">
+      <guard>x1 &gt;= 2 - eps &amp; v1&gt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="-19.0" y="11.0" />
+      <middlepoint x="531.0" y="367.5" />
+    </transition>
+    <transition source="7" target="4">
+      <guard>x2 &lt;= 2 + eps &amp; v2&lt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="-47.0" y="-26.0" />
+      <middlepoint x="386.5" y="425.5" />
+    </transition>
+    <transition source="8" target="7">
+      <guard>x1 &lt;= 2 + eps &amp; v1&lt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="-17.0" y="-64.0" />
+      <middlepoint x="534.0" y="287.5" />
+    </transition>
+    <transition source="8" target="5">
+      <guard>x2 &lt;= 2 + eps &amp; v2&lt;=0</guard>
+      <assignment>x1 := x1 &amp; x2 := x2 &amp; v1 := v1 &amp; v2 := v2</assignment>
+      <labelposition x="6.0" y="-24.0" />
+      <middlepoint x="615.5" y="418.5" />
+    </transition>
+  </component>
+  <component id="NavigationSystem">
+    <note>A model of a 2-dimensional navigation along a direction mesh.</note>
+    <param name="x1" type="real" d1="1" d2="1" local="false" dynamics="any" controlled="true" />
+    <param name="x2" type="real" d1="1" d2="1" local="false" dynamics="any" controlled="true" />
+    <param name="v1" type="real" d1="1" d2="1" local="false" dynamics="any" controlled="true" />
+    <param name="v2" type="real" d1="1" d2="1" local="false" dynamics="any" controlled="true" />
+    <bind component="NavigationTemplate" as="NavigationBenchmark">
+      <map key="x1">x1</map>
+      <map key="x2">x2</map>
+      <map key="v1">v1</map>
+      <map key="v2">v2</map>
+      <map key="a11">-1.20000005</map>
+      <map key="a12">0.00000000</map>
+      <map key="a21">0.00000000</map>
+      <map key="a22">-1.20000005</map>
+      <map key="eps">0.00000000</map>
+    </bind>
+  </component>
+</sspaceex>
+
