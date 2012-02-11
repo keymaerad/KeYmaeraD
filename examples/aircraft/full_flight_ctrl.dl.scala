@@ -322,8 +322,34 @@ val postors =
                   tryruleatT(hide)(LeftP(4)),
                   tryruleatT(hide)(LeftP(4)),
                   tryruleatT(hide)(LeftP(4)),
-                  
-                  arithT
+                  cutT(
+                    StandardCut,
+                    parseFormula(" ((C1 - D1)^2 + (C2 - D2)^2) * 1 = ( R )^2 * 1"),
+                    parseFormula(" ((C1 - D1)^2 + (C2 - D2)^2) * 1 = ( R )^2 * 1")
+                  ) < (
+                    tryruleT(close),
+                    cutT(
+                      StandardCut,
+                      parseFormula("minr() > 0"),
+                      parseFormula("minr() > 0")
+                    )<(
+                      tryruleT(close),
+                      cutT(
+                        StandardCut,
+                        parseFormula("protectedzone() > 0"),
+                        parseFormula("protectedzone() > 0")
+                      )<(
+                        tryruleT(close),
+                        composelistT(
+                          tryruleatT(hide)(LeftP(3)),
+                          tryruleatT(hide)(LeftP(3)),
+                          tryruleatT(hide)(LeftP(4)),
+                          arithT
+                        )
+                      )
+                    )
+
+                  )
                 ),
                 cutT(
                   DirectedCut,
