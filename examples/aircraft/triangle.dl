@@ -1,3 +1,13 @@
+/*
+  Examples illustrating the odd behavior of Mathematica's Reduce[] function.
+  All but one of these return in less than a few seconds.
+
+  Another way to cause Mathematica to choke is to put the
+  two assumptions of the form "D > 0" after the other two assumptions.
+  
+*/
+
+
 {
  x1 : () -> Real,
  x2 : () -> Real,
@@ -8,9 +18,56 @@
  D1 : () -> Real,
  D2 : () -> Real
 }
-D2() > 0,
-D1() > 0,
-((z1() - y1())^2 + (z2() - y2())^2) * 1 = ((D1())^2) * 1,
-(x1() - y1())^2 + (x2() - y2())^2 >= (2 * D1() + D2())^2
 |-
-(z1() - x1())^2 + (z2() - x2())^2 >= (1 * D1() + D2())^2
+(
+ (D2() > 0 &
+  D1() > 0 &
+  ((z1() - y1())^2 + (z2() - y2())^2) * 1 = ((D1())^2) * 1 & 
+  (x1() - y1())^2 + (x2() - y2())^2 >= (2 * D1() + D2())^2 )
+  ==>
+  (z1() - x1())^2 + (z2() - x2())^2 >= (1 * D1() + D2())^2
+) &
+ ( // switch the order of the 3rd and 4th assumptions
+   // This is the case that mysteriously does not work.
+ (D2() > 0 &
+  D1() > 0 &
+  (x1() - y1())^2 + (x2() - y2())^2 >= (2 * D1() + D2())^2 & 
+  ((z1() - y1())^2 + (z2() - y2())^2) * 1 = ((D1())^2) * 1
+ )
+  ==>
+  (z1() - x1())^2 + (z2() - x2())^2 >= (1 * D1() + D2())^2
+)
+& 
+( // try it with different constants on the right-hand side
+ (D2() > 0 &
+  D1() > 0 &
+  ((z1() - y1())^2 + (z2() - y2())^2) * 1 = ((D1())^2) * 1 & 
+  (x1() - y1())^2 + (x2() - y2())^2 >= (3 * D1() + D2())^2 )
+  ==>
+  (z1() - x1())^2 + (z2() - x2())^2 >= (2 * D1() + D2())^2
+) & (
+ (D2() > 0 &
+  D1() > 0 &
+  (x1() - y1())^2 + (x2() - y2())^2 >= (3 * D1() + D2())^2 & 
+  ((z1() - y1())^2 + (z2() - y2())^2) * 1 = ((D1())^2) * 1
+ )
+  ==>
+  (z1() - x1())^2 + (z2() - x2())^2 >= (2 * D1() + D2())^2
+)
+ &
+( 
+ (D2() > 0 &
+  D1() > 0 &
+  ((z1() - y1())^2 + (z2() - y2())^2) * 1 = ((D1())^2) * 1 & 
+  (x1() - y1())^2 + (x2() - y2())^2 >= (1 * D1() + D2())^2 )
+  ==>
+  (z1() - x1())^2 + (z2() - x2())^2 >= ( D2())^2
+) & (
+ (D2() > 0 &
+  D1() > 0 &
+  (x1() - y1())^2 + (x2() - y2())^2 >= (1 * D1() + D2())^2 & 
+  ((z1() - y1())^2 + (z2() - y2())^2) * 1 = ((D1())^2) * 1
+ )
+  ==>
+  (z1() - x1())^2 + (z2() - x2())^2 >= (D2())^2
+)
