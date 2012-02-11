@@ -125,6 +125,14 @@ final object Prover {
       )
     case Fn("/", List(t1, Num(n))) =>
       AM.tsimplify( Fn("/", List( totalDerivTerm(forall_i, d, t1), Num(n))) )
+	case Fn("/", List(t1, t2)) =>
+	  //@todo check
+	  AM.tsimplify(
+	    Fn("/", List(
+	      Fn("-", List(AM.tsimplify (Fn("*", List(totalDerivTerm(forall_i, d, t1), t2))),
+	           AM.tsimplify( Fn("*", List(t1,totalDerivTerm(forall_i, d, t2)))))),
+	      AM.tsimplify(Fn("^", List(t2,Num(2))))
+	  )))
     case Fn("^", List(t1, Num(n))) =>
       if(n == Exact.Integer(2)) {
         Fn("*", 
