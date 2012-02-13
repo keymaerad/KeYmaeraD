@@ -63,6 +63,11 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
         treeModelListeners.remove(l)
   }
 
+  def fireProved(nd: ProofNode) : Unit = {
+    val path = getPath(nd)
+    frontend.fireProved(path)
+  }
+
   def fireNodesInserted(pt: ProofNode, newnds: List[ProofNode]): Unit = {
     val path = getPath(pt)
     val c: Array[Object] = newnds.toArray
@@ -238,6 +243,11 @@ class FrontEnd(fa: Actor)
           TreeActions.gotonode(nd)
         case _ => null
       }
+    }
+
+    def fireProved(path: Array[Object]): Unit = {
+      val tpath = new javax.swing.tree.TreePath(path)
+      tree.collapsePath(tpath)
     }
 
     def fireNodesInserted(path: Array[Object]): Unit = {

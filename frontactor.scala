@@ -148,14 +148,17 @@ object TreeActions {
         os.find( _ != Proved) match {
            case None =>
              nd.setStatus(Proved)
-             treemodel.map(_.fireChanged(nd)) // GUI
+               treemodel.map(_.fireChanged(nd)) // GUI
              nd.getParent match {
                case Some(p) =>
                  propagateProvedUp(p, ndID)
                case None =>
              }    
            case Some(_) =>
-        }
+             // Collapse the newly proved child.
+             treemodel.map(_.fireProved(getnode(from))) // GUI
+  
+      }
 
       case OrNode(r,g) =>
         nd.setStatus(Proved)
