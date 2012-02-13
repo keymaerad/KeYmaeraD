@@ -84,10 +84,12 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
   def fireChanged(nd: ProofNode): Unit = {
     val path = getPath(nd)
-    val e = new TreeModelEvent(this, path)
-    for (l <- treeModelListeners) {
-      l.treeNodesChanged(e)
+    if (path.length > 0) {
+      val e = new TreeModelEvent(this, path)
+      for (l <- treeModelListeners) {
+        l.treeNodesChanged(e)
       }
+    }
   }
 
   def fireNewRoot(nd: ProofNode): Unit = {
@@ -118,7 +120,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
       case e =>
         println(e)
         println("was starting at " + nd)
-        throw new Error()
+        new Array[Object](0)
     }
   }
 
