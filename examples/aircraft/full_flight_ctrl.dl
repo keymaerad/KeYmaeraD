@@ -45,7 +45,7 @@ protectedzone() > 0
 
        /* ii NOT in a ca maneuver */    
      ++ ( ? (x1(ii) = disc1(ii) & x2(ii) = disc2(ii));
-          ca(ii) :=0;
+          ca(ii) := 0;
           om(ii) := *;
           d1(ii) := *; d2(ii) := *
       ))
