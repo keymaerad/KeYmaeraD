@@ -33,7 +33,9 @@
  m : () -> Real,
  b : () -> Real,
 
- tmp : () -> Real
+ tmp : () -> Real,
+
+ z : () -> Real
 }
 
 K() > 0, 

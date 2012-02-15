@@ -117,3 +117,8 @@ KNOWN ISSUES
 
 Parsing is not right-inverse to pretty printing, 
 mostly because of the "." notation for nullary functions.
+
+The formula "forall x : Real. x + 1 > x" does not parse
+as you might expect; it interprets "Real" as an abstract
+sort, *not* the real numbers. What you really need to write is
+"forall x. x + 1 > x".
