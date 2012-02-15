@@ -230,8 +230,8 @@ class FrontEnd(fa: Actor)
     override val minimumSize = new Dimension(100, 50)
     htmlView.setMinimumSize(minimumSize)
     treeView.setMinimumSize(minimumSize)
-    splitPane.setDividerLocation(300)
-    splitPane.setPreferredSize(new Dimension(800, 640))
+    splitPane.setDividerLocation(400)
+    splitPane.setPreferredSize(java.awt.Toolkit.getDefaultToolkit().getScreenSize())
 
     //@TODO Add the split pane to this panel.
     //contents = splitPane
