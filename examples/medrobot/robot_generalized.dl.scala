@@ -11,12 +11,12 @@ val cut2 =
        "G = FN + (D0 + 1 / 2 * K * FNP * e()^2) * TMP"),
     parseFormula(
        "((1/2) * K * FNP < 0 )  ==>" + 
-       "((forall x1 . forall x2 . ( FN < - FNP * x1 & x1 < x2) ==> "+
-       " (1/2) * K * FNP * x1^2 + K * FN * x1 > " +
-       " (1/2) * K * FNP * x2^2 + K * FN * x2 )  & " +
-       " (forall x1 . forall x2 . (FN > - FNP * x1 & x1 > x2) ==> "+
-       " (1/2) * K * FNP * x1^2 + K * FN * x1 > " +
-       " (1/2) * K * FNP * x2^2 + K * FN * x2 )  ) "
+       "((forall x1 . forall x2 . ( FN <= - FNP * x1 & x1 <= x2) ==> "+
+      " (1/2) * K * FNP * x1^2 + K * FN * x1 >= " +
+       " (1/2) * K * FNP * x2^2 + K * FN * x2 ) )" //" & " +
+//       " (forall x1 . forall x2 . (FN > - FNP * x1 & x1 > x2) ==> "+
+//       " (1/2) * K * FNP * x1^2 + K * FN * x1 > " +
+//       " (1/2) * K * FNP * x2^2 + K * FN * x2 )  ) "
     )
   )
 
@@ -51,9 +51,25 @@ val main =
                                hpalpha1T*,
                                tryruleT(andRight)<(
                                  easiestT,
-                                 cut2<(
+                                 cutT(
+                                   StandardKeepCut,
+                                   parseFormula("FNP = FXP * nx() + FYP * ny()"),
+                                   parseFormula("~ FNP = 0")
+                                 )<(
                                    alleasyT,
-                                   nilT
+                                   cut2<(
+                                     alleasyT,
+                                     tryruleT(impLeft)<(
+                                       composelistT(
+                                         alphaT,
+                                         substT*,
+                                         tryruleT(allLeft(Fn("s", Nil))),
+                                         tryruleT(allLeft(Fn("e", Nil))),
+                                         hideunivsT(Real)
+                                       ),
+                                       alleasyT
+                                     )
+                                   )
                                  )
                                )
                              )
