@@ -27,7 +27,8 @@ val cut2 =
        " (1/2) * K * FNP * x2^2 + K * (FN - G) * x2 )  & "+
        " (forall x1 . forall x2 . (FN - G >= - FNP * x1 & x1 >= x2) ==> "+
        " (1/2) * K * FNP * x1^2 + K * (FN - G) * x1 >= " +
-       " (1/2) * K * FNP * x2^2 + K * (FN - G) * x2 ))   "
+       " (1/2) * K * FNP * x2^2 + K * (FN - G) * x2 ) &  " +
+       " ( FN - G <= 0  | FN - G >= 0) ) "
     )
   )
 
@@ -84,7 +85,7 @@ val main =
                                    parseFormula("~ FNP = 0"))<(
                                      alleasyT,
                                      cut2<(
-                                       alleasyT,
+                                       (hideallbutT(List(LeftP(0), LeftP(4), RightP(0))) & alleasyT),
                                        tryruleT(impLeft)<(
                                          composelistT(
                                            alphaT*,
@@ -93,7 +94,10 @@ val main =
                                            tryruleatT(allLeft(Fn("s", Nil)))(LeftP(3)),
                                            tryruleatT(allLeft(Num(Exact.Integer(0))))(LeftP(0)),
                                            hideunivsT(Real),
-                                           nilT
+                                           tryruleT(orLeft)<(
+                                             nilT,
+                                             nilT
+                                           )
                                          ),
                                          easiestT
                                        )

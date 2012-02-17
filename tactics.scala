@@ -944,6 +944,23 @@ object Tactics {
     }
   }
 
+  def hideallbutT(keepers : List[Position]) : Tactic = new Tactic("hideallbut"){
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val sq@Sequent(sig, c,s) = nd.goal
+      var tohide: List[Formula] = Nil
+      for(p <- positions(sq)) {
+        val fm = lookup(p,sq)
+        tohide = if(keepers.contains(p)) tohide else fm::tohide
+      }
+
+      val tct = tohide.foldRight(unitT)((fm1,rt) 
+                                        => composeT(tryrulematchT(hide)(fm1),
+                                                    rt));
+      tct(nd)
+
+    }
+  }
+
   val hidethencloseT = composeT(hidecantqeT, closeOrArithT)
 
   sealed abstract class CutType
