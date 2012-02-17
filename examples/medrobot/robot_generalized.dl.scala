@@ -22,12 +22,29 @@ val cut2 =
        "G = FN + (D0 + 1 / 2 * K * FNP * e()^2) * TMP"),
     parseFormula(
        "((1/2) * K * FNP < 0 )  ==>" + 
-       "((forall x1 . forall x2 . ( FN <= - FNP * x1 & x1 <= x2) ==> "+
-      " (1/2) * K * FNP * x1^2 + K * FN * x1 >= " +
-       " (1/2) * K * FNP * x2^2 + K * FN * x2 ) )" //" & " +
-//       " (forall x1 . forall x2 . (FN > - FNP * x1 & x1 > x2) ==> "+
-//       " (1/2) * K * FNP * x1^2 + K * FN * x1 > " +
-//       " (1/2) * K * FNP * x2^2 + K * FN * x2 )  ) "
+       "((forall x1 . forall x2 . (FN - G <= - FNP * x1 & x1 <= x2) ==> "+
+      " (1/2) * K * FNP * x1^2 + K * (FN - G) * x1 >= " +
+       " (1/2) * K * FNP * x2^2 + K * (FN - G) * x2 )  & "+
+       " (forall x1 . forall x2 . (FN - G >= - FNP * x1 & x1 >= x2) ==> "+
+       " (1/2) * K * FNP * x1^2 + K * (FN - G) * x1 >= " +
+       " (1/2) * K * FNP * x2^2 + K * (FN - G) * x2 ))   "
+    )
+  )
+
+val cut2q = 
+  cutT(
+    StandardCut,
+    parseFormula(
+       "G = FN + (D0 + 1 / 2 * K * FNP * e()^2) * TMP"),
+    parseFormula(
+       "forall a : Real. forall  b: Real. " +
+       "(a < 0 )  ==>" + 
+       "((forall x1 . forall x2 . ( b <= - 2 * a * x1 & x1 <= x2) ==> "+
+      " a * x1^2 + b * x1 >= " +
+       " a * x2^2 + b * x2 )  & "+
+       " (forall x1 . forall x2 . (b >= - 2 * a * x1 & x1 >= x2) ==> "+
+       " a * x1^2 + b * x1 >= " +
+       " a * x2^2 + b * x2 )  ) "
     )
   )
 
@@ -64,23 +81,24 @@ val main =
                                  cutT(
                                    StandardKeepCut,
                                    parseFormula("FNP = FXP * nx() + FYP * ny()"),
-                                   parseFormula("~ FNP = 0")
-                                 )<(
-                                   alleasyT,
-                                   cut2<(
+                                   parseFormula("~ FNP = 0"))<(
                                      alleasyT,
-                                     tryruleT(impLeft)<(
-                                       composelistT(
-                                         alphaT,
-                                         substT*,
-                                         tryruleT(allLeft(Fn("s", Nil))),
-                                         tryruleT(allLeft(Fn("e", Nil))),
-                                         hideunivsT(Real)
-                                       ),
-                                       alleasyT
+                                     cut2<(
+                                       alleasyT,
+                                       tryruleT(impLeft)<(
+                                         composelistT(
+                                           alphaT*,
+                                           tryruleatT(allLeft(Fn("s", Nil)))(LeftP(0)),
+                                           tryruleatT(allLeft(Fn("e", Nil)))(LeftP(0)),
+                                           tryruleatT(allLeft(Fn("s", Nil)))(LeftP(3)),
+                                           tryruleatT(allLeft(Num(Exact.Integer(0))))(LeftP(0)),
+                                           hideunivsT(Real),
+                                           nilT
+                                         ),
+                                         easiestT
+                                       )
                                      )
                                    )
-                                 )
                                )
                              )
                            )
