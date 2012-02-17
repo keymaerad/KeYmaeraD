@@ -7,7 +7,7 @@
   // linear velocites
   v : (C) -> Real,
 
-  // tangent vector. velocity is v.(d1, d2)
+  // unit tangent vector. velocity is v.(d1, d2)
   d1 : (C) -> Real,
   d2 : (C) -> Real,
 
@@ -18,6 +18,7 @@
   disc2 : (C) -> Real,
 
   // 0 if airplane is free
+  // 1 if airplane is in collision avoidance maneuver
   ca : (C) -> Real,
 
   ii : () -> C
@@ -27,9 +28,12 @@
 // (disc1, disc2) is point orthogonal to trajectory of aircraft
 // and distance minr away.
 //{
-//  disc1(i) == -d2(i)*minr/sqrt(d1(i)^2 + d2(i)^2) + x1(i)
-//  disc2(i) ==  d1(i)*minr/sqrt(d1(i)^2 + d2(i)^2) + x2(i)
+//  disc1(i) == -d2(i) * minr + x1(i)
+//  disc2(i) ==  d1(i) * minr + x2(i)
 //}
+
+// how does minr() relate to om(ii) during a maneuver?
+// 
 
 forall i : C .
    forall j : C .
@@ -52,20 +56,27 @@ protectedzone() > 0
       /* ii in a ca maneuver */ 
      ( (ca(ii) := 1; om(ii) := *;
         d1(ii) := -om(ii) * (x2(ii) - disc2(ii));
-        d2(ii) := om(ii) * (x1(ii) - disc1(ii))
+        d2(ii) := om(ii) * (x1(ii) - disc1(ii)) 
         // we are using an explicit definition, so it would be nice to have an assert (or just cut this equation in)
         //!( (disc1(ii) - x1(ii))^2 + (disc2(ii) - x2(ii))^2 = minr()^2); 
         )
 
        /* ii NOT in a ca maneuver */    
-     ++ ( ca(ii) := 0;
-          om(ii) := *;
-          d1(ii) := *; d2(ii) := *
-      ))
+     ++ ( (?ca(ii) = 0);
+       
+           ((om(ii) := *)  // free flight
+           ++
+             // enter maneuver
+            (om(ii) := XXX; ca(ii) := 1))
+      )
+    )
    )
      ++
   (forall i : C
-       {x1(i)' = d1(i), x2(i)' = d2(i), d1(i)' = -om(i) * d2(i), d2(i)' = om(i) * d1(i); 
+       {x1(i)' = v() * d1(i),
+        x2(i)' = v() * d2(i),
+        d1(i)' = -om(i) * d2(i),
+        d2(i)' = om(i) * d1(i); 
         forall j : C.
         ((ca (i) = 0 | ca (j) = 0) ==>
             (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (2*minr() + protectedzone())^2)
