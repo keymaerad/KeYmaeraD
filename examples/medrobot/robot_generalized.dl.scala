@@ -28,7 +28,7 @@ val cut2 =
        " (forall x1 . forall x2 . (FN - G >= - FNP * x1 & x1 >= x2) ==> "+
        " (1/2) * K * FNP * x1^2 + K * (FN - G) * x1 >= " +
        " (1/2) * K * FNP * x2^2 + K * (FN - G) * x2 ) &  " +
-       " ( FN - G <= 0  | FN - G >= 0) ) "
+       " ( FN - G <= 0  |   (FN - G >= 0 & ( true  ) )     ) ) "
     )
   )
 
@@ -95,7 +95,9 @@ val main =
                                            tryruleatT(allLeft(Num(Exact.Integer(0))))(LeftP(0)),
                                            hideunivsT(Real),
                                            tryruleT(orLeft)<(
-                                             nilT,
+                                             composelistT(
+                                               tryruleatT(hide)(LeftP(0))
+                                             ),
                                              nilT
                                            )
                                          ),
