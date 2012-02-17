@@ -33,11 +33,12 @@
 //  disc2(i) ==  d1(i) * minr(i) + x2(i)
 //}
 
-
-
 // how does minr(i) relate to maxom(i) and v(i) during a maneuver?
 
-forall i : C . minr(i) > 0 & v(i) > 0 & maxom(i) > 0 & maxom(i) * minr(i) = v(i),
+forall i : C .
+  minr(i) > 0 & v(i) > 0 & maxom(i) > 0
+  & maxom(i) * minr(i) = v(i)
+  & d1(i)^2 + d2(i)^2 = 1,
 
 //forall i : C .
 //   forall j : C .
@@ -53,11 +54,10 @@ forall i : C .
 
 forall i : C . (  
       (ca(i) = 0 | ca(i) = 1) 
-    & d1(i) * ca(i) = -om(i) * (x2(i) - disc2(i) ) * ca(i) 
-    & d2(i) * ca(i) = om(i) * (x1(i) - disc1(i) ) * ca(i)
+    & d1(i) * ca(i) = -om(i) * (-d1(i) * minr(i) ) * ca(i) 
+    & d2(i) * ca(i) = om(i) * (d2(i) * minr(i) ) * ca(i)
 
      ),
-
 
 protectedzone() > 0
 

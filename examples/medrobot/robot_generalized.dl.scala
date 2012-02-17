@@ -96,16 +96,30 @@ val main =
                                            hideunivsT(Real),
                                            tryruleT(orLeft)<(
                                              composelistT(
-                                               tryruleatT(hide)(LeftP(0))
+                                               tryruleatT(hide)(LeftP(0)),
+                                               tryruleT(impLeft)<(
+                                                 composelistT(
+                                                   nilT
+                                                 ),
+                                                 easiestT
+                                               )
                                              ),
                                              composelistT(
                                                alphaT*,
                                                tryruleT(orLeft)<(
                                                  composelistT(
-                                                   tryruleatT(hide)(LeftP(0))
+                                                   tryruleatT(hide)(LeftP(0)),
+                                                   tryruleT(impLeft)<(
+                                                     nilT,
+                                                     easiestT
+                                                   )
                                                  ),
                                                  composelistT(
-                                                   tryruleatT(hide)(LeftP(1))
+                                                   tryruleatT(hide)(LeftP(1)),
+                                                   tryruleT(impLeft)<(
+                                                     nilT,
+                                                     easiestT
+                                                   )
                                                  )
                                                )
                                              )
