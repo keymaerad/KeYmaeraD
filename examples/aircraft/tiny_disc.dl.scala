@@ -59,20 +59,46 @@ val doasgns =
   )
 
 
-val entercatct = 
+val incatct = 
   composelistT(
     hpalpha1T*,
     tryruleT(andRight)<(
       tryruleT(andRight)<(
-        tryruleT(close),
-        doasgns
+        easiestT,
+        composelistT(
+          alphaT*,
+          instantiatebyT(St("C"))(List (("i", List("i")))),
+          easiestT
+        )
       ),
-      (tryruleT(close) | alphaT | betaT)*
+      tryruleT(andRight)<(
+        easiestT,
+        composelistT(
+          alphaT*,
+          instantiatebyT(St("C"))(List (("i", List("i")),
+                                        ("j", List("i")))),
+          hideunivsT(St("C")),
+          alphaT*,
+          cut1<(
+            composelistT(
+              alphaT*,
+              substT,
+              vacuousT*,
+              nullarizeT*,
+              easiestT
+            ),
+            composelistT(
+              (tryruleT(impLeft) & (tryruleT(close)*))*,
+              alleasyT
+            )
+          )
+        )
+      )
     )
   )
 
 
-val exitcatct = 
+val outcatct = 
    composelistT(
     hpalpha1T*,
     tryruleT(andRight)<(
@@ -85,7 +111,7 @@ val exitcatct =
 )
 
 val controltct = composelistT(hpalphaT*,
-                              tryruleT(andRight)<(entercatct, exitcatct))
+                              tryruleT(andRight)<(incatct, outcatct))
 
 val diffinv1 = parseFormula("forall k : C . (ca(k) = 0 | ca(k) = 1)")
 
