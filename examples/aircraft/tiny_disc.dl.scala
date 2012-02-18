@@ -219,6 +219,8 @@ val postconditiontct =
   composelistT(
     alphaT*,
     hideallbutT(List(LeftP(0), LeftP(1), LeftP(3), RightP(0))),
+//    instantiatebyT(St("C"))(List(("i", List("i")),
+//                                 ("j", List("j")))),
     cutT(
       DirectedCut,
       parseFormula(

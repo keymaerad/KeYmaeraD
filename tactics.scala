@@ -136,42 +136,45 @@ object Tactics {
 
 
   def usehintsT(pos: Position): Tactic = new Tactic("usehints") {
-    def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
-      case Modality(Box,Loop(hp, True, inv_hints), phi) => 
-        val rules = inv_hints.map(loopInduction)
-        // XXX be smarter about success and failure.
-        Some(rules.map(r => applyrule(nd, pos, r)).flatten.flatten)
-      case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
-        val inv_rules = inv_hints.map(diffStrengthen)
-        val inv_res = inv_rules.map(r => applyrule(nd, pos, r)).flatten.flatten
-        val sol_rule1 = diffSolve(Endpoint)(sols)
-        val sol_rule2 = diffSolve(Standard)(sols)
-        val sol_res1 = applyrule(nd,pos,sol_rule1) match {
-          case None => Nil
-          case Some(lst) => lst
-        }
-        val sol_res2 = applyrule(nd,pos,sol_rule2) match {
-          case None => Nil
-          case Some(lst) => lst
-        } 
-      // XXX
-        Some(sol_res1 ++ sol_res2 ++ inv_res)
-      case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
-        val sol_rule1 = qDiffSolve(Endpoint)(sols)
-        val sol_rule2 = qDiffSolve(Standard)(sols)
-        val sol_res1 = applyrule(nd,pos,sol_rule1) match {
-          case None => Nil
-          case Some(lst) => lst
-        }
-        val sol_res2 = applyrule(nd,pos,sol_rule2) match {
-          case None => Nil
-          case Some(lst) => lst
-        } 
-        Some(sol_res1 ++ sol_res2)
+    def apply(nd: OrNode ) = try {
+      lookup(pos, nd.goal) match {
+        case Modality(Box,Loop(hp, True, inv_hints), phi) => 
+          val rules = inv_hints.map(loopInduction)
+          // XXX be smarter about success and failure.
+          Some(rules.map(r => applyrule(nd, pos, r)).flatten.flatten)
+        case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
+          val inv_rules = inv_hints.map(diffStrengthen)
+          val inv_res = inv_rules.map(r => applyrule(nd, pos, r)).flatten.flatten
+          val sol_rule1 = diffSolve(Endpoint)(sols)
+          val sol_rule2 = diffSolve(Standard)(sols)
+          val sol_res1 = applyrule(nd,pos,sol_rule1) match {
+            case None => Nil
+            case Some(lst) => lst
+          }
+          val sol_res2 = applyrule(nd,pos,sol_rule2) match {
+            case None => Nil
+            case Some(lst) => lst
+          } 
+          // XXX
+          Some(sol_res1 ++ sol_res2 ++ inv_res)
+        case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
+          val sol_rule1 = qDiffSolve(Endpoint)(sols)
+          val sol_rule2 = qDiffSolve(Standard)(sols)
+          val sol_res1 = applyrule(nd,pos,sol_rule1) match {
+            case None => Nil
+            case Some(lst) => lst
+          }
+          val sol_res2 = applyrule(nd,pos,sol_rule2) match {
+            case None => Nil
+            case Some(lst) => lst
+          } 
+          Some(sol_res1 ++ sol_res2)
 
         
-      case _ => None
-    }
+        case _ => None
+      }
+    } catch { case _ => None }
+
   }
 
   object LinearAlgebra {
@@ -339,26 +342,25 @@ object Tactics {
     }
 
 
-    def apply(nd: OrNode ) = lookup(pos,nd.goal) match {
+    def apply(nd: OrNode ) =
+      try {
+        lookup(pos,nd.goal) match {
+        
+          case Modality(Box,Evolve(derivs, h, inv_hints, Nil), phi) =>
+            val sols = derivsToSols(derivs)
+            applyrule(nd, pos, diffSolve(md)(sols))
 
-      case Modality(Box,Evolve(derivs, h, inv_hints, Nil), phi) =>
-        try {
-          val sols = derivsToSols(derivs)
-          applyrule(nd, pos, diffSolve(md)(sols))
-        } catch {
+          case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
+            val sol_rule1 = diffSolve(md)(sols)
+            applyrule(nd,pos,sol_rule1) 
+
+          case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
+            val sol_rule1 = qDiffSolve(md)(sols)
+            applyrule(nd,pos,sol_rule1)         
           case _ => None
         }
-
-      case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
-        val sol_rule1 = diffSolve(md)(sols)
-        applyrule(nd,pos,sol_rule1) 
-
-      case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
-        val sol_rule1 = qDiffSolve(md)(sols)
-        applyrule(nd,pos,sol_rule1)         
-      case _ => None
+      } catch { case _ => None }
     }
-  }
 
 
 

@@ -81,7 +81,7 @@ object TreeActions {
   def applyrule(hn: OrNode, 
                 p: Position, 
                 rl: ProofRule): Option[List[NodeID]] = try {
-    val res =     rl(p)(hn.goal) 
+    val res =  try { rl(p)(hn.goal) } catch {case _ => None}
     res match {
       case Some((Nil, _)) | Some((List(Sequent(_,Nil,List(True))),_)) => //proved
         val pnd = new DoneNode(rl.toString, hn.goal)
