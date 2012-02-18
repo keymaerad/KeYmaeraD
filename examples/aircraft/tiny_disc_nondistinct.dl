@@ -45,16 +45,15 @@ forall i : C .
   maxom(i) * minr(i) = v(i),
 
 //forall i : C .
-//   forall j : C . i /= j ==>
+//   forall j : C .
 //      (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= 
 //        (minr(i) + minr(j) + protectedzone())^2,
 
 forall i : C .
    forall j : C .
-    (i /= j ==>
       (minr(j) * d2(j) - minr(i) * d2(i) + x1(i) - x1(j) )^2 +
       (minr(i) * d1(i) - minr(j) * d1(j)   + x2(i) - x2(j))^2 >= 
-      (minr(i) + minr(j) + protectedzone())^2),
+      (minr(i) + minr(j) + protectedzone())^2,
 
 
 forall i : C . (  
@@ -92,7 +91,7 @@ protectedzone() > 0
         d1(i)' = -om(i) * d2(i),
         d2(i)' = om(i) * d1(i); 
         forall j : C.
-        ((i /= j &  (ca(i) = 0 | ca(j) = 0)) ==>
+        ((ca (i) = 0 | ca (j) = 0) ==>
               (minr(j) * d2(j) - minr(i) * d2(i) + x1(i) - x1(j) )^2 +
               (minr(i) * d1(i) - minr(j) * d1(j)   + x2(i) - x2(j))^2 >= 
               (minr(i) + minr(j) + protectedzone())^2)
@@ -100,6 +99,4 @@ protectedzone() > 0
 
  }*] 
  (forall i : C .
-    forall j : C .
-      (i /= j ==>
-        (x1(i) - x1(j))^2 + (x2(i) - x2(j))^2 >= protectedzone()^2))
+    forall j : C .(x1(i) - x1(j))^2 + (x2(i) - x2(j))^2 >= protectedzone()^2)
