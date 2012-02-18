@@ -81,7 +81,7 @@ object TreeActions {
   def applyrule(hn: OrNode, 
                 p: Position, 
                 rl: ProofRule): Option[List[NodeID]] = try {
-    val res =     rl(p)(hn.goal) 
+    val res =  try { rl(p)(hn.goal) } catch {case _ => None}
     res match {
       case Some((Nil, _)) | Some((List(Sequent(_,Nil,List(True))),_)) => //proved
         val pnd = new DoneNode(rl.toString, hn.goal)
@@ -148,14 +148,17 @@ object TreeActions {
         os.find( _ != Proved) match {
            case None =>
              nd.setStatus(Proved)
-             treemodel.map(_.fireChanged(nd)) // GUI
+               treemodel.map(_.fireChanged(nd)) // GUI
              nd.getParent match {
                case Some(p) =>
                  propagateProvedUp(p, ndID)
                case None =>
              }    
            case Some(_) =>
-        }
+             // Collapse the newly proved child.
+             treemodel.map(_.fireProved(getnode(from))) // GUI
+  
+      }
 
       case OrNode(r,g) =>
         nd.setStatus(Proved)
@@ -468,57 +471,57 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
 
       val fi = 
         new java.io.FileInputStream(filename)
-    if (filename.endsWith(".dl")) {
-    val dlp = new DLParser(fi)
-    dlp.result match {
-      case Some(g) =>
-        val nd = new OrNode("loaded from " + filename, g)
-        register(nd)
-        hereNode = nd
-        rootNode = nd
-        treemodel.map(_.fireNewRoot(nd))// GUI
-      case None =>
-        val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
-        register(nd)
-        hereNode = nd
-        rootNode = nd
-        treemodel.map(_.fireNewRoot(nd))// GUI
-        println("failed to parse file " + filename)
-        //@TODO Display an error. Notify the GUI of the error, which should display the message
+      if (filename.endsWith(".dl")) {
+        val dlp = new DLParser(fi)
+        dlp.result match {
+          case Some(g) =>
+            val nd = new OrNode("loaded from " + filename, g)
+          register(nd)
+          hereNode = nd
+          rootNode = nd
+          treemodel.map(_.fireNewRoot(nd))// GUI
+          case None =>
+            val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
+          register(nd)
+          hereNode = nd
+          rootNode = nd
+          treemodel.map(_.fireNewRoot(nd))// GUI
+          println("failed to parse file " + filename)
+          //@TODO Display an error. Notify the GUI of the error, which should display the message
 
-    }
-    }
-    else if (filename.endsWith(".key")){
-    val keyp = new KEYParser(fi)
-    keyp.result match {
-      case Some(g) =>
-        val nd = new OrNode("loaded from " + filename, g)
-        register(nd)
-        hereNode = nd
-        rootNode = nd
-        treemodel.map(_.fireNewRoot(nd))// GUI
-      case None =>
-      val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
-        register(nd)
-        hereNode = nd
-        rootNode = nd
-        treemodel.map(_.fireNewRoot(nd))// GUI
-       println("failed to parse file " + filename)
+        }
+      }
+      else if (filename.endsWith(".key")){
+        val keyp = new KEYParser(fi)
+        keyp.result match {
+          case Some(g) =>
+            val nd = new OrNode("loaded from " + filename, g)
+          register(nd)
+          hereNode = nd
+          rootNode = nd
+          treemodel.map(_.fireNewRoot(nd))// GUI
+          case None =>
+            val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
+          register(nd)
+          hereNode = nd
+          rootNode = nd
+          treemodel.map(_.fireNewRoot(nd))// GUI
+          println("failed to parse file " + filename)
+          
+        }
+      }
 
-    }
-    }
+      ()
 
-    ()
-
-  } catch {
-    case e =>
-      println("failed to load file " + filename)
-      println("due to " + e)
-  }
+    } catch {
+      case e =>
+        println("failed to load file " + filename)
+        println("due to " + e)
+    }
 
     // Do this last, so that if we are loading a script,
     // that's what we remember.
-  sourceFileName = Some(filename)
+    sourceFileName = Some(filename)
 
 }
 

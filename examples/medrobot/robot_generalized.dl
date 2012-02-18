@@ -1,0 +1,111 @@
+{
+ /*  position of tip */
+ qx : () -> Real,
+ qy : () -> Real,
+
+ K : () -> Real,
+ fx : () -> Real,
+ fy : () -> Real,
+ fxp : () -> Real,
+ fyp : () -> Real,
+ e : () -> Real,
+ t : () -> Real,
+ g : () -> Real,
+ dist : () -> Real,
+ disc : () -> Real,
+
+
+
+
+ fnp : () -> Real,
+ fn : () -> Real,
+
+ d0 : () -> Real,
+
+ // An arbitrary point on the boundary line.
+ px : () -> Real,
+ py : () -> Real,
+
+ // Unit normal for boundary line.
+ nx : () -> Real,
+ ny : () -> Real,
+
+ m : () -> Real,
+ b : () -> Real,
+
+ tmp : () -> Real
+}
+
+K() > 0, 
+e() > 0, 
+
+nx()^2 + ny()^2 = 1,
+
+// Start on the correct side of boundary line.
+(qx() - px()) * nx() + (qy() - py()) * ny() >=0
+
+|-
+
+[
+{
+ (fxp := *;
+  fyp := *;
+  fnp := fxp() * nx() + fyp() * ny();
+  fn := fx() * nx() + fy() * ny();
+  d0 := (qx() - px()) * nx() + (qy() - py()) * ny();
+  dist := (d0 + K() * (fn() * e() + fnp() * e()^2 * (1/2)));
+  disc := (( K() * fn())^2 - 2 * K() * fnp() * d0())
+  );
+
+  ((? (fnp() <= 0 & dist() >= 0); g :=0)
+  ++
+   (?(fnp() <= 0 & dist() <= 0);
+    tmp := *;
+    (? tmp() * K() * e() = 1);
+    g := fn() + ((d0() + (1/2)*K() * fnp() * (e()^2)) * tmp())
+  ) 
+  ++
+  ( (? fnp() >= 0 & fn() <= 0 & disc() <= 0);
+    g := 0
+  )
+  ++
+  ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() >= 0);
+    tmp := *;
+    (? tmp * tmp * K = 2 * d0() * fnp() & tmp() >= 0);
+    g := fn() + tmp()
+  ) 
+  ++
+  ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() <= 0 & dist() <= 0);
+    tmp := *;
+    (? tmp * tmp * K = 2 * d0() * fnp() & tmp() >= 0);
+    g := fn() + tmp()
+  ) 
+  ++
+  ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() <= 0 & dist() >= 0);
+    g := 0
+  ) 
+
+  ++
+  ( (? fnp() >= 0 & fn() >= 0);
+    g := 0
+  ) 
+ );
+ t() := 0;
+ {qx' = K() * (fx() - g() * nx()), 
+  qy' = K() * (fy() - g() * ny()),
+  fx' = fxp(),
+  fy' = fyp(),
+  t' = 1;
+  t() <= e()}
+  @solution(forall s. qx(s) = qx() + K() * (fx() - g() * nx()) * s() + (1/2) * K() * fxp() * s^2,
+            forall s. qy(s) = qy() + K() * (fy() - g() * ny()) * s() + (1/2) * K() * fyp() * s^2,
+            forall s. fx(s) = fx() + fxp() * s,
+            forall s. fy(s) = fy() + fyp() * s,
+            forall s. t(s) = t() + s)
+
+
+}*
+] 
+(qx() - px()) * nx() + (qy() - py()) * ny() >= 0
+
+ 

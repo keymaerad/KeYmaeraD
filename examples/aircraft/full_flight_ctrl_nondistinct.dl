@@ -16,8 +16,7 @@
 
 forall i : C .
    forall j : C .
-    (i /= j ==>
-      (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2),
+      (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2,
 
 forall i : C . (	
          (ca(i) = 0 | ca(i) = 1) &
@@ -63,5 +62,4 @@ protectedzone() > 0
 
  }*] 
  (forall i : C .
-    forall j : C .
-     (i /= j ==>  (x1(i) - x1(j))^2 + (x2(i) - x2(j))^2 >= protectedzone()^2))
+    forall j : C .(x1(i) - x1(j))^2 + (x2(i) - x2(j))^2 >= protectedzone()^2)

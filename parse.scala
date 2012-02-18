@@ -100,9 +100,13 @@ class DLParser(ins : String)
      "exists" ~> ident ~ "."~ formula00 ^^ 
                { case x ~ "." ~ f => Quantifier(Exists,Real,x, f)} |
      "forall" ~> ident ~ ":" ~ ident ~ "." ~ formula00 ^^ 
-               { case x ~ ":" ~ c ~ "." ~ f => Quantifier(Forall,St(c), x, f)} |
+               { case x ~ ":" ~ "Real" ~ "." ~ f => Quantifier(Forall, Real, x, f)
+                 case x ~ ":" ~ c ~ "." ~ f => Quantifier(Forall, St(c), x, f)
+               } |
      "exists" ~> ident ~ ":" ~ ident ~ "." ~ formula00 ^^ 
-               { case x ~ ":" ~ c ~ "." ~ f => Quantifier(Exists,St(c),x, f)} |
+               { case x ~ ":" ~ "Real" ~ "." ~ f => Quantifier(Exists,Real,x, f)
+                 case x ~ ":" ~ c ~ "." ~ f => Quantifier(Exists,St(c),x, f)
+               } |
      formula0
 
    def formula0 : Parser[Formula] = 

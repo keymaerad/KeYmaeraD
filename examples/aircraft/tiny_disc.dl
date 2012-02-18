@@ -1,0 +1,105 @@
+{
+  protectedzone : () -> Real,
+  minr : (C) -> Real,
+  x1 : (C) -> Real,
+  x2 : (C) -> Real,
+
+  // linear velocites
+  v : (C) -> Real,
+
+  // unit tangent vector. velocity is v.(d1, d2)
+  d1 : (C) -> Real,
+  d2 : (C) -> Real,
+
+  // angular velocity
+  om : (C) -> Real,
+  maxom : (C) -> Real,
+
+  disc1 : (C) -> Real,
+  disc2 : (C) -> Real,
+
+  // 0 if airplane is free
+  // 1 if airplane is in collision avoidance maneuver
+  ca : (C) -> Real,
+
+  ii : () -> C
+}
+
+// For now we look only at right turn CA
+// (disc1, disc2) is point orthogonal to trajectory of aircraft
+// and distance minr away.
+//{
+//  disc1(i) == -d2(i) * minr(i) + x1(i)
+//  disc2(i) ==  d1(i) * minr(i) + x2(i)
+//}
+
+// how does minr(i) relate to maxom(i) and v(i) during a maneuver?
+
+forall i : C .
+  minr(i) > 0 & 
+  d1(i)^2 + d2(i)^2 = 1,
+
+forall i : C .
+  v(i) > 0 & 
+  maxom(i) > 0 &
+  maxom(i) * minr(i) = v(i),
+
+//forall i : C .
+//   forall j : C . i /= j ==>
+//      (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= 
+//        (minr(i) + minr(j) + protectedzone())^2,
+
+forall i : C .
+   forall j : C .
+    (i /= j ==>
+      (minr(j) * d2(j) - minr(i) * d2(i) + x1(i) - x1(j) )^2 +
+      (minr(i) * d1(i) - minr(j) * d1(j)   + x2(i) - x2(j))^2 >= 
+      (minr(i) + minr(j) + protectedzone())^2),
+
+
+forall i : C . (  
+      (ca(i) = 0 | ca(i) = 1) 
+     & v(i) * ca(i) = om(i) * minr(i)  * ca(i) 
+     ),
+
+protectedzone() > 0
+
+|-   
+
+[{ (ii := *;
+      /* ii in a ca maneuver */ 
+     (( (?ca(ii) = 1);
+
+       /* exit the maneuver */
+       ca(ii) := 0 )
+
+       /* ii NOT in a ca maneuver */    
+     ++ ( (?ca(ii) = 0);
+          (
+           // free flight
+           (om(ii) := *)  
+           ++
+           // enter maneuver
+           (om(ii) := maxom(ii); ca(ii) := 1)
+          )
+      )
+    )
+   )
+     ++
+  (forall i : C
+       {x1(i)' = v(i) * d1(i),
+        x2(i)' = v(i) * d2(i),
+        d1(i)' = -om(i) * d2(i),
+        d2(i)' = om(i) * d1(i); 
+        forall j : C.
+        ((i /= j &  (ca(i) = 0 | ca(j) = 0)) ==>
+              (minr(j) * d2(j) - minr(i) * d2(i) + x1(i) - x1(j) )^2 +
+              (minr(i) * d1(i) - minr(j) * d1(j)   + x2(i) - x2(j))^2 >= 
+              (minr(i) + minr(j) + protectedzone())^2)
+            })
+
+ }*] 
+ (forall i : C .
+    forall j : C .
+      (i /= j ==>
+        (x1(i) - x1(j))^2 + (x2(i) - x2(j))^2 >= protectedzone()^2))

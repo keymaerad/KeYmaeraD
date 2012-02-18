@@ -63,6 +63,11 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
         treeModelListeners.remove(l)
   }
 
+  def fireProved(nd: ProofNode) : Unit = {
+    val path = getPath(nd)
+    frontend.fireProved(path)
+  }
+
   def fireNodesInserted(pt: ProofNode, newnds: List[ProofNode]): Unit = {
     val path = getPath(pt)
     val c: Array[Object] = newnds.toArray
@@ -79,10 +84,12 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
   def fireChanged(nd: ProofNode): Unit = {
     val path = getPath(nd)
-    val e = new TreeModelEvent(this, path)
-    for (l <- treeModelListeners) {
-      l.treeNodesChanged(e)
+    if (path.length > 0) {
+      val e = new TreeModelEvent(this, path)
+      for (l <- treeModelListeners) {
+        l.treeNodesChanged(e)
       }
+    }
   }
 
   def fireNewRoot(nd: ProofNode): Unit = {
@@ -113,7 +120,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
       case e =>
         println(e)
         println("was starting at " + nd)
-        throw new Error()
+        new Array[Object](0)
     }
   }
 
@@ -223,8 +230,8 @@ class FrontEnd(fa: Actor)
     override val minimumSize = new Dimension(100, 50)
     htmlView.setMinimumSize(minimumSize)
     treeView.setMinimumSize(minimumSize)
-    splitPane.setDividerLocation(300)
-    splitPane.setPreferredSize(new Dimension(800, 640))
+    splitPane.setDividerLocation(400)
+    splitPane.setPreferredSize(java.awt.Toolkit.getDefaultToolkit().getScreenSize())
 
     //@TODO Add the split pane to this panel.
     //contents = splitPane
@@ -238,6 +245,11 @@ class FrontEnd(fa: Actor)
           TreeActions.gotonode(nd)
         case _ => null
       }
+    }
+
+    def fireProved(path: Array[Object]): Unit = {
+      val tpath = new javax.swing.tree.TreePath(path)
+      tree.collapsePath(tpath)
     }
 
     def fireNodesInserted(path: Array[Object]): Unit = {
