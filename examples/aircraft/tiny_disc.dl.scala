@@ -35,29 +35,6 @@ val cut1 = cutT(
   parseFormula("~I = II"))
 
 
-val doasgns = 
-  composelistT(
-    alphaT*,
-    instantiatebyT(St("C"))(List (("i", List("k")),
-                                  ("k", List("k")),
-                                  ("j", List("k")))),
-    hideunivsT(St("C")),
-    cut1<(
-      composelistT(
-        alphaT*,
-        substT,
-        vacuousT*,
-        nullarizeT*,
-        easiestT
-      ),
-      composelistT(
-        (tryruleT(impLeft) & (tryruleT(close)*))*,
-        alleasyT
-      )
-    )
-  )
-
-
 val incatct = 
   composelistT(
     hpalpha1T*,
@@ -107,7 +84,8 @@ val outcatct =
 )
 
 val controltct = composelistT(hpalphaT*,
-                              tryruleT(andRight)<(incatct, outcatct))
+                              tryruleT(andRight)<(incatct, outcatct)
+                             )
 
 val diffinv1 = parseFormula("forall k : C . (ca(k) = 0 | ca(k) = 1)")
 
@@ -149,12 +127,15 @@ val di2tct =
   )
 
 val evolvetct = 
-   tryruleT(diffStrengthen(constinv1))<(
+   tryruleT(diffStrengthen(Binop(And, constinv1, constinv2)))<(
      easiestT,
-     easiestT,
+     composelistT(
+       hideunivsT(St("C")),
+       (nonarithcloseT | alphaT | betaT | nullarizeT | arithT)*
+     ),
      tryruleT(diffStrengthen(diffinv1))<(
-       di1tct,
-       easiestT,
+       di2tct,
+       di2tct,
        tryruleT(diffStrengthen(diffinv2))<(
          di1tct,
          di2tct,
