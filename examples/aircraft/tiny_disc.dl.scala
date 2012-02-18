@@ -102,11 +102,8 @@ val outcatct =
    composelistT(
     hpalpha1T*,
     tryruleT(andRight)<(
-      tryruleT(andRight)<(
-        tryruleT(close),
-        doasgns
-      ),
-      (tryruleT(close) | alphaT | betaT)*
+      incatct,
+      incatct
     )
 )
 
