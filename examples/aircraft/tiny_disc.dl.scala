@@ -14,8 +14,7 @@ val inv1 =
   parseFormula (
     "forall i : C . (  " +
      "(ca(i) = 0 | ca(i) = 1) " +
-    " & d1(i) * ca(i) = -om(i) * (-d1(i) * minr(i) ) * ca(i) " +
-    "& d2(i) * ca(i) = om(i) * (d2(i) * minr(i) ) * ca(i) )"
+    " & v(i) * ca(i) = om(i) * minr(i) * ca(i) )"
   )
 
 
