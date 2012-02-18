@@ -86,8 +86,8 @@ protectedzone() > 0
    )
      ++
   (forall i : C
-       {x1(i)' = v() * d1(i),
-        x2(i)' = v() * d2(i),
+       {x1(i)' = v(i) * d1(i),
+        x2(i)' = v(i) * d2(i),
         d1(i)' = -om(i) * d2(i),
         d2(i)' = om(i) * d1(i); 
         forall j : C.
