@@ -160,23 +160,41 @@ val evolvetct =
              tryruleT(diffClose),
              tryruleT(andRight)<(
                tryruleT(andRight)<(
+                 tryruleT(andRight)<(
+                   (nonarithcloseT | alphaT |
+                    instantiatebyT(St("C"))(List(("i", List("ii")),
+                                                 ("j", List("jj")))))*,
+                   (nonarithcloseT | alphaT |
+                    instantiatebyT(St("C"))(List(("i", List("i")),
+                                                 ("j", List("i")))))*
+                 ),
+                 (nonarithcloseT | alphaT |
+                    instantiatebyT(St("C"))(List(("i", List("i")),
+                                                 ("j", List("i")))))*
+               ),
+               tryruleT(andRight)<(
                  composelistT(
                    alphaT*,
                    (alphaT | instantiatebyT(St("C"))(List(("i", List("i")),
                                                           ("j", List("j")),
                                                           ("k", List("i", "j")))))*,
                    nullarizeT*,
-                   easiestT
+                   alleasyT
                  ),
                  composelistT(
                    alphaT*,
-                   (alphaT | instantiatebyT(St("C"))(List(("i", List("k")),
-                                                          ("j", List("k")),
-                                                          ("k", List("k")))))*,
-                   easiestT
+                   tryruleT(andRight)<(
+                     (nonarithcloseT | tryruleT(andLeft) |
+                      instantiatebyT(St("C"))(List(("i", List("i")),
+                                                   ("k", List("i")),
+                                                   ("j", List("i")))))*,
+                     (nonarithcloseT | alphaT |
+                      instantiatebyT(St("C"))(List(("i", List("i")),
+                                                   ("k", List("i")),
+                                                   ("j", List("i")))))*
+                   )
                  )
-               ),
-               (alphaT | tryruleT(close) | instantiatebyT(St("C"))(List(("i", List("ii")))) | betaT)*
+               )
              )
            )
          )
