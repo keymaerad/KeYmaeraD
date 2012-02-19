@@ -105,7 +105,7 @@ val diffinv4 =
       "(i /= j  ==> " + 
        "((disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2) * ca(i) * ca(j) >= ((4*minr() + protectedzone())^2) * ca(i) * ca(j))")
 
-val di1tct =  composelistT(
+val di1tct = composelistT(
     alphaT*,
     instantiatebyT(St("C"))(List(("k", List("k")))),
     hideunivsT(St("C")),
@@ -119,7 +119,7 @@ val di2tct =
                                            ("i", List("k")),
                                            ("j", List("k")))))*,
     nullarizeT*,
-    arithT
+    hidethencloseT
   )
 
 val evolvetct = 

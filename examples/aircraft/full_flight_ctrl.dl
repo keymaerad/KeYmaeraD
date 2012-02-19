@@ -57,7 +57,7 @@ protectedzone() > 0
         disc1(i)' = (1 - ca(i)) * d1(i),
         disc2(i)' = (1 - ca(i)) * d2(i);
         forall j : C.
-        ((ca (i) = 0 | ca (j) = 0) ==>
+        ((i /= j &  (ca (i) = 0 | ca (j) = 0)) ==>
             (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2)
         	})
 
