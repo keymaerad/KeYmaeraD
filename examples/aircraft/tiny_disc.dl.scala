@@ -276,40 +276,15 @@ val postconditiontct =
                             tryruleatT(hide)(LeftP(5)),
                             unsubT(
                               parseFormula(
-                                "(Y - minr(I) * d2(I) + (x1(I) - x1(J)))^2 " +
-                                "+ (minr(I) * d1(I) - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
-                                ">= ( X)^2"),
-                              Var("Y")),
-                            unsubT(
-                              parseFormula(
-                                "(Y - Z + (x1(I) - x1(J)))^2 " +
-                                "+ (minr(I) * d1(I) - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
+                                "(Y - Z + C)^2 " +
+                                "+ (A - B + D)^2" +
                                 ">= (X)^2"),
-                              Var("Z")),
-                            unsubT(
-                              parseFormula(
-                                "(Y - Z + (x1(I) - x1(J)))^2 " +
-                                "+ (A - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
-                                ">= ( X)^2"),
-                              Var("A")),
-                            unsubT(
-                              parseFormula(
-                                "(Y - Z + (x1(I) - x1(J)))^2 " +
-                                "+ (A - B + (x2(I) - x2(J)))^2" +
-                                ">= ( X)^2"),
-                              Var("B")),
-                            unsubT(
-                              parseFormula(
-                                "(Y - Z + (C))^2 " +
-                                "+ (A - B + (x2(I) - x2(J)))^2" +
-                                ">= (X)^2"),
-                              Var("C")),
-                            unsubT(
-                              parseFormula(
-                                "(Y - Z + (C))^2 " +
-                                "+ (A - B + (D))^2" +
-                                ">= (X)^2"),
-                              Var("D")),
+                              List(Var("A"), 
+                                   Var("B"), 
+                                   Var("C"), 
+                                   Var("D"),
+                                   Var("Y"),
+                                   Var("Z"))),
                             nullarizeT*,
                             arithT
                             
