@@ -4,8 +4,9 @@ object Script {
 val maininv = 
   parseFormula (
    "forall i : C ." +
-         "forall j : C ."+
-            "(disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2")
+      "forall j : C ." +
+        "( i /= j ==> " +
+            "(disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2)")
 
 
 val inv1 = 

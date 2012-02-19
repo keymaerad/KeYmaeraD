@@ -406,6 +406,8 @@ val starttct =
 
 val main = starttct
 
+
+// This tactic proves the theorem right away.
 val trivial = 
    composelistT(
      hideallbutT(List(LeftP(0), LeftP(2), LeftP(3))),
