@@ -146,7 +146,7 @@ val evolvetct =
                                                     ("j", List("j")),
                                                     ("k", List("i", "j")))))*,
              nullarizeT*,
-             easiestT*
+             easiestT
            ),
            composelistT(
              (alphaT | instantiatebyT(St("C"))(List(("i", List("i", "j")),

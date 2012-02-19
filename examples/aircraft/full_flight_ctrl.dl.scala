@@ -101,8 +101,9 @@ val diffinv3 =
 val diffinv4 = 
   parseFormula (
    "forall i : C ." +
-      "forall j : C ."+
-       "((disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2) * ca(i) * ca(j) >= ((4*minr() + protectedzone())^2) * ca(i) * ca(j)")
+     "forall j : C ." +
+      "(i /= j  ==> " + 
+       "((disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2) * ca(i) * ca(j) >= ((4*minr() + protectedzone())^2) * ca(i) * ca(j))")
 
 val di1tct =  composelistT(
     alphaT*,
@@ -141,7 +142,10 @@ val evolvetct =
                                                       ("j", List("j")),
                                                       ("k", List("i", "j")))))*,
                nullarizeT*,
-               easiestT
+               tryruleT(impLeft)<(
+                 (tryruleunifyT(hide)(parseFormula("I /= J"))   & easiestT),
+                 easiestT
+               )
              ),
              nilT,
              composelistT(
