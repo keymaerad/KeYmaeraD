@@ -15,9 +15,6 @@
   om : (C) -> Real,
   maxom : (C) -> Real,
 
-  disc1 : (C) -> Real,
-  disc2 : (C) -> Real,
-
   // 0 if airplane is free
   // 1 if airplane is in collision avoidance maneuver
   ca : (C) -> Real,
