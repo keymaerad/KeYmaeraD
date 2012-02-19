@@ -5,9 +5,10 @@ val maininv =
   parseFormula (
     "forall i : C ." +
      "forall j : C ." +
-      "(minr(j) * d2(j) - minr(i) * d2(i) + x1(i) - x1(j) )^2 +" + 
-      "(minr(i) * d1(i) - minr(j) * d1(j) + x2(i) - x2(j))^2 >=" +
-      "(minr(i) + minr(j) + protectedzone())^2")
+      "( i /= j ==> " + 
+       "(minr(j) * d2(j) - minr(i) * d2(i) + x1(i) - x1(j) )^2 +" + 
+       "(minr(i) * d1(i) - minr(j) * d1(j) + x2(i) - x2(j))^2 >=" +
+       "(minr(i) + minr(j) + protectedzone())^2)")
 
 
 val inv1 = 
@@ -105,9 +106,10 @@ val diffinv4 =
   parseFormula (
     "forall i : C ." +
      "forall j : C ." +
+      "( i /= j ==> " + 
       "((minr(j) * d2(j) - minr(i) * d2(i) + x1(i) - x1(j) )^2 +" + 
       "(minr(i) * d1(i) - minr(j) * d1(j) + x2(i) - x2(j))^2) * ca(i) * ca(j) >=" +
-      "(minr(i) + minr(j) + protectedzone())^2 * ca(i) * ca(j)")
+      "(minr(i) + minr(j) + protectedzone())^2 * ca(i) * ca(j))")
 
 
 val di1tct =  composelistT(
@@ -124,7 +126,7 @@ val di2tct =
                                            ("i", List("k")),
                                            ("j", List("k")))))*,
     nullarizeT*,
-    arithT
+    hidethencloseT
   )
 
 val evolvetct = 
