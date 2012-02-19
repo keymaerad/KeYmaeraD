@@ -1002,6 +1002,31 @@ object Tactics {
     }
   }
 
+  def unsubT(tomatch: Formula, tounsub: Term): Tactic 
+  = new Tactic("unsub") {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val Sequent(sig,cs,ss) = nd.goal
+      var mbesubs : Option[Prover.Subst] = None;
+      var foundidx = -1;
+      for (i <- cs.indices){
+        if(mbesubs == None) {
+          Prover.unify(cs(i), tomatch) match {
+            case None => ()
+            case Some(subs) => 
+              mbesubs = Some(subs)
+              foundidx = i;
+          }
+        }
+      }
+      mbesubs match {
+        case None => None
+        case Some(subs) =>
+          val tounsub1 = Prover.simul_substitute_Term(subs.toList, tounsub)
+          tryruleatT(unsubstitute(tounsub1))(LeftP(foundidx))(nd)
+      }   
+    }
+  }
+
 
   val vacuousT: Tactic 
   = new Tactic("vacuous") {

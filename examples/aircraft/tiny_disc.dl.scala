@@ -6,8 +6,8 @@ val maininv =
     "forall i : C ." +
      "forall j : C ." +
       "( i /= j ==> " + 
-       "(minr(j) * d2(j) - minr(i) * d2(i) + x1(i) - x1(j) )^2 +" + 
-       "(minr(i) * d1(i) - minr(j) * d1(j) + x2(i) - x2(j))^2 >=" +
+       "(minr(j) * d2(j) - minr(i) * d2(i) + (x1(i) - x1(j)) )^2 +" + 
+       "(minr(i) * d1(i) - minr(j) * d1(j) + (x2(i) - x2(j)))^2 >=" +
        "(minr(i) + minr(j) + protectedzone())^2)")
 
 
@@ -226,33 +226,113 @@ val postconditiontct =
         cutT(
           DirectedCut,
           parseFormula(
-            "(minr(J) * d2(J) - minr(I) * d2(I) + x1(I) - x1(J))^2 " +
-            "+ (minr(I) * d1(I) - minr(J) * d1(J) + x2(I) - x2(J))^2" +
+            "(minr(J) * d2(J) - minr(I) * d2(I) + (x1(I) - x1(J)))^2 " +
+            "+ (minr(I) * d1(I) - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
             ">= (minr(I) + minr(J) + protectedzone())^2"),
           parseFormula(
-            "( - minr(I) * d2(I) + x1(I) - x1(J))^2 " +
-            "+ (minr(I) * d1(I)  + x2(I) - x2(J))^2" +
-            ">= (minr(I)  + protectedzone())^2")
-
+            "(minr(J) * d2(J)  + (x1(I) - x1(J)))^2 " +
+            "+ ( - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
+            ">= (minr(J) + protectedzone())^2")
         )<(
           composelistT(
             cutT(
               StandardCut,
               parseFormula(
-                "(minr(J) * d2(J) - minr(I) * d2(I) + x1(I) - x1(J))^2 " +
-                "+ (minr(I) * d1(I) - minr(J) * d1(J) + x2(I) - x2(J))^2" +
+                "(minr(J) * d2(J) - minr(I) * d2(I) + (x1(I) - x1(J)))^2 " +
+                "+ (minr(I) * d1(I) - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
                 ">= (minr(I) + minr(J) + protectedzone())^2"),
-              parseFormula("(minr(J) * d2(J))^2 + (minr(J) *d1(J))^2 = minr(J)^2")
+              parseFormula("(minr(I) * d2(I))^2 + (minr(I) * d1(I))^2 = minr(I)^2")
             )<(
               composelistT(
                 nullarizeT*,
                 easiestT
               ),
-              composelistT(
-                nullarizeT*,
-                tryruleatT(hide)(LeftP(3)),
-                tryruleatT(hide)(LeftP(4)),
-                nilT
+              cutT(
+                StandardCut,
+                parseFormula(
+                  "(minr(J) * d2(J) - minr(I) * d2(I) + (x1(I) - x1(J)))^2 " +
+                  "+ (minr(I) * d1(I) - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
+                  ">= (minr(I) + minr(J) + protectedzone())^2"),
+                parseFormula(
+                  "(minr(J) * d2(J) - minr(I) * d2(I) + (x1(I) - x1(J)))^2 " +
+                  "+ (minr(I) * d1(I) - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
+                  ">= (minr(I) + (minr(J) + protectedzone()))^2")
+              )<(
+                composelistT(
+                  nullarizeT*,
+                  easiestT
+                ),
+                cutT(
+                  StandardCut,
+                  parseFormula(
+                    "(minr(J) * d2(J) - minr(I) * d2(I) + (x1(I) - x1(J)))^2 " +
+                    "+ (minr(I) * d1(I) - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
+                    ">= (minr(I) + minr(J) + protectedzone())^2"),
+                  parseFormula("minr(I) > 0") )<( 
+                    easiestT,
+                    cutT(
+                      StandardCut,
+                      parseFormula(
+                        "(minr(J) * d2(J) - minr(I) * d2(I) + (x1(I) - x1(J)))^2 " +
+                        "+ (minr(I) * d1(I) - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
+                        ">= (minr(I) + minr(J) + protectedzone())^2"),
+                      parseFormula("minr(J) > 0") )<( 
+                        easiestT,
+                        cutT(
+                          StandardCut,
+                          parseFormula("protectedzone() > 0"),
+                          parseFormula("protectedzone() > 0"))<(
+                            easiestT,
+                            composelistT(
+                              tryruleatT(hide)(LeftP(5)),
+                              tryruleatT(hide)(LeftP(5)),
+                              tryruleatT(hide)(LeftP(5)),
+                              tryruleatT(hide)(LeftP(5)),
+                              tryruleatT(hide)(LeftP(5)),
+                              tryruleatT(hide)(LeftP(5)),
+                              unsubT(
+                                parseFormula(
+                                  "(Y - minr(I) * d2(I) + (x1(I) - x1(J)))^2 " +
+                                  "+ (minr(I) * d1(I) - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
+                                  ">= (minr(I) + X)^2"),
+                                Var("Y")),
+                              unsubT(
+                                parseFormula(
+                                  "(Y - Z + (x1(I) - x1(J)))^2 " +
+                                  "+ (minr(I) * d1(I) - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
+                                  ">= (minr(I) + X)^2"),
+                                Var("Z")),
+                              unsubT(
+                                parseFormula(
+                                  "(Y - Z + (x1(I) - x1(J)))^2 " +
+                                  "+ (A - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
+                                  ">= (minr(I) + X)^2"),
+                                Var("A")),
+                              unsubT(
+                                parseFormula(
+                                  "(Y - Z + (x1(I) - x1(J)))^2 " +
+                                  "+ (A - B + (x2(I) - x2(J)))^2" +
+                                  ">= (minr(I) + X)^2"),
+                                Var("B")),
+                              unsubT(
+                                parseFormula(
+                                  "(Y - Z + (C))^2 " +
+                                  "+ (A - B + (x2(I) - x2(J)))^2" +
+                                  ">= (minr(I) + X)^2"),
+                                Var("C")),
+                              unsubT(
+                                parseFormula(
+                                  "(Y - Z + (C))^2 " +
+                                  "+ (A - B + (D))^2" +
+                                  ">= (minr(I) + X)^2"),
+                                Var("D")),
+                              nullarizeT*,
+                              arithT
+                              
+                            )
+                          )
+                      )
+                  )
               )
             )
           ),
@@ -265,7 +345,7 @@ val postconditiontct =
       easiestT
     )
   )
-                
+
 
 val starttct =
    tryruleT(loopInduction(Binop(And, Binop(And, constinv1, constinv2),

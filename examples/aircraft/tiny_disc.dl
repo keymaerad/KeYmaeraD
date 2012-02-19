@@ -52,8 +52,8 @@ forall i : C .
 forall i : C .
    forall j : C .
     (i /= j ==>
-      (minr(j) * d2(j) - minr(i) * d2(i) + x1(i) - x1(j) )^2 +
-      (minr(i) * d1(i) - minr(j) * d1(j)   + x2(i) - x2(j))^2 >= 
+      (minr(j) * d2(j) - minr(i) * d2(i) + (x1(i) - x1(j)) )^2 +
+      (minr(i) * d1(i) - minr(j) * d1(j)   + (x2(i) - x2(j)))^2 >= 
       (minr(i) + minr(j) + protectedzone())^2),
 
 
