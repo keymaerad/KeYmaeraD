@@ -208,11 +208,6 @@ val indtct =
   composelistT(hpalphaT*,
                tryruleT(andRight)<(controltct, evolvetct))
 
-val simpcut =
-  cutT(DirectedCut,
-       parseFormula(" (1 - 0) * X  = (1 - 0) * D"),
-       parseFormula("X  = D"))
-
                    
 
 val postors = nilT
@@ -220,33 +215,55 @@ val postors = nilT
 val postconditiontct = 
   composelistT(
     alphaT*,
-    hideallbutT(List(LeftP(0), LeftP(1), LeftP(3), RightP(0))),
-//    instantiatebyT(St("C"))(List(("i", List("i")),
-//                                 ("j", List("j")))),
-    cutT(
-      DirectedCut,
-      parseFormula(
-        "forall i:C.forall j:C." +
-          "(minr(j) * d2(j) - minr(i) * d2(i) + x1(i) - x1(j))^2 " +
-           "+ (minr(i) * d1(i) - minr(j) * d1(j) + x2(i) - x2(j))^2" +
-           ">= (minr(i) + minr(j) + protectedzone())^2"),
-    parseFormula(
-        "forall i:C.forall j:C." +
-          "(minr(j) * d2(j) + x1(i) - x1(j))^2 " +
-           "+ (- minr(j) * d1(j) + x2(i) - x2(j))^2" +
-           ">= ( minr(j) + protectedzone())^2")
-    )<(
+    hideallbutT(List(LeftP(0), LeftP(1), LeftP(2), LeftP(4), RightP(0))),
+    instantiatebyT(St("C"))(List(("i", List("i", "j")),
+                                 ("j", List("j"))))*,
+    tryruleatT(hide)(LeftP(0)),
+    tryruleT(impLeft)<(
       composelistT(
-        instantiatebyT(St("C"))(List(("i", List("i")),
-                                     ("j", List("j")),
-                                     ("k", List("i", "j"))))*,
+        tryruleunifyT(hide)(parseFormula("I /= J")),
         alphaT*,
-        nullarizeT*
+        cutT(
+          DirectedCut,
+          parseFormula(
+            "(minr(J) * d2(J) - minr(I) * d2(I) + x1(I) - x1(J))^2 " +
+            "+ (minr(I) * d1(I) - minr(J) * d1(J) + x2(I) - x2(J))^2" +
+            ">= (minr(I) + minr(J) + protectedzone())^2"),
+          parseFormula(
+            "( - minr(I) * d2(I) + x1(I) - x1(J))^2 " +
+            "+ (minr(I) * d1(I)  + x2(I) - x2(J))^2" +
+            ">= (minr(I)  + protectedzone())^2")
+
+        )<(
+          composelistT(
+            cutT(
+              StandardCut,
+              parseFormula(
+                "(minr(J) * d2(J) - minr(I) * d2(I) + x1(I) - x1(J))^2 " +
+                "+ (minr(I) * d1(I) - minr(J) * d1(J) + x2(I) - x2(J))^2" +
+                ">= (minr(I) + minr(J) + protectedzone())^2"),
+              parseFormula("(minr(J) * d2(J))^2 + (minr(J) *d1(J))^2 = minr(J)^2")
+            )<(
+              composelistT(
+                nullarizeT*,
+                easiestT
+              ),
+              composelistT(
+                nullarizeT*,
+                tryruleatT(hide)(LeftP(3)),
+                tryruleatT(hide)(LeftP(4)),
+                nilT
+              )
+            )
+          ),
+          composelistT(
+            nullarizeT*,
+            easiestT
+          )
+        )
       ),
-      nilT
+      easiestT
     )
-
-
   )
                 
 
