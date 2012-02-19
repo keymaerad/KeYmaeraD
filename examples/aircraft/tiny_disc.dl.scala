@@ -148,7 +148,7 @@ val evolvetct =
                                                     ("j", List("j")),
                                                     ("k", List("i", "j")))))*,
              nullarizeT*,
-             easiestT
+             (nonarithcloseT | alphaT | betaT | hidethencloseT)*
            ),
            composelistT(
              (alphaT | instantiatebyT(St("C"))(List(("i", List("i", "j")),
@@ -156,7 +156,7 @@ val evolvetct =
                                                     ("k", List("i", "j")))))*,
              nullarizeT*,
              dedupT*,
-             easiestT
+             (nonarithcloseT | alphaT | betaT | hidethencloseT)*
            ),
            composelistT(
              tryruleT(diffClose),
@@ -181,7 +181,7 @@ val evolvetct =
                                                           ("j", List("j")),
                                                           ("k", List("i", "j")))))*,
                    nullarizeT*,
-                   alleasyT
+                   (nonarithcloseT | alphaT | betaT | hidethencloseT)*
                  ),
                  composelistT(
                    alphaT*,
