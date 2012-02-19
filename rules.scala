@@ -1034,7 +1034,8 @@ object Rules {
         if (ctxt ++ sc).forall(firstorder) && 
             Util.fv_Term(tm).length == 0 =>
         val f = tm match {
-          case Fn(f_name, _) => uniqify(f_name)
+          case Fn(f_name, _)
+            if !List("*", "-", "+", "/", "^").contains(f_name) => uniqify(f_name)
           case _ => uniqify("X")
         }
         val ctxt1 = 
