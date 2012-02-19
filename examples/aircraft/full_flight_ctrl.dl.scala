@@ -199,7 +199,7 @@ val simpcut =
 val postors = 
     tryruleT(orLeft)<(
       tryruleT(orLeft)<(
-        ((nullarizeT*) &  arithT),
+        ((nullarizeT*) & hidethencloseT ),
         composelistT(
           substT*,
           simpcut<(
@@ -399,7 +399,11 @@ val postconditiontct =
              parseFormula("protectedzone() > Y"),
              parseFormula("protectedzone() > Y"))<(
                easiestT,
-               postors
+               tryruleT(impLeft)<(
+                 (tryruleunifyT(hide)(parseFormula("I /= J")) & postors),
+                 easiestT
+               )
+
              )
       )
   )
