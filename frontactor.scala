@@ -374,9 +374,8 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
               nd.getParent match {
                 case Some(ptid) =>
                   val pt = getnode(ptid)
-                  val nd1 = DoneNode("quantifier elimination", sq)
-                  attachnode(pt, nd1)
-                  propagateProvedUp(pt.nodeID, nd1.nodeID)
+                  nd.setStatus(Proved)
+                  propagateProvedUp(pt.nodeID, nd.nodeID)
                 case None =>
                   throw new Error("no parent")
               }
