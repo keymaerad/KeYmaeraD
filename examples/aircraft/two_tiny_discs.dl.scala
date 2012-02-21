@@ -94,9 +94,59 @@ val switchsidetct =
         composelistT(
           alphaT*,
           instantiatebyT(St("C"))(List(("i", List("i")),
-                                       ("j", List("i")))),
+                                       ("j", List("i", "j")),
+                                       ("jj", List("i", "j")))),
+          instantiatebyT(St("C"))(List(("j", List("j")))),
           alphaT*,
-          nilT
+          cut1<(
+            composelistT(
+              alphaT*,
+              substT*,
+              vacuousT*,
+              cut1<(
+                composelistT(
+                  alphaT*,
+                  substT*,
+                  nonarithcloseT
+                ),
+                tryruleunifyT(impLeft)(parseFormula("~ I = II  ==> D1 = D2"))<(
+                  composelistT(
+                    substT*,
+                    (nonarithcloseT | tryruleT(impLeft) |
+                     ((nullarizeT*) & hidethencloseT ) )*
+                  ),
+                  nonarithcloseT
+                )
+              )
+            ),
+            tryruleunifyT(impLeft)(parseFormula("~ I = II  ==> D1 = D2"))<(
+              cut1<(
+                composelistT(
+                  tryruleatT(not)(RightP(0)),
+                  substT*,
+                  vacuousT*,
+                  tryruleT(impLeft)<(
+                    tryruleT(impLeft)<(
+                      composelistT(
+                        nullarizeT*,
+                        (alphaT | betaT)*,
+                        substT*,
+                        hidethencloseT
+                      ),
+                      composelistT(
+                        tryruleatT(commuteEquals)(RightP(0)),
+                        nonarithcloseT
+                      )
+                    ),
+                    nonarithcloseT
+                  )
+                ),
+                (nonarithcloseT | tryruleT(impLeft) |
+                     ((nullarizeT*) & hidethencloseT ) )*
+              ),
+              nonarithcloseT
+            )
+          )
         ),
         composelistT(
           alphaT*,
