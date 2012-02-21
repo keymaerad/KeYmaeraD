@@ -194,27 +194,26 @@ val controltct = composelistT(hpalphaT*,
                               tryruleT(andRight)<(incatct, outcatct)
                              )
 
-val diffinv1 = parseFormula("forall k : C . (ca(k) = 0 | ca(k) = 1)")
+val diffinv1 =
+ parseFormula("forall k : C . ((ca(k) = 0 | ca(k) = 1)  &" +
+              " (discside(k) = -1 | discside(k) = 1   )) ")
 
 val diffinv2 = 
   parseFormula(
    "forall k : C . " +
-    " v(k) * ca(k) = om(k) * minr(k) * ca(k) "
+    " om(k) * ca(k) = maxom(k) * discside(k) * ca(k)"
   )
 
-val diffinv3 = 
-  parseFormula(
-    "forall k : C. " + 
-    "((c1(k) - x1(k))^2 + (c2(k) - x2(k))^2) * ca(k) = minr()^2 * ca(k) &"+
-    "((c1(k) - disc1(k))^2 + (c2(k) - disc2(k))^2) * ca(k) = minr()^2 * ca(k)  ")
 
 val diffinv4 = 
   parseFormula (
     "forall i : C ." +
      "forall j : C ." +
       "( i /= j ==> " + 
-      "((minr(j) * d2(j) - minr(i) * d2(i) + x1(i) - x1(j) )^2 +" + 
-      "(minr(i) * d1(i) - minr(j) * d1(j) + x2(i) - x2(j))^2) * ca(i) * ca(j) >=" +
+      "((discside(j) * minr(j) * d2(j) - discside(i) * minr(i) * d2(i) + " +
+      "x1(i) - x1(j) )^2 +" + 
+      "(discside(i) * minr(i) * d1(i) - discside(j) * minr(j) * d1(j) + " + 
+      "x2(i) - x2(j))^2) * ca(i) * ca(j) >=" +
       "(minr(i) + minr(j) + protectedzone())^2 * ca(i) * ca(j))")
 
 
@@ -254,7 +253,7 @@ val evolvetct =
                                                     ("j", List("j")),
                                                     ("k", List("i", "j")))))*,
              nullarizeT*,
-             (nonarithcloseT | alphaT | betaT | hidethencloseT)*
+             (nonarithcloseT | alphaT | betaT | substT  | hidethencloseT)*
            ),
            composelistT(
              (alphaT | instantiatebyT(St("C"))(List(("i", List("i", "j")),
@@ -262,7 +261,7 @@ val evolvetct =
                                                     ("k", List("i", "j")))))*,
              nullarizeT*,
              dedupT*,
-             (nonarithcloseT | alphaT | betaT | hidethencloseT)*
+             (nonarithcloseT | alphaT | betaT | substT | hidethencloseT)*
            ),
            composelistT(
              tryruleT(diffClose),
@@ -287,7 +286,7 @@ val evolvetct =
                                                           ("j", List("j")),
                                                           ("k", List("i", "j")))))*,
                    nullarizeT*,
-                   (nonarithcloseT | alphaT | betaT | hidethencloseT)*
+                   (nonarithcloseT | alphaT | betaT | substT | hidethencloseT)*
                  ),
                  composelistT(
                    alphaT*,
