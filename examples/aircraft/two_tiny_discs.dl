@@ -12,7 +12,8 @@
   d2 : (C) -> Real,
 
 
-  // -1 is to the right, 1 is to the left.
+  // -1 if disc is to the right of the airplane
+  //  1 if disc is to the left of the airplane
   discside : (C) -> Real,
 
   // angular velocity
@@ -26,15 +27,12 @@
   ii : () -> C
 }
 
-// For now we look only at right turn CA
 // (disc1, disc2) is point orthogonal to trajectory of aircraft
 // and distance minr away.
 //{
 //  disc1(i) == -discside(i) * minr(i) * d2(i) + x1(i)
 //  disc2(i) == discside(i) * minr(i) * d1(i) + x2(i)
 //}
-
-// how does minr(i) relate to maxom(i) and v(i) during a maneuver?
 
 forall i : C .
   minr(i) > 0 & 
