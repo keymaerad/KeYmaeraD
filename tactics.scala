@@ -937,7 +937,6 @@ object Tactics {
         val fm = lookup(p,sq)
         cantqe = if(Prover.canQE(fm, sig)) cantqe else fm::cantqe
       }
-      println("cantqe: " + cantqe);
 
       val tct = cantqe.foldRight(unitT)((fm1,rt) 
                                         => composeT(tryrulematchT(hide)(fm1),
@@ -973,7 +972,6 @@ object Tactics {
   def cutT(ct: CutType, cutout: Formula, cutin: Formula): Tactic 
   = new Tactic("cut " + ct) {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
-      println("trying cutT on " + nd.nodeID)
       val Sequent(sig,cs,ss) = nd.goal
       var mbesubs : Option[Prover.Subst] = None;
       var foundidx = -1;
@@ -981,7 +979,7 @@ object Tactics {
         if(mbesubs == None) {
           Prover.unify(cs(i),cutout) match {
             case None => 
-              println("didn't match here: " + i)
+              ()
             case Some(subs) => 
               mbesubs = Some(subs)
               foundidx = i;
@@ -1092,7 +1090,6 @@ object Tactics {
   val hidenotmatchT : List[Formula] => Tactic =  fms => {
     val nomatches : Formula => Boolean   = fm => {
       val ms = fms.map(fm1 => Prover.unify(fm,fm1) )
-//      println("ms= " + ms)
       (fms.forall(fm1 => Prover.unify(fm,fm1) == None  ))
     }
     tryrulepredT(hide)(nomatches)
