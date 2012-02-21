@@ -63,7 +63,7 @@ forall i : C .
 forall i : C . (  
       (ca(i) = 0 | ca(i) = 1) 
      & (discside(i) = -1 | discside(i) = 1)
-     & v(i) * ca(i) = om(i) * minr(i)  * ca(i) 
+     & om(i) * ca(i) = maxom(i) * discside(i) * ca(i)
      ),
 
 protectedzone() > 0
@@ -77,7 +77,7 @@ protectedzone() > 0
        /* exit the maneuver */
        ca(ii()) := 0 )
 
-       /* ii N  OT in a ca maneuver */    
+       /* ii NOT in a ca maneuver */    
      ++ ( (?ca(ii()) = 0);
           (
            // free flight

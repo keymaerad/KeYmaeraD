@@ -6,8 +6,10 @@ val maininv =
     "forall i : C ." +
      "forall j : C ." +
       "( i /= j ==> " + 
-       "(minr(j) * d2(j) - minr(i) * d2(i) + (x1(i) - x1(j)) )^2 +" + 
-       "(minr(i) * d1(i) - minr(j) * d1(j) + (x2(i) - x2(j)))^2 >=" +
+       "(discside(j) * minr(j) * d2(j) - discside(i) * minr(i) * d2(i) + " +
+        "(x1(i) - x1(j)) )^2 +" + 
+       "(discside(i) * minr(i) * d1(i) - discside(j) * minr(j) * d1(j) + " +
+         "(x2(i) - x2(j)))^2 >=" +
        "(minr(i) + minr(j) + protectedzone())^2)")
 
 
@@ -16,7 +18,7 @@ val inv1 =
     "forall i : C . (  " +
      "(ca(i) = 0 | ca(i) = 1) " +
      " & (discside(i) = -1 | discside(i) = 1) " +
-    " & v(i) * ca(i) = om(i) * minr(i) * ca(i) )"
+    " & om(i) * ca(i) = maxom(i) * discside(i) * ca(i) )"
   )
 
 
@@ -76,11 +78,64 @@ val incatct =
   )
 
 
-val outcatct = 
-   composelistT(
+val switchsidetct =
+  composelistT(
     hpalpha1T*,
     tryruleT(andRight)<(
-      incatct,
+      tryruleT(andRight)<(
+        easiestT,
+        composelistT(
+          alphaT*,
+          instantiatebyT(St("C"))(List (("i", List("i")))),
+          easiestT
+        )
+      ),
+      tryruleT(andRight)<(
+        composelistT(
+          alphaT*,
+          instantiatebyT(St("C"))(List(("i", List("i")),
+                                       ("j", List("i")))),
+          alphaT*,
+          nilT
+        ),
+        composelistT(
+          alphaT*,
+          instantiatebyT(St("C"))(List(("i", List("i")),
+                                       ("j", List("i")))),
+          alphaT*,
+          hideunivsT(St("C")),
+          cut1<(
+           composelistT(
+             alphaT*,
+             substT*,
+             nullarizeT*,
+             hidethencloseT
+           ),
+           tryruleT(impLeft)<(
+             composelistT(
+               nullarizeT*,
+               substT*,
+               hidethencloseT
+             ),
+             nonarithcloseT
+           )
+          )
+        )
+      )
+    )
+  )
+
+val outcatct = 
+  composelistT(
+    hpalpha1T*,
+    tryruleT(andRight)<(
+      composelistT(
+        hpalpha1T*,
+        tryruleT(andRight)<(
+          incatct,
+          switchsidetct
+        )
+      ),
       incatct
     )
 )
