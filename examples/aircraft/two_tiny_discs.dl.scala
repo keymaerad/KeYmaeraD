@@ -6,9 +6,9 @@ val maininv =
     "forall i : C ." +
      "forall j : C ." +
       "( i /= j ==> " + 
-       "(discside(j) * minr(j) * d2(j) - discside(i) * minr(i) * d2(i) + " +
+       "(discside(j) * (minr(j) * d2(j)) - discside(i) * (minr(i) * d2(i)) + " +
         "(x1(i) - x1(j)) )^2 +" + 
-       "(discside(i) * minr(i) * d1(i) - discside(j) * minr(j) * d1(j) + " +
+       "(discside(i) * (minr(i) * d1(i)) - discside(j) * (minr(j) * d1(j)) + " +
          "(x2(i) - x2(j)))^2 >=" +
        "(minr(i) + minr(j) + protectedzone())^2)")
 
@@ -210,9 +210,9 @@ val diffinv4 =
     "forall i : C ." +
      "forall j : C ." +
       "( i /= j ==> " + 
-      "((discside(j) * minr(j) * d2(j) - discside(i) * minr(i) * d2(i) + " +
+      "((discside(j) * (minr(j) * d2(j)) - discside(i) * (minr(i) * d2(i)) + " +
       "x1(i) - x1(j) )^2 +" + 
-      "(discside(i) * minr(i) * d1(i) - discside(j) * minr(j) * d1(j) + " + 
+      "(discside(i) * (minr(i) * d1(i)) - discside(j) * (minr(j) * d1(j)) + " + 
       "x2(i) - x2(j))^2) * ca(i) * ca(j) >=" +
       "(minr(i) + minr(j) + protectedzone())^2 * ca(i) * ca(j))")
 
@@ -315,16 +315,18 @@ val indtct =
 
 val cutfm =
   parseFormula(
-    "(minr(J) * d2(J) - minr(I) * d2(I) + (x1(I) - x1(J)))^2 " +
-    "+ (minr(I) * d1(I) - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
+    "(discside(J) * (minr(J) * d2(J)) - discside(I) * (minr(I) * d2(I)) + (x1(I) - x1(J)))^2 " +
+    "+(discside(I) * (minr(I) * d1(I)) - discside(J) * (minr(J) * d1(J)) + (x2(I) - x2(J)))^2" +
     ">= (minr(I) + minr(J) + protectedzone())^2")
 
 val postconditiontct = 
   composelistT(
     alphaT*,
-    hideallbutT(List(LeftP(0), LeftP(1), LeftP(2), LeftP(4), RightP(0))),
+//    hideallbutT(List(LeftP(0), LeftP(1), LeftP(2), LeftP(4), RightP(0))),
     instantiatebyT(St("C"))(List(("i", List("i", "j")),
                                  ("j", List("j"))))*,
+    alphaT*,
+    tryruleunifyT(hide)(parseFormula("ca(I) = 0 | ca(J) = 1 "))*,
     tryruleatT(hide)(LeftP(0)),
     tryruleT(impLeft)<(
       composelistT(
@@ -334,8 +336,8 @@ val postconditiontct =
           DirectedCut,
           cutfm,
           parseFormula(
-            "(minr(J) * d2(J)  + (x1(I) - x1(J)))^2 " +
-            "+ ( - minr(J) * d1(J) + (x2(I) - x2(J)))^2" +
+            "(discside(J) * (minr(J) * d2(J))  + (x1(I) - x1(J)))^2 " +
+            "+ ( - discside(J) * (minr(J) * d1(J)) + (x2(I) - x2(J)))^2" +
             ">= (minr(J) + protectedzone())^2")
         )<(
           composelistT(
@@ -364,15 +366,23 @@ val postconditiontct =
                         parseFormula("protectedzone() > 0"))<(
                           easiestT,
                           composelistT(
-                            tryruleatT(hide)(LeftP(5)),
-                            tryruleatT(hide)(LeftP(5)),
-                            tryruleatT(hide)(LeftP(5)),
-                            tryruleatT(hide)(LeftP(5)),
-                            tryruleatT(hide)(LeftP(5)),
+                            tryruleatT(hide)(LeftP(6)),
+                            tryruleatT(hide)(LeftP(7)),
+                            tryruleatT(hide)(LeftP(7)),
+                            tryruleatT(hide)(LeftP(7)),
+                            tryruleatT(hide)(LeftP(7)),
+                            tryruleatT(hide)(LeftP(7)),
+                            tryruleatT(hide)(LeftP(7)),
+                            tryruleatT(hide)(LeftP(7)),
+                            tryruleatT(hide)(LeftP(7)),
+                            tryruleatT(hide)(LeftP(7)),
+                            tryruleatT(hide)(LeftP(7)),
+                            tryruleatT(hide)(LeftP(7)),
+                            tryruleatT(hide)(LeftP(7)),
                             unsubT(
                               parseFormula(
-                                "(Y - Z + C)^2 " +
-                                "+ (A - B + D)^2" +
+                                "(D1 * Y - D2 * Z + C)^2 " +
+                                "+ (D3 * A - D4 * B + D)^2" +
                                 ">= (X)^2"),
                               List(Var("A"), 
                                    Var("B"), 
