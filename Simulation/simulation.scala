@@ -96,11 +96,18 @@ object Sim {
  }
 
 
- class State {
-   val sig : Map[String, (List[Sort], Sort)
-   val  : Array[Double] = 
-   val  : Array[Int] = 
+ class State(sig1 : Map[String, (List[Sort], Sort)],
+             // the cardinalities of the named sorts
+             sizes : Map[String, Int])  {
 
+   import scala.collection.immutable.HashMap
+
+   // map a symbol to its signature
+   // and its address in the appropriate state array
+   val sig : Map[String, (List[Sort], Sort, Int)] = new HashMap[String, (List[Sort], Sort, Int)]()
+
+   val signals : Array[Double] = null
+   val objects : Array[Int] = null 
    
  }
 
