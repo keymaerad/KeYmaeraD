@@ -1,10 +1,4 @@
 package KeYmaeraD
-/*
-import java.io.BufferedWriter
-import java.io.OutputStreamWriter
-import java.io.BufferedReader
-import java.io.InputStreamReader
-*/
 
 import scala.collection.immutable.ListSet
 import scala.collection.immutable.HashSet
@@ -38,7 +32,6 @@ final object Prover {
     val dol = s.indexOf("$")
     if(dol == -1) s else s.substring(0,dol);
   }
-
   
   def assoc[A,B](k: A, al: List[(A,B)]): Option[B] = al match {
     case (a,b) :: rest =>
@@ -46,7 +39,6 @@ final object Prover {
       else assoc(k, rest)
     case Nil => None
   }
-
 
   def negate(p : Pred): Pred = p match {
     case R("=", args) => R("/=", args)
@@ -59,7 +51,7 @@ final object Prover {
       throw new Error("can't negate: " + p)
   }
 
-  // Indicate whether, e.g.,  we can apply substitution safely. 
+  // Is the formula modality free?
   def firstorder(fm: Formula): Boolean = fm match {
     case True | False => true
     case Atom(R(r,ps)) => true
@@ -87,7 +79,7 @@ final object Prover {
     case _ => true
   }
 
-  // Indicate whether, e.g.,  we can apply substitution safely. 
+  // Can we apply quantifier elimination on this formula?
   def canQE(fm: Formula, sig : Map[String,(List[Sort],Sort)]): Boolean 
    = fm match {
     case True | False => true

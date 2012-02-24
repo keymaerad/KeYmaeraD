@@ -15,8 +15,7 @@ object Procedures {
 
 // for now, these things only close or disprove a goal.
 
-  @serializable
-  abstract class Procedure {
+  abstract class Procedure extends Serializable {
     def applies(sq: Sequent): Boolean
 
     def proceed(sq: Sequent, tm: Long): Option[Sequent]

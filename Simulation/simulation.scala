@@ -3,6 +3,8 @@ package KeYmaeraD.Simulation
 import KeYmaeraD._
 
 
+// question: how will the user be able to control the nondeterminism?
+//
 
 sealed abstract class Transition
 case class AssignTransition(vs : List[(Fn, Term)]) extends Transition
@@ -85,5 +87,54 @@ object Sim {
    compileHP_aux(hp, Terminal())
  }
 
+
+ // evaluate a term to a double.
+
+ def numToDouble(n : Exact.Num) : Double = n match {
+   case Exact.Rational(p, q) => p.doubleValue / q.doubleValue
+   case Exact.Integer(n) => n.doubleValue
+ }
+
+
+ class State {
+   val sig : Map[String, (List[Sort], Sort)
+   val  : Array[Double] = 
+   val  : Array[Int] = 
+
+   
+ }
+
+/*
+ def evalTerm(sv : Array[Double],
+              mp : Map[String, Int],
+              tm : Term ) : Double = tm match {
+   case Var(_) => throw new Error("cannot evaluate term with a free variable")
+
+   case Fn(f, Nil) => mp.get(f) match {
+     case Some(i) => sv(i)
+     case None => throw new Error("could not find symbol: " + f)
+   }
+
+   case Fn(f, List(arg)) => mp.get(f) match {
+     case Some(i) => sv(i)
+     case None => throw new Error("could not find symbol: " + f)
+   }
+
+   case Num(n) => numToDouble(n)
+
+ }
+
+*/
+
+  // Run a hybrid program.
+  // we need:
+  // a map from named sorts to natural numbers, indicating the cardinalities
+  // a starting state
+  // a step size
+  // a stack size --- the number of past states to remember so they can be resumed if we hit a failing check.
+  //  if BACKTRACKABLE is set to true, we don't do any copying of state 
+
+
+  // a state is a double[] and an int[]
 
 }
