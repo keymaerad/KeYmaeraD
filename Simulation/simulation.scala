@@ -100,38 +100,62 @@ object Sim {
              // the cardinalities of the named sorts
              sizes : Map[String, Int])  {
 
-   import scala.collection.immutable.HashMap
+   import scala.collection.mutable.HashMap
+
 
    // map a symbol to its signature
-   // and its address in the appropriate state array
-   val sig : Map[String, (List[Sort], Sort, Int)] = new HashMap[String, (List[Sort], Sort, Int)]()
+   // and its starting index in the appropriate state array
+   val sig : HashMap[String, (List[Sort], Sort, Int)] =
+     new HashMap[String, (List[Sort], Sort, Int)]()
 
-   val signals : Array[Double] = null
-   val objects : Array[Int] = null 
-   
+   // Initialize the state vectors.
+   val (signals : Array[Double], objects : Array[Int]) = 
+   {
+     var sptr = 0
+     var optr = 0
+     for ((x, (args, res)) <- sig1) (args, res) match {
+       case (Nil, Real) => sig.put(x, (args, res, sptr))
+                           sptr +=1
+       case (List(St(c)), Real) => sig.put(x, (args, res, sptr))
+                                   sptr += sizes(c)
+       case (Nil, St(c)) => sig.put(x, (args, res, optr))
+                            optr +=1
+       case (List(St(c1)), St(c2)) => sig.put(x, (args, res, optr))
+                                     optr += sizes(c1)
+       case _ => throw new Error("cannot deal")
+     }   
+
+     (new Array[Double](sptr), new Array[Int](optr))
+
+   }
+
+  def getSignal(f : Fn) : Double = f match {
+    case Fn(g, args) => sig(g) match {
+      case (Nil, Real, idx) if args == Nil => signals(idx)
+      case (List(St(c)), Real, idx) if args.length == 1 => 
+        0.0
+//        signals(idx + args.hd
+      case _ => throw new Error("could not find")
+    }
+  }
+
+  def setSignal(f : Fn, v : Double) : Unit = {
+    ()
+  }
+
+
  }
 
-/*
- def evalTerm(sv : Array[Double],
-              mp : Map[String, Int],
+ def evalTerm(st : State,
               tm : Term ) : Double = tm match {
    case Var(_) => throw new Error("cannot evaluate term with a free variable")
 
-   case Fn(f, Nil) => mp.get(f) match {
-     case Some(i) => sv(i)
-     case None => throw new Error("could not find symbol: " + f)
-   }
-
-   case Fn(f, List(arg)) => mp.get(f) match {
-     case Some(i) => sv(i)
-     case None => throw new Error("could not find symbol: " + f)
-   }
+   case f@Fn(_,_) => st.getSignal(f)
 
    case Num(n) => numToDouble(n)
 
  }
 
-*/
 
   // Run a hybrid program.
   // we need:
