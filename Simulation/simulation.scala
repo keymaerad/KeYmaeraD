@@ -133,36 +133,6 @@ object Sim {
      (new Array[Double](sptr), new Array[Int](optr))
 
    }
-/*
-  def getSignal(f : Fn) : Double = f match {
-    case Fn(g, args) => (sig(g), args) match {
-      case ((Nil, Real, idx), Nil) => signals(idx)
-      case ((List(St(c)), Real, idx), List(Num(n)) ) => 
-        signals(idx + n.intValue)
-
-      case _ => throw new Error("type error")
-    }
-  }
-
-  def setSignal(f : Fn, v : Double) : Double = f match {
-    case Fn(g, args) => (sig(g), args) match {
-      case ((Nil, Real, idx), Nil) => signals(idx)
-      case ((List(St(c)), Real, idx), List(Num(n)) ) => 
-        signals(idx + n.intValue)
-
-      case ((Nil, St(c), idx), Nil) => objects(idx)
-      case ((List(St(c)), St(c1), idx), List(Num(n)) ) => 
-        objects(idx + n.intValue)
-
-
-      case _ => throw new Error("type error")
-    }
-  }
-
-  def setSignal(f : Fn, v : Double) : Unit = {
-    ()
-  }
-*/
 
  }
 
@@ -172,20 +142,60 @@ object Sim {
    case Var(x) => env(x)
 
    case Fn("+", args) =>
-     val argvs = args.map(evalTerm(st, env))
-     RealV(0.0)
+     args.map(evalTerm(st, env)) match {
+       case List(RealV(x), RealV(y)) => RealV(x + y)
+       case _ => throw new Error("evalTerm")
+     }
 
-   case Fn(f, Nil) =>
-      RealV(0.0)
+   case Fn("-", args) =>
+     args.map(evalTerm(st, env)) match {
+       case List(RealV(x), RealV(y)) => RealV(x - y)
+       case List(RealV(x)) => RealV(-x)
+       case _ => throw new Error("evalTerm")
+     }
 
-   case Fn(f, List(i)) => 
-      val iv = evalTerm(st, env)(i)
-      RealV(0.0)
+   case Fn("*", args) =>
+     args.map(evalTerm(st, env)) match {
+       case List(RealV(x), RealV(y)) => RealV(x * y)
+       case _ => throw new Error("evalTerm")
+     }
 
+   case Fn("/", args) =>
+     args.map(evalTerm(st, env)) match {
+       case List(RealV(x), RealV(y)) => RealV(x / y)
+       case _ => throw new Error("evalTerm")
+     }
 
+   case Fn("^", args) =>
+     args.map(evalTerm(st, env)) match {
+       case List(RealV(x), RealV(y)) => RealV(scala.math.pow(x, y))
+       case _ => throw new Error("evalTerm")
+     }
+
+   case Fn(f, args) => (st.sig(f), args.map(evalTerm(st, env))) match {
+      case ((Nil, Real, idx), Nil) => RealV(st.signals(idx))
+      case ((List(St(c)), Real, idx), List(ObjectV(St(c1), n))) => 
+        assert (c == c1)
+        RealV(st.signals(idx + n.intValue))
+      case ((Nil, St(c), idx), Nil) => ObjectV(St(c), st.objects(idx))
+      case ((List(St(c1)), St(c2), idx), List(ObjectV(St(c3), n)) ) =>
+        assert (c1 == c3)
+        ObjectV(St(c2), st.objects(idx + n.intValue))
+     case _ => throw new Error("evalTerm")
+   }
 
    case Num(n) => RealV(numToDouble(n))
 
+ }
+
+ def evalFormula (st : State,
+                  env : Map[String, TermValue])
+                 (fm : Formula) : Boolean = fm match {
+   case True => true
+   case False => false
+   case Not(fm1) => (!evalFormula(st, env)(fm1))
+   case _ => throw new Error("evalFormula")
+   
  }
 
 
