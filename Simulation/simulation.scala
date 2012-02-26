@@ -103,10 +103,11 @@ object Sim {
 
  class State(sig1 : Map[String, (List[Sort], Sort)],
              // the cardinalities of the named sorts
-             sizes : Map[String, Int])  {
+             sizes1 : Map[String, Int])  {
 
    import scala.collection.mutable.HashMap
 
+   val sizes : Map[String, Int] = sizes1
 
    // map a symbol to its signature
    // and its starting index in the appropriate state array
@@ -193,7 +194,33 @@ object Sim {
                  (fm : Formula) : Boolean = fm match {
    case True => true
    case False => false
+   case Atom(R(r, tms)) => (r, tms.map(evalTerm(st, env))) match {
+     case ("=", List(RealV(x), RealV(y))) => x == y
+     case ("=", List(ObjectV(c1, x1), ObjectV(c2, x2))) if c1 == c2 => !(x1 == x2)
+     case ("/=", List(RealV(x), RealV(y))) => !(x == y)
+     case ("/=", List(ObjectV(c1, x1), ObjectV(c2, x2))) if c1 == c2 => !(x1 == x2)
+     case ("<", List(RealV(x), RealV(y))) => x < y
+     case ("<=", List(RealV(x), RealV(y))) => x <= y
+     case (">=", List(RealV(x), RealV(y))) => x >= y
+     case (">", List(RealV(x), RealV(y))) => x > y
+     case _ => throw new Error("evalFormula")
+   }
+     
    case Not(fm1) => (!evalFormula(st, env)(fm1))
+   case Binop(And, f1, f2) =>
+     evalFormula(st, env)(f1) && evalFormula(st, env)(f2)
+   case Binop(Or, f1, f2) =>
+     evalFormula(st, env)(f1) || evalFormula(st, env)(f2)
+   case Binop(Imp, f1, f2) =>
+     (!evalFormula(st, env)(f1)) || evalFormula(st, env)(f2)
+   case Binop(Iff, f1, f2) =>
+     val (v1, v2) = (evalFormula(st, env)(f1), evalFormula(st, env)(f2))
+       ( ( (!v1) || v2) & ( (!v2) || v1))
+   case Quantifier(Forall, St(c), i, fm1) =>
+     for (k <- Range(0, st.sizes(c))) {
+       println(k)
+     }
+     true
    case _ => throw new Error("evalFormula")
    
  }
