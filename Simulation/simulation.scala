@@ -35,6 +35,11 @@ case class Terminal() extends StateNode
 case class Split(s1 : StateNodeRef, s2 : StateNodeRef) extends StateNode
 case class Step(t : Transition, s: StateNodeRef) extends StateNode
 
+
+sealed abstract class TermValue
+case class RealV(v : Double)  extends TermValue
+case class ObjectV(s : Sort,  id : Int) extends TermValue
+
 object Sim {
 
   // Compile a hybrid program into a finite automaton.
@@ -128,31 +133,58 @@ object Sim {
      (new Array[Double](sptr), new Array[Int](optr))
 
    }
-
+/*
   def getSignal(f : Fn) : Double = f match {
-    case Fn(g, args) => sig(g) match {
-      case (Nil, Real, idx) if args == Nil => signals(idx)
-      case (List(St(c)), Real, idx) if args.length == 1 => 
-        0.0
-//        signals(idx + args.hd
-      case _ => throw new Error("could not find")
+    case Fn(g, args) => (sig(g), args) match {
+      case ((Nil, Real, idx), Nil) => signals(idx)
+      case ((List(St(c)), Real, idx), List(Num(n)) ) => 
+        signals(idx + n.intValue)
+
+      case _ => throw new Error("type error")
+    }
+  }
+
+  def setSignal(f : Fn, v : Double) : Double = f match {
+    case Fn(g, args) => (sig(g), args) match {
+      case ((Nil, Real, idx), Nil) => signals(idx)
+      case ((List(St(c)), Real, idx), List(Num(n)) ) => 
+        signals(idx + n.intValue)
+
+      case ((Nil, St(c), idx), Nil) => objects(idx)
+      case ((List(St(c)), St(c1), idx), List(Num(n)) ) => 
+        objects(idx + n.intValue)
+
+
+      case _ => throw new Error("type error")
     }
   }
 
   def setSignal(f : Fn, v : Double) : Unit = {
     ()
   }
-
+*/
 
  }
 
  def evalTerm(st : State,
-              tm : Term ) : Double = tm match {
-   case Var(_) => throw new Error("cannot evaluate term with a free variable")
+              env : Map[String, TermValue])
+              (tm : Term ) : TermValue = tm match {
+   case Var(x) => env(x)
 
-   case f@Fn(_,_) => st.getSignal(f)
+   case Fn("+", args) =>
+     val argvs = args.map(evalTerm(st, env))
+     RealV(0.0)
 
-   case Num(n) => numToDouble(n)
+   case Fn(f, Nil) =>
+      RealV(0.0)
+
+   case Fn(f, List(i)) => 
+      val iv = evalTerm(st, env)(i)
+      RealV(0.0)
+
+
+
+   case Num(n) => RealV(numToDouble(n))
 
  }
 
