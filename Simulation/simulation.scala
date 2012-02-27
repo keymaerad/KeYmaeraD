@@ -248,8 +248,9 @@ object Sim {
  def doTransition(st : State, tr : Transition) : Unit = tr match {
 
    case AssignTransition(vs) =>
+     // XXX in the semantics, these updates take place in parallel
      vs.map( {case (Fn(f, args), t) =>
-       (st.sig(f), evalTerm(st, empty)(t), args.map(evalTerm(st,empty))) match {
+       (st.sig(f), evalTerm(st, empty)(t), args.map(evalTerm(st, empty))) match {
          case ((Nil, Real, idx), RealV(x), Nil) =>
            st.signals.update(idx, x)
          case ((List(St(c)), Real, idx), RealV(x), List(ObjectV(St(c1), ob))) =>
