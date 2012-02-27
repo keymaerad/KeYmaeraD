@@ -107,6 +107,8 @@ object Sim {
 
    import scala.collection.mutable.HashMap
 
+
+
    val sizes : Map[String, Int] = sizes1
 
    // map a symbol to its signature
@@ -137,8 +139,12 @@ object Sim {
 
  }
 
+ type IHMap[A, B] = scala.collection.immutable.HashMap[A, B]
+
+ private val empty = new IHMap[String, TermValue]()
+
  def evalTerm(st : State,
-              env : Map[String, TermValue])
+              env : IHMap[String, TermValue])
               (tm : Term ) : TermValue = tm match {
    case Var(x) => env(x)
 
@@ -190,7 +196,7 @@ object Sim {
  }
 
  def evalFormula (st : State,
-                  env : Map[String, TermValue])
+                  env : IHMap[String, TermValue])
                  (fm : Formula) : Boolean = fm match {
    case True => true
    case False => false
@@ -218,13 +224,18 @@ object Sim {
        ( ( (!v1) || v2) & ( (!v2) || v1))
    case Quantifier(Forall, St(c), i, fm1) =>
      for (k <- Range(0, st.sizes(c))) {
-       println(k)
+       if (!evalFormula(st, env + ((i, ObjectV(St(c), k))))(fm1)) {
+         return false
+       }
+
      }
      true
    case _ => throw new Error("evalFormula")
    
  }
 
+
+  val rng = new scala.util.Random()
 
   // Run a hybrid program.
   // we need:
@@ -233,6 +244,39 @@ object Sim {
   // a step size
   // a stack size --- the number of past states to remember so they can be resumed if we hit a failing check.
   //  if BACKTRACKABLE is set to true, we don't do any copying of state 
+
+ def doTransition(st : State, tr : Transition) : Unit = tr match {
+
+   case AssignTransition(vs) =>
+     vs.map( {case (Fn(f, args), t) =>
+       (st.sig(f), evalTerm(st, empty)(t), args.map(evalTerm(st,empty))) match {
+         case ((Nil, Real, idx), RealV(x), Nil) =>
+           st.signals.update(idx, x)
+         case ((List(St(c)), Real, idx), RealV(x), List(ObjectV(St(c1), ob))) =>
+           assert (c == c1)
+           st.signals.update(idx + ob, x)
+         case ((Nil, St(c), idx), ObjectV(St(c1), ob), Nil) =>
+           assert (c == c1)
+           st.objects.update(idx, ob)
+         case ((List(St(d)), St(c), idx), ObjectV(St(c1), ob), List(ObjectV(St(d1), ob1))) =>
+           assert (c == c1)
+           st.objects.update(idx + ob1, ob)
+         case _ => throw new Error("doTransition")
+       }
+            })
+     ()
+
+   case AssignAnyTransition(f : Fn) => f match {
+     case Fn(g, args) => st.sig(g) match {
+//       case(_, St(c), idx) => doTransition(st, AssignTransition(List((f, ObjectV(St(c), rng.nextInt(st.sizes(g)))))))
+       case _ => throw new Error("doTransition")
+     }
+   }
+
+   case _ => throw new Error("doTransition")
+     
+
+ }
 
 
   // a state is a double[] and an int[]
