@@ -101,41 +101,56 @@ object Sim {
  }
 
 
- class State(sig1 : Map[String, (List[Sort], Sort)],
-             // the cardinalities of the named sorts
-             sizes1 : Map[String, Int])  {
+
+ class State()  {
 
    import scala.collection.mutable.HashMap
 
-
-
-   val sizes : Map[String, Int] = sizes1
+   var sizes : Map[String, Int] = null
 
    // map a symbol to its signature
    // and its starting index in the appropriate state array
-   val sig : HashMap[String, (List[Sort], Sort, Int)] =
-     new HashMap[String, (List[Sort], Sort, Int)]()
+   var sig : HashMap[String, (List[Sort], Sort, Int)] = null
 
    // Initialize the state vectors.
-   val (signals : Array[Double], objects : Array[Int]) = 
-   {
-     var sptr = 0
-     var optr = 0
-     for ((x, (args, res)) <- sig1) (args, res) match {
-       case (Nil, Real) => sig.put(x, (args, res, sptr))
-                           sptr +=1
-       case (List(St(c)), Real) => sig.put(x, (args, res, sptr))
-                                   sptr += sizes(c)
-       case (Nil, St(c)) => sig.put(x, (args, res, optr))
-                            optr +=1
-       case (List(St(c1)), St(c2)) => sig.put(x, (args, res, optr))
-                                     optr += sizes(c1)
-       case _ => throw new Error("cannot deal")
+   var signals : Array[Double] = null
+   var objects : Array[Int] = null
+
+
+   def this(sig1 : Map[String, (List[Sort], Sort)],
+             // the cardinalities of the named sorts
+             sizes1 : Map[String, Int]) = {
+    this()
+    sizes = sizes1    
+    sig =   new HashMap[String, (List[Sort], Sort, Int)]()
+
+    var sptr = 0
+    var optr = 0
+    for ((x, (args, res)) <- sig1) (args, res) match {
+      case (Nil, Real) => sig.put(x, (args, res, sptr))
+        sptr +=1
+      case (List(St(c)), Real) => sig.put(x, (args, res, sptr))
+        sptr += sizes(c)
+      case (Nil, St(c)) => sig.put(x, (args, res, optr))
+        optr +=1
+      case (List(St(c1)), St(c2)) => sig.put(x, (args, res, optr))
+        optr += sizes(c1)
+      case _ => throw new Error("cannot deal")
      }   
 
-     (new Array[Double](sptr), new Array[Int](optr))
+    signals = new Array[Double](sptr)
+    objects = new Array[Int](optr)
 
-   }
+  }
+
+  def this(that : State) = {
+    this()
+    sizes = that.sizes
+    sig = that.sig
+    signals = that.signals.clone()
+    objects = that.objects.clone()
+  }
+
 
  }
 
@@ -245,34 +260,50 @@ object Sim {
   // a stack size --- the number of past states to remember so they can be resumed if we hit a failing check.
   //  if BACKTRACKABLE is set to true, we don't do any copying of state 
 
+ def updateState (st : State,
+                  ty : (List[Sort], Sort, Int),
+                  args : List[TermValue],
+                  v : TermValue) : Unit = 
+    (ty, args, v) match {
+         case ((Nil, Real, idx), Nil, RealV(x) ) =>
+           st.signals.update(idx, x)
+         case ((List(St(c)), Real, idx), List(ObjectV(St(c1), ob)), RealV(x)) =>
+           assert (c == c1)
+           st.signals.update(idx + ob, x)
+         case ((Nil, St(c), idx), Nil, ObjectV(St(c1), ob)) =>
+           assert (c == c1)
+           st.objects.update(idx, ob)
+         case ((List(St(d)), St(c), idx), List(ObjectV(St(d1), ob1)), ObjectV(St(c1), ob)) =>
+           assert (c == c1)
+           st.objects.update(idx + ob1, ob)
+         case _ => throw new Error("updateState")
+    }
+
  def doTransition(st : State, tr : Transition) : Unit = tr match {
 
    case AssignTransition(vs) =>
-     // XXX in the semantics, these updates take place in parallel
+     // copy the old state
+     val stOld = new State(st)
      vs.map( {case (Fn(f, args), t) =>
-       (st.sig(f), evalTerm(st, empty)(t), args.map(evalTerm(st, empty))) match {
-         case ((Nil, Real, idx), RealV(x), Nil) =>
-           st.signals.update(idx, x)
-         case ((List(St(c)), Real, idx), RealV(x), List(ObjectV(St(c1), ob))) =>
-           assert (c == c1)
-           st.signals.update(idx + ob, x)
-         case ((Nil, St(c), idx), ObjectV(St(c1), ob), Nil) =>
-           assert (c == c1)
-           st.objects.update(idx, ob)
-         case ((List(St(d)), St(c), idx), ObjectV(St(c1), ob), List(ObjectV(St(d1), ob1))) =>
-           assert (c == c1)
-           st.objects.update(idx + ob1, ob)
-         case _ => throw new Error("doTransition")
-       }
+       updateState(st, stOld.sig(f), args.map(evalTerm(stOld, empty)), evalTerm(stOld, empty)(t))
             })
      ()
 
    case AssignAnyTransition(f : Fn) => f match {
      case Fn(g, args) => st.sig(g) match {
-//       case(_, St(c), idx) => doTransition(st, AssignTransition(List((f, ObjectV(St(c), rng.nextInt(st.sizes(g)))))))
+       case(params, St(c), idx) =>
+         updateState(st, (params, St(c), idx),
+                     args.map(evalTerm(st, empty)),
+                     ObjectV(St(c), rng.nextInt(st.sizes(g))))
+       case(params, Real, idx) =>
+         updateState(st, (params, Real, idx),
+                     args.map(evalTerm(st, empty)),
+                     RealV(rng.nextDouble())) // between 0.0 and 1.0
        case _ => throw new Error("doTransition")
      }
    }
+
+   case AssignQuantifiedTransition(i, c, vs) => throw new Error("doTransition: unimplemented")
 
    case _ => throw new Error("doTransition")
      
