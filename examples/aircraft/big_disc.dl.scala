@@ -6,10 +6,7 @@ val maininv =
     "forall i : C ." +
      "forall j : C ." +
       "( i /= j ==> " + 
-       "(discside(j) * (minr(j) * d2(j)) - discside(i) * (minr(i) * d2(i)) + " +
-        "(x1(i) - x1(j)) )^2 +" + 
-       "(discside(i) * (minr(i) * d1(i)) - discside(j) * (minr(j) * d1(j)) + " +
-         "(x2(i) - x2(j)))^2 >=" +
+      "(bigdisc1(i) - bigdisc1(j))^2 + (bigdisc2(i) - bigdisc2(j))^2 >="  +
        "(minr(i) + minr(j) + protectedzone())^2)")
 
 
@@ -18,7 +15,10 @@ val inv1 =
     "forall i : C . (  " +
      "(ca(i) = 0 | ca(i) = 1) " +
      " & (discside(i) = -1 | discside(i) = 1) " +
-    " & om(i) * ca(i) = maxom(i) * discside(i) * ca(i) )"
+     "& ((-discside(i) * minr(i) * d2(i) + x1(i) - bigdisc1(i))^2" +
+         " + (discside(i) * minr(i) * d1(i) + x2(i) - bigdisc2(i))^2 <= minr(i)^2))" +
+     "& (1 - ca(i)) * bigdisc1(i) = (1 - ca(i)) * x1(i)" +
+     "& (1 - ca(i)) * bigdisc2(i) = (1 - ca(i)) * x2(i)"
   )
 
 
@@ -43,44 +43,50 @@ val incatct =
   composelistT(
     hpalpha1T*,
     tryruleT(andRight)<(
-      tryruleT(andRight)<(
-        easiestT,
-        composelistT(
-          alphaT*,
-          instantiatebyT(St("C"))(List (("i", List("i")))),
-          easiestT
-        )
-      ),
-      tryruleT(andRight)<(
-        easiestT,
-        composelistT(
-          alphaT*,
-          instantiatebyT(St("C"))(List (("i", List("i")),
-                                        ("j", List("i")))),
-          hideunivsT(St("C")),
-          alphaT*,
-          cut1<(
+      composelistT(
+        hpalpha1T*,
+        tryruleT(andRight)<(
+          easiestT,
+          tryruleT(andRight)<(
+            easiestT,
             composelistT(
               alphaT*,
-              substT,
-              vacuousT*,
-              nullarizeT*,
-              easiestT
-            ),
-            composelistT(
-              (tryruleT(impLeft) & (tryruleT(close)*))*,
-              alleasyT
+              instantiatebyT(St("C"))(List(("i", List("i")),
+                                           ("j", List("i")))),
+              cut1<(
+                alleasyT,
+                tryruleunifyT(impLeft)(parseFormula("~ I = II  ==> D1 = D2"))<(
+                  composelistT(
+                    substT*,
+                    (nonarithcloseT | tryruleT(impLeft) |
+                     ((nullarizeT*) & hidethencloseT ) )*
+                  ),
+                  nonarithcloseT
+                )
+              )
             )
           )
         )
+      ),
+      composelistT(
+        hpalpha1T*,
+        tryruleT(andRight)<(
+          easiestT,
+          tryruleT(andRight)<(
+            easiestT,
+            easiestT
+          )
+        )
       )
-    )
-  )
+     )
+)
+
 
 
 val switchsidetct =
   composelistT(
     hpalpha1T*,
+    nilT,
     tryruleT(andRight)<(
       tryruleT(andRight)<(
         easiestT,
@@ -390,8 +396,7 @@ val postconditiontct =
                                    Var("D"),
                                    Var("Y"),
                                    Var("Z"))),
-                            nullarizeT*,
-                            arithT
+                            nullarizeT*
                             
                           )
                         )

@@ -55,6 +55,8 @@ forall i : C . (
      & (discside(i) = -1 | discside(i) = 1)
      & ((-discside(i) * minr(i) * d2(i) + x1(i) - bigdisc1(i))^2
           + (discside(i) * minr(i) * d1(i) + x2(i) - bigdisc2(i))^2 <= minr(i)^2)
+     & (1 - ca(i)) * bigdisc1(i) = (1 - ca(i)) * x1(i)
+     & (1 - ca(i)) * bigdisc2(i) = (1 - ca(i)) * x2(i)
      ),
 
 protectedzone() > 0
@@ -66,7 +68,7 @@ protectedzone() > 0
      (( (?ca(ii()) = 1);
 
        /* exit the maneuver */
-       ((?(bigdisc1(i) = x1(i) & bigdisc2(i) = x2(i));
+       (( ?(bigdisc1(ii()) = x1(ii()) & bigdisc2(ii()) = x2(ii()));
          ca(ii()) := 0 ) 
         ++ 
           /* change angular velocity */
