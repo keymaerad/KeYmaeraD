@@ -108,7 +108,6 @@ val outcatct =
                   )
                 )
               )
-
             )
           )
         )
@@ -159,20 +158,10 @@ val diffinv1 =
 val diffinv2 = 
   parseFormula(
    "forall k : C . " +
-    " om(k) * ca(k) = maxom(k) * discside(k) * ca(k)"
+     "((1 - ca(k)) * bigdisc1(k) = (1 - ca(k)) * x1(k)" +
+     "& (1 - ca(k)) * bigdisc2(k) = (1 - ca(k)) * x2(k))"
   )
 
-
-val diffinv4 = 
-  parseFormula (
-    "forall i : C ." +
-     "forall j : C ." +
-      "( i /= j ==> " + 
-      "((discside(j) * (minr(j) * d2(j)) - discside(i) * (minr(i) * d2(i)) + " +
-      "x1(i) - x1(j) )^2 +" + 
-      "(discside(i) * (minr(i) * d1(i)) - discside(j) * (minr(j) * d1(j)) + " + 
-      "x2(i) - x2(j))^2) * ca(i) * ca(j) >=" +
-      "(minr(i) + minr(j) + protectedzone())^2 * ca(i) * ca(j))")
 
 
 val di1tct =  composelistT(
@@ -205,62 +194,14 @@ val evolvetct =
        tryruleT(diffStrengthen(diffinv2))<(
          di2tct,
          di2tct,
-         tryruleT(diffStrengthen(diffinv4))<(
-           composelistT(
-             (alphaT | instantiatebyT(St("C"))(List(("i", List("i")),
-                                                    ("j", List("j")),
-                                                    ("k", List("i", "j")))))*,
-             nullarizeT*,
-             (nonarithcloseT | alphaT | betaT | substT  | hidethencloseT)*
-           ),
-           composelistT(
-             (alphaT | instantiatebyT(St("C"))(List(("i", List("i", "j")),
-                                                    ("j", List("j")),
-                                                    ("k", List("i", "j")))))*,
-             nullarizeT*,
-             dedupT*,
-             (nonarithcloseT | alphaT | betaT | substT | hidethencloseT)*
-           ),
-           composelistT(
-             tryruleT(diffClose),
-             tryruleT(andRight)<(
-               tryruleT(andRight)<(
-                 tryruleT(andRight)<(
-                   (nonarithcloseT | alphaT |
-                    instantiatebyT(St("C"))(List(("i", List("ii")),
-                                                 ("j", List("jj")))))*,
-                   (nonarithcloseT | alphaT |
-                    instantiatebyT(St("C"))(List(("i", List("i")),
-                                                 ("j", List("i")))))*
-                 ),
-                 (nonarithcloseT | alphaT |
-                    instantiatebyT(St("C"))(List(("i", List("i")),
-                                                 ("j", List("i")))))*
-               ),
-               tryruleT(andRight)<(
-                 composelistT(
-                   alphaT*,
-                   (alphaT | instantiatebyT(St("C"))(List(("i", List("i")),
-                                                          ("j", List("j")),
-                                                          ("k", List("i", "j")))))*,
-                   nullarizeT*,
-                   (nonarithcloseT | alphaT | betaT | substT | hidethencloseT)*
-                 ),
-                 composelistT(
-                   alphaT*,
-                   tryruleT(andRight)<(
-                     (nonarithcloseT | tryruleT(andLeft) |
-                      instantiatebyT(St("C"))(List(("i", List("i")),
-                                                   ("k", List("i")),
-                                                   ("j", List("i")))))*,
-                     (nonarithcloseT | alphaT |
-                      instantiatebyT(St("C"))(List(("i", List("i")),
-                                                   ("k", List("i")),
-                                                   ("j", List("i")))))*
-                   )
-                 )
-               )
-             )
+         composelistT(
+           tryruleT(diffClose),
+           tryruleT(andRight)<(
+             composelistT(
+               instantiatebyT(St("C"))(List(("i", List("ii")))),
+               nilT
+             ),
+             nilT
            )
          )
        )

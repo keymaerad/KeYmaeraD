@@ -96,8 +96,8 @@ protectedzone() > 0
         x2(i)' = v(i) * d2(i),
         d1(i)' = -om(i) * d2(i),
         d2(i)' = om(i) * d1(i),
-        bigdisc1(i)' = (1 - ca(i)) * d1(i),
-        bigdisc2(i)' = (1 - ca(i)) * d2(i);
+        bigdisc1(i)' = (1 - ca(i)) * v(i) * d1(i),
+        bigdisc2(i)' = (1 - ca(i)) * v(i) * d2(i);
 
         // || disc(i) - bigdisc(i)|| <= minr(i)
         ((-discside(i) * minr(i) * d2(i) + x1(i) - bigdisc1(i))^2
