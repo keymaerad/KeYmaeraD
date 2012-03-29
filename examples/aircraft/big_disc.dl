@@ -4,6 +4,9 @@
   x1 : (C) -> Real,
   x2 : (C) -> Real,
 
+  bigdisc1 : (C) -> Real,
+  bigdisc2 : (C) -> Real,
+
   // speeds
   v : (C) -> Real,
 
@@ -11,9 +14,8 @@
   d1 : (C) -> Real,
   d2 : (C) -> Real,
 
-
-  // -1 if disc is to the right of the airplane
-  //  1 if disc is to the left of the airplane
+  // -1 if we turn to the right in an avoidance maneuver
+  //  1 if we turn to the left in an avoidance maneuver
   discside : (C) -> Real,
 
   // angular velocity
@@ -23,10 +25,6 @@
   // 0 if airplane is free
   // 1 if airplane is in collision avoidance maneuver
   ca : (C) -> Real,
-
-  // 1 if airplane is present
-  // 0 if it is not
-  p : (C) -> Real,
 
   ii : () -> C
 }
@@ -54,7 +52,7 @@ forall i : C .
 
 forall i : C .
    forall j : C .
-    ((i /= j & p(i) = 1 & p(i) = 1 )==>
+    (i /= j ==>
       (discside(j) * (minr(j) * d2(j)) -
        discside(i) * (minr(i) * d2(i)) + (x1(i) - x1(j)) )^2 +
       (discside(i) * (minr(i) * d1(i)) -
@@ -109,9 +107,12 @@ protectedzone() > 0
        {x1(i)' = v(i) * d1(i),
         x2(i)' = v(i) * d2(i),
         d1(i)' = -om(i) * d2(i),
-        d2(i)' = om(i) * d1(i); 
+        d2(i)' = om(i) * d1(i),
+        bigdisc1(i)' = (1 - ca(i)) * d1(i),
+        bigdisc2(i)' = (1 - ca(i)) * d2(i);
+//         & 
         forall j : C.
-        ((i /= j &  p(i) = 1 & p(j) = 1 & (ca(i) = 0 | ca(j) = 0)) ==>
+        ((i /= j &  (ca(i) = 0 | ca(j) = 0)) ==>
               (discside(j) * minr(j) * d2(j) -
                discside(i) * minr(i) * d2(i) + x1(i) - x1(j) )^2 +
               (discside(i) * minr(i) * d1(i) -
@@ -122,5 +123,5 @@ protectedzone() > 0
  }*] 
  (forall i : C .
     forall j : C .
-      ((i /= j & p(i) = 1 & p(j) = 1)==>
+      (i /= j ==>
         (x1(i) - x1(j))^2 + (x2(i) - x2(j))^2 >= protectedzone()^2))

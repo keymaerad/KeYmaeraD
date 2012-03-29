@@ -4,7 +4,7 @@
   x1 : (C) -> Real,
   x2 : (C) -> Real,
 
-  // linear velocites
+  // speeds
   v : (C) -> Real,
 
   // unit tangent vector. velocity is v.(d1, d2)
