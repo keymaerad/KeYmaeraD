@@ -45,25 +45,16 @@ forall i : C .
   maxom(i) > 0 &
   maxom(i) * minr(i) = v(i),
 
-//forall i : C .
-//   forall j : C . i /= j ==>
-//      (disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= 
-//        (minr(i) + minr(j) + protectedzone())^2,
-
 forall i : C .
-   forall j : C .
-    (i /= j ==>
-      (discside(j) * (minr(j) * d2(j)) -
-       discside(i) * (minr(i) * d2(i)) + (x1(i) - x1(j)) )^2 +
-      (discside(i) * (minr(i) * d1(i)) -
-       discside(j) * (minr(j) * d1(j)) + (x2(i) - x2(j)))^2 >= 
-      (minr(i) + minr(j) + protectedzone())^2),
-
+   forall j : C . i /= j ==>
+      (bigdisc1(i) - bigdisc1(j))^2 + (bigdisc2(i) - bigdisc2(j))^2 >= 
+        (minr(i) + minr(j) + protectedzone())^2,
 
 forall i : C . (  
       (ca(i) = 0 | ca(i) = 1) 
      & (discside(i) = -1 | discside(i) = 1)
-     & om(i) * ca(i) = maxom(i) * discside(i) * ca(i)
+     & ((-discside(i) * minr(i) * d2(i) + x1(i) - bigdisc1(i))^2
+          + (discside(i) * minr(i) * d1(i) + x2(i) - bigdisc2(i))^2 <= minr(i)^2)
      ),
 
 protectedzone() > 0
@@ -75,7 +66,12 @@ protectedzone() > 0
      (( (?ca(ii()) = 1);
 
        /* exit the maneuver */
-       ca(ii()) := 0 )
+       ((?(bigdisc1(i) = x1(i) & bigdisc2(i) = x2(i));
+         ca(ii()) := 0 ) 
+        ++ 
+          /* change angular velocity */
+         (om(ii()) := *)
+       ))
 
        /* ii NOT in a ca maneuver */    
      ++ ( (?ca(ii()) = 0);
@@ -84,17 +80,7 @@ protectedzone() > 0
            (om(ii()) := *) 
            ++
            // switch discside
-           (?(forall jj : C.
-               (ii() /= jj ==>
-                   (discside(jj) * minr(jj) * d2(jj) -
-                    (-1) * discside(ii()) * minr(ii()) * d2(ii()) +
-                    (x1(ii()) - x1(jj)) )^2 +
-                   ((-1) * discside(ii()) * minr(ii()) * d1(ii()) -
-                    discside(jj) * minr(jj) * d1(jj) +
-                    (x2(ii()) - x2(jj)))^2 >= 
-                   (minr(ii()) + minr(jj) + protectedzone())^2
-                 ));
-            discside(ii()) := -discside(ii()))
+           (discside(ii()) := -discside(ii()))
            ++
            // enter maneuver
            (om(ii()) := discside(ii()) * maxom(ii()); ca(ii()) := 1)
@@ -110,14 +96,17 @@ protectedzone() > 0
         d2(i)' = om(i) * d1(i),
         bigdisc1(i)' = (1 - ca(i)) * d1(i),
         bigdisc2(i)' = (1 - ca(i)) * d2(i);
-//         & 
-        forall j : C.
-        ((i /= j &  (ca(i) = 0 | ca(j) = 0)) ==>
-              (discside(j) * minr(j) * d2(j) -
-               discside(i) * minr(i) * d2(i) + x1(i) - x1(j) )^2 +
-              (discside(i) * minr(i) * d1(i) -
-               discside(j) * minr(j) * d1(j) + x2(i) - x2(j))^2 >= 
-              (minr(i) + minr(j) + protectedzone())^2)
+
+        // || disc(i) - bigdisc(i)|| <= minr(i)
+        ((-discside(i) * minr(i) * d2(i) + x1(i) - bigdisc1(i))^2
+          + (discside(i) * minr(i) * d1(i) + x2(i) - bigdisc2(i))^2 <= minr(i)^2)
+        & 
+        // bigdiscs are separated
+        (forall j : C.
+         ((i /= j &  (ca(i) = 0 | ca(j) = 0)) ==>
+            ((bigdisc1(i) - bigdisc1(j))^2 + 
+             (bigdisc2(i) - bigdisc2(j))^2 >= (minr(i) + minr(j) + protectedzone())^2)))
+
             })
 
  }*] 
