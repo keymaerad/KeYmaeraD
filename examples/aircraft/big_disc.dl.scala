@@ -113,7 +113,38 @@ val outcatct =
           )
         )
       ),
-      incatct
+      composelistT(
+        hpalpha1T*,
+        tryruleT(andRight)<(
+          easiestT,
+          tryruleT(andRight)<(
+            easiestT,
+            composelistT(
+              alphaT*,
+              instantiatebyT(St("C"))(List(("i", List("i")),
+                                           ("j", List("i")))),
+              cut1<(
+                composelistT(
+                  alphaT*,
+                  substT*,
+                  vacuousT*,
+                  hideunivsT(St("C")),
+                  nullarizeT*,
+                  easiestT
+                ),
+                tryruleunifyT(impLeft)(parseFormula("~ I = II  ==> D1 = D2"))<(
+                  tryruleunifyT(impLeft)(parseFormula("~ I = II  ==> D1 = D2"))<(
+                    alleasyT,
+                    nonarithcloseT
+                  ),
+                  nonarithcloseT
+                )
+              )
+            )
+
+          )
+        )
+      )
     )
 )
 
