@@ -68,118 +68,11 @@ val incatct =
           )
         )
       ),
-      composelistT(
-        hpalpha1T*,
-        tryruleT(andRight)<(
-          easiestT,
-          tryruleT(andRight)<(
-            easiestT,
-            easiestT
-          )
-        )
-      )
+      easiestT
      )
 )
 
 
-
-val switchsidetct =
-  composelistT(
-    hpalpha1T*,
-    nilT,
-    tryruleT(andRight)<(
-      tryruleT(andRight)<(
-        easiestT,
-        composelistT(
-          alphaT*,
-          instantiatebyT(St("C"))(List (("i", List("i")))),
-          easiestT
-        )
-      ),
-      tryruleT(andRight)<(
-        composelistT(
-          alphaT*,
-          instantiatebyT(St("C"))(List(("i", List("i")),
-                                       ("j", List("i", "j")),
-                                       ("jj", List("i", "j")))),
-          instantiatebyT(St("C"))(List(("j", List("j")))),
-          alphaT*,
-          cut1<(
-            composelistT(
-              alphaT*,
-              substT*,
-              vacuousT*,
-              cut1<(
-                composelistT(
-                  alphaT*,
-                  substT*,
-                  nonarithcloseT
-                ),
-                tryruleunifyT(impLeft)(parseFormula("~ I = II  ==> D1 = D2"))<(
-                  composelistT(
-                    substT*,
-                    (nonarithcloseT | tryruleT(impLeft) |
-                     ((nullarizeT*) & hidethencloseT ) )*
-                  ),
-                  nonarithcloseT
-                )
-              )
-            ),
-            tryruleunifyT(impLeft)(parseFormula("~ I = II  ==> D1 = D2"))<(
-              cut1<(
-                composelistT(
-                  tryruleatT(not)(RightP(0)),
-                  substT*,
-                  vacuousT*,
-                  tryruleT(impLeft)<(
-                    tryruleT(impLeft)<(
-                      composelistT(
-                        nullarizeT*,
-                        (alphaT | betaT)*,
-                        substT*,
-                        hidethencloseT
-                      ),
-                      composelistT(
-                        tryruleatT(commuteEquals)(RightP(0)),
-                        nonarithcloseT
-                      )
-                    ),
-                    nonarithcloseT
-                  )
-                ),
-                (nonarithcloseT | tryruleT(impLeft) |
-                     ((nullarizeT*) & hidethencloseT ) )*
-              ),
-              nonarithcloseT
-            )
-          )
-        ),
-        composelistT(
-          alphaT*,
-          instantiatebyT(St("C"))(List(("i", List("i")),
-                                       ("j", List("i")))),
-          alphaT*,
-          hideunivsT(St("C")),
-          cut1<(
-           composelistT(
-             alphaT*,
-             substT*,
-             nullarizeT*,
-             hidethencloseT
-           ),
-           tryruleT(impLeft)<(
-             composelistT(
-               nullarizeT*,
-               substT*,
-               hidethencloseT
-             ),
-             nonarithcloseT
-           )
-          )
-        )
-      )
-    )
-  )
 
 val outcatct = 
   composelistT(
@@ -188,8 +81,36 @@ val outcatct =
       composelistT(
         hpalpha1T*,
         tryruleT(andRight)<(
-          incatct,
-          switchsidetct
+          easiestT,
+          composelistT(
+            hpalpha1T*,
+            tryruleT(andRight)<(
+              easiestT,
+              tryruleT(andRight)<(
+                easiestT,
+                composelistT(
+                  alphaT*,
+                  instantiatebyT(St("C"))(List(("i", List("i")),
+                                               ("j", List("i")))),
+                  cut1<(
+                    composelistT(
+                      alphaT*,
+                      substT*,
+                      vacuousT*,
+                      hideunivsT(St("C")),
+                      nullarizeT*,
+                      easiestT
+                    ),
+                    tryruleunifyT(impLeft)(parseFormula("~ I = II  ==> D1 = D2"))<(
+                      alleasyT,
+                      nonarithcloseT
+                    )
+                  )
+                )
+              )
+
+            )
+          )
         )
       ),
       incatct
