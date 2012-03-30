@@ -258,6 +258,11 @@ val cutfm =
     "(discside(I) * minr(I) * d1(I) + x2(I) - bigdisc2(I))^2 <= minr(I)^2"
   )
 
+val cutfm2 = 
+  parseFormula(
+    "(bigdisc1(I) - bigdisc1(J))^2 + (bigdisc2(I) - bigdisc2(J))^2 >= (2 * minr(I) + 2 * minr(J) + protectedzone())^2"
+  )
+
 val subcut =
         cutT(
           DirectedCut,
@@ -299,7 +304,48 @@ val postconditiontct =
               hideallbutT(List(LeftP(0), LeftP(1), LeftP(4), LeftP(4),
                                LeftP(13), LeftP(15), LeftP(17),
                                RightP(0))),
-              nilT
+              cutT(
+                StandardKeepCut,
+                cutfm2,
+                parseFormula("minr(I) > 0")
+              )<(
+                nonarithcloseT,
+                cutT(
+                  StandardKeepCut,
+                  cutfm2,
+                  parseFormula("minr(J) > 0")
+                )<(
+                  nonarithcloseT,
+                  cutT(
+                    StandardKeepCut,
+                    cutfm2,
+                    parseFormula("protectedzone() > 0")
+                  )<(
+                    nonarithcloseT,
+                    composelistT(
+                      tryruleatT(hide)(LeftP(6)),
+                      tryruleatT(hide)(LeftP(6)),
+                      tryruleatT(hide)(LeftP(6)),
+                      cutT(
+                        DirectedCut,
+                        cutfm2,
+                        parseFormula("(x1(I) - bigdisc1(J))^2 + (x2(I) - bigdisc2(J))^2 >= (2 * minr(J) + protectedzone())^2")
+                      )<(
+                        composelistT(
+                          tryruleatT(hide)(LeftP(5)),
+                          nullarizeT*,
+                          arithT
+                        ),
+                        composelistT(
+                          tryruleatT(hide)(LeftP(4)),
+                          nullarizeT*,
+                          arithT
+                        )
+                      )
+                    )
+                  )
+                )
+              )
             )
           )
         )
