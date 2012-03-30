@@ -15,7 +15,7 @@ val inv1 =
   parseFormula (
     "forall i : C . (  " +
      "(ca(i) = 0 | ca(i) = 1) " +
-    " & v(i) * ca(i) = om(i) * minr(i) * ca(i) )"
+    " & om(i) * ca(i) = maxom(i) * ca(i) )"
   )
 
 
@@ -93,7 +93,7 @@ val diffinv1 = parseFormula("forall k : C . (ca(k) = 0 | ca(k) = 1)")
 val diffinv2 = 
   parseFormula(
    "forall k : C . " +
-    " v(k) * ca(k) = om(k) * minr(k) * ca(k) "
+    " om(k) * ca(k) = maxom(k) * ca(k) "
   )
 
 val diffinv3 = 
@@ -156,7 +156,7 @@ val evolvetct =
                                                     ("k", List("i", "j")))))*,
              nullarizeT*,
              dedupT*,
-             (nonarithcloseT | alphaT | betaT | hidethencloseT)*
+             (nonarithcloseT | alphaT | tryruleT(orLeft) | tryruleT(andRight) | substT | hidethencloseT)*
            ),
            composelistT(
              tryruleT(diffClose),

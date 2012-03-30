@@ -261,7 +261,7 @@ val evolvetct =
                                                     ("k", List("i", "j")))))*,
              nullarizeT*,
              dedupT*,
-             (nonarithcloseT | alphaT | betaT | substT | hidethencloseT)*
+             (nonarithcloseT | alphaT | tryruleT(andRight) | tryruleT(orLeft) | substT | hidethencloseT)*
            ),
            composelistT(
              tryruleT(diffClose),
