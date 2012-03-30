@@ -199,9 +199,24 @@ val evolvetct =
            tryruleT(andRight)<(
              composelistT(
                instantiatebyT(St("C"))(List(("i", List("ii")))),
-               nilT
+               alphaT*,
+               easiestT
              ),
-             nilT
+             tryruleT(andRight)<(
+               composelistT(
+                 alphaT*,
+                 (alphaT | instantiatebyT(St("C"))(List(("i", List("i")),
+                                                        ("k", List("i", "j")),
+                                                        ("j", List("j")))))*,
+                 nilT
+               ),
+               composelistT(
+                 alphaT*,
+                 (alphaT | instantiatebyT(St("C"))(List(("i", List("i")),
+                                                        ("k", List("i")))))*,
+                 easiestT
+               )
+             )
            )
          )
        )
