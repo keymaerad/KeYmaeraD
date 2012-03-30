@@ -551,12 +551,16 @@ final object Prover {
       Binop(c,substitute_Formula1(xold,xnew,xnew_fv,f1),
           substitute_Formula1(xold,xnew,xnew_fv,f2))
     case Quantifier(q,c,v,f) =>
-      if( ! xnew_fv.contains(v)){
-        Quantifier(q,c,v, substitute_Formula1(xold,xnew, xnew_fv, f))
+      if (xold == v) {
+        // Nothing to do.
+        Quantifier(q, c, v, f)
+      } else if( (! xnew_fv.contains(v))){ 
+        // don't need to rename.
+        Quantifier(q, c, v, substitute_Formula1(xold, xnew, xnew_fv, f))
       } else {
         val v1 = uniqify(v)
-        val f1 = rename_Formula(v,v1,f)
-        Quantifier(q,c,v1,substitute_Formula1(xold,xnew, xnew_fv, f1))
+        val f1 = rename_Formula(v, v1, f)
+        Quantifier(q,c,v1,substitute_Formula1(xold, xnew, xnew_fv, f1))
       }
     //XXX  we don't check for captured function symbols!
     // This is okay if we uniqify function symbols in the
@@ -568,7 +572,7 @@ final object Prover {
 
   def substitute_Formula(xold: String, xnew: Term, fm: Formula): Formula = {
     val vs = varsOfTerm(xnew)
-    substitute_Formula1(xold,xnew, HashSet.empty ++ vs, fm)
+    substitute_Formula1(xold, xnew, HashSet.empty ++ vs, fm)
   }
 
 
@@ -585,7 +589,8 @@ final object Prover {
       Binop(c,simul_substitute_Formula1(subs,new_fv,f1),
           simul_substitute_Formula1(subs,new_fv,f2))
     case Quantifier(q,c,v,f) =>
-      if( ! new_fv.contains(v)){
+      if( (! new_fv.contains(v)) && (!subs.map(_._1).contains(v)) ){
+        // don't need to rename.
         Quantifier(q,c,v, simul_substitute_Formula1(subs, new_fv, f))
       } else {
         val v1 = uniqify(v)
