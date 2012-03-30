@@ -252,13 +252,16 @@ val indtct =
   composelistT(hpalphaT*,
                tryruleT(andRight)<(controltct, evolvetct))
 
+val cutfm = 
+  parseFormula(
+    "(-(discside(I) * minr(I) * d2(I)) + x1(I) - bigdisc1(I))^2 + " +
+    "(discside(I) * minr(I) * d1(I) + x2(I) - bigdisc2(I))^2 <= minr(I)^2"
+  )
+
 val subcut =
         cutT(
           DirectedCut,
-          parseFormula(
-            "(-(discside(I) * minr(I) * d2(I)) + x1(I) - bigdisc1(I))^2 + " +
-            "(discside(I) * minr(I) * d1(I) + x2(I) - bigdisc2(I))^2 <= minr(I)^2"
-          ),
+          cutfm,
           parseFormula(
             "(x1(I) - bigdisc1(I))^2 + " +
             "(x2(I) - bigdisc2(I))^2 <= 4 * minr(I)^2"
@@ -278,10 +281,26 @@ val postconditiontct =
         tryruleunifyT(hide)(parseFormula("I /= J")),
         alphaT*,
         subcut<(
-          composelistT(nullarizeT*, alleasyT),
+          composelistT(
+            tryruleatT(hide)(LeftP(0)),
+            tryruleatT(hide)(LeftP(7)),
+            nullarizeT*,
+            alleasyT
+          ),
           subcut<(
-            nilT,
-            nilT
+            composelistT(
+              tryruleatT(hide)(LeftP(0)),
+              nullarizeT*,
+              alleasyT
+            ),
+            composelistT(
+              tryruleunifyT(hide)(parseFormula("ca(I) = 0 | ca(J) = 1 "))*,
+              tryruleunifyT(hide)(parseFormula("DS = -1 | DS = 1 "))*,
+              hideallbutT(List(LeftP(0), LeftP(1), LeftP(4), LeftP(4),
+                               LeftP(13), LeftP(15), LeftP(17),
+                               RightP(0))),
+              nilT
+            )
           )
         )
       ),
