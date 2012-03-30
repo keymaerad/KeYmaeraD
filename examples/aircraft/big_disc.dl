@@ -48,7 +48,7 @@ forall i : C .
 forall i : C .
    forall j : C . i /= j ==>
       (bigdisc1(i) - bigdisc1(j))^2 + (bigdisc2(i) - bigdisc2(j))^2 >= 
-        (minr(i) + minr(j) + protectedzone())^2,
+        (2 * minr(i) + 2 * minr(j) + protectedzone())^2,
 
 forall i : C . (  
       (ca(i) = 0 | ca(i) = 1) 
@@ -107,7 +107,7 @@ protectedzone() > 0
         (forall j : C.
          ((i /= j &  (ca(i) = 0 | ca(j) = 0)) ==>
             ((bigdisc1(i) - bigdisc1(j))^2 + 
-             (bigdisc2(i) - bigdisc2(j))^2 >= (minr(i) + minr(j) + protectedzone())^2)))
+             (bigdisc2(i) - bigdisc2(j))^2 >= (2 * minr(i) + 2 * minr(j) + protectedzone())^2)))
 
             })
 

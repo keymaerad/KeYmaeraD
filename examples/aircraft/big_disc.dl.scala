@@ -7,7 +7,7 @@ val maininv =
      "forall j : C ." +
       "( i /= j ==> " + 
       "(bigdisc1(i) - bigdisc1(j))^2 + (bigdisc2(i) - bigdisc2(j))^2 >="  +
-       "(minr(i) + minr(j) + protectedzone())^2)")
+       "(2 * minr(i) + 2 * minr(j) + protectedzone())^2)")
 
 
 val inv1 = 
@@ -170,7 +170,7 @@ val diffinv3 =
       "( i /= j ==> " + 
       "((bigdisc1(i) - bigdisc1(j))^2 + " + 
        "(bigdisc2(i) - bigdisc2(j))^2) * ca(i) * ca(j) >="  +
-       "(minr(i) + minr(j) + protectedzone())^2  * ca(i) * ca(j) )")
+       "(2 * minr(i) + 2 * minr(j) + protectedzone())^2  * ca(i) * ca(j) )")
 
 
 val di1tct =  composelistT(
@@ -252,11 +252,18 @@ val indtct =
   composelistT(hpalphaT*,
                tryruleT(andRight)<(controltct, evolvetct))
 
-val cutfm =
-  parseFormula(
-    "(discside(J) * (minr(J) * d2(J)) - discside(I) * (minr(I) * d2(I)) + (x1(I) - x1(J)))^2 " +
-    "+(discside(I) * (minr(I) * d1(I)) - discside(J) * (minr(J) * d1(J)) + (x2(I) - x2(J)))^2" +
-    ">= (minr(I) + minr(J) + protectedzone())^2")
+val subcut =
+        cutT(
+          DirectedCut,
+          parseFormula(
+            "(-(discside(I) * minr(I) * d2(I)) + x1(I) - bigdisc1(I))^2 + " +
+            "(discside(I) * minr(I) * d1(I) + x2(I) - bigdisc2(I))^2 <= minr(I)^2"
+          ),
+          parseFormula(
+            "(x1(I) - bigdisc1(I))^2 + " +
+            "(x2(I) - bigdisc2(I))^2 <= 4 * minr(I)^2"
+          )
+        )
 
 val postconditiontct = 
   composelistT(
@@ -265,81 +272,16 @@ val postconditiontct =
     instantiatebyT(St("C"))(List(("i", List("i", "j")),
                                  ("j", List("j"))))*,
     alphaT*,
-    tryruleunifyT(hide)(parseFormula("ca(I) = 0 | ca(J) = 1 "))*,
     tryruleatT(hide)(LeftP(0)),
     tryruleT(impLeft)<(
       composelistT(
         tryruleunifyT(hide)(parseFormula("I /= J")),
         alphaT*,
-        cutT(
-          DirectedCut,
-          cutfm,
-          parseFormula(
-            "(discside(J) * (minr(J) * d2(J))  + (x1(I) - x1(J)))^2 " +
-            "+ ( - discside(J) * (minr(J) * d1(J)) + (x2(I) - x2(J)))^2" +
-            ">= (minr(J) + protectedzone())^2")
-        )<(
-          composelistT(
-            cutT(
-              StandardCut,
-              cutfm,
-              parseFormula("(minr(I) * d2(I))^2 + (minr(I) * d1(I))^2 = minr(I)^2")
-            )<(
-              composelistT(
-                nullarizeT*,
-                easiestT
-              ),
-              cutT(
-                StandardCut,
-                cutfm,
-                parseFormula("minr(I) > 0") )<( 
-                  easiestT,
-                  cutT(
-                    StandardCut,
-                    cutfm,
-                    parseFormula("minr(J) > 0") )<( 
-                      easiestT,
-                      cutT(
-                        StandardCut,
-                        parseFormula("protectedzone() > 0"),
-                        parseFormula("protectedzone() > 0"))<(
-                          easiestT,
-                          composelistT(
-                            tryruleatT(hide)(LeftP(6)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            unsubT(
-                              parseFormula(
-                                "(D1 * Y - D2 * Z + C)^2 " +
-                                "+ (D3 * A - D4 * B + D)^2" +
-                                ">= (X)^2"),
-                              List(Var("A"), 
-                                   Var("B"), 
-                                   Var("C"), 
-                                   Var("D"),
-                                   Var("Y"),
-                                   Var("Z"))),
-                            nullarizeT*
-                            
-                          )
-                        )
-                    )
-                )
-            )
-          ),
-          composelistT(
-            nullarizeT*,
-            easiestT
+        subcut<(
+          composelistT(nullarizeT*, alleasyT),
+          subcut<(
+            nilT,
+            nilT
           )
         )
       ),
