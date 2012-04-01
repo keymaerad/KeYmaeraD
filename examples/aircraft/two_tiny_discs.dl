@@ -79,7 +79,7 @@ protectedzone() > 0
      ++ ( (?ca(ii()) = 0);
           (
            // free flight
-           (om(ii()) := *) 
+           (om(ii()) := *; ?(om(ii()) >= - maxom(ii()) & om(ii()) <= maxom(ii()))) 
            ++
            // switch discside
            (?(forall jj : C.

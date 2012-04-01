@@ -72,14 +72,14 @@ protectedzone() > 0
          ca(ii()) := 0 ) 
         ++ 
           /* change angular velocity */
-         (om(ii()) := *)
+         (om(ii()) := *; ?(om(ii()) >= - maxom(ii()) & om(ii()) <= maxom(ii())))
        ))
 
        /* ii NOT in a ca maneuver */    
      ++ ( (?ca(ii()) = 0);
           (
            // free flight
-           (om(ii()) := *) 
+           (om(ii()) := *; ?(om(ii()) >= - maxom(ii()) & om(ii()) <= maxom(ii()))) 
            ++
            // switch discside
            (discside(ii()) := -discside(ii()))
