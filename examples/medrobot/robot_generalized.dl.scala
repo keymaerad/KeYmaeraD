@@ -56,7 +56,18 @@ val cutb6 =
    parseFormula("(qx() + K() * (fx() - 0 * nx()) * e() + 1 / 2 * K() * FXP * e()^2 - px()) * nx() + " +
                 "(qy() + K() * (fy() - 0 * ny()) * e() + 1 / 2 * K() * FYP * e()^2 - py()) * ny() >= 0")
  )
-   
+
+
+val cutb5 = 
+  cutT(
+    StandardCut,
+    parseFormula("TMP * TMP * K() = 2 * ((qx() - px()) * nx() + (qy() - py()) * ny()) * (FXP * nx() + FYP * ny())"),
+    parseFormula("(qx() + K() * (fx() - (fx() * nx() + fy() * ny() - TMP) * nx()) * e() + " +
+                 "1 / 2 * K() * FXP * e()^2 - px()) * nx() + " +
+                 "(qy() + K() * (fy() - (fx() * nx() + fy() * ny() - TMP) * ny()) * e() + " + 
+                 "1 / 2 * K() * FYP * e()^2 - py()) * ny() >= 0"
+               )
+  )
 
 
 
