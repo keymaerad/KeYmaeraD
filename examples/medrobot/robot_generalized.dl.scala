@@ -49,6 +49,17 @@ val cut2q =
     )
   )
 
+val cutb3 = 
+ cutT(
+   StandardCut,
+   parseFormula("FXP * nx() + FYP * ny() >= 0"),
+   parseFormula("(qx() + K() * (fx() - 0 * nx()) * e() + 1 / 2 * K() * FXP * e()^2 - px()) * nx() + " +
+                "(qy() + K() * (fy() - 0 * ny()) * e() + 1 / 2 * K() * FYP * e()^2 - py()) * ny() >= 0")
+ )
+   
+
+
+
 
 val main =
    tryruleT(loopInduction(loopInv))<(
@@ -75,6 +86,7 @@ val main =
                              // working here
                              composelistT(
                                hpalpha1T*,
+                               nilT,
                                diffsolveT(RightP(0), Endpoint),
                                hpalpha1T*,
                                tryruleT(andRight)<(
@@ -133,15 +145,21 @@ val main =
                              )
                            )
                          ),
-                         easybranchT
+                         composelistT(
+                           hpalpha1T*,
+                           diffsolveT(RightP(0), Endpoint),
+                           hpalpha1T*,
+                           tryruleT(andRight)<(
+                             easiestT,
+                             hidehasfnT("e")& alleasyT
+                           )
+                         )
                        )
                      ),
                      easybranchT
                    )
                  ),
-                 composelistT(
-                   hpalpha1T*
-                 )
+                 easybranchT
                )
              ),
              easybranchT

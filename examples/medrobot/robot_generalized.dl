@@ -4,23 +4,42 @@
  qy : () -> Real,
 
  K : () -> Real,
+
+ // force input. piecewise linear, according to fxp, fyp
  fx : () -> Real,
  fy : () -> Real,
+
+
+ // the actual inputs. derivative of force input.
  fxp : () -> Real,
  fyp : () -> Real,
+
+ // time length of a step
  e : () -> Real,
+
+ // stopwatch that enforces e
  t : () -> Real,
+
+ // force response, normal to barrier line
+ // g positive means towards the barrier 
+ // (source of confusion)
  g : () -> Real,
+
+ // perpendicular distance from tool tip to barrier
+ // at beginning of step.
+ d0 : () -> Real,
+
+ // predicted perpendicular distance from tool tip to barrier,
+ // at end of step, if g = 0
  dist : () -> Real,
+
+ // discriminant
  disc : () -> Real,
 
-
-
-
+ // normal (wrt barrier) component of (fxp, fyp)
  fnp : () -> Real,
+ // normal (wrt barrier) component of (fx, fy)
  fn : () -> Real,
-
- d0 : () -> Real,
 
  // An arbitrary point on the boundary line.
  px : () -> Real,
@@ -29,9 +48,6 @@
  // Unit normal for boundary line.
  nx : () -> Real,
  ny : () -> Real,
-
- m : () -> Real,
- b : () -> Real,
 
  tmp : () -> Real
 }
@@ -59,28 +75,32 @@ nx()^2 + ny()^2 = 1,
 
   ((? (fnp() <= 0 & dist() >= 0); g :=0)
   ++
+  // OPEN
    (?(fnp() <= 0 & dist() <= 0);
     tmp := *;
     (? tmp() * K() * e() = 1);
-    g := fn() + ((d0() + (1/2)*K() * fnp() * (e()^2)) * tmp())
+    g := fn() + ((d0() + (1/2) * K() * fnp() * (e()^2)) * tmp())
   ) 
-  ++
+  ++ 
+   //OPEN
   ( (? fnp() >= 0 & fn() <= 0 & disc() <= 0);
     g := 0
   )
   ++
   ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() >= 0);
     tmp := *;
-    (? tmp * tmp * K = 2 * d0() * fnp() & tmp() >= 0);
-    g := fn() + tmp()
+    (? tmp() * tmp() * K() = 2 * d0() * fnp() & tmp() >= 0);
+    g := fn() - tmp()
   ) 
   ++
+// OPEN
   ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() <= 0 & dist() <= 0);
     tmp := *;
-    (? tmp * tmp * K = 2 * d0() * fnp() & tmp() >= 0);
-    g := fn() + tmp()
+    (? tmp() * tmp() * K() = 2 * d0() * fnp() & tmp() >= 0);
+    g := fn() - tmp()
   ) 
   ++
+ // OPEN
   ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() <= 0 & dist() >= 0);
     g := 0
   ) 
