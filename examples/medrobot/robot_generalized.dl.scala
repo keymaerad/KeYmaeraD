@@ -62,10 +62,10 @@ val cutb5 =
   cutT(
     StandardCut,
     parseFormula("TMP * TMP * K() = 2 * ((qx() - px()) * nx() + (qy() - py()) * ny()) * (FXP * nx() + FYP * ny())"),
-    parseFormula("(qx() + K() * (fx() - (fx() * nx() + fy() * ny() - TMP) * nx()) * e() + " +
-                 "1 / 2 * K() * FXP * e()^2 - px()) * nx() + " +
-                 "(qy() + K() * (fy() - (fx() * nx() + fy() * ny() - TMP) * ny()) * e() + " + 
-                 "1 / 2 * K() * FYP * e()^2 - py()) * ny() >= 0"
+    parseFormula("((qx() - px()) + K() * (fx() - (fx() * nx() + fy() * ny() - TMP) * nx()) * e() + " +
+                 "1 / 2 * K() * FXP * e()^2) * nx() + " +
+                 "((qy() - py()) + K() * (fy() - (fx() * nx() + fy() * ny() - TMP) * ny()) * e() + " + 
+                 "1 / 2 * K() * FYP * e()^2) * ny() >= 0"
                )
   )
 
@@ -170,9 +170,29 @@ val main =
                      easybranchT
                    )
                  ),
-                 easybranchT
+                 // branch 5
+                 composelistT(
+                   hpalpha1T*,
+                   diffsolveT(RightP(0), Endpoint),
+                   hpalpha1T*,
+                   tryruleT(andRight)<(
+                     easiestT,
+                     composelistT(
+                       substT*,
+                       cutb5<(
+                         composelistT(
+                           hidehasfnT("s")*,
+                           nilT
+                         ),
+                         nilT
+                       )
+                     )
+                   )
+                 )
+
                )
              ),
+             // branch 6
              composelistT(
                hpalpha1T*,
                diffsolveT(RightP(0), Endpoint),
