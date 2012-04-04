@@ -49,7 +49,7 @@ val cut2q =
     )
   )
 
-val cutb3 = 
+val cutb6 = 
  cutT(
    StandardCut,
    parseFormula("FXP * nx() + FYP * ny() >= 0"),
@@ -86,11 +86,11 @@ val main =
                              // working here
                              composelistT(
                                hpalpha1T*,
-                               nilT,
                                diffsolveT(RightP(0), Endpoint),
                                hpalpha1T*,
                                tryruleT(andRight)<(
                                  easiestT,
+                                 nilT,                                 
                                  cutT(
                                    StandardKeepCut,
                                    parseFormula("FNP = FXP * nx() + FYP * ny()"),
@@ -162,7 +162,25 @@ val main =
                  easybranchT
                )
              ),
-             easybranchT
+             composelistT(
+               hpalpha1T*,
+               diffsolveT(RightP(0), Endpoint),
+               hpalpha1T*,
+               tryruleT(andRight)<(
+                 easiestT,
+                 composelistT(
+                   substT*,
+                   cutb6<(
+                     alleasyT,
+                     composelistT(
+                       tryruleatT(hide)(LeftP(5)),
+                       tryruleatT(hide)(LeftP(6)),
+                       arithT
+                     )
+                   )
+                 )
+               )
+             )
            )
          ),
          easybranchT

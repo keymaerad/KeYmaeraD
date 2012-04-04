@@ -82,11 +82,11 @@ nx()^2 + ny()^2 = 1,
     g := fn() + ((d0() + (1/2) * K() * fnp() * (e()^2)) * tmp())
   ) 
   ++ 
-   //OPEN
   ( (? fnp() >= 0 & fn() <= 0 & disc() <= 0);
     g := 0
   )
   ++
+  // This one takes several minutes to prove.
   ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() >= 0);
     tmp := *;
     (? tmp() * tmp() * K() = 2 * d0() * fnp() & tmp() >= 0);
