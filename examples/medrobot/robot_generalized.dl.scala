@@ -227,9 +227,17 @@ val main =
                                "TMPK = 2 * (X * nx() + Y * ny()) * (FXP * nx() + FYP * ny())"
                              ),
                              List(Var("X"), Var("Y"))
-                           )
+                           ),
+                           tryruleatT(hide)(LeftP(6)),
+                           arithT
+
                          ),
-                         nilT
+                         composelistT(
+                           tryruleatT(hide)(LeftP(7)),
+                           tryruleatT(hide)(LeftP(8)),
+                           tryruleatT(hide)(LeftP(3)),
+                           arithT
+                         )
                        )
                      )
                    )
