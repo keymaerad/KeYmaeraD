@@ -49,11 +49,74 @@ val cut2q =
     )
   )
 
-//val cutb2 = 
-//  cutT(
-//    StandardCut,
-    
-//(qx. + K. * (fx. - (fx. * nx. + fy. * ny. + ((qx. - px.) * nx. + (qy. - py.) * ny. + 1 / 2 * K. * (fxp$14. * nx. + fyp$14. * ny.) * e.^2) * tmp$38.) * nx.) * s. + 1 / 2 * K. * fxp$14. * s.^2 - px.) * nx. + (qy. + K. * (fy. - (fx. * nx. + fy. * ny. + ((qx. - px.) * nx. + (qy. - py.) * ny. + 1 / 2 * K. * (fxp$14. * nx. + fyp$14. * ny.) * e.^2) * tmp$38.) * ny.) * s. + 1 / 2 * K. * fyp$14. * s.^2 - py.) * ny. >= 0
+val cutb2 = 
+  cutT(
+    StandardCut,
+    parseFormula(
+      "(qx() + K() * (fx() - (fx() * nx() + fy() * ny() + " + 
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * nx()) * s() + " +
+      "1 / 2 * K() * FXP * s()^2 - px()) * nx() + " +
+      "(qy() + K() * (fy() - (fx() * nx() + fy() * ny() + " +
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * ny()) * s() + " +
+      "1 / 2 * K() * FYP * s()^2 - py()) * ny() >= 0"),
+    parseFormula(
+      "((qx() - px() ) + K() * (fx() - (fx() * nx() + fy() * ny() + " + 
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * nx()) * e() + " +
+      "1 / 2 * K() * FXP * e()^2) * nx() + " +
+      "((qy() - py()) + K() * (fy() - (fx() * nx() + fy() * ny() + " +
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * ny()) * e() + " +
+      "1 / 2 * K() * FYP * e()^2) * ny() >= 0")
+  )
+
+val cutb2a = 
+  cutT(
+    StandardCut,
+    parseFormula(
+      "(qx() + K() * (fx() - (fx() * nx() + fy() * ny() + " + 
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * nx()) * s() + " +
+      "1 / 2 * K() * FXP * s()^2 - px()) * nx() + " +
+      "(qy() + K() * (fy() - (fx() * nx() + fy() * ny() + " +
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * ny()) * s() + " +
+      "1 / 2 * K() * FYP * s()^2 - py()) * ny() >= 0"),
+    parseFormula(
+      "((qx() - px() ) + K() * (fx() - (fx() * nx() + fy() * ny() + " + 
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * nx()) * s() + " +
+      "1 / 2 * K() * FXP * s()^2) * nx() + " +
+      "((qy() - py()) + K() * (fy() - (fx() * nx() + fy() * ny() + " +
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * ny()) * s() + " +
+      "1 / 2 * K() * FYP * s()^2) * ny() >= 0")
+  )
+
+val cutb2b = 
+  cutT(
+    StandardCut,
+    parseFormula(
+      "((qx() - px() ) + K() * (fx() - (fx() * nx() + fy() * ny() + " + 
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * nx()) * s() + " +
+      "1 / 2 * K() * FXP * s()^2) * nx() + " +
+      "((qy() - py()) + K() * (fy() - (fx() * nx() + fy() * ny() + " +
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * ny()) * s() + " +
+      "1 / 2 * K() * FYP * s()^2) * ny() >= 0"),
+    parseFormula(
+      "((qx() - px() ) + K() * (fx() - (fx() * nx() + fy() * ny() + " + 
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * s()^2) * TMP) * nx()) * s() + " +
+      "1 / 2 * K() * FXP * s()^2) * nx() + " +
+      "((qy() - py()) + K() * (fy() - (fx() * nx() + fy() * ny() + " +
+      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
+      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * s()^2) * TMP) * ny()) * s() + " +
+      "1 / 2 * K() * FYP * s()^2) * ny() >= 0")
+  )
 
 
 val cutb6 = 
@@ -108,57 +171,27 @@ val main =
                                hpalpha1T*,
                                tryruleT(andRight)<(
                                  easiestT,
-                                 nilT,                                 
-                                 cutT(
-                                   StandardKeepCut,
-                                   parseFormula("FNP = FXP * nx() + FYP * ny()"),
-                                   parseFormula("~ FNP = 0"))<(
-                                     alleasyT,
-                                     cut2<(
-                                       (hideallbutT(List(LeftP(0), LeftP(4), RightP(0))) & alleasyT),
-                                       tryruleT(impLeft)<(
-                                         composelistT(
-                                           alphaT*,
-                                           tryruleatT(allLeft(Fn("s", Nil)))(LeftP(0)),
-                                           tryruleatT(allLeft(Fn("e", Nil)))(LeftP(0)),
-                                           tryruleatT(allLeft(Fn("s", Nil)))(LeftP(3)),
-                                           tryruleatT(allLeft(Num(Exact.Integer(0))))(LeftP(0)),
-                                           hideunivsT(Real),
-                                           tryruleT(orLeft)<(
-                                             composelistT(
-                                               tryruleatT(hide)(LeftP(0)),
-                                               tryruleT(impLeft)<(
-                                                 composelistT(
-                                                   nilT
-                                                 ),
-                                                 easiestT
-                                               )
-                                             ),
-                                             composelistT(
-                                               alphaT*,
-                                               tryruleT(orLeft)<(
-                                                 composelistT(
-                                                   tryruleatT(hide)(LeftP(0)),
-                                                   tryruleT(impLeft)<(
-                                                     nilT,
-                                                     easiestT
-                                                   )
-                                                 ),
-                                                 composelistT(
-                                                   tryruleatT(hide)(LeftP(1)),
-                                                   tryruleT(impLeft)<(
-                                                     nilT,
-                                                     easiestT
-                                                   )
-                                                 )
-                                               )
-                                             )
-                                           )
-                                         ),
-                                         easiestT
-                                       )
+                                 composelistT(
+                                   substT*,
+                                   cutb2<(
+                                     composelistT(
+                                       hidehasfnT("s")*,
+                                       arithT
+                                     ),
+                                     cutb2a<(
+                                       composelistT(
+                                         tryruleT(unsubstitute(Fn("-",
+                                                                  List(Fn("qx", Nil),
+                                                                       Fn("px", Nil))))),
+                                         tryruleT(unsubstitute(Fn("-",
+                                                                  List(Fn("qy", Nil),
+                                                                       Fn("py", Nil))))),
+                                         nilT
+                                       ),
+                                       arithT
                                      )
                                    )
+                                 )
                                )
                              )
                            )
