@@ -49,6 +49,13 @@ val cut2q =
     )
   )
 
+//val cutb2 = 
+//  cutT(
+//    StandardCut,
+    
+//(qx. + K. * (fx. - (fx. * nx. + fy. * ny. + ((qx. - px.) * nx. + (qy. - py.) * ny. + 1 / 2 * K. * (fxp$14. * nx. + fyp$14. * ny.) * e.^2) * tmp$38.) * nx.) * s. + 1 / 2 * K. * fxp$14. * s.^2 - px.) * nx. + (qy. + K. * (fy. - (fx. * nx. + fy. * ny. + ((qx. - px.) * nx. + (qy. - py.) * ny. + 1 / 2 * K. * (fxp$14. * nx. + fyp$14. * ny.) * e.^2) * tmp$38.) * ny.) * s. + 1 / 2 * K. * fyp$14. * s.^2 - py.) * ny. >= 0
+
+
 val cutb6 = 
  cutT(
    StandardCut,
@@ -182,7 +189,12 @@ val main =
                        cutb5<(
                          composelistT(
                            hidehasfnT("s")*,
-                           nilT
+                           unsubT(
+                             parseFormula(
+                               "TMPK = 2 * (X * nx() + Y * ny()) * (FXP * nx() + FYP * ny())"
+                             ),
+                             List(Var("X"), Var("Y"))
+                           )
                          ),
                          nilT
                        )

@@ -972,17 +972,18 @@ object Tactics {
   def cutT(ct: CutType, cutout: Formula, cutin: Formula): Tactic 
   = new Tactic("cut " + ct) {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
-      val Sequent(sig,cs,ss) = nd.goal
+      val sq@Sequent(sig,cs,ss) = nd.goal
       var mbesubs : Option[Prover.Subst] = None;
-      var foundidx = -1;
-      for (i <- cs.indices){
+      var foundidx: Position = RightP(0);
+      for(p <- positions(sq)) {
+        val fm = lookup(p,sq)
         if(mbesubs == None) {
-          Prover.unify(cs(i),cutout) match {
+          Prover.unify(fm, cutout) match {
             case None => 
               ()
             case Some(subs) => 
               mbesubs = Some(subs)
-              foundidx = i;
+              foundidx = p;
           }
         }
       }
@@ -995,7 +996,7 @@ object Tactics {
             case StandardCut => cut
             case StandardKeepCut => cutKeepSucc
           }
-          tryruleatT(rl(cutin1))(LeftP(foundidx))(nd)
+          tryruleatT(rl(cutin1))(foundidx)(nd)
       }   
     }
   }
