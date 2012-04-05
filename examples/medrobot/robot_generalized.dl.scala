@@ -15,40 +15,6 @@ val easybranchT =
     )
   )
 
-val cut2 = 
-  cutT(
-    StandardCut,
-    parseFormula(
-       "G = FN + (D0 + 1 / 2 * K * FNP * e()^2) * TMP"),
-    parseFormula(
-       "((1/2) * K * FNP < 0 )  ==>" + 
-       "((forall x1 . forall x2 . (FN - G <= - FNP * x1 & x1 <= x2) ==> "+
-      " (1/2) * K * FNP * x1^2 + K * (FN - G) * x1 >= " +
-       " (1/2) * K * FNP * x2^2 + K * (FN - G) * x2 )  & "+
-       " (forall x1 . forall x2 . (FN - G >= - FNP * x1 & x1 >= x2) ==> "+
-       " (1/2) * K * FNP * x1^2 + K * (FN - G) * x1 >= " +
-       " (1/2) * K * FNP * x2^2 + K * (FN - G) * x2 ) &  " +
-       " ( FN - G <= 0  |   (FN - G >= 0 & ( (FN - G) <= -2 * FNP * s() |  (FN - G) >= -2 * FNP * s()  ) )     ) ) "
-    )
-  )
-
-val cut2q = 
-  cutT(
-    StandardCut,
-    parseFormula(
-       "G = FN + (D0 + 1 / 2 * K * FNP * e()^2) * TMP"),
-    parseFormula(
-       "forall a : Real. forall  b: Real. " +
-       "(a < 0 )  ==>" + 
-       "((forall x1 . forall x2 . ( b <= - 2 * a * x1 & x1 <= x2) ==> "+
-      " a * x1^2 + b * x1 >= " +
-       " a * x2^2 + b * x2 )  & "+
-       " (forall x1 . forall x2 . (b >= - 2 * a * x1 & x1 >= x2) ==> "+
-       " a * x1^2 + b * x1 >= " +
-       " a * x2^2 + b * x2 )  ) "
-    )
-  )
-
 val cutb2 = 
   cutT(
     StandardCut,
@@ -64,57 +30,11 @@ val cutb2 =
     parseFormula(
       "((qx() - px() ) + K() * (fx() - (fx() * nx() + fy() * ny() + " + 
       "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
-      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * nx()) * e() + " +
-      "1 / 2 * K() * FXP * e()^2) * nx() + " +
-      "((qy() - py()) + K() * (fy() - (fx() * nx() + fy() * ny() + " +
-      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
-      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * ny()) * e() + " +
-      "1 / 2 * K() * FYP * e()^2) * ny() >= 0")
-  )
-
-val cutb2a = 
-  cutT(
-    StandardCut,
-    parseFormula(
-      "(qx() + K() * (fx() - (fx() * nx() + fy() * ny() + " + 
-      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
-      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * nx()) * s() + " +
-      "1 / 2 * K() * FXP * s()^2 - px()) * nx() + " +
-      "(qy() + K() * (fy() - (fx() * nx() + fy() * ny() + " +
-      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
-      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * ny()) * s() + " +
-      "1 / 2 * K() * FYP * s()^2 - py()) * ny() >= 0"),
-    parseFormula(
-      "((qx() - px() ) + K() * (fx() - (fx() * nx() + fy() * ny() + " + 
-      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
       "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * nx()) * s() + " +
       "1 / 2 * K() * FXP * s()^2) * nx() + " +
       "((qy() - py()) + K() * (fy() - (fx() * nx() + fy() * ny() + " +
       "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
       "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * ny()) * s() + " +
-      "1 / 2 * K() * FYP * s()^2) * ny() >= 0")
-  )
-
-val cutb2b = 
-  cutT(
-    StandardCut,
-    parseFormula(
-      "((qx() - px() ) + K() * (fx() - (fx() * nx() + fy() * ny() + " + 
-      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
-      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * nx()) * s() + " +
-      "1 / 2 * K() * FXP * s()^2) * nx() + " +
-      "((qy() - py()) + K() * (fy() - (fx() * nx() + fy() * ny() + " +
-      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
-      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * e()^2) * TMP) * ny()) * s() + " +
-      "1 / 2 * K() * FYP * s()^2) * ny() >= 0"),
-    parseFormula(
-      "((qx() - px() ) + K() * (fx() - (fx() * nx() + fy() * ny() + " + 
-      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
-      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * s()^2) * TMP) * nx()) * s() + " +
-      "1 / 2 * K() * FXP * s()^2) * nx() + " +
-      "((qy() - py()) + K() * (fy() - (fx() * nx() + fy() * ny() + " +
-      "((qx() - px()) * nx() + (qy() - py()) * ny() + " +
-      "1 / 2 * K() * (FXP * nx() + FYP * ny()) * s()^2) * TMP) * ny()) * s() + " +
       "1 / 2 * K() * FYP * s()^2) * ny() >= 0")
   )
 
@@ -164,7 +84,6 @@ val main =
                            hpalpha1T*,
                            tryruleT(andRight)<(
                              easybranchT,
-                             // working here
                              composelistT(
                                hpalpha1T*,
                                diffsolveT(RightP(0), Endpoint),
@@ -175,21 +94,11 @@ val main =
                                    substT*,
                                    cutb2<(
                                      composelistT(
-                                       hidehasfnT("s")*,
+                                       tryruleT(unsubstitute(Fn("-", List(Fn("qx", Nil), Fn("px", Nil))))),
+                                       tryruleT(unsubstitute(Fn("-", List(Fn("qy", Nil), Fn("py", Nil))))),
                                        arithT
                                      ),
-                                     cutb2a<(
-                                       composelistT(
-                                         tryruleT(unsubstitute(Fn("-",
-                                                                  List(Fn("qx", Nil),
-                                                                       Fn("px", Nil))))),
-                                         tryruleT(unsubstitute(Fn("-",
-                                                                  List(Fn("qy", Nil),
-                                                                       Fn("py", Nil))))),
-                                         nilT
-                                       ),
-                                       arithT
-                                     )
+                                     arithT
                                    )
                                  )
                                )
