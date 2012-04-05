@@ -9,7 +9,7 @@ val easybranchT =
     hpalpha1T*,
     diffsolveT(RightP(0), Endpoint),
     hpalpha1T*,
-    tryruleT(andRight)<(
+      tryruleT(andRight)<(
       easiestT,
       alleasyT
     )
@@ -83,7 +83,9 @@ val main =
                          composelistT(
                            hpalpha1T*,
                            tryruleT(andRight)<(
+                             // branch 1
                              easybranchT,
+                             // branch 2
                              composelistT(
                                hpalpha1T*,
                                diffsolveT(RightP(0), Endpoint),
@@ -105,6 +107,7 @@ val main =
                              )
                            )
                          ),
+                         //branch 3
                          composelistT(
                            hpalpha1T*,
                            diffsolveT(RightP(0), Endpoint),
@@ -116,6 +119,7 @@ val main =
                          )
                        )
                      ),
+                     // branch 4
                      easybranchT
                    )
                  ),
