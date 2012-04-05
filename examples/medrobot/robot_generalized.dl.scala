@@ -39,14 +39,6 @@ val cutb2 =
   )
 
 
-val cutb6 = 
- cutT(
-   StandardCut,
-   parseFormula("FXP * nx() + FYP * ny() >= 0"),
-   parseFormula("(qx() + K() * (fx() - 0 * nx()) * e() + 1 / 2 * K() * FXP * e()^2 - px()) * nx() + " +
-                "(qy() + K() * (fy() - 0 * ny()) * e() + 1 / 2 * K() * FYP * e()^2 - py()) * ny() >= 0")
- )
-
 
 val cutb5 = 
   cutT(
@@ -58,6 +50,16 @@ val cutb5 =
                  "1 / 2 * K() * FYP * e()^2) * ny() >= 0"
                )
   )
+
+val cutb6 = 
+ cutT(
+   StandardCut,
+   parseFormula("FXP * nx() + FYP * ny() >= 0"),
+   parseFormula("(qx() + K() * (fx() - 0 * nx()) * e() + 1 / 2 * K() * FXP * e()^2 - px()) * nx() + " +
+                "(qy() + K() * (fy() - 0 * ny()) * e() + 1 / 2 * K() * FYP * e()^2 - py()) * ny() >= 0")
+ )
+
+
 
 
 
