@@ -11,8 +11,6 @@ for line in fileinput.input():
         res = m.group()
         if res in opts :
             print opts[res]
-        exit(0)
-    else:
-        print "what"
-        exit(0)
+
+
         
