@@ -1,3 +1,5 @@
 #!/bin/sh
 java -Xmx1000M -classpath .:$SCALA_HOME/lib/scala-library.jar:./commons-cli-1.2/commons-cli-1.2.jar:$JLINK/JLink.jar KeYmaeraD/WorkerMain $* 
+# This doesn't seem to work:
+#scala -J-Xmx1000M -classpath .:./commons-cli-1.2/commons-cli-1.2.jar:$JLINK/JLink.jar KeYmaeraD.WorkerMain $* 
 
