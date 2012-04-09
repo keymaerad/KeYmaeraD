@@ -11,6 +11,8 @@ for line in fileinput.input():
         res = m.group()
         if res in opts :
             print opts[res]
-
-
+        exit(0)
+    else:
+        print "got weird thing: " + line
+        exit(0)
         
