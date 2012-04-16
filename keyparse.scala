@@ -486,9 +486,9 @@ class KEYParser(ins : String)
 
     def functionsorts: Parser[Map[String,(List[Sort],Sort)]] =
     "\\functions" ~> "{" ~> repsep(functionsort, ";") <~ ";" <~ "}" ^^
-        {case fnsrts => scala.collection.immutable.HashMap.empty ++ fnsrts } |
+        {case fnsrts => scala.collection.immutable.HashMap.empty ++ fnsrts} |
     "\\functions" ~> "{" ~> repsep(functionsort, ";") <~ "}" ^^
-       {case fnsrts =>  scala.collection.immutable.HashMap.empty ++ fnsrts}   |
+        {case fnsrts => scala.collection.immutable.HashMap.empty ++ fnsrts} |
         success(scala.collection.immutable.HashMap.empty)
 
     /*def variablesorts: Parser[Map[String,(List[Sort],Sort)]] =

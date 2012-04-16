@@ -3,7 +3,7 @@ import fileinput
 p = re.compile('\d+\.\d+\.\d+')
 
 # workaround for broken -i flag
-opts = {'2.9.1':'-Yrepl-sync'}
+opts = {'2.9.1':'-Yrepl-sync', '2.9.2':'-Yrepl-sync'}
 
 for line in fileinput.input():
     m = p.search(line)

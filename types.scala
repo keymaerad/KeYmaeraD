@@ -41,8 +41,6 @@ case class Quantifier(t: QuantifierType, c: Sort,
 case class Modality(m: ModalityType, hp: HP, rest: Formula) extends Formula
 
 
-
-
 sealed abstract class HP
 case class Assign( vs : List[(Fn, Term)]) extends HP
 case class AssignAny(v: Fn) extends HP
@@ -68,9 +66,8 @@ case class EvolveQuantified(i:String,
                             ) extends HP
 
 
-
 //abstract class Goal
-case class Sequent(fn_sorts: /* scala.collection.immutable.Hash */  Map[String, (List[Sort],Sort)],
+case class Sequent(fn_sorts: Map[String, (List[Sort],Sort)],
                    ctxt: List[Formula],
                    scdts: List[Formula])
 //case class FOGoal(fm: Formula) extends Goal
@@ -78,14 +75,4 @@ case class Sequent(fn_sorts: /* scala.collection.immutable.Hash */  Map[String, 
 class Lock() extends Object()
 
 class Unimplemented() extends Exception()
-
-/*
-case class ProofRule( name: String,
-                      premiseFV: List[String],
-                      premises: List[Sequent],
-                      conclusion: Sequent)
-
-
-*/
-
 

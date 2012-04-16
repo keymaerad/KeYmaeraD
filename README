@@ -14,7 +14,6 @@ are appropriate values on my system.)
 
 JLINK (=/Applications/Mathematica.app/SystemFiles/Links/JLink)
 MATHKERNEL (=/Applications/Mathematica.app/Contents/MacOS/MathKernel)
-SCALA_HOME (= directory where scala was installed; has "bin/" and "lib/" subdirectories)
 
 To compile, navigate to the KeYmaeraD root directory and type "make".
 

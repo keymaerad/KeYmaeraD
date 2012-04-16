@@ -72,7 +72,6 @@ object Jobs {
           val jd@JobData(jid, s, p, sq, t) = newjobs.dequeue()
           println("Assigning work!")
           iw ! ( ('job, p, sq, jid) )
-          println("Assigned!")
           jobs.put(jid, (jd, iw))
           ()
         };
@@ -215,12 +214,8 @@ object Jobs {
       master ! ('idling)
       getack
 
-      println("jobworker ready for work")
-
       while(true) {
-        println("jobworker about to try working")
         tryworking
-        println("jobworker about to wait for message")
         receive {
           case 'quit =>
             println("jobmaster quitting, worker aborts jobs")
@@ -228,8 +223,7 @@ object Jobs {
             println("jobmaster quitting, worker exits")
             exit
 
-          case ('job, p: String, sq: Sequent, jid: JobID) =>
-//            println("jobworker got a job")
+          case ('job, p: String, sq: Sequent , jid: JobID) =>
            procqueue.enqueue(JobData(p, sq, jid, sender))
 
          case ('done, JobData(p,sq,jid,jobsender), res: Sequent) =>
@@ -294,6 +288,9 @@ object Jobs {
                  java.lang.Integer.parseInt(cmd.getOptionValue("cp", "50001")))
       
       println("coordinator at " + coorHost.toString)
+
+      // Weird. If we don't do this, the worker can't find the KeYmaeraD classes.
+      RemoteActor.classLoader = getClass().getClassLoader()
       
       val jobWorker = new JobWorker(coorHost)
       jobWorker.start
