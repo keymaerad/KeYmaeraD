@@ -531,9 +531,7 @@ object Tactics {
   val nonarithcloseT = 
     trylistofrulesT(List(close,identity))
 
-  val closeOrArithT = eitherT(trylistofrulesT(List(close, identity)),
-                              arithT)
-
+  val closeOrArithT = nonarithcloseT | arithT
   
   // lazy arithmetic
   //@todo could add cheap close earlier.
