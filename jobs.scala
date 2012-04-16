@@ -72,6 +72,7 @@ object Jobs {
           val jd@JobData(jid, s, p, sq, t) = newjobs.dequeue()
           println("Assigning work!")
           iw ! ( ('job, p, sq, jid) )
+          println("Assigned!")
           jobs.put(jid, (jd, iw))
           ()
         };
@@ -216,8 +217,10 @@ object Jobs {
 
       println("jobworker ready for work")
 
-      while(true){
+      while(true) {
+        println("jobworker about to try working")
         tryworking
+        println("jobworker about to wait for message")
         receive {
           case 'quit =>
             println("jobmaster quitting, worker aborts jobs")
@@ -226,6 +229,7 @@ object Jobs {
             exit
 
           case ('job, p: String, sq: Sequent, jid: JobID) =>
+//            println("jobworker got a job")
            procqueue.enqueue(JobData(p, sq, jid, sender))
 
          case ('done, JobData(p,sq,jid,jobsender), res: Sequent) =>
@@ -242,11 +246,16 @@ object Jobs {
          
          case 'abort => 
            abort()
+
+          case msg => 
+            println("jobworker got unknown message: " + msg)
+            
         }
       }
     }
   }
 }
+
 
 // Code entry point for workers.
  object WorkerMain {

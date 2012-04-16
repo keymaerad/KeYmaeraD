@@ -70,7 +70,7 @@ case class EvolveQuantified(i:String,
 
 
 //abstract class Goal
-case class Sequent(fn_sorts: Map[String, (List[Sort],Sort)],
+case class Sequent(fn_sorts: /* scala.collection.immutable.Hash */  Map[String, (List[Sort],Sort)],
                    ctxt: List[Formula],
                    scdts: List[Formula])
 //case class FOGoal(fm: Formula) extends Goal
