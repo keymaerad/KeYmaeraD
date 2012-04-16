@@ -518,7 +518,7 @@ object Tactics {
       trylistofrules(hpalpha ++ alpha,nd)
   }
 
-  val hpalpha1T = eitherT(hpalphaT, alphaT)
+  val hpalpha1T = hpalphaT
 
   val beta = List(andRight, orLeft, impLeft)
 
@@ -534,13 +534,12 @@ object Tactics {
   val closeOrArithT = eitherT(trylistofrulesT(List(close, identity)),
                               arithT)
 
-
   
   // lazy arithmetic
   //@todo could add cheap close earlier.
-  val alleasyT: Tactic = composelistT(repeatT(eitherT(hpeasyT, alphaT)),
-                                      repeatT(substT),
-                                      repeatT(eitherT(hpalpha1T,betaT)),        
+  val alleasyT: Tactic = composelistT(hpalphaT*,
+                                      substT*,
+                                      (hpalphaT | betaT)*, 
                                       closeOrArithT)
 
 
