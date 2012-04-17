@@ -998,6 +998,41 @@ object Tactics {
     }
   }
 
+  def cutmT(ct: CutType, cutouts: List[Formula], cutin: Formula): Tactic 
+  = new Tactic("cut " + ct) {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val sq@Sequent(sig,cs,ss) = nd.goal
+      var subs : Prover.Subst = Prover.nilmap
+      var foundidx: Option[Position] = None;
+      for (cutout <- cutouts) {
+        var continue = true
+        for(p <- positions(sq)) 
+          if (continue) {
+            val fm = lookup(p,sq)
+            Prover.unify(fm, cutout) match {
+              case None => 
+                ()
+              case Some(subs1) => 
+                subs = subs ++ subs1
+                foundidx = Some(p);
+                continue = false
+            }
+          }
+      }
+      foundidx match {
+        case None => None
+        case Some(idx) =>
+          val cutin1 = Prover.simul_substitute_Formula(subs.toList, cutin)
+          val rl = ct match {
+            case DirectedCut => directedCut
+            case StandardCut => cut
+            case StandardKeepCut => cutKeepSucc
+          }
+          tryruleatT(rl(cutin1))(idx)(nd)
+      }   
+    }
+  }
+
   def unsubT(tomatch: Formula, tounsublst: List[Term]): Tactic 
   = new Tactic("unsub") {
     def apply(nd: Nodes.OrNode) : Option[List[Nodes.NodeID]] = {
