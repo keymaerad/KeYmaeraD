@@ -56,7 +56,7 @@ val doasgns =
 
 val entercatct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       tryruleT(andRight)<(
         tryruleT(close),
@@ -69,7 +69,7 @@ val entercatct =
 
 val exitcatct = 
    composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       tryruleT(andRight)<(
         tryruleT(close),

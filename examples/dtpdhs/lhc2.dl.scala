@@ -246,22 +246,22 @@ val provelemma =
 
 val velpos = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     instantiatebyT(St("C"))(
       List(("i",List("i"))))*,
     alleasyT
   )
 
 val tyltct = composelistT(
-  hpalpha1T*,
+  hpalphaT*,
   diffsolveT(RightP(0),Endpoint),
-  hpalpha1T*,
+  hpalphaT*,
   tryruleT(andRight)<(
     alleasyT,
     tryruleT(andRight)<(
       velpos,
       composelistT(
-        hpalpha1T*,
+        hpalphaT*,
         instantiate3T,
         okcuttct<(
           provelemma,
@@ -277,10 +277,10 @@ val tyltct = composelistT(
 
 val deletetct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       composelistT(
-        hpalpha1T*,
+        hpalphaT*,
         (nonarithcloseT | alphaT | betaT)*
       ),
       tryruleT(andRight)<(
@@ -304,10 +304,10 @@ val deletetct =
 
 val createtct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       composelistT(
-        hpalpha1T*,
+        hpalphaT*,
         (nonarithcloseT | alphaT | betaT)*
       ),
       tryruleT(andRight)<(
@@ -393,7 +393,7 @@ val wholeproof =
 
       // Induction Step.
       composelistT(
-        hpalpha1T*,
+        hpalphaT*,
         tryruleT(andRight)<(
           composelistT(
             tryruleT(choose),

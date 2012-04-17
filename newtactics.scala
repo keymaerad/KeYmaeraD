@@ -610,7 +610,6 @@ object Tactics {
       trylistofrules(hpalpha ++ alpha,nd)
   }
 
-  val hpalpha1T = eitherT(hpalphaT, alphaT)
 
   val beta = List(andRight, orLeft, impLeft)
 

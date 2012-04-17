@@ -62,7 +62,7 @@ val cutdiffinv2 = cutT(
 
 
 val tyltct = composelistT(
-  hpalpha1T*,
+  hpalphaT*,
   tryruleT(diffStrengthen(
     parseFormula(
       "eps() > 0 & B() > 0 &" +
@@ -107,7 +107,7 @@ val tyltct = composelistT(
           // strengthened
           composelistT(
             diffsolveT(RightP(0),Endpoint),
-            hpalpha1T*,
+            hpalphaT*,
             tryruleT(andRight) <(
               tryruleT(andRight) <(
                 alleasyT,
@@ -211,12 +211,12 @@ val tyltct = composelistT(
 
 val deletetct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       tryruleT(andRight)<(
         alleasyT,
         composelistT(
-          hpalpha1T*,
+          hpalphaT*,
           instantiatebyT(St("C"))(List(("i", List("i")), ("j", List("i")))),
           tryruleT( impLeft)*, 
           alphaT*,
@@ -227,7 +227,7 @@ val deletetct =
         )
       ),
       composelistT(
-        hpalpha1T*,
+        hpalphaT*,
         instantiatebyT(St("C"))(List(("f", List("f")),
                                      ("l", List("l")),
                                      ("j", List("f","l")),
@@ -288,12 +288,12 @@ val deletetct =
  
 val createtct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       tryruleT(andRight)<(
         alleasyT,
         composelistT(
-          hpalpha1T*,
+          hpalphaT*,
           instantiatebyT(St("C"))(List(("i", List("i")), 
                                        ("j", List("i"))))*,
           tryruleT( impLeft)*, 
@@ -305,7 +305,7 @@ val createtct =
         )
       ),
       composelistT(
-        (nonarithcloseT | hpalpha1T)*,
+        (nonarithcloseT | hpalphaT)*,
         instantiatebyT(St("C"))(List(("f", List("f")),
                                      ("l", List("l")),
                                      ("i", List("f", "l")),
@@ -374,12 +374,12 @@ val createtct =
 
 val controltct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       tryruleT(andRight)<(
         alleasyT,
         composelistT(
-          hpalpha1T*,
+          hpalphaT*,
           instantiatebyT(St("C"))(List(("i", List("i")), 
                                        ("j", List("i"))))*,
           tryruleT( impLeft)*, 
@@ -391,7 +391,7 @@ val controltct =
         )
       ),
       composelistT(
-        hpalpha1T*,
+        hpalphaT*,
         instantiatebyT(St("C"))(List(("f", List("f")),
                                      ("l", List("l")),
                                      ("j", List("f","l")),
@@ -447,7 +447,7 @@ val starttct =
   tryruleT(loopInduction(loopinv))<(
     easywithforallsT(St("C")),
     composelistT(
-      hpalpha1T*,
+      hpalphaT*,
       tryruleT(andRight)<(
         composelistT(
           tryruleT(choose),

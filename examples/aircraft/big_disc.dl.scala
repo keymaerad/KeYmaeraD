@@ -41,10 +41,10 @@ val cut1 = cutT(
 
 val incatct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       composelistT(
-        hpalpha1T*,
+        hpalphaT*,
         tryruleT(andRight)<(
           easiestT,
           tryruleT(andRight)<(
@@ -76,14 +76,14 @@ val incatct =
 
 val outcatct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       composelistT(
-        hpalpha1T*,
+        hpalphaT*,
         tryruleT(andRight)<(
           easiestT,
           composelistT(
-            hpalpha1T*,
+            hpalphaT*,
             tryruleT(andRight)<(
               easiestT,
               tryruleT(andRight)<(
@@ -113,7 +113,7 @@ val outcatct =
         )
       ),
       composelistT(
-        hpalpha1T*,
+        hpalphaT*,
         tryruleT(andRight)<(
           easiestT,
           tryruleT(andRight)<(

@@ -287,20 +287,20 @@ val veltct = new Tactic("veltct"){
 
 val velpos = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     veltct,
     alphaT*,
     tryruleT(close)
   )
 
 val starttct = 
-  composelistT(hpalpha1T*,
+  composelistT(hpalphaT*,
                diffsolveT(RightP(0),Endpoint),
-               hpalpha1T*,
+               hpalphaT*,
                tryruleT(andRight)<(
                  velpos,
                  composelistT(
-                   hpalpha1T*,
+                   hpalphaT*,
                    instantiate3T,
                    okcuttct<(
                      provelemma,

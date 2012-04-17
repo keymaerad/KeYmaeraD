@@ -34,9 +34,9 @@ val impleftbranch1 : Tactic =
 
 val indtct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     diffsolveT(RightP(0),Endpoint),
-    hpalpha1T*,
+    hpalphaT*,
     instantiate3T,
     instantiate1T(St("C")),
     impleftbranch1*,
@@ -45,7 +45,7 @@ val indtct =
   )
 
 val posttct = 
-   (hpalpha1T*) & instantiate3T & (nullarizeT*) & (substT*) & everythingT
+   (hpalphaT*) & instantiate3T & (nullarizeT*) & (substT*) & everythingT
    
 
   

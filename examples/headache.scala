@@ -159,9 +159,9 @@ val provelemma =
 
 
 val starttct = 
-  composelistT(hpalpha1T*,
+  composelistT(hpalphaT*,
                diffsolveT(RightP(0),Endpoint),
-               hpalpha1T*,
+               hpalphaT*,
                instantiate3T,
                branchT(okcuttct,
                        List(provelemma,

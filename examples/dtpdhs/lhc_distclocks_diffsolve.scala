@@ -61,9 +61,9 @@ val cutdiffinv2 = cutT(
 
 
 val tyltct = composelistT(
-  hpalpha1T*,
+  hpalphaT*,
   diffsolveT(RightP(0),Endpoint),
-  hpalpha1T*,
+  hpalphaT*,
   tryruleT(andRight)<(
     composelistT(
       nilT
@@ -116,7 +116,7 @@ val starttct =
   tryruleT(loopInduction(loopinv))<(
     easywithforallsT(St("C")),
     composelistT(
-      hpalpha1T*,
+      hpalphaT*,
       tryruleT(andRight)<(
         composelistT(
           tryruleT(choose),

@@ -59,9 +59,9 @@ val everythingT: Tactic =
 
 
 val ch_brake =
-  composelistT(repeatT(hpalpha1T),
+  composelistT(repeatT(hpalphaT),
                diffsolveT(RightP(1),Endpoint),
-               repeatT(hpalpha1T),
+               repeatT(hpalphaT),
                instantiate0T(St("C")),
                repeatT(substT),
                hideunivsT(St("C")),
@@ -99,13 +99,13 @@ val whatev_finish = composelistT(
 
 
 val ch_whatev = 
-  composelistT(repeatT(hpalpha1T),
+  composelistT(repeatT(hpalphaT),
                diffsolveT(RightP(1),Endpoint),
-               repeatT(hpalpha1T),
+               repeatT(hpalphaT),
                instantiate0T(St("C")),
                repeatT(substT),
                hideunivsT(St("C")),
-               repeatT(hpalpha1T),
+               repeatT(hpalphaT),
                repeatT(vacuousT),
                branchT(tryruleT(impLeft),
                        List(branchT(tryruleT(impLeft),
@@ -126,13 +126,13 @@ val ch_stopped = ch_brake
 
 val indtct =                           
   composeT(
-   repeatT(hpalpha1T),
+   repeatT(hpalphaT),
    branchT(tryruleT(andRight),
-           List(repeatT(hpalpha1T) & 
+           List(repeatT(hpalphaT) & 
                 branchT(tryruleT(andRight), 
                         List(ch_brake,
                              ch_brake) ),
-                repeatT(hpalpha1T) & 
+                repeatT(hpalphaT) & 
                 branchT(tryruleT(andRight), 
                         List(ch_whatev,
                              ch_brake) )

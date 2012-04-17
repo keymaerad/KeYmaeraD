@@ -37,9 +37,9 @@ val everythingT: Tactic =
 
 
 val hardbranch = 
-  composelistT(List(repeatT(hpalpha1T),
+  composelistT(List(repeatT(hpalphaT),
                     usehints0T(RightP(0)),
-                    repeatT(hpalpha1T),
+                    repeatT(hpalphaT),
                     repeatT(substT),
                     cuttct,
 //                    tryruleatT(cutrl)(LeftP(4)),
@@ -52,12 +52,12 @@ val hardbranch =
 
 val indtct =                           
   composeT(
-   repeatT(hpalpha1T),
+   repeatT(hpalphaT),
    branchT(tryruleT(choose),
-           List(composelistT(List(repeatT(hpalpha1T),
+           List(composelistT(List(repeatT(hpalphaT),
                                   branchT(tryruleT(choose), 
                                           List(hardbranch, alleasyT)))),
-                composelistT(List(repeatT(hpalpha1T),
+                composelistT(List(repeatT(hpalphaT),
                                   branchT(tryruleT(choose), 
                                           List(alleasyT, alleasyT))))
               ) ))

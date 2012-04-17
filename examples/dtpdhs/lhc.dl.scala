@@ -242,7 +242,7 @@ val veltct = new Tactic("veltct"){
 
 val velpos = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     veltct,
     alphaT*,
     tryruleT(impLeft)<(
@@ -252,13 +252,13 @@ val velpos =
   )
 
 val tyltct = composelistT(
-  hpalpha1T*,
+  hpalphaT*,
   diffsolveT(RightP(0),Endpoint),
-  hpalpha1T*,
+  hpalphaT*,
   tryruleT(andRight)<(
     velpos,
     composelistT(
-      hpalpha1T*,
+      hpalphaT*,
       instantiate3T,
       okcuttct<(
         provelemma,
@@ -273,10 +273,10 @@ val tyltct = composelistT(
 
 val deletetct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       composelistT(
-        hpalpha1T*,
+        hpalphaT*,
         instantiate5T(St("C")),
         hideunivsT(St("C")),
         tryruleatT(impLeft)(LeftP(0))<(
@@ -323,10 +323,10 @@ val deletetct =
 
 val createtct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       composelistT(
-        hpalpha1T*,
+        hpalphaT*,
         instantiate5T(St("C")),
         hideunivsT(St("C")),
         tryruleatT(impLeft)(LeftP(2))<(
@@ -379,7 +379,7 @@ val createtct =
 
 val starttct = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     tryruleT(andRight)<(
       composelistT(
         tryruleT(choose),

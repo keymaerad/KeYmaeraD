@@ -6,9 +6,9 @@ val loopInv =
 
 val easybranchT = 
   composelistT(
-    hpalpha1T*,
+    hpalphaT*,
     diffsolveT(RightP(0), Endpoint),
-    hpalpha1T*,
+    hpalphaT*,
       tryruleT(andRight)<(
       easiestT,
       alleasyT
@@ -68,30 +68,30 @@ val main =
    tryruleT(loopInduction(loopInv))<(
      easiestT,
      composelistT(
-       hpalpha1T*,
+       hpalphaT*,
        tryruleT(andRight)<(
          composelistT(
-           hpalpha1T*,
+           hpalphaT*,
            tryruleT(andRight)<(
              composelistT(
-               hpalpha1T*,
+               hpalphaT*,
                tryruleT(andRight)<(
                  composelistT(
-                   hpalpha1T*,
+                   hpalphaT*,
                    tryruleT(andRight)<(
                      composelistT(
-                       hpalpha1T*,
+                       hpalphaT*,
                        tryruleT(andRight)<(
                          composelistT(
-                           hpalpha1T*,
+                           hpalphaT*,
                            tryruleT(andRight)<(
                              // branch 1
                              easybranchT,
                              // branch 2
                              composelistT(
-                               hpalpha1T*,
+                               hpalphaT*,
                                diffsolveT(RightP(0), Endpoint),
-                               hpalpha1T*,
+                               hpalphaT*,
                                tryruleT(andRight)<(
                                  easiestT,
                                  composelistT(
@@ -111,9 +111,9 @@ val main =
                          ),
                          //branch 3
                          composelistT(
-                           hpalpha1T*,
+                           hpalphaT*,
                            diffsolveT(RightP(0), Endpoint),
-                           hpalpha1T*,
+                           hpalphaT*,
                            tryruleT(andRight)<(
                              easiestT,
                              hidehasfnT("e")& alleasyT
@@ -127,9 +127,9 @@ val main =
                  ),
                  // branch 5
                  composelistT(
-                   hpalpha1T*,
+                   hpalphaT*,
                    diffsolveT(RightP(0), Endpoint),
-                   hpalpha1T*,
+                   hpalphaT*,
                    tryruleT(andRight)<(
                      easiestT,
                      composelistT(
@@ -162,9 +162,9 @@ val main =
              ),
              // branch 6
              composelistT(
-               hpalpha1T*,
+               hpalphaT*,
                diffsolveT(RightP(0), Endpoint),
-               hpalpha1T*,
+               hpalphaT*,
                tryruleT(andRight)<(
                  easiestT,
                  composelistT(
