@@ -283,6 +283,7 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
 	    val pb = new ProcessBuilder("./runworker",
                                         "-cp",
                                         myPort.toString)
+            pb.redirectErrorStream(true)
             val p = pb.start()
             val wt = new WorkerTracer(i, p.getInputStream())
             link(wt)
