@@ -108,10 +108,3 @@ and graphical interface already exist. In the future, if we want a web
 interface---which might be very useful if we want to prove a single
 theorem over the course of many days---such a thing should be
 straightforward to implement.
-
-
---------
-KNOWN ISSUES
-
-Parsing is not right-inverse to pretty printing, 
-mostly because of the "." notation for nullary functions.
