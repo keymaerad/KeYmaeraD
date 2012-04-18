@@ -11,34 +11,31 @@ TESTINGSOURCES= testing/examples.scala
 
 LIBRARIES= .:$(JLINK)/JLink.jar:./commons-cli-1.2/commons-cli-1.2.jar
 
-
 ifndef SCALAC
 SCALAC= fsc
 endif
 
-
 OPTIONS=
 ALLOPTIONS=${OPTIONS} -deprecation -unchecked
 
-
-all : backend frontend
-
+prover : frontend backend
 .PHONY : prover
+
+frontend : KeYmaeraD/FrontActor.class
+.PHONY : frontend
+backend : KeYmaeraD/Rules.class
 .PHONY : backend
 
-backend : KeYmaeraD/rules.class
-frontend : KeYmaeraD/frontend.class 
-
-KeYmaeraD/rules.class : specialoptions $(BACKENDSOURCES)
-	$(SCALAC) -classpath $(LIBRARIES) $(BACKENDSOURCES) $(ALLOPTIONS)
-
-KeYmaeraD/frontend.class  : specialoptions $(FRONTENDSOURCES)
+KeYmaeraD/FrontActor.class : specialoptions KeYmaeraD/Rules.class $(FRONTENDSOURCES)
 	$(SCALAC) -classpath $(LIBRARIES) $(FRONTENDSOURCES) $(ALLOPTIONS)
+
+KeYmaeraD/Rules.class : specialoptions $(BACKENDSOURCES)
+	$(SCALAC) -classpath $(LIBRARIES) $(BACKENDSOURCES) $(ALLOPTIONS)
 
 specialoptions : 	
 	$(SCALAC) -version 2>&1 | python specialoptions.py > specialoptions
 
-tests : backend frontend $(TESTINGSOURCES)
+tests : prover $(TESTINGSOURCES)
 	$(SCALAC) -classpath $(LIBRARIES) $(TESTINGSOURCES)
 
 clean :

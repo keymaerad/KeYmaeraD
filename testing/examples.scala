@@ -22,7 +22,6 @@ object Examples {
 
     frontactor = new KeYmaeraD.FrontActor(None);
     println ("KeYmaeraD frontend loaded.")
-    /// argh... need the repl to do the loading stuff. can i get around this somehow?
     frontactor.start()
 
     val parser = new org.apache.commons.cli.GnuParser();
