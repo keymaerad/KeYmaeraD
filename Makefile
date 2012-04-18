@@ -7,6 +7,7 @@ BACKENDSOURCES= types.scala rational.scala logicutil.scala arithmetic.scala \
 FRONTENDSOURCES= frontend.scala frontactor.scala GUI/guifrontend.scala \
 	tactics.scala 	
 
+TESTINGSOURCES= testing/examples.scala
 
 LIBRARIES= .:$(JLINK)/JLink.jar:./commons-cli-1.2/commons-cli-1.2.jar
 
@@ -29,13 +30,16 @@ backend : KeYmaeraD/rules.class
 frontend : KeYmaeraD/frontend.class 
 
 KeYmaeraD/rules.class : specialoptions $(BACKENDSOURCES)
-	$(SCALAC)  -classpath $(LIBRARIES) $(BACKENDSOURCES) $(ALLOPTIONS)
+	$(SCALAC) -classpath $(LIBRARIES) $(BACKENDSOURCES) $(ALLOPTIONS)
 
 KeYmaeraD/frontend.class  : specialoptions $(FRONTENDSOURCES)
-	$(SCALAC)  -classpath $(LIBRARIES) $(FRONTENDSOURCES) $(ALLOPTIONS)
+	$(SCALAC) -classpath $(LIBRARIES) $(FRONTENDSOURCES) $(ALLOPTIONS)
 
 specialoptions : 	
 	$(SCALAC) -version 2>&1 | python specialoptions.py > specialoptions
+
+tests : backend frontend $(TESTINGSOURCES)
+	$(SCALAC) -classpath $(LIBRARIES) $(TESTINGSOURCES)
 
 clean :
 	rm -f specialoptions

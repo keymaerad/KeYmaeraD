@@ -1,0 +1,1 @@
+scala -J-Xmx1000M -classpath .:./commons-cli-1.2/commons-cli-1.2.jar:$JLINK/JLink.jar KeYmaeraD.Testing.Examples $* 

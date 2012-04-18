@@ -236,7 +236,7 @@ class WorkerTracer(id: Int, ins: InputStream) extends BlockingActor {
 }
 
 
-class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
+class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
    extends Actor {
 
   import TreeActions._  
@@ -315,6 +315,12 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
           gotonode(rootNode)
           shownode(rootNode)
           sender ! ()
+
+        case 'rootproved =>
+          rootNode.getStatus match {
+            case Proved => sender ! true
+            case _ => sender ! false
+          }
 
         case ('rule, pos: Position, rl: ProofRule) =>
           val r = applyrulegen(hereNode,pos,rl)
@@ -451,16 +457,21 @@ class FrontActor(repl: scala.tools.nsc.interpreter.ILoop)
     if (filename.endsWith(".scala")||
         filename.endsWith(".proof")) {
 
+      // Strip away the suffix.
       val problemfilename = filename.substring(0, filename.length - 6)
       println("loading file " + problemfilename)
       loadfile(problemfilename)
       
-      val res1 = repl.command(":load " + filename)
+      mberepl match {
+        case Some(repl) => 
+          val res1 = repl.command(":load " + filename)
+          val res2 = 
+            repl.command("frontactor ! ('ASYNCsetscripttactic, Script.main)")
+          println("Press cmd-u to use the loaded script.")
+        case None => ()
+      }
 
-      val res2 = 
-        repl.command("frontactor ! ('ASYNCsetscripttactic, Script.main)")
 
-      println("Press cmd-u to use the loaded script.")
 
     } else try {
       // kill pending jobs.
