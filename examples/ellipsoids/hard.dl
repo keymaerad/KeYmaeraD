@@ -1,0 +1,46 @@
+{
+y0: () ->Real, 
+x0: () ->Real, 
+y1: () ->Real, 
+x1: () ->Real
+}
+
+|-
+
+x0() * (15325 / 10000 * x0() + 100383 / 10000 * x1()) + x1() * (100383 / 10000 * x0() + 5072450 / 10000 * x1()) <= 0 
+ ==> 
+[y0() := 449 / 1000 * x0() + -(5 / 100) * x1();
+ y1() := 1 / 100 * x0() + x1()]
+  (exists invac0:Real.
+   exists invac1:Real.
+   exists invac2:Real.
+   exists invac3:Real.
+   exists invtac0:Real.
+   exists invtac1:Real.
+   exists invtac2:Real.
+   exists invtac3:Real.
+   exists t0:Real.
+   exists t1:Real.
+   exists t2:Real.
+   exists t3:Real.
+   exists q0:Real.
+   exists q1:Real.
+   exists q2:Real.
+   exists q3:Real.
+449 / 1000 * invac0 + -(5 / 100) * invac2 = 1 &
+449 / 1000 * invac1 + -(5 / 100) * invac3 = 0 &
+1 / 100 * invac0 + 1 * invac2 = 0 &
+1 / 100 * invac1 + 1 * invac3 = 1 &
+449 / 1000 * invtac0 + 1 / 100 * invtac2 = 1 &
+449 / 1000 * invtac1 + 1 / 100 * invtac3 = 0 &
+-(5 / 100) * invtac0 + 1 * invtac2 = 0 &
+-(5 / 100) * invtac1 + 1 * invtac3 = 1 &
+t0 = 15325 / 10000 * invac0 + 100383 / 10000 * invac2 &
+t1 = 15325 / 10000 * invac1 + 100383 / 10000 * invac3 &
+t2 = 100383 / 10000 * invac0 + 5072450 / 10000 * invac2 &
+t3 = 100383 / 10000 * invac1 + 5072450 / 10000 * invac3 &
+q0 = invtac0 * t0 + invtac1 * t2 &
+q1 = invtac0 * t1 + invtac1 * t3 &
+q2 = invtac2 * t0 + invtac3 * t2 &
+q3 = invtac3 * t1 + invtac3 * t3 &
+y0() * (q0 * y0() + q1 * y1()) + y1() * (q2 * y0() + q3 * y1()) <= 0)
