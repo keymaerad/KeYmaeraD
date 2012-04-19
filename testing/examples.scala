@@ -53,7 +53,7 @@ object Examples {
 
 //  var i = new ILoop()
   var i = new IMain()
-  var res = Array[Tactic](nilT)
+  var res = Array[Any](nilT)
 //  i.settings = s
 //  i.settings.embeddedDefaults
 //  i.createInterpreter()
@@ -64,7 +64,7 @@ object Examples {
   i.interpret("import KeYmaeraD.RulesUtil.RightP")
   i.interpret("import KeYmaeraD.RulesUtil.LeftP")
   i.interpret("val x = 4 \n val r = 5")
-  i.bind("result", "Array[KeYmaeraD.Tactics.Tactic]", res)
+  i.bind("result", "Array[Any]", res)
   i.interpret("println(result)")
   interpretfile(i, "examples/aircraft/big_disc.dl.scala")
   i.interpret("result(0) = Script.main")
