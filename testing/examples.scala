@@ -3,6 +3,10 @@ package KeYmaeraD.Testing
 import scala.actors.Actor
 import scala.actors.Actor._
 
+import scala.tools.nsc.interpreter._
+import scala.tools.nsc.Settings
+
+import KeYmaeraD.Tactics._
 
 // copied this stuff from frontend.scala...
 object Examples {
@@ -17,8 +21,66 @@ object Examples {
 
   var frontactor : KeYmaeraD.FrontActor = null;
 
+
+  def interpretfile(i : IMain, filename : String) {
+      val fi = 
+        new java.io.FileInputStream(filename)
+     val br = new java.io.BufferedReader(new java.io.InputStreamReader(fi))
+     var ins1 = ""
+     var ln = br.readLine()
+     while (ln != null){
+       ins1 = ins1 + ln + "\n"
+       ln = br.readLine()
+     }
+    
+    i.interpret(ins1)
+
+  }
+
+
+
+  def testexample(filename : String, allowedtime : Long) : Unit = {
+    dl('load, filename)
+    
+    
+  }
+
   def main(args: Array[String]) : Unit = {
     println("worker says: hello world.")
+
+
+  val s = new Settings(str => println(str))
+
+//  var i = new ILoop()
+  var i = new IMain()
+  var res = Array[Tactic](nilT)
+//  i.settings = s
+//  i.settings.embeddedDefaults
+//  i.createInterpreter()
+  i.interpret("import KeYmaeraD._")
+  i.interpret("import KeYmaeraD.P._")
+  i.interpret("import KeYmaeraD.Tactics._")
+  i.interpret("import KeYmaeraD.Rules._")
+  i.interpret("import KeYmaeraD.RulesUtil.RightP")
+  i.interpret("import KeYmaeraD.RulesUtil.LeftP")
+  i.interpret("val x = 4 \n val r = 5")
+  i.bind("result", "Array[KeYmaeraD.Tactics.Tactic]", res)
+  i.interpret("println(result)")
+  interpretfile(i, "examples/aircraft/big_disc.dl.scala")
+  i.interpret("result(0) = Script.main")
+  
+    
+//  val pf = new scala.tools.nsc.io.PlainFile("examples/aircraft/big_disc.dl.scala")
+//    val bf = new scala.tools.nsc.util.BatchSourceFile(pf)
+//  i.compileSources(bf)
+
+  println("res(0) = " + res(0))
+
+//  i.interpretAllFrom(scala.tools.nsc.io.File("examples/creation.scala"))
+  println("done")
+
+  System.exit(0) 
+
 
     frontactor = new KeYmaeraD.FrontActor(None);
     println ("KeYmaeraD frontend loaded.")

@@ -36,7 +36,7 @@ specialoptions :
 	$(SCALAC) -version 2>&1 | python specialoptions.py > specialoptions
 
 tests : prover $(TESTINGSOURCES)
-	$(SCALAC) -classpath $(LIBRARIES) $(TESTINGSOURCES)
+	$(SCALAC) -classpath $(LIBRARIES) $(TESTINGSOURCES) $(ALLOPTIONS)
 
 clean :
 	rm -f specialoptions
