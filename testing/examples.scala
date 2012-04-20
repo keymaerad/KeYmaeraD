@@ -39,7 +39,12 @@ object Examples {
 
 
 
-  def testexample(i: IMain, filename : String, allowedtime : Long, script : Array[Any]) : Unit = {
+  def testexample(i: IMain, filename : String,
+                  allowedtime : Int, // in seconds
+                  script : Array[Any]) : Boolean = {
+
+    val endtime = System.currentTimeMillis() + (allowedtime * 1000)
+
     val problemfile = filename.substring(0, filename.length - 6)
     println("loading " + problemfile)
     dl('load, problemfile)
@@ -51,13 +56,16 @@ object Examples {
 
     dl('tactic, script(0).asInstanceOf[Tactic])
 
-    while (true != (frontactor !? 'rootproved)) {
-      println("waiting...")
+    while (System.currentTimeMillis() < endtime) {
+      if (true == (frontactor !? 'rootproved)) {
+        println("proved.")
+        return true
+      }
       Thread.sleep(500)
     }
-    println("proved!")
 
-    
+    println("timed out.")
+    return false
   }
 
   def main(args: Array[String]) : Unit = {
@@ -119,13 +127,19 @@ object Examples {
     }
       println("proved!")
 
- 
 
-    println("starting other examples")
-    testexample(i, "examples/aircraft/big_disc.dl.scala", 1000, res)
-    testexample(i, "examples/aircraft/two_tiny_discs.dl.scala", 1000, res)
-//    println("res(0) = " + res(0))
+    val examples = 
+      List(("examples/aircraft/big_disc.dl.scala", 30),
+           ("examples/aircraft/two_tiny_discs.dl.scala", 30),
+           ("examples/dtpdhs/lhc.dl.scala", 120),
+           ("examples/dtpdhs/lhc_distclocks.dl.scala", 6 * 60))
 
+
+
+    println("starting main examples")
+    val results = examples.map({case (fn, t) => (fn, testexample(i, fn, t, res))})
+
+    println("\n\nresults = " + results)
 
 
     dl('quit)
