@@ -39,9 +39,24 @@ object Examples {
 
 
 
-  def testexample(filename : String, allowedtime : Long) : Unit = {
-    dl('load, filename)
+  def testexample(i: IMain, filename : String, allowedtime : Long, script : Array[Any]) : Unit = {
+    val problemfile = filename.substring(0, filename.length - 6)
+    println("loading " + problemfile)
+    dl('load, problemfile)
     
+    println("interpreting " + filename)
+    interpretfile(i, filename)
+    i.interpret("script(0) = Script.main")
+    
+
+    dl('tactic, script(0).asInstanceOf[Tactic])
+
+    while (true != (frontactor !? 'rootproved)) {
+      println("waiting...")
+      Thread.sleep(500)
+    }
+    println("proved!")
+
     
   }
 
@@ -49,11 +64,14 @@ object Examples {
     println("worker says: hello world.")
 
 
-  val s = new Settings(str => println(str))
+    val s = new Settings(str => println(str))
 
 //  var i = new ILoop()
-  var i = new IMain()
-  var res = Array[Any](nilT)
+    println("starting an interpreter...")
+    var i = new IMain() {
+      override protected def parentClassLoader: ClassLoader = getClass.getClassLoader()
+    }
+    var res = Array[Any](nilT)
 //  i.settings = s
 //  i.settings.embeddedDefaults
 //  i.createInterpreter()
@@ -63,28 +81,12 @@ object Examples {
   i.interpret("import KeYmaeraD.Rules._")
   i.interpret("import KeYmaeraD.RulesUtil.RightP")
   i.interpret("import KeYmaeraD.RulesUtil.LeftP")
-  i.interpret("val x = 4 \n val r = 5")
-  i.bind("result", "Array[Any]", res)
-  i.interpret("println(result)")
-  interpretfile(i, "examples/aircraft/big_disc.dl.scala")
-  i.interpret("result(0) = Script.main")
-  
-    
-//  val pf = new scala.tools.nsc.io.PlainFile("examples/aircraft/big_disc.dl.scala")
-//    val bf = new scala.tools.nsc.util.BatchSourceFile(pf)
-//  i.compileSources(bf)
-
-  println("res(0) = " + res(0))
-
-//  i.interpretAllFrom(scala.tools.nsc.io.File("examples/creation.scala"))
-  println("done")
-
-  System.exit(0) 
+  i.bind("script", "Array[Any]", res)
 
 
-    frontactor = new KeYmaeraD.FrontActor(None);
-    println ("KeYmaeraD frontend loaded.")
-    frontactor.start()
+  frontactor = new KeYmaeraD.FrontActor(None);
+  println ("KeYmaeraD frontend loaded.")
+  frontactor.start()
 
     val parser = new org.apache.commons.cli.GnuParser();
 
@@ -110,7 +112,21 @@ object Examples {
     dl('load, "examples/simple.dl")
     dl('tactic, easiestT)
 
-    Thread.sleep(1000)
+
+    while (true != (frontactor !? 'rootproved)) {
+      println("waiting...")
+      Thread.sleep(500)
+    }
+      println("proved!")
+
+ 
+
+    println("starting other examples")
+    testexample(i, "examples/aircraft/big_disc.dl.scala", 1000, res)
+    testexample(i, "examples/aircraft/two_tiny_discs.dl.scala", 1000, res)
+//    println("res(0) = " + res(0))
+
+
 
     dl('quit)
   }
