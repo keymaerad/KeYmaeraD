@@ -13,7 +13,6 @@ object Examples {
   import KeYmaeraD._
   import KeYmaeraD.Tactics._
 
-
   val opts = new org.apache.commons.cli.Options();
   opts.addOption("workers", true, "number of worker subproceses")
 
@@ -21,9 +20,8 @@ object Examples {
 
   var frontactor : KeYmaeraD.FrontActor = null;
 
-
   def interpretfile(i : IMain, filename : String) {
-      val fi = 
+     val fi = 
         new java.io.FileInputStream(filename)
      val br = new java.io.BufferedReader(new java.io.InputStreamReader(fi))
      var ins1 = ""
@@ -35,9 +33,9 @@ object Examples {
     
     i.interpret(ins1)
 
+    fi.close()
+
   }
-
-
 
   def testexample(i: IMain, filename : String,
                   allowedtime : Int, // in seconds
@@ -52,7 +50,6 @@ object Examples {
     println("interpreting " + filename)
     interpretfile(i, filename)
     i.interpret("script(0) = Script.main")
-    
 
     dl('tactic, script(0).asInstanceOf[Tactic])
 
@@ -71,25 +68,24 @@ object Examples {
   def main(args: Array[String]) : Unit = {
     println("worker says: hello world.")
 
-
-    val s = new Settings(str => println(str))
-
 //  var i = new ILoop()
+//  i.settings = s
+//  val s = new Settings(str => println(str))
+//  i.settings.embeddedDefaults
+//  i.createInterpreter()
+
     println("starting an interpreter...")
     var i = new IMain() {
       override protected def parentClassLoader: ClassLoader = getClass.getClassLoader()
     }
     var res = Array[Any](nilT)
-//  i.settings = s
-//  i.settings.embeddedDefaults
-//  i.createInterpreter()
-  i.interpret("import KeYmaeraD._")
-  i.interpret("import KeYmaeraD.P._")
-  i.interpret("import KeYmaeraD.Tactics._")
-  i.interpret("import KeYmaeraD.Rules._")
-  i.interpret("import KeYmaeraD.RulesUtil.RightP")
-  i.interpret("import KeYmaeraD.RulesUtil.LeftP")
-  i.bind("script", "Array[Any]", res)
+    i.interpret("import KeYmaeraD._")
+    i.interpret("import KeYmaeraD.P._")
+    i.interpret("import KeYmaeraD.Tactics._")
+    i.interpret("import KeYmaeraD.Rules._")
+    i.interpret("import KeYmaeraD.RulesUtil.RightP")
+    i.interpret("import KeYmaeraD.RulesUtil.LeftP")
+    i.bind("script", "Array[Any]", res)
 
 
   frontactor = new KeYmaeraD.FrontActor(None);
@@ -122,7 +118,6 @@ object Examples {
 
 
     while (true != (frontactor !? 'rootproved)) {
-      println("waiting...")
       Thread.sleep(500)
     }
       println("proved!")
