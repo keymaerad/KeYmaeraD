@@ -471,75 +471,72 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
         case None => ()
       }
 
-
-
-    } else try {
-      // kill pending jobs.
-      for( (ndID, t) <- jobs) {
-        jobmaster ! ('abort, ndID)
-      }
-      jobs.clear
-
-      val fi = 
-        new java.io.FileInputStream(filename)
-      if (filename.endsWith(".dl")) {
-        val dlp = new DLParser(fi)
-        dlp.result match {
-          case Some(g) =>
-            val nd = new OrNode("loaded from " + filename, g)
-          register(nd)
-          hereNode = nd
-          rootNode = nd
-          treemodel.map(_.fireNewRoot(nd))// GUI
-          case None =>
-            val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
-          register(nd)
-          hereNode = nd
-          rootNode = nd
-          treemodel.map(_.fireNewRoot(nd))// GUI
-          println("failed to parse file " + filename)
-          //@TODO Display an error. Notify the GUI of the error, which should display the message
-
+    } else {
+      var fi: java.io.FileInputStream = null
+      try {
+        // kill pending jobs.
+        for( (ndID, t) <- jobs) {
+          jobmaster ! ('abort, ndID)
         }
-      }
-      else if (filename.endsWith(".key")){
-        val keyp = new KEYParser(fi)
-        keyp.result match {
-          case Some(g) =>
-            val nd = new OrNode("loaded from " + filename, g)
-          register(nd)
-          hereNode = nd
-          rootNode = nd
-          treemodel.map(_.fireNewRoot(nd))// GUI
-          case None =>
-            val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
-          register(nd)
-          hereNode = nd
-          rootNode = nd
-          treemodel.map(_.fireNewRoot(nd))// GUI
-          println("failed to parse file " + filename)
-          
+        jobs.clear
+
+        fi = 
+          new java.io.FileInputStream(filename)
+        if (filename.endsWith(".dl")) {
+          val dlp = new DLParser(fi)
+          dlp.result match {
+            case Some(g) =>
+              val nd = new OrNode("loaded from " + filename, g)
+              register(nd)
+              hereNode = nd
+              rootNode = nd
+              treemodel.map(_.fireNewRoot(nd))// GUI
+            case None =>
+              val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
+              register(nd)
+              hereNode = nd
+              rootNode = nd
+              treemodel.map(_.fireNewRoot(nd))// GUI
+              println("failed to parse file " + filename)
+              //@TODO Display an error. Notify the GUI of the error, which should display the message
+
+          }
         }
-      }
+        else if (filename.endsWith(".key")){
+          val keyp = new KEYParser(fi)
+          keyp.result match {
+            case Some(g) =>
+              val nd = new OrNode("loaded from " + filename, g)
+              register(nd)
+              hereNode = nd
+              rootNode = nd
+              treemodel.map(_.fireNewRoot(nd))// GUI
+            case None =>
+              val nd = new OrNode("failed to parse file " + filename, Sequent(scala.collection.immutable.HashMap.empty, Nil, Nil))
+              register(nd)
+              hereNode = nd
+              rootNode = nd
+              treemodel.map(_.fireNewRoot(nd))// GUI
+              println("failed to parse file " + filename)
+          }
+        }
 
-      ()
+        ()
 
-    } catch {
-      case e =>
-        println("failed to load file " + filename)
-        println("due to " + e)
+      } catch {
+        case e =>
+          println("failed to load file " + filename)
+          println("due to " + e)
+      } finally { fi.close() }
     }
 
     // Do this last, so that if we are loading a script,
     // that's what we remember.
     sourceFileName = Some(filename)
 
-}
+  }
 
-
-  //@TODO finally {fi.close}
-  // (not strictly necessary becuase fi's finalizer calls close())
-}
+} 
 
 
 
