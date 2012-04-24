@@ -1,4 +1,5 @@
-dl('load, "examples/llcsimple2.dl")
+object Script {
+
 val rl = loopInduction(
   parseFormula(
     "(b()>0 & B() > 0 & B() > b() &  A() > 0 & ~(f() = l()) & eps() >= 0) &" + 
@@ -138,14 +139,13 @@ val indtct =
                              ch_brake) )
                 )))
     
-
-dl('gotoroot)
-dl('tactic,  branchT(tryruleT(rl),
+val main = branchT(tryruleT(rl),
                      List(tryruleatT(close)(RightP(0)),
                           indtct,
                           repeatT(trylistofrulesT(List(close,andLeft)))
-                        )
-                          ))
+                        ))
+
+}
 
 
 

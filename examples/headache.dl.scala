@@ -1,5 +1,4 @@
-dl('load, "examples/headache.dl")
-
+object Script {
 
 val cuttct0 = cutT(
   StandardCut,
@@ -169,8 +168,8 @@ val starttct =
 
              )
 
+val main = starttct
 
-dl('gotoroot)
-dl('tactic, starttct)
+}
 
 

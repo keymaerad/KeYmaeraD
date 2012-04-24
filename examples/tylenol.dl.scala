@@ -1,6 +1,4 @@
-dl('load, "examples/tylenol.dl")
-
-
+object Script {
 
 val cuttct = cutT(
   DirectedCut,
@@ -170,9 +168,6 @@ val uselemma =  branchT(tryruleT(impLeft),
 
 
 
-val oror1tct = unitT
-
-
 val precond = 
   branchT(
     tryruleT(andRight),
@@ -309,7 +304,8 @@ val starttct =
                  )
                )
              )
-                 
 
-dl('gotoroot)
-dl('tactic, starttct)
+val main = starttct
+
+}                 
+

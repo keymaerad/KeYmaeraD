@@ -1,4 +1,4 @@
-dl('load, "examples/locallanecontrol.dl")
+object Script {
 val rl = loopInduction(
   parseFormula(
     "(b()>0 & B() > 0  & eps() >= 0) &" + 
@@ -71,15 +71,14 @@ val indtct =
                 ch_stopped )))
     
 
-
-
-dl('gotoroot)
-dl('tactic,  branchT(tryruleT(rl),
+val main =  branchT(tryruleT(rl),
                      List(tryruleatT(close)(RightP(0)),
                           indtct,
                           repeatT(eitherT(trylistofrulesT(List(andLeft)), 
                                           tryruleatT(close)(RightP(0))))
-                        )
-                          ))
+                        ))
+
+}
+
 
 

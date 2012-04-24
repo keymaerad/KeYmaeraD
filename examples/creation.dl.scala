@@ -1,4 +1,5 @@
-dl('load, "examples/creation.dl")
+object Script{
+
 val rl = loopInduction(
   parseFormula(
     "forall i : C. forall j : C. " + 
@@ -50,9 +51,10 @@ val posttct =
 
   
 
-dl('gotoroot)
-dl('tactic,  branchT(tryruleT(rl),
+val main = branchT(tryruleT(rl),
                      List(tryruleatT(close)(RightP(0)),
                           indtct,
                           posttct
-                          )))
+                          ))
+
+}

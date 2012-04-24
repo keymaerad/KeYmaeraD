@@ -527,7 +527,7 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
         case e =>
           println("failed to load file " + filename)
           println("due to " + e)
-      } finally { fi.close() }
+      } finally { if (fi != null) fi.close() }
     }
 
     // Do this last, so that if we are loading a script,
