@@ -721,7 +721,7 @@ object Tactics {
      }
    }
 
-  val instantiatebyeverythingT : Sort  => Tactic = srt =>
+  val instantiatebyeverythingT : Sort => Tactic = srt =>
    new Tactic("instantiate by everything") {
      def apply(nd: OrNode): Option[List[NodeID]] = {
        val Sequent(sig,_,_) = nd.goal
