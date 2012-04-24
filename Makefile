@@ -32,7 +32,7 @@ KeYmaeraD/FrontActor.class : specialoptions KeYmaeraD/Rules.class $(FRONTENDSOUR
 KeYmaeraD/Rules.class : specialoptions $(BACKENDSOURCES)
 	$(SCALAC) -classpath $(LIBRARIES) $(BACKENDSOURCES) $(ALLOPTIONS)
 
-specialoptions : 	
+specialoptions :	
 	$(SCALAC) -version 2>&1 | python specialoptions.py > specialoptions
 
 tests : prover $(TESTINGSOURCES)

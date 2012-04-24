@@ -1,5 +1,7 @@
 import re
 import fileinput
+import sys
+
 p = re.compile('\d+\.\d+\.\d+')
 
 # workaround for broken -i flag
@@ -13,6 +15,6 @@ for line in fileinput.input():
             print opts[res]
         exit(0)
     else:
-        print "got weird thing: " + line
-        exit(0)
+        sys.stderr.write("asked for scala version; got this:\n" + line)
+        exit(1)
         
