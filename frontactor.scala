@@ -322,7 +322,7 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
             case _ => sender ! false
           }
 
-        case ('rule, pos: Position, rl: ProofRule) =>
+        case ('rule, rl: ProofRule, pos: Position) =>
           val r = applyrulegen(hereNode,pos,rl)
               r match {
                 case Some(_) => 
