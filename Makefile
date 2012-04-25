@@ -33,13 +33,15 @@ KeYmaeraD/Rules.class : specialoptions $(BACKENDSOURCES)
 	$(SCALAC) -classpath $(LIBRARIES) $(BACKENDSOURCES) $(ALLOPTIONS)
 
 specialoptions :	
-	$(SCALAC) -version 2>&1 | python specialoptions.py > specialoptions
+	$(SCALAC) -version 2>&1 | python specialoptions.py > specialoptions.tmp
+	# Only make the real thing if the last line succeeded.
+	mv specialoptions.tmp specialoptions
 
 tests : prover $(TESTINGSOURCES)
 	$(SCALAC) -classpath $(LIBRARIES) $(TESTINGSOURCES) $(ALLOPTIONS)
 
 clean :
-	rm -f specialoptions
+	rm -f specialoptions specialoptions.tmp
 	rm -rf KeYmaeraD/
 	$(SCALAC) -shutdown -verbose
 

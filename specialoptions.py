@@ -16,5 +16,6 @@ for line in fileinput.input():
         exit(0)
     else:
         sys.stderr.write("asked for scala version; got this:\n" + line)
+        sys.stderr.write("Do you have scala installed?\n")
         exit(1)
         
