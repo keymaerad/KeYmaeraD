@@ -1,14 +1,12 @@
 {
 x : (C) -> Real,
-v : (C) -> Real,
-b : () -> Real
+v : (C) -> Real
 }
-b() > 0,
 forall i : C .
 forall j : C .
 ~(i = j) ==> 
 (  (x(i) <  x(j) & v(i) < v(j))
  | (x(i) >  x(j) & v(i) > v(j)))
 |- 
-  [forall k : C {x(k)' = v(k), v(k)' = -b; true}] 
+  [forall k : C {x(k)' = v(k), v(k)' = -b(); true}] 
     (forall i : C . forall j : C . (~ (i = j) ==> (~ x(i) = x(j))  ))
