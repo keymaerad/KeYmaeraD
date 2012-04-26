@@ -2,17 +2,20 @@
  /*  position of tip */
  qx : () -> Real,
  qy : () -> Real,
+ qz : () -> Real,
 
  K : () -> Real,
 
  // force input. piecewise linear, according to fxp, fyp
  fx : () -> Real,
  fy : () -> Real,
+ fz : () -> Real,
 
 
  // the actual inputs. derivative of force input.
  fxp : () -> Real,
  fyp : () -> Real,
+ fzp : () -> Real,
 
  // time length of a step
  e : () -> Real,
@@ -36,9 +39,9 @@
  // discriminant
  disc : () -> Real,
 
- // normal (wrt barrier) component of (fxp, fyp)
+ // normal (wrt barrier) component of (fxp, fyp, fzp)
  fnp : () -> Real,
- // normal (wrt barrier) component of (fx, fy)
+ // normal (wrt barrier) component of (fx, fy, fz)
  fn : () -> Real,
 
  // An arbitrary point on the boundary line.
@@ -49,7 +52,10 @@
  nx : () -> Real,
  ny : () -> Real,
 
- tmp : () -> Real
+ tmp : () -> Real,
+ tmp2 : () -> Real,
+ tmp3 : () -> Real,
+ gt : () -> Real
 }
 
 K() > 0, 
@@ -94,9 +100,18 @@ nx()^2 + ny()^2 = 1,
   ++
   ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() <= 0 & dist() <= 0);
     tmp := *;
-    (? tmp() * tmp() * K() = 2 * d0() * fnp() & tmp() >= 0);
-    g := fn() - tmp()
-  ) 
+    (? tmp() * K() * e() = 1);
+    gt := fn() + ((d0() + (1/2) * K() * fnp() * (e()^2)) * tmp());
+    tmp2 := *;
+    (((? fnp() > 0 & fnp() * tmp2() = -1 * (fn() - gt()));
+       tmp3 := *;
+       (((? tmp2() <= e() & tmp3() * tmp3() * K() = 2 * d0() * fnp() & tmp3() >= 0);
+              g := fn() - tmp3())++ // here
+	 ((? tmp2() >= e());
+              g := gt)))++
+     ((? fnp() = 0); 
+              g := gt))
+  )
   ++
   ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() <= 0 & dist() >= 0);
     g := 0
