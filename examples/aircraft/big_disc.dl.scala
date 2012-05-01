@@ -1,6 +1,5 @@
 object Script {
 
-
 val maininv = 
   parseFormula (
     "forall i : C ." +
@@ -8,7 +7,6 @@ val maininv =
       "( i /= j ==> " + 
       "(bigdisc1(i) - bigdisc1(j))^2 + (bigdisc2(i) - bigdisc2(j))^2 >="  +
        "(2 * minr(i) + 2 * minr(j) + protectedzone())^2)")
-
 
 val inv1 = 
   parseFormula (
@@ -20,7 +18,6 @@ val inv1 =
      "& (1 - ca(i)) * bigdisc1(i) = (1 - ca(i)) * x1(i)" +
      "& (1 - ca(i)) * bigdisc2(i) = (1 - ca(i)) * x2(i)"
   )
-
 
 val constinv1 = 
   parseFormula (
@@ -37,7 +34,6 @@ val cut1 = cutT(
   StandardKeepCut,
   parseFormula("~ I = II  ==> D1 = D2"),
   parseFormula("~I = II"))
-
 
 val incatct = 
   composelistT(
@@ -71,8 +67,6 @@ val incatct =
       easiestT
      )
 )
-
-
 
 val outcatct = 
   composelistT(
@@ -354,7 +348,6 @@ val postconditiontct =
     )
   )
 
-
 val starttct =
    tryruleT(loopInduction(Binop(And, Binop(And, constinv1, constinv2),
                                      Binop(And, maininv, inv1)
@@ -366,4 +359,3 @@ val starttct =
 val main = starttct
 
 }
-

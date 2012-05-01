@@ -1,6 +1,5 @@
 object Script {
 
-
 val maininv = 
   parseFormula (
     "forall i : C ." +
@@ -12,7 +11,6 @@ val maininv =
          "(x2(i) - x2(j)))^2 >=" +
        "(minr(i) + minr(j) + protectedzone())^2)")
 
-
 val inv1 = 
   parseFormula (
     "forall i : C . (  " +
@@ -20,7 +18,6 @@ val inv1 =
      " & (discside(i) = -1 | discside(i) = 1) " +
     " & om(i) * ca(i) = maxom(i) * discside(i) * ca(i) )"
   )
-
 
 val constinv1 = 
   parseFormula (
@@ -37,7 +34,6 @@ val cut1 = cutT(
   StandardKeepCut,
   parseFormula("~ I = II  ==> D1 = D2"),
   parseFormula("~I = II"))
-
 
 val incatct = 
   composelistT(
@@ -76,7 +72,6 @@ val incatct =
       )
     )
   )
-
 
 val switchsidetct =
   composelistT(
