@@ -211,13 +211,7 @@ val diffinv4 =
       "x2(i) - x2(j))^2) * ca(i) * ca(j) >=" +
       "(minr(i) + minr(j) + protectedzone())^2 * ca(i) * ca(j))")
 
-
-val di1tct =  composelistT(
-    alphaT*,
-    instantiatebyT(St("C"))(List(("k", List("k")))),
-    hideunivsT(St("C")),
-    easiestT
-   )
+val di1tct = nilT
 
 val di2tct =  
   composelistT(
@@ -317,7 +311,6 @@ val cutfm =
 val postconditiontct = 
   composelistT(
     alphaT*,
-//    hideallbutT(List(LeftP(0), LeftP(1), LeftP(2), LeftP(4), RightP(0))),
     instantiatebyT(St("C"))(List(("i", List("i", "j")),
                                  ("j", List("j"))))*,
     alphaT*,
@@ -404,7 +397,6 @@ val postconditiontct =
     )
   )
 
-
 val starttct =
    tryruleT(loopInduction(Binop(And, Binop(And, constinv1, constinv2),
                                      Binop(And, maininv, inv1)
@@ -416,4 +408,3 @@ val starttct =
 val main = starttct
 
 }
-
