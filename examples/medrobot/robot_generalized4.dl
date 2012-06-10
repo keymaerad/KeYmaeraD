@@ -1,0 +1,176 @@
+// this is robot_generalized4.dl
+// a theorem about the safety of the control algorithm that enforces a
+// single virtual fixture in 2D, with force feedback
+
+
+{
+ /*  position of tip */
+ qx : () -> Real,
+ qy : () -> Real,
+ qz : () -> Real,
+
+ K : () -> Real,
+
+ // force input. piecewise linear, according to fxp, fyp
+ fx : () -> Real,
+ fy : () -> Real,
+ fz : () -> Real,
+
+
+ // the actual inputs. derivative of force input.
+ fxp : () -> Real,
+ fyp : () -> Real,
+ fzp : () -> Real,
+
+ // time length of a step
+ e : () -> Real,
+
+ // stopwatch that enforces e
+ t : () -> Real,
+
+ // force response, normal to barrier line
+ // g positive means towards the barrier 
+ // (source of confusion)
+ g : () -> Real,
+
+ // perpendicular distance from tool tip to barrier
+ // at beginning of step.
+ d0 : () -> Real,
+
+ // thickness of slow zone
+ dd : () -> Real,
+
+ // predicted perpendicular distance from tool tip to barrier,
+ // at end of step, if g = 0
+ dist : () -> Real,
+
+ // discriminant
+ disc : () -> Real,
+
+ // extremeal point
+ xtr : () -> Real,
+
+ // attenuation computed for force feedback
+ u : () -> Real,
+
+ // normal (wrt barrier) component of (fxp, fyp, fzp)
+ fnp : () -> Real,
+ // normal (wrt barrier) component of (fx, fy, fz)
+ fn : () -> Real,
+
+ // An arbitrary point on the boundary line.
+ px : () -> Real,
+ py : () -> Real,
+
+ // Unit normal for boundary line.
+ nx : () -> Real,
+ ny : () -> Real,
+
+ tmp : () -> Real,
+ tmp2 : () -> Real,
+ tmp3 : () -> Real,
+ gt : () -> Real
+}
+
+K() > 0, 
+e() > 0, 
+
+dd() > 0,
+
+nx()^2 + ny()^2 = 1,
+
+// Start on the correct side of boundary line.
+(qx() - px()) * nx() + (qy() - py()) * ny() >= 0
+
+|-
+
+[
+{
+ (fxp := *;
+  fyp := *;
+  xtr := *;
+  u := 1;
+  d0 := (qx() - px()) * nx() + (qy() - py()) * ny();
+
+  fnp := fxp() * nx() + fyp() * ny();
+  fn := fx() * nx() + fy() * ny());
+
+//  Lu := d0 + K() * ((1/2)*fn()*e() + (1/6)*fnp()*e()^2)
+
+  // force feedback
+ ((?(d0 >= dd); 
+ 	u := 1) ++ // none
+  (?((0 <= d0) & (d0 <= dd)); // maybe slow depending on direction
+    ((? fnp() >= 0 & fn() >= 0); 
+        u := 1)++
+    ((? fnp() >  0 & fn() <= 0 & (xtr() * fnp() = -1*fn()) & (xtr <= (1/2) * e));  
+        u := 1)++
+    ((? fnp() >  0 & fn() <= 0 & (xtr() * fnp() = -1*fn()) & (xtr >= (1/2) * e));
+        u := *; (? u * dd = d0) )++
+    ((? fnp()  = 0 & fn() <= 0 );                      
+        u := *; (? u * dd = d0) )++
+    ((? fnp() <  0 & fn() >= 0 & (xtr() * fnp() = -1*fn()) & (xtr <= (1/2) * e));  
+        u := *; (? u * dd = d0) )++
+    ((? fnp() <  0 & fn() >= 0 & (xtr() * fnp() = -1*fn()) & (xtr >= (1/2) * e));  
+        u := 1)++
+    ((? fnp()  = 0 & fn() >= 0 );                      
+        u := 1)++
+    ((? fnp() <= 0 & fn() <= 0); u := *; (? u * dd = d0) )
+  ) ++
+  (?((d0 <= 0));
+  	u := 0)); // stuck
+
+  dist := (d0 + K() * u() * (fn() * e() + fnp() * e()^2 * (1/2)));
+  disc := (( K() * u() * fn())^2 - 2 * K() * u() * fnp() * d0());
+
+  ((? (fnp() <= 0 & dist() >= 0); g := u)
+  ++
+   (?(fnp() <= 0 & dist() <= 0);
+    tmp := *;
+    (? tmp() * K() * (fn()*e() + (1/2) * fnp()* (e()^2)) = 1);
+    g := (-1) * d0() * tmp()
+   ) 
+  ++ 
+  ( (? fnp() >= 0 & fn() <= 0 & disc() <= 0);
+    g := u
+  )
+  ++
+  ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() >= 0);
+    tmp := *;
+    (? tmp() * K() * (fn()^2) = 1);
+    g := 2 * fnp() * d0() * tmp()
+  ) 
+  ++
+  ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() <= 0 & dist() <= 0);
+    tmp() := *;
+    (? tmp() * K() * (fn()*e() + (1/2) * fnp()* (e()^2)) = 1);
+    g := (-1) * d0() * tmp()
+  )
+  ++
+  ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() <= 0 & dist() >= 0);
+    g := u
+  )
+  ++
+  ( (? fnp() >= 0 & fn() >= 0);
+    g := u
+  ) 
+ );
+ t() := 0;
+ {qx' = K() * fx() * g(), 
+  qy' = K() * fy() * g(),
+  fx' = fxp(),
+  fy' = fyp(),
+  t' = 1;
+  t() <= e()}
+  @solution(forall s. qx(s) = qx() + K() * fx() * g() * s() + (1/2) * K() * fxp() * g() * s^2,
+            forall s. qy(s) = qy() + K() * fy() * g() * s() + (1/2) * K() * fyp() * g() * s^2,
+            forall s. fx(s) = fx() + fxp() * s,
+            forall s. fy(s) = fy() + fyp() * s,
+            forall s. t(s) = t() + s)
+
+
+}*
+] 
+(qx() - px()) * nx() + (qy() - py()) * ny() >= 0
+
+ 
