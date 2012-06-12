@@ -447,18 +447,18 @@ object FE {
                 event.acceptDrop(event.getSourceActions());
                 val files = transferable.getTransferData(DataFlavor.javaFileListFlavor)
                 files match {
-	              case l:java.util.List[File] => l.foreach(
+                  case l:java.util.List[_] =>
+                    l.foreach( file => file match {
+                      case f:File => loadProblem(fa, f)
+                      case _ => event.dropComplete(false)
+                    })
+                    event.dropComplete(true);
+	          case l:List[_] => l.foreach(
                     file => file match {
                       case f:File => loadProblem(fa, f)
                       case _ => event.dropComplete(false)
                     })
-	                event.dropComplete(true);
-	              case l:List[File] => l.foreach(
-                    file => file match {
-                      case f:File => loadProblem(fa, f)
-                      case _ => event.dropComplete(false)
-                    })
-	                event.dropComplete(true);
+	            event.dropComplete(true);
                   case _ => println("Don't understand drag and drop type" + files.getClass);
                     event.dropComplete(false)
                 }
