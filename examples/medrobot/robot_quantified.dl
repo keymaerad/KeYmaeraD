@@ -78,8 +78,8 @@ dd() > 0,
 (forall i : B. nx(i)^2 + ny(i)^2 = 1),
 
 // Start on the correct side of boundary line.
-(forall i : B. ~(i = last) -> (qx() - px(i)) * nx(i) + (qy() - py(i)) * ny(i) >= 0) &
-(forall i : B. <j := first; (?~(j = last); j := next(j))*>(i=j))
+(forall i : B. ~(i = last) ==> (qx() - px(i)) * nx(i) + (qy() - py(i)) * ny(i) >= 0) &
+(forall i : B. <j := first; {?~(j = last); j := next(j)}* >(i=j))
 
 |-
 
@@ -154,4 +154,4 @@ dd() > 0,
                forall s. fy(s) = fy() + fyp() * s,
                forall s. t(s) = t() + s)
 }*]
-(forall i : B. ~(i = last) -> (qx() - px(i)) * nx(i) + (qy() - py(i)) * ny(i) >= 0)
+(forall i : B. ~(i = last) ==> (qx() - px(i)) * nx(i) + (qy() - py(i)) * ny(i) >= 0)
