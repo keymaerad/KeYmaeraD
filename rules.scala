@@ -355,24 +355,31 @@ object Rules {
     def apply(p: Position) = sq => {
       val fm  = lookup(p,sq)
       fm match {
-        case  Modality(Box,Seq(h1,h2), phi) => 
-           val fm1 = Modality(Box,h1,Modality(Box,h2,phi))
+        // Same rule for Box and Diamond.
+        case  Modality(mod, Seq(h1,h2), phi) => 
+           val fm1 = Modality(mod, h1,
+                              Modality(mod, h2, phi))
            val sq1 = replace(p,sq,fm1)
-           Some( List(sq1),Nil)
+           Some(List(sq1), Nil)
         case _ => None
       }
     }
   }
 
   val choose = new ProofRule("choose") {
-    def apply(p: Position) = sq =>  {
-        val fm = lookup(p,sq)
+    def apply(p: Position) = sq => {
+        val fm = lookup(p, sq)
         fm match {
-          case Modality(Box,Choose(h1,h2), phi) => 
-            val fm1 = Modality(Box,h1,phi) 
-            val fm2 = Modality(Box,h2,phi)
-            val sq1 = replace(p,sq,Binop(And,fm1,fm2))
-            Some( (List(sq1),Nil))
+          case Modality(Box, Choose(h1, h2), phi) => 
+            val fm1 = Modality(Box, h1, phi) 
+            val fm2 = Modality(Box, h2, phi)
+            val sq1 = replace(p, sq, Binop(And, fm1, fm2))
+            Some((List(sq1),Nil))
+          case Modality(Diamond, Choose(h1, h2), phi) => 
+            val fm1 = Modality(Diamond, h1, phi) 
+            val fm2 = Modality(Diamond, h2, phi)
+            val sq1 = replace(p, sq, Binop(Or, fm1, fm2))
+            Some((List(sq1),Nil))
           case _ => 
             None
         }
@@ -380,19 +387,22 @@ object Rules {
   }
 
   val check = new ProofRule("check") {
-    def apply(p: Position) = sq =>  {
-        val fm = lookup(p,sq)
+    def apply(p: Position) = sq => {
+        val fm = lookup(p, sq)
         fm match {
-          case Modality(Box,Check(fm1), phi) => 
-            val fm2 = Binop(Imp,fm1, phi)
-            val sq1 = replace(p,sq, fm2)
-            Some( (List(sq1),Nil))
+          case Modality(Box, Check(fm1), phi) => 
+            val fm2 = Binop(Imp, fm1, phi)
+            val sq1 = replace(p, sq, fm2)
+            Some((List(sq1), Nil))
+          case Modality(Diamond, Check(fm1), phi) => 
+            val fm2 = Binop(And, fm1, phi)
+            val sq1 = replace(p, sq, fm2)
+            Some((List(sq1), Nil))
           case _ => 
             None
         }
     }
   }
- 
 
   //
   // assignment rules
@@ -618,8 +628,18 @@ object Rules {
       def apply(p: Position) = sq => {
 	      val fm = lookup(p,sq)
           fm match {
-            case Modality(Box,Loop(hp, True, inv_hints), phi) =>
-              val fm1 = Binop(And,phi,Modality(Box, hp, fm))
+            case Modality(Box,
+                          hp1@Loop(hp, True, inv_hints), phi) =>
+              val fm1 = Binop(And, phi, 
+                              Modality(Box,
+                                       Seq(hp, hp1), fm))
+              val sq1 = replace(p, sq, fm1)
+              Some((List(sq1),Nil))
+            case Modality(Diamond,
+                          hp1@Loop(hp, True, inv_hints), phi) =>
+              val fm1 = Binop(Or, phi, 
+                              Modality(Box,
+                                       Seq(hp, hp1), fm))
               val sq1 = replace(p, sq, fm1)
               Some((List(sq1),Nil))
             case _ => 
