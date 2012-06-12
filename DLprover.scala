@@ -250,75 +250,95 @@ final object Prover {
   }
 
 
-
-// alpha-renaming for logical variables.
+/* Alpha-renaming for logical variables.
+ * Replace free occurence of Var(xold) with Var(xnew).
+ */
   def rename_Term(xold: String,
-                 xnew: String,
-                 tm: Term): Term = tm match {
+                  xnew: String,
+                  tm: Term): Term = tm match {
     case Var(x) if x == xold =>
       Var(xnew)
     case Fn(f, ps) =>
-      val fnew = f // if(f == xold) xnew else f
-      Fn(fnew, ps.map(p => rename_Term(xold, xnew,p)))
+      Fn(f, ps.map(p => rename_Term(xold, xnew, p)))
     case _ => tm
   }
 
   def rename_Formula(xold: String,
-                      xnew: String,
-                      fm: Formula): Formula = fm match {
+                     xnew: String,
+                     fm: Formula): Formula = fm match {
     case True | False => fm
-    case Atom(R(r,ps)) => 
-      Atom(R(r, ps.map(p => rename_Term(xold,xnew,p))))
-    case Not(f) => Not(rename_Formula(xold,xnew,f))
-    case Binop(c,f1,f2) => 
-      Binop(c,rename_Formula(xold,xnew,f1),rename_Formula(xold,xnew,f2))
-    case Quantifier(q,c,v,f) if v == xold =>
-      val v1 = uniqify(v)
-      val f1 = rename_Formula(v,v1,f)
-      Quantifier(q, c, v1, rename_Formula(xold, xnew, f1))
-    case Quantifier(q,c,v,f) =>
-      Quantifier(q, c, v, rename_Formula(xold,xnew,f))      
-    case Modality(m,hp,phi) =>
-      Modality(m,rename_HP(xold,xnew,hp), rename_Formula(xold,xnew,phi))
-
+    case Atom(R(r, ps)) => 
+      Atom(R(r, ps.map(p => rename_Term(xold, xnew, p))))
+    case Not(f) => Not(rename_Formula(xold, xnew, f))
+    case Binop(c, f1, f2) =>
+      Binop(c,rename_Formula(xold, xnew, f1),
+            rename_Formula(xold, xnew, f2))
+    case fm@Quantifier(q, c, v, f) if v == xold => fm
+    case Quantifier(q, c, v, f) =>
+      Quantifier(q, c, v, rename_Formula(xold, xnew, f))
+    case Modality(m, hp, phi) =>
+      Modality(m,rename_HP(xold, xnew, hp),
+               rename_Formula(xold, xnew, phi))
   }
 
-  def rename_HP(xold:String,xnew:String,hp:HP):HP = hp match {
+  def rename_HP(xold:String, xnew:String, hp:HP):HP = hp match {
     case Assign(vs) =>
-      val vs1 = vs.map( v => {
-        val (Fn(f,args), t) = v;
-        val args1 = args.map(a => rename_Term(xold,xnew,a));
-        val t1 = rename_Term(xold,xnew,t);
-        (Fn(f,args1),t1)});
+      val vs1 = vs.map(v => {
+        val (Fn(f, args), t) = v;
+        val args1 = args.map(a => rename_Term(xold, xnew, a));
+        val t1 = rename_Term(xold, xnew, t);
+        (Fn(f, args1), t1)});
       Assign(vs1)
-    case AssignAny(Fn(f,args)) =>
-      val args1 = args.map(a => rename_Term(xold,xnew,a))
-      AssignAny(Fn(f,args1))
+    case hp@AssignQuantified(i, st, vs) if i == xold => hp
+    case AssignQuantified(i, st, vs) =>
+      val vs1 = vs.map(v => {
+        val (Fn(f, args), t) = v;
+        val args1 = args.map(a => rename_Term(xold, xnew, a));
+        val t1 = rename_Term(xold, xnew, t);
+        (Fn(f, args1), t1)});
+      AssignQuantified(i, st, vs1) 
+    case AssignAny(Fn(f, args)) =>
+      val args1 = args.map(a => rename_Term(xold, xnew, a))
+      AssignAny(Fn(f, args1))
+    case hp@AssignAnyQuantified(i, c, v) if i == xold => hp
+    case AssignAnyQuantified(i, c, Fn(v, args)) =>
+      val args1 = args.map(a => rename_Term(xold, xnew, a));
+      AssignAnyQuantified(i, c, Fn(v, args1))
     case Check(fm) =>
-      Check(rename_Formula(xold,xnew,fm))
+      Check(rename_Formula(xold, xnew, fm))
     case Seq(p,q) => 
-      Seq(rename_HP(xold,xnew,p), rename_HP(xold,xnew,q))
+      Seq(rename_HP(xold, xnew, p), rename_HP(xold, xnew, q))
     case Choose(p1,p2) => 
-      Choose(rename_HP(xold,xnew,p1), rename_HP(xold,xnew,p2))
+      Choose(rename_HP(xold, xnew, p1), rename_HP(xold, xnew, p2))
     case Loop(p,fm, inv_hints) =>
-      Loop(rename_HP(xold,xnew,p), 
-           rename_Formula(xold,xnew,fm), 
-           inv_hints.map(f => rename_Formula(xold,xnew,f)))
+      Loop(rename_HP(xold, xnew, p),
+           rename_Formula(xold, xnew, fm),
+           inv_hints.map(f => rename_Formula(xold, xnew, f)))
     case Evolve(derivs, fm, inv_hints, sols) =>
       val replace_deriv: ((Fn, Term)) => (Fn, Term) = vt => {
         val (Fn(f,args),t) = vt
-        val args1 =  args.map(a => rename_Term(xold,xnew,a))
-        val t1 = rename_Term(xold,xnew,t)
-        (Fn(f,args1),t1)
+        val args1 = args.map(a => rename_Term(xold, xnew, a))
+        val t1 = rename_Term(xold, xnew, t)
+        (Fn(f, args1), t1)
       }
-      Evolve(derivs.map( replace_deriv), 
+      Evolve(derivs.map(replace_deriv), 
              rename_Formula(xold,xnew,fm),
              inv_hints.map(f => rename_Formula(xold,xnew,f)),
              sols.map(f => rename_Formula(xold,xnew,f)))
+    case hp@EvolveQuantified(i, st, vs, h, sols) if i == xold => hp
+    case EvolveQuantified(i, st, derivs, h, sols) =>
+      val replace_deriv: ((Fn, Term)) => (Fn, Term) = vt => {
+        val (Fn(f, args), t) = vt
+        val args1 = args.map(a => rename_Term(xold, xnew, a))
+        val t1 = rename_Term(xold, xnew, t)
+        (Fn(f, args1), t1)
+      }
+      EvolveQuantified(i, st,
+                       derivs.map(replace_deriv), 
+                       rename_Formula(xold, xnew, h),
+                       sols.map(f => rename_Formula(xold, xnew, f)))
       
   }
-
-
 
 // do generic thing to terms
 
@@ -347,7 +367,7 @@ final object Prover {
       case Assign(vs) =>
         Assign(vs.map(replace))
       case AssignQuantified(i,c,vs) =>
-        AssignQuantified(i,c, vs.map(replace)  )
+        AssignQuantified(i, c, vs.map(replace))
       case AssignAny(x) =>
         val Fn(f,args) = g(x) // error if g changes x to a nonfunction
         AssignAny(Fn(f,args))
@@ -566,8 +586,8 @@ final object Prover {
     // This is okay if we uniqify function symbols in the
     // xnew.
     case Modality(m, hp, f) =>
-      Modality(m, substitute_HP(xold,xnew,hp),
-                 substitute_Formula1(xold,xnew,xnew_fv,f))
+      Modality(m, substitute_HP(xold, xnew, hp),
+                 substitute_Formula1(xold, xnew, xnew_fv, f))
   }
 
   def substitute_Formula(xold: String, xnew: Term, fm: Formula): Formula = {
@@ -581,22 +601,24 @@ final object Prover {
                       new_fv: Set[String],
                       fm: Formula): Formula = fm match {
     case True | False => fm
-    case Atom(R(r,ps)) => 
+    case Atom(R(r, ps)) => 
       Atom(R(r, ps.map(p => simul_substitute_Term(subs,p))))
     case Not(f) => 
-      Not(simul_substitute_Formula1(subs,new_fv,f))
-    case Binop(c,f1,f2) => 
-      Binop(c,simul_substitute_Formula1(subs,new_fv,f1),
-          simul_substitute_Formula1(subs,new_fv,f2))
+      Not(simul_substitute_Formula1(subs,new_fv, f))
+    case Binop(c, f1, f2) => 
+      Binop(c,simul_substitute_Formula1(subs,new_fv, f1),
+          simul_substitute_Formula1(subs,new_fv, f2))
     case Quantifier(q,c,v,f) =>
       if( (! new_fv.contains(v)) && (!subs.map(_._1).contains(v)) ){
         // don't need to rename.
-        Quantifier(q,c,v, simul_substitute_Formula1(subs, new_fv, f))
+        Quantifier(q, c, v, simul_substitute_Formula1(subs, new_fv, f))
       } else {
         val v1 = uniqify(v)
-        val f1 = rename_Formula(v,v1,f)
+        val f1 = rename_Formula(v, v1, f)
         Quantifier(q,c,v1,simul_substitute_Formula1(subs, new_fv, f1))
       }
+    case Modality(_, _, _) =>
+      throw new Error("unimplemented")
   }
 
   def simul_substitute_Formula(                      
@@ -634,7 +656,7 @@ final object Prover {
       tm1 => Not(extract(tm_ex, f)(tm1))
     case Binop(c, f1, f2) =>
       tm1 => Binop(c, extract(tm_ex,f1)(tm1), extract(tm_ex,f2)(tm1))
-    case Quantifier(q, c, v,f) => 
+    case Quantifier(q, c, v, f) => 
       // Should we do some alpha renaming magic here?
       tm1 => Quantifier(q, c, v, extract(tm_ex,f)(tm1))
     case Modality(m, hp, f) =>
@@ -766,7 +788,7 @@ final object Prover {
                 
 
   // not yet fully implemented
-  def alphaeq(fm1: Formula, fm2: Formula) : Boolean = (fm1,fm2) match {
+  def alphaeq(fm1: Formula, fm2: Formula) : Boolean = (fm1, fm2) match {
     case (Not(p1), Not(p2)) =>
       alphaeq(p1,p2) 
     case (Binop(o1,p1,q1), Binop(o2,p2,q2)) if o1 == o2 =>

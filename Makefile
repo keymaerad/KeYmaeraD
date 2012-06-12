@@ -7,7 +7,7 @@ BACKENDSOURCES= types.scala rational.scala logicutil.scala arithmetic.scala \
 FRONTENDSOURCES= frontend.scala frontactor.scala GUI/guifrontend.scala \
 	tactics.scala 	
 
-TESTINGSOURCES= testing/examples.scala
+TESTSOURCES= tests/examples.scala
 
 LIBRARIES= .:$(JLINK)/JLink.jar:./commons-cli-1.2/commons-cli-1.2.jar
 
@@ -37,15 +37,15 @@ specialoptions :
 	# Only make the real thing if the last line succeeded.
 	mv specialoptions.tmp specialoptions
 
-tests : prover $(TESTINGSOURCES)
-	$(SCALAC) -classpath $(LIBRARIES) $(TESTINGSOURCES) $(ALLOPTIONS)
+tests : prover $(TESTSOURCES)
+	$(SCALAC) -classpath $(LIBRARIES) $(TESTSOURCES) $(ALLOPTIONS)
 
 clean :
 	rm -f specialoptions specialoptions.tmp
 	rm -rf KeYmaeraD/
 	$(SCALAC) -shutdown -verbose
 
-# We should allow the tactics library to be compiled separately. 
+# Perhaps we should allow the tactics library to be compiled separately. 
 #.PHONY : tacticlib
 #tacticlib : KeYmaeraD/TacticLib/*.class
 #KeYmaeraD/TacticLib/*.class : TacticLib/*.scala
