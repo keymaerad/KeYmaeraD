@@ -1,6 +1,5 @@
 object Script {
 
-
 val maininv = 
   parseFormula (
     "forall i : C ." +
@@ -12,7 +11,6 @@ val maininv =
          "(x2(i) - x2(j)))^2 >=" +
        "(minr(i) + minr(j) + protectedzone())^2)")
 
-
 val inv1 = 
   parseFormula (
     "forall i : C . (  " +
@@ -20,7 +18,6 @@ val inv1 =
      " & (discside(i) = -1 | discside(i) = 1) " +
     " & om(i) * ca(i) = maxom(i) * discside(i) * ca(i) )"
   )
-
 
 val constinv1 = 
   parseFormula (
@@ -37,7 +34,6 @@ val cut1 = cutT(
   StandardKeepCut,
   parseFormula("~ I = II  ==> D1 = D2"),
   parseFormula("~I = II"))
-
 
 val incatct = 
   composelistT(
@@ -76,7 +72,6 @@ val incatct =
       )
     )
   )
-
 
 val switchsidetct =
   composelistT(
@@ -216,13 +211,7 @@ val diffinv4 =
       "x2(i) - x2(j))^2) * ca(i) * ca(j) >=" +
       "(minr(i) + minr(j) + protectedzone())^2 * ca(i) * ca(j))")
 
-
-val di1tct =  composelistT(
-    alphaT*,
-    instantiatebyT(St("C"))(List(("k", List("k")))),
-    hideunivsT(St("C")),
-    easiestT
-   )
+val di1tct = nilT
 
 val di2tct =  
   composelistT(
@@ -322,7 +311,6 @@ val cutfm =
 val postconditiontct = 
   composelistT(
     alphaT*,
-//    hideallbutT(List(LeftP(0), LeftP(1), LeftP(2), LeftP(4), RightP(0))),
     instantiatebyT(St("C"))(List(("i", List("i", "j")),
                                  ("j", List("j"))))*,
     alphaT*,
@@ -409,7 +397,6 @@ val postconditiontct =
     )
   )
 
-
 val starttct =
    tryruleT(loopInduction(Binop(And, Binop(And, constinv1, constinv2),
                                      Binop(And, maininv, inv1)
@@ -421,4 +408,3 @@ val starttct =
 val main = starttct
 
 }
-

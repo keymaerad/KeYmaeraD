@@ -1,6 +1,5 @@
 object Script {
 
-
 val maininv = 
   parseFormula (
     "forall i : C ." +
@@ -8,7 +7,6 @@ val maininv =
       "( i /= j ==> " + 
       "(bigdisc1(i) - bigdisc1(j))^2 + (bigdisc2(i) - bigdisc2(j))^2 >="  +
        "(2 * minr(i) + 2 * minr(j) + protectedzone())^2)")
-
 
 val inv1 = 
   parseFormula (
@@ -20,7 +18,6 @@ val inv1 =
      "& (1 - ca(i)) * bigdisc1(i) = (1 - ca(i)) * x1(i)" +
      "& (1 - ca(i)) * bigdisc2(i) = (1 - ca(i)) * x2(i)"
   )
-
 
 val constinv1 = 
   parseFormula (
@@ -37,7 +34,6 @@ val cut1 = cutT(
   StandardKeepCut,
   parseFormula("~ I = II  ==> D1 = D2"),
   parseFormula("~I = II"))
-
 
 val incatct = 
   composelistT(
@@ -71,8 +67,6 @@ val incatct =
       easiestT
      )
 )
-
-
 
 val outcatct = 
   composelistT(
@@ -173,12 +167,15 @@ val diffinv3 =
        "(2 * minr(i) + 2 * minr(j) + protectedzone())^2  * ca(i) * ca(j) )")
 
 
-val di1tct =  composelistT(
-    alphaT*,
-    instantiatebyT(St("C"))(List(("k", List("k")))),
-    hideunivsT(St("C")),
-    easiestT
-   )
+val di1tct =
+  composelistT(
+    (alphaT | instantiatebyT(St("C"))(List(("i", List("i")),
+                                           ("j", List("j")),
+                                           ("k", List("i", "j")))))*,
+    nullarizeT*,
+    dedupT*,
+    (nonarithcloseT | alphaT | betaT | substT | hidethencloseT)*
+  )
 
 val di2tct =  
   composelistT(
@@ -187,7 +184,8 @@ val di2tct =
                                            ("i", List("k")),
                                            ("j", List("k")))))*,
     nullarizeT*,
-    hidethencloseT
+    (nonarithcloseT | alphaT | betaT | substT | hidethencloseT)*
+
   )
 
 val evolvetct = 
@@ -204,21 +202,8 @@ val evolvetct =
          di2tct,
          di2tct,
          tryruleT(diffStrengthen(diffinv3))<(
-           composelistT(
-             (alphaT | instantiatebyT(St("C"))(List(("i", List("i")),
-                                                    ("j", List("j")),
-                                                    ("k", List("i", "j")))))*,
-             nullarizeT*,
-             (nonarithcloseT | alphaT | betaT | substT  | hidethencloseT)*
-           ),
-           composelistT(
-             (alphaT | instantiatebyT(St("C"))(List(("i", List("i", "j")),
-                                                    ("j", List("j")),
-                                                    ("k", List("i", "j")))))*,
-             nullarizeT*,
-             dedupT*,
-             (nonarithcloseT | alphaT | betaT | substT | hidethencloseT)*
-           ),
+           di1tct,
+           di1tct,
            composelistT(
              tryruleT(diffClose),
              tryruleT(andRight)<(
@@ -276,7 +261,6 @@ val subcut =
 val postconditiontct = 
   composelistT(
     alphaT*,
-//    hideallbutT(List(LeftP(0), LeftP(1), LeftP(2), LeftP(4), RightP(0))),
     instantiatebyT(St("C"))(List(("i", List("i", "j")),
                                  ("j", List("j"))))*,
     alphaT*,
@@ -354,7 +338,6 @@ val postconditiontct =
     )
   )
 
-
 val starttct =
    tryruleT(loopInduction(Binop(And, Binop(And, constinv1, constinv2),
                                      Binop(And, maininv, inv1)
@@ -366,4 +349,3 @@ val starttct =
 val main = starttct
 
 }
-
