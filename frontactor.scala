@@ -466,7 +466,7 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
         case Some(repl) => 
           val res1 = repl.command(":load " + filename)
           val res2 = 
-            repl.command("frontactor ! ('ASYNCsetscripttactic, Script.main)")
+            repl.command("frontactor ! (('ASYNCsetscripttactic, Script.main))")
           println("Press cmd-u to use the loaded script.")
         case None => ()
       }
