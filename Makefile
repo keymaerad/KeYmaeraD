@@ -2,10 +2,10 @@ BACKENDSOURCES= types.scala rational.scala logicutil.scala arithmetic.scala \
 	parse.scala keyparse.scala printing.scala \
 	nodes.scala mathematicautil.scala \
 	rules.scala procedures.scala jobs.scala \
-	DLprover.scala 
+	DLprover.scala
 
 FRONTENDSOURCES= frontend.scala frontactor.scala GUI/guifrontend.scala \
-	tactics.scala 	
+	tactics.scala
 
 TESTSOURCES= tests/examples.scala
 

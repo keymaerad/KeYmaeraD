@@ -460,6 +460,7 @@ object Rules {
           }
           val sq1 = replace(p, Sequent(sig1, c1, s), phi1)
           Some((List(sq1), Nil))
+
         case _ =>
           None
       }
@@ -472,15 +473,15 @@ object Rules {
       val Sequent(sig, c, s) = sq
       val fm = lookup(p, sq)
       fm match {
-        case Modality(Box, AssignQuantified(i, srt, vs), True) =>        
+        case Modality(_, AssignQuantified(i, srt, vs), True) =>        
           // an optimization. can be generalized.
           val sq1 = replace(p, sq, True)
           Some((List(sq1), Nil))
-        case Modality(Box,AssignQuantified(i, srt, vs), phi) => 
+        case Modality(_, AssignQuantified(i, srt, vs), phi) => 
           var phi1 = phi;
           var sig1 = sig;
           var c1 = c;
-          for( v <- vs) {
+          for(v <- vs) {
               val (Fn(vr, args), tm) = v;
               val vr1 = Prover.uniqify(vr);
               phi1 = Prover.renameFn(vr, vr1, phi1);
@@ -509,35 +510,37 @@ object Rules {
 
   val update = new ProofRule("update") {
     def apply(p: Position) = sq => {
-      val Sequent(sig,c,s) = sq
-      val fm = lookup(p,sq)
+      val Sequent(sig, c, s) = sq
+      val fm = lookup(p, sq)
       Prover.extract_update(fm) match {
         case None => None
-        case Some((g,Modality(md,AssignQuantified(i,srt,vs),phi))) =>
+        case Some((g, Modality(_, AssignQuantified(i, srt, vs), phi))) =>
           var phi1 = phi;
           var sig1 = sig;
           var c1 : List[Formula] = Nil;
-          for( v <- vs) v match {
+          for(v <- vs) v match {
               case (Fn(vr,Nil), tm) if Prover.firstorder(phi1) =>
-                phi1 = Prover.extract(Fn(vr,Nil), phi1)(tm)
-              case (Fn(vr,args), tm)  if Prover.hasFn_Formula(vr, phi) => 
+                phi1 = Prover.extract(Fn(vr, Nil), phi1)(tm)
+              case (Fn(vr, args), tm)  if Prover.hasFn_Formula(vr, phi) =>
                 val vr1 = Prover.uniqify(vr);
-                phi1 = Prover.renameFn(vr,vr1,phi1);
+                phi1 = Prover.renameFn(vr, vr1, phi1);
                 sig1 = sig.get(vr) match {
-                  case Some(sg ) =>
-                    sig1.+((vr1,sg))
+                  case Some(sg) =>
+                    sig1.+((vr1, sg))
                   case _ => 
                     sig1
                 }
-                val fm1 = Quantifier(Forall,srt, 
-                                     i, 
-                                     Atom(R("=",List(Fn(vr1,args),tm))));
-                c1 = c1 ++ List(fm1);
+                val fm1 = Quantifier(Forall, srt,
+                                     i,
+                                     Atom(R("=", List(Fn(vr1, args), tm))));
+
                 // order matters! we want p to still point to phi
+                c1 = c1 ++ List(fm1);
+
             case _ => ()
           }
           phi1 = AM.list_conj(phi1 :: c1)
-          val sq1 = replace(p, Sequent(sig1,c,s), g(phi1))
+          val sq1 = replace(p, Sequent(sig1, c, s), g(phi1))
           Some((List(sq1), Nil))
         case _ => None
       }
