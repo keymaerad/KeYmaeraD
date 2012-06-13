@@ -1,7 +1,7 @@
 object Script {
 
 
-val maininv = 
+val maininv =
   parseFormula (
    "forall i : C ." +
       "forall j : C ." +
@@ -9,10 +9,10 @@ val maininv =
             "(disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2 >= (4*minr() + protectedzone())^2)")
 
 
-val inv1 = 
+val inv1 =
   parseFormula (
    "forall k : C . " +
-    "(ca(k) = 0 | ca(k) = 1) &" + 
+    "(ca(k) = 0 | ca(k) = 1) &" +
     "d1(k) * ca(k) = -om(k) * (x2(k) - c2(k) ) * ca(k) &" +
     "d2(k) * ca(k) = om(k) * (x1(k) - c1(k) ) * ca(k) &" +
     "((c1(k) - x1(k))^2 + (c2(k) - x2(k))^2) * ca(k) = minr()^2 * ca(k) &"+
@@ -20,7 +20,7 @@ val inv1 =
     "(1 - ca(k)) * x1(k) = (1 - ca(k)) * disc1(k) &"+
     "(1 - ca(k)) * x2(k) = (1 - ca(k)) * disc2(k)")
 
-val constinv = 
+val constinv =
   parseFormula (
     "minr() > 0 & protectedzone() > 0"
  )
@@ -31,7 +31,7 @@ val cut1 = cutT(
   parseFormula("~I = II"))
 
 
-val doasgns = 
+val doasgns =
   composelistT(
     alphaT*,
     instantiatebyT(St("C"))(List (("i", List("k")),
@@ -54,7 +54,7 @@ val doasgns =
   )
 
 
-val entercatct = 
+val entercatct =
   composelistT(
     hpalphaT*,
     tryruleT(andRight)<(
@@ -67,7 +67,7 @@ val entercatct =
   )
 
 
-val exitcatct = 
+val exitcatct =
    composelistT(
     hpalphaT*,
     tryruleT(andRight)<(
@@ -84,7 +84,7 @@ val controltct = composelistT(hpalphaT*,
 
 val diffinv1 = parseFormula("forall k : C . (ca(k) = 0 | ca(k) = 1)")
 
-val diffinv2 = 
+val diffinv2 =
   parseFormula(
    "forall k : C . " +
     "d1(k) * ca(k) = -om(k) * (x2(k) - c2(k) ) * ca(k) &" +
@@ -92,17 +92,17 @@ val diffinv2 =
     "(1 - ca(k)) * x1(k) = (1 - ca(k)) * disc1(k) &"+
     "(1 - ca(k)) * x2(k) = (1 - ca(k)) * disc2(k)")
 
-val diffinv3 = 
+val diffinv3 =
   parseFormula(
-    "forall k : C. " + 
+    "forall k : C. " +
     "((c1(k) - x1(k))^2 + (c2(k) - x2(k))^2) * ca(k) = minr()^2 * ca(k) &"+
     "((c1(k) - disc1(k))^2 + (c2(k) - disc2(k))^2) * ca(k) = minr()^2 * ca(k)  ")
 
-val diffinv4 = 
+val diffinv4 =
   parseFormula (
    "forall i : C ." +
      "forall j : C ." +
-      "(i /= j  ==> " + 
+      "(i /= j  ==> " +
        "((disc1(i) - disc1(j))^2 + (disc2(i) - disc2(j))^2) * ca(i) * ca(j) >= ((4*minr() + protectedzone())^2) * ca(i) * ca(j))")
 
 val di1tct = composelistT(
@@ -112,7 +112,7 @@ val di1tct = composelistT(
     easiestT
    )
 
-val di2tct =  
+val di2tct =
   composelistT(
     alphaT*,
     (alphaT | instantiatebyT(St("C"))(List(("k", List("k")),
@@ -122,7 +122,7 @@ val di2tct =
     hidethencloseT
   )
 
-val evolvetct = 
+val evolvetct =
    tryruleT(diffStrengthen(constinv))<(
      easiestT,
      easiestT,
@@ -194,9 +194,9 @@ val simpcut =
        parseFormula(" (1 - 0) * X  = (1 - 0) * D"),
        parseFormula("X  = D"))
 
-                   
 
-val postors = 
+
+val postors =
     tryruleT(orLeft)<(
       tryruleT(orLeft)<(
         ((nullarizeT*) & hidethencloseT ),
@@ -222,8 +222,6 @@ val postors =
                     tryruleatT(hide)(LeftP(3)),
                     tryruleatT(hide)(LeftP(3)),
                     tryruleatT(hide)(LeftP(3)),
-                    tryruleatT(hide)(LeftP(4)),
-                    tryruleatT(hide)(LeftP(4)),
                     arithT
                   ),
                   composelistT(
@@ -234,8 +232,6 @@ val postors =
                     tryruleatT(hide)(LeftP(3)),
                     tryruleatT(hide)(LeftP(3)),
                     tryruleatT(hide)(LeftP(3)),
-                    tryruleatT(hide)(LeftP(4)),
-                    tryruleatT(hide)(LeftP(4)),
                     tryruleatT(hide)(LeftP(4)),
                     arithT
                   )
@@ -256,8 +252,6 @@ val postors =
                   substT*,
                   tryruleatT(hide)(LeftP(3)),
                   tryruleatT(hide)(LeftP(3)),
-                  tryruleatT(hide)(LeftP(5)),
-                  tryruleatT(hide)(LeftP(5)),
                   tryruleatT(hide)(LeftP(5)),
                   tryruleatT(hide)(LeftP(5)),
                   tryruleatT(hide)(LeftP(5)),
@@ -286,8 +280,6 @@ val postors =
           substT*,
           tryruleatT(hide)(LeftP(3)),
           tryruleatT(hide)(LeftP(3)),
-          tryruleatT(hide)(LeftP(5)),
-          tryruleatT(hide)(LeftP(5)),
           tryruleatT(hide)(LeftP(5)),
           tryruleatT(hide)(LeftP(5)),
           cutT(
@@ -360,7 +352,7 @@ val postors =
                 ),
                 cutT(
                   DirectedCut,
-                  parseFormula(" (c1(I) - x1(J))^2 + (c2(I) - x2(J) )^2 >= (1 *  R  + P)^2"),
+                  parseFormula(" (c1(I) - x1(J))^2 + (c2(I) - x2(J) )^2 >= (1 * R + P)^2"),
                   parseFormula(" (x1(I) - x1(J))^2 + (x2(I) - x2(J) )^2 >= (P)^2")
                 )<(
                   composelistT(
@@ -368,6 +360,11 @@ val postors =
                     tryruleatT(hide)(LeftP(4)),
                     tryruleatT(hide)(LeftP(4)),
                     tryruleatT(hide)(LeftP(4)),
+                    tryruleatT(hide)(LeftP(6)),
+                    tryruleatT(hide)(LeftP(6)),
+                    tryruleatT(hide)(LeftP(5)),
+// I get a weird AWT error if I uncomment this.
+//                    tryruleatT(hide)(LeftP(4)),
                     arithT
                   ),
                   tryruleT(close)
@@ -382,7 +379,7 @@ val postors =
 
 
 
-val postconditiontct = 
+val postconditiontct =
   composelistT(
     alphaT*,
     instantiatebyT(St("C"))(List(("i", List("i")),
@@ -391,23 +388,14 @@ val postconditiontct =
     alphaT*,
     // The things I do to make Mathematica happy...
     // Apparently it helps to move these assumptions to the front.
-    cutT(StandardCut,
-      parseFormula("minr() > Y"),
-      parseFormula("minr() > Y"))<(
-        easiestT,
-        cutT(StandardCut,
-             parseFormula("protectedzone() > Y"),
-             parseFormula("protectedzone() > Y"))<(
-               easiestT,
-               tryruleT(impLeft)<(
-                 (tryruleunifyT(hide)(parseFormula("I /= J")) & postors),
-                 easiestT
-               )
+    tryruleunifyT(reorder)(parseFormula("minr() > Y")),
+    tryruleunifyT(reorder)(parseFormula("protectedzone() > Y")),
+    tryruleT(impLeft)<(
+      (tryruleunifyT(hide)(parseFormula("I /= J")) & postors),
+      easiestT
+    )
+)
 
-             )
-      )
-  )
-                
 
 val starttct =
    tryruleT(loopInduction(Binop(And, Binop(And,maininv, inv1), constinv)))<(
@@ -417,7 +405,7 @@ val starttct =
 
 val main = starttct
 
-val trivial = 
+val trivial =
    composelistT(
      hideallbutT(List(LeftP(0), LeftP(2), LeftP(3))),
      instantiatebyT(St("C"))(List(("i", List("ii")),
@@ -427,4 +415,3 @@ val trivial =
    )
 
 }
-

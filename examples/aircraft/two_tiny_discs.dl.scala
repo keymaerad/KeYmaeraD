@@ -1,17 +1,17 @@
 object Script {
 
-val maininv = 
+val maininv =
   parseFormula (
     "forall i : C ." +
      "forall j : C ." +
-      "( i /= j ==> " + 
+      "( i /= j ==> " +
        "(discside(j) * (minr(j) * d2(j)) - discside(i) * (minr(i) * d2(i)) + " +
-        "(x1(i) - x1(j)) )^2 +" + 
+        "(x1(i) - x1(j)) )^2 +" +
        "(discside(i) * (minr(i) * d1(i)) - discside(j) * (minr(j) * d1(j)) + " +
          "(x2(i) - x2(j)))^2 >=" +
        "(minr(i) + minr(j) + protectedzone())^2)")
 
-val inv1 = 
+val inv1 =
   parseFormula (
     "forall i : C . (  " +
      "(ca(i) = 0 | ca(i) = 1) " +
@@ -19,15 +19,15 @@ val inv1 =
     " & om(i) * ca(i) = maxom(i) * discside(i) * ca(i) )"
   )
 
-val constinv1 = 
+val constinv1 =
   parseFormula (
    "protectedzone() > 0  & " +
    "(forall i : C . minr(i) > 0 & d1(i)^2 + d2(i)^2 = 1)"
  )
 
-val constinv2 = 
+val constinv2 =
   parseFormula (
-   "(forall i : C . v(i) > 0 & maxom(i) > 0 & maxom(i) * minr(i) = v(i))" 
+   "(forall i : C . v(i) > 0 & maxom(i) > 0 & maxom(i) * minr(i) = v(i))"
  )
 
 val cut1 = cutT(
@@ -35,7 +35,7 @@ val cut1 = cutT(
   parseFormula("~ I = II  ==> D1 = D2"),
   parseFormula("~I = II"))
 
-val incatct = 
+val incatct =
   composelistT(
     hpalphaT*,
     tryruleT(andRight)<(
@@ -170,7 +170,7 @@ val switchsidetct =
     )
   )
 
-val outcatct = 
+val outcatct =
   composelistT(
     hpalphaT*,
     tryruleT(andRight)<(
@@ -193,27 +193,27 @@ val diffinv1 =
  parseFormula("forall k : C . ((ca(k) = 0 | ca(k) = 1)  &" +
               " (discside(k) = -1 | discside(k) = 1   )) ")
 
-val diffinv2 = 
+val diffinv2 =
   parseFormula(
    "forall k : C . " +
     " om(k) * ca(k) = maxom(k) * discside(k) * ca(k)"
   )
 
 
-val diffinv4 = 
+val diffinv4 =
   parseFormula (
     "forall i : C ." +
      "forall j : C ." +
-      "( i /= j ==> " + 
+      "( i /= j ==> " +
       "((discside(j) * (minr(j) * d2(j)) - discside(i) * (minr(i) * d2(i)) + " +
-      "x1(i) - x1(j) )^2 +" + 
-      "(discside(i) * (minr(i) * d1(i)) - discside(j) * (minr(j) * d1(j)) + " + 
+      "x1(i) - x1(j) )^2 +" +
+      "(discside(i) * (minr(i) * d1(i)) - discside(j) * (minr(j) * d1(j)) + " +
       "x2(i) - x2(j))^2) * ca(i) * ca(j) >=" +
       "(minr(i) + minr(j) + protectedzone())^2 * ca(i) * ca(j))")
 
 val di1tct = nilT
 
-val di2tct =  
+val di2tct =
   composelistT(
     alphaT*,
     (alphaT | instantiatebyT(St("C"))(List(("k", List("k")),
@@ -223,7 +223,7 @@ val di2tct =
     hidethencloseT
   )
 
-val evolvetct = 
+val evolvetct =
    tryruleT(diffStrengthen(Binop(And, constinv1, constinv2)))<(
      easiestT,
      composelistT(
@@ -308,7 +308,7 @@ val cutfm =
     "+(discside(I) * (minr(I) * d1(I)) - discside(J) * (minr(J) * d1(J)) + (x2(I) - x2(J)))^2" +
     ">= (minr(I) + minr(J) + protectedzone())^2")
 
-val postconditiontct = 
+val postconditiontct =
   composelistT(
     alphaT*,
     instantiatebyT(St("C"))(List(("i", List("i", "j")),
@@ -341,12 +341,12 @@ val postconditiontct =
               cutT(
                 StandardCut,
                 cutfm,
-                parseFormula("minr(I) > 0") )<( 
+                parseFormula("minr(I) > 0") )<(
                   easiestT,
                   cutT(
                     StandardCut,
                     cutfm,
-                    parseFormula("minr(J) > 0") )<( 
+                    parseFormula("minr(J) > 0") )<(
                       easiestT,
                       cutT(
                         StandardCut,
@@ -372,15 +372,15 @@ val postconditiontct =
                                 "(D1 * Y - D2 * Z + C)^2 " +
                                 "+ (D3 * A - D4 * B + D)^2" +
                                 ">= (X)^2"),
-                              List(Var("A"), 
-                                   Var("B"), 
-                                   Var("C"), 
+                              List(Var("A"),
+                                   Var("B"),
+                                   Var("C"),
                                    Var("D"),
                                    Var("Y"),
                                    Var("Z"))),
                             nullarizeT*,
                             arithT
-                            
+
                           )
                         )
                     )

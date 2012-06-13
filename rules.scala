@@ -153,7 +153,7 @@ object Rules {
   val commuteEquals = new ProofRule("commuteequals"){
     def apply(p: Position) = sq => {
       val Sequent(fs,c,s) = sq
-      val fm = lookup(p,sq)
+      val fm = lookup(p, sq)
       fm match {
         case (Atom(R("=", List(t1,t2))))  =>
           val sq1 = replace(p,sq, Atom(R("=", List(t2,t1))))
@@ -169,6 +169,20 @@ object Rules {
   val hide = new ProofRule("hide") {
     def apply(p:Position) = sq =>
       Some((List(remove(p, sq)), Nil))
+  }
+
+  val reorder = new ProofRule("reorder") {
+    def apply(p : Position) = sq => {
+      val Sequent(sig, c, s) = remove(p, sq);
+      val fm = lookup(p, sq)
+      p match {
+        case LeftP(_) =>
+          Some(List(Sequent(sig, fm :: c, s)), Nil)
+        case RightP(_) =>
+          Some(List(Sequent(sig, c, fm ::s)), Nil)
+
+      }
+    }
   }
 
   //
