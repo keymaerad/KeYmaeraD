@@ -413,46 +413,53 @@ object Rules {
       val Sequent(sig, c,s) = sq
       val fm = lookup(p,sq)
       fm match {
-        case Modality(Box,Assign(vs),phi) =>
+        
+        // Same rule for Box and Diamond.
+        case Modality(_, Assign(vs), phi) =>
           var phi1 = phi;
           var sig1 = sig;
           var c1 = c;
-          for( v <- vs) v match {
-            case (Fn(vr,Nil), tm) =>
+          for(v <- vs) v match {
+            case (Fn(vr, Nil), tm) =>
               val vr1 = Prover.uniqify(vr);
               phi1 = Prover.renameFn(vr,vr1,phi1);
               sig1 = sig.get(vr) match {
-                case Some(sg ) =>
-                  sig1.+((vr1,sg))
+                case Some(sg) =>
+                  sig1.+((vr1, sg))
                 case _ => 
                   sig1
               }
-              val fm1 = Atom(R("=",List(Fn(vr1,Nil),tm)));
+              val fm1 = Atom(R("=", List(Fn(vr1, Nil), tm)));
+
+              // order matters! we want p to still point to phi
               c1 = c1 ++ List(fm1);
-                // order matters! we want p to still point to phi
-            case (Fn(vr,List(arg)), tm) =>
+
+            case (Fn(vr, List(arg)), tm) =>
               val vr1 = Prover.uniqify(vr)
-              phi1 = Prover.renameFn(vr,vr1,phi1);
+              phi1 = Prover.renameFn(vr, vr1, phi1);
               val (srt1, sig2) = sig.get(vr) match {
-                case Some(sg@( List(srt1), rtn) ) =>
-                  (srt1, sig1 + ((vr1,sg))   )
+                case Some(sg@(List(srt1), rtn)) =>
+                  (srt1, sig1 + ((vr1, sg))   )
                 case _ => 
                     (AnySort, sig1)
               }
               sig1 = sig2
               val j = Prover.uniqify("j")
-              val fm1 = Atom(R("=",List(Fn(vr1,List(arg)),tm)));
-              val fm2 = Quantifier(Forall,srt1, j, 
+              val fm1 = Atom(R("=", List(Fn(vr1, List(arg)), tm)));
+              val fm2 = Quantifier(Forall, srt1, j, 
                                    Binop(Imp,
                                          Not(Atom(R("=", List(Var(j), arg)))),
-                                         Atom(R("=",List(Fn(vr1,List(Var(j))),
-                                                         Fn(vr, List(Var(j))))))));
-              c1 = c1 ++ List(fm1,fm2);
-                // order matters! we want p to still point to phi
-            case (Fn(vr,_), tm) => throw new Error("assigned to nonunary function")
+                                         Atom(R("=", List(Fn(vr1, List(Var(j))),
+                                                          Fn(vr, List(Var(j))))))));
+
+              // order matters! we want p to still point to phi
+              c1 = c1 ++ List(fm1, fm2);
+
+            case (Fn(vr, _), tm) =>
+              throw new Error("Unimplimented: assign to nonunary function")
           }
-          val sq1 = replace(p, Sequent(sig1,c1,s) , phi1)
-          Some((List(sq1),Nil))
+          val sq1 = replace(p, Sequent(sig1, c1, s), phi1)
+          Some((List(sq1), Nil))
         case _ =>
           None
       }
@@ -462,35 +469,37 @@ object Rules {
 //XXX FIX: what if "i" is not the argument?
  val qassign = new ProofRule("qassign") {
     def apply(p: Position) = sq =>   {
-      val Sequent(sig, c,s) = sq
-      val fm = lookup(p,sq)
+      val Sequent(sig, c, s) = sq
+      val fm = lookup(p, sq)
       fm match {
-        case Modality(Box,AssignQuantified(i,srt,vs), True) =>        
+        case Modality(Box, AssignQuantified(i, srt, vs), True) =>        
           // an optimization. can be generalized.
-          val sq1 = replace(p, sq , True)
-          Some((List(sq1),Nil))
-        case Modality(Box,AssignQuantified(i,srt,vs),phi) => 
+          val sq1 = replace(p, sq, True)
+          Some((List(sq1), Nil))
+        case Modality(Box,AssignQuantified(i, srt, vs), phi) => 
           var phi1 = phi;
           var sig1 = sig;
           var c1 = c;
           for( v <- vs) {
-              val (Fn(vr,args), tm) = v;
+              val (Fn(vr, args), tm) = v;
               val vr1 = Prover.uniqify(vr);
-              phi1 = Prover.renameFn(vr,vr1,phi1);
+              phi1 = Prover.renameFn(vr, vr1, phi1);
               sig1 = sig.get(vr) match {
-                case Some(sg ) =>
-                  sig1.+((vr1,sg))
+                case Some(sg) =>
+                  sig1.+((vr1, sg))
                 case _ => 
                   sig1
               }
-              val fm1 = Quantifier(Forall,srt, 
+              val fm1 = Quantifier(Forall, srt, 
                                    i, 
                                    Atom(R("=",List(Fn(vr1,args),tm))));
+
+              // order matters! we want p to still point to phi
               c1 = c1 ++ List(fm1);
-                // order matters! we want p to still point to phi
+
           }
-          val sq1 = replace(p, Sequent(sig1,c1,s) , phi1)
-          Some((List(sq1),Nil))
+          val sq1 = replace(p, Sequent(sig1, c1, s), phi1)
+          Some((List(sq1), Nil))
         case _ =>
           None
       }
@@ -527,9 +536,9 @@ object Rules {
                 // order matters! we want p to still point to phi
             case _ => ()
           }
-          phi1 = AM.list_conj(phi1 :: c1  )
-          val sq1 = replace(p, Sequent(sig1,c,s) , g(phi1))
-          Some((List(sq1),Nil))
+          phi1 = AM.list_conj(phi1 :: c1)
+          val sq1 = replace(p, Sequent(sig1,c,s), g(phi1))
+          Some((List(sq1), Nil))
         case _ => None
       }
     }
