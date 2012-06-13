@@ -26,15 +26,15 @@ object Jobs {
 */
 
 
-  class SyncMap[A,B] 
+  class SyncMap[A,B]
     extends scala.collection.mutable.HashMap[A, B]
     with scala.collection.mutable.SynchronizedMap[A,B]
-    
+
 
   case class JobData( jid: JobID,
                       s: scala.actors.OutputChannel[Any],
                       p: String, // the proc
-                      sq: Sequent, 
+                      sq: Sequent,
                       t: Long // start time
                    )
 
@@ -42,7 +42,7 @@ object Jobs {
 
     // the jobs we've sent out to workers
     val jobs =
-      new scala.collection.mutable.HashMap[JobID, 
+      new scala.collection.mutable.HashMap[JobID,
                                            (JobData, scala.actors.OutputChannel[Any])]()
 
     /* Keep a queue of unstarted jobs and idling workers.
@@ -124,7 +124,7 @@ object Jobs {
           val njs = newjobs.dequeueAll( {case JobData(x,_,_,_,_) => x == jid})
           println("jobmaster: cancelling "+ njs.length +   " job(s) ")
           for(JobData(jid1,s,p,sq,t) <- njs){
-            s ! ('jobdone, jid1) 
+            s ! ('jobdone, jid1)
           }
           jobs.get(jid) match {
             case Some((JobData(_,s,p,sq,t), w)) =>
@@ -145,14 +145,14 @@ object Jobs {
 
   class JobWorker(masterNode: Node) extends Actor {
 
-    case class JobData(proc:String, 
+    case class JobData(proc:String,
                        sq:Sequent,
                        jid: JobID,
                        sender:scala.actors.OutputChannel[Any])
 
     var working: Option[Procedure]  = None
 
-    val procqueue = 
+    val procqueue =
       new scala.collection.mutable.Queue[JobData]()
 
     val lock = new Object()
@@ -168,7 +168,7 @@ object Jobs {
               println("working on jid " + jid)
               lock.synchronized{
                 working = Some(pr)
-              } 
+              }
               future {
                 val res = pr.proceed(sq)
                 res match {
@@ -180,14 +180,14 @@ object Jobs {
               }
               ()
             }  else  sf ! ('doesnotapply, jid) // should not happen
-                
+
 
           case None =>
             // should not happen
         }
       }
     }
-    
+
     private def abort() = {
         lock.synchronized{ working } match {
           case Some(pr) =>
@@ -205,7 +205,7 @@ object Jobs {
         println("no ack. quitting")
         exit
     }
-    
+
     def act(): Unit = {
       println("jobworker acting")
 
@@ -231,19 +231,19 @@ object Jobs {
            jobsender ! ('jobdone, jid, res)
            master ! ('idling)
            getack
-          
+
          case ('done, JobData(p,sq,jid,jobsender)) =>
            lock.synchronized  { working = None }
            jobsender ! ('jobdone, jid)
            master ! ('idling)
            getack
-         
-         case 'abort => 
+
+         case 'abort =>
            abort()
 
-          case msg => 
+          case msg =>
             println("jobworker got unknown message: " + msg)
-            
+
         }
       }
     }
@@ -254,7 +254,7 @@ object Jobs {
 // Code entry point for workers.
  object WorkerMain {
    import Jobs._
-  
+
     import org.apache.commons.cli.Options
     import org.apache.commons.cli.CommandLine
     import java.net.InetAddress
@@ -276,22 +276,22 @@ object Jobs {
       println("worker says: hello world.")
 
       val cmd = parse(args)
-      
+
       //process options
       //coordinator address and port
       if (!cmd.hasOption("c")) {
         println("Using default coordinator address localhost. (use -c to specify).")
       }
 
-      val coorHost = 
-        new Node(cmd.getOptionValue("c","localhost"), 
+      val coorHost =
+        new Node(cmd.getOptionValue("c","localhost"),
                  java.lang.Integer.parseInt(cmd.getOptionValue("cp", "50001")))
-      
+
       println("coordinator at " + coorHost.toString)
 
       // Weird. If we don't do this, the worker can't find the KeYmaeraD classes.
       RemoteActor.classLoader = getClass().getClassLoader()
-      
+
       val jobWorker = new JobWorker(coorHost)
       jobWorker.start
       ()

@@ -38,7 +38,7 @@ object TreeActions {
 
   var treemodel: Option[KeYmaeraD.GUI.TreeModel] = None
 
-  def getnodethen(ndID: NodeID, f: (ProofNode) => Unit ): Unit = 
+  def getnodethen(ndID: NodeID, f: (ProofNode) => Unit ): Unit =
     nodeTable.get(ndID) match {
       case Some(nd) => f(nd)
       case None =>
@@ -50,7 +50,7 @@ object TreeActions {
 //        println("now at node " + nd.nodeID )
     }
 
-  def shownode(nd: ProofNode) : Unit = 
+  def shownode(nd: ProofNode) : Unit =
         println(nd.toPrettyString)
 
 /*
@@ -60,7 +60,7 @@ object TreeActions {
       case ...
     }
   }
-  
+
 */
 
   def attachnodes(pt: ProofNode, newnds: List[ProofNode]): Unit = {
@@ -78,8 +78,8 @@ object TreeActions {
     attachnodes(pt,List(newnd))
   }
 
-  def applyrule(hn: OrNode, 
-                p: Position, 
+  def applyrule(hn: OrNode,
+                p: Position,
                 rl: ProofRule): Option[List[NodeID]] = try {
     val res =  try { rl(p)(hn.goal) } catch {case _ => None}
     res match {
@@ -88,7 +88,7 @@ object TreeActions {
         attachnode(hn,pnd)
         propagateProvedUp(hn.nodeID, pnd.nodeID)
         Some(Nil)
-      case Some((List(sq), _)) => 
+      case Some((List(sq), _)) =>
         val ornd = new OrNode(rl.toString, sq)
         attachnode(hn,ornd)
         Some(List(ornd.nodeID))
@@ -97,13 +97,13 @@ object TreeActions {
         attachnode(hn,andnd)
         val subname = rl.toString + " subgoal"
         val ornds = sqs.map(s => new OrNode(subname, s))
-        attachnodes(andnd, ornds) 
+        attachnodes(andnd, ornds)
         Some(ornds.map(_.nodeID))
-      case None => 
+      case None =>
         None
     }
   } catch {
-    case (e:RulesUtil.LookupError) => 
+    case (e:RulesUtil.LookupError) =>
       println("index out of range : " + p)
       None
   }
@@ -117,11 +117,11 @@ object TreeActions {
     }
   }
 
-  // Returns true if successfully submitted. 
+  // Returns true if successfully submitted.
   def submitproc(ornd: OrNode, proc: String): Boolean
   = procs.get(proc) match {
     case None => false
-    case Some(pr) => 
+    case Some(pr) =>
       if(pr.applies(ornd.goal)) {
         val wknd = new WorkingNode(proc,ornd.goal)
         attachnode(ornd, wknd)
@@ -134,7 +134,7 @@ object TreeActions {
         false
       }
   }
-    
+
 
 /* crawl the tree to update statuses.
  * propagateProvedUp is called on nd when a child of nd is proved.
@@ -153,11 +153,11 @@ object TreeActions {
                case Some(p) =>
                  propagateProvedUp(p, ndID)
                case None =>
-             }    
+             }
            case Some(_) =>
              // Collapse the newly proved child.
              treemodel.map(_.fireProved(getnode(from))) // GUI
-  
+
       }
 
       case OrNode(r,g) =>
@@ -169,7 +169,7 @@ object TreeActions {
           case Some(p) =>
             propagateProvedUp(p, ndID)
           case None =>
-            
+
         }
       case DoneNode(r,g) =>
         // shouldn't ever happen
@@ -183,11 +183,11 @@ object TreeActions {
     nd.setStatus(Irrelevant(nd.getStatus))
     treemodel.map(_.fireChanged(nd)) //GUI
     jobs.get(ndID) match {
-      case Some(t) => 
+      case Some(t) =>
         jobs.remove(ndID)
         jobmaster ! ('abort, ndID)
       case None =>
-        
+
     }
     nd.getChildren.map( propagateIrrelevantDown)
 
@@ -239,7 +239,7 @@ class WorkerTracer(id: Int, ins: InputStream) extends BlockingActor {
 class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
    extends Actor {
 
-  import TreeActions._  
+  import TreeActions._
   import RulesUtil._
 
   import Tactics.Tactic
@@ -266,17 +266,17 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
         // HACK:
         // If we're going to System.exit here,
         // we don't want the worker 'quit messages to
-        // get cut off. So sleep to allow them to 
+        // get cut off. So sleep to allow them to
         // work through the pipes.
           Thread.sleep(500)
-          System.exit(0) 
+          System.exit(0)
           exit
-        case 'gui => 
+        case 'gui =>
           val fe = KeYmaeraD.GUI.FE.start(self)
           sender ! ()
-        case ('registergui, tm: KeYmaeraD.GUI.TreeModel) => 
+        case ('registergui, tm: KeYmaeraD.GUI.TreeModel) =>
           treemodel = Some(tm)
-        case ('findworkers, number:Int) =>   
+        case ('findworkers, number:Int) =>
           var i = 1
           while (i <= number) {
 	    println("starting worker " + i)
@@ -289,7 +289,7 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
             link(wt)
             wt.start()
 	    i += 1
-          } 
+          }
           println("started workers")
           sender ! ()
         case 'here =>
@@ -325,10 +325,10 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
         case ('rule, rl: ProofRule, pos: Position) =>
           val r = applyrulegen(hereNode,pos,rl)
               r match {
-                case Some(_) => 
+                case Some(_) =>
                    println("success")
-                case None => 
-                  println("rule cannot be applied there")    
+                case None =>
+                  println("rule cannot be applied there")
               }
           sender ! ()
 
@@ -340,7 +340,7 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
           hereNode  match {
             case ornd@OrNode(_,_) =>
               tct(ornd)
-            case _ => 
+            case _ =>
               println("cannot apply tactic here")
           }
           sender ! ()
@@ -353,13 +353,13 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
           hereNode  match {
             case ornd@OrNode(_,_) =>
               scripttactic(ornd)
-            case _ => 
+            case _ =>
               println("cannot apply tactic here")
           }
           sender ! ()
 
 
-        case ('job, proc: String) => 
+        case ('job, proc: String) =>
           hereNode match {
             case ornd@OrNode(r,sq) =>
               val res = submitproc(ornd, proc)
@@ -367,7 +367,7 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
               else println("procedure " + proc + " does not apply here.")
             case _ =>
               println("can only do a procedure on a ornode")
-              
+
           }
           sender ! ()
 
@@ -392,9 +392,9 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
               nd.setStatus(Disproved)
               treemodel.map(_.fireChanged(nd)) //GUI
             // Nothing to report
-            case (Some(t), Some(nd), _) => 
+            case (Some(t), Some(nd), _) =>
               throw new Error("proc should return True or False")
-            case (Some(t), None, _) => 
+            case (Some(t), None, _) =>
               throw new Error("node not in nodeTable")
           }
 
@@ -413,13 +413,13 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
         case 'jobs =>
           println(jobs.toList)
           sender ! ()
-        
+
         case ('abort, jb: NodeID) =>
           println("aborting job")
           jobmaster ! ('abort, jb)
           sender ! ()
 
-        case ('abortall) => 
+        case ('abortall) =>
           for((jid,t) <- jobs){
             jobmaster ! ('abort, jid)
           }
@@ -429,10 +429,10 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
           println("got message: " + msg)
           sender ! ()
       }
-    } 
-    
+    }
+
   } catch {
-      case e => 
+      case e =>
         println( "can't do that due to " + e)
   }
 
@@ -461,11 +461,11 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
       val problemfilename = filename.substring(0, filename.length - 6)
       println("loading file " + problemfilename)
       loadfile(problemfilename)
-      
+
       mberepl match {
-        case Some(repl) => 
+        case Some(repl) =>
           val res1 = repl.command(":load " + filename)
-          val res2 = 
+          val res2 =
             repl.command("frontactor ! (('ASYNCsetscripttactic, Script.main))")
           println("Press cmd-u to use the loaded script.")
         case None => ()
@@ -480,7 +480,7 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
         }
         jobs.clear
 
-        fi = 
+        fi =
           new java.io.FileInputStream(filename)
         if (filename.endsWith(".dl")) {
           val dlp = new DLParser(fi)
@@ -536,7 +536,7 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
 
   }
 
-} 
+}
 
 
 

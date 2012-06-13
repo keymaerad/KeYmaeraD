@@ -58,7 +58,7 @@ case class Nonzero() extends Sign
 case class Positive() extends Sign
 case class Negative() extends Sign
 
-object CV {  
+object CV {
   var lock = new Object();
   var keepGoing = true;
   def start() : Unit = {
@@ -123,13 +123,13 @@ final object AM {
         Fn("+", List(integrate(v, t1), integrate(v,t2)))
       case Fn("-", List(t1,t2)) =>
         Fn("-", List(integrate(v, t1), integrate(v,t2)))
-      case Fn("*", ts) => 
+      case Fn("*", ts) =>
         val n = countOccurences(v, t)
         Fn("*", List(Num(Exact.Rational(1, n+1)),
                      Fn("*", List(v, t))))
       case Fn(f, Nil) => Fn("*", List(t, v))
       case Num(n) => Fn("*", List(t, v))
-      case _ => 
+      case _ =>
         println("unimplemented")
         throw new Error("unimplemented")
     }
@@ -219,7 +219,7 @@ final object AM {
 
 
 
- 
+
   def simplify1(fm: Formula): Formula = fm match {
     case Quantifier(_,_,x,p) => if( fv(p).contains(x) ) fm
                               else p
@@ -236,7 +236,7 @@ final object AM {
     case _ => fm
   }
 
-  
+
 
   def distrib[A <% Ordered[A]](s1: List[List[A]], s2: List[List[A]])
    : List[List[A]] = {
@@ -274,11 +274,11 @@ final object AM {
 
   def separate(x: String, cjs: List[Formula]): Formula = {
     val (yes,no) = cjs.partition(c => fv(c).contains(x));
-    if(yes == Nil) list_conj(no) 
+    if(yes == Nil) list_conj(no)
     else if(no == Nil) Quantifier(Exists,Real,x,list_conj(yes))
     else Binop(And,Quantifier(Exists,Real,x,list_conj(yes)), list_conj(no))
   }
-  
+
   def pushquant(x: String, p: Formula): Formula = {
 //    P.print_fol_formula(p);
 //    println();
@@ -310,11 +310,11 @@ final object AM {
     case Binop(Or,p,q) => eval(p,v) || eval(q,v)
     case Binop(Imp,p,q) => (eval(p,v) unary_! ) || eval(q,v)
     case Binop(Iff,p,q) => eval(p,v) == eval(q,v)
-    case _ => 
+    case _ =>
       throw new Error("nonfirstorder arithmetic")
   }
 
-  val operations: List[(String, (Exact.Num,Exact.Num) => Boolean)] = 
+  val operations: List[(String, (Exact.Num,Exact.Num) => Boolean)] =
     List(("=", (r,s) => r == s),
          ("/=", (r,s) => r != s),
          ("<", (r,s) => r < s),
@@ -326,7 +326,7 @@ final object AM {
   def evalc(fm: Formula) : Formula =  {
     onatoms(
       at => at match {
-        case R(p,List(Num(n),Num(m))) => 
+        case R(p,List(Num(n),Num(m))) =>
           try {if(assoc(p,operations)(n,m)) True else False}
           catch { case e => Atom(at)}
         case _ => Atom(at)
@@ -338,12 +338,12 @@ final object AM {
   def mk_or(p: Formula, q: Formula): Formula = Binop(Or,p,q);
 
   def conjuncts(fm: Formula): List[Formula] = fm match {
-    case Binop(And,p,q) => conjuncts(p) ++ conjuncts(q) 
+    case Binop(And,p,q) => conjuncts(p) ++ conjuncts(q)
     case _ => List(fm)
   }
 
   def disjuncts(fm: Formula): List[Formula] = fm match {
-    case Binop(Or,p,q) => disjuncts(p) ++ disjuncts(q) 
+    case Binop(Or,p,q) => disjuncts(p) ++ disjuncts(q)
     case _ => List(fm)
   }
 
@@ -381,7 +381,7 @@ final object AM {
     setify(overatoms( (h:Pred) => (t:List[A]) => f(h) ++ t, fm, Nil))
   }
 
-   
+
   def list_conj(l: List[Formula]) : Formula = l match {
     case Nil => True
     case f::Nil => f
@@ -430,9 +430,9 @@ final object AM {
     }
     fm => simplify(cnnf_aux(simplify(fm)))
   }
-        
 
-      
+
+
 
 
 
@@ -448,7 +448,7 @@ final object AM {
 /* Polynomial utilities.
  */
 
-  def poly_add(vars: List[String], pol1: Term, pol2: Term): Term = 
+  def poly_add(vars: List[String], pol1: Term, pol2: Term): Term =
     (pol1,pol2) match {
      case (Fn("+", List(c, Fn("*",List(Var(x),p)))),
            Fn("+", List(d, Fn("*",List(Var(y),q))))) =>
@@ -465,8 +465,8 @@ final object AM {
       case (Num(n),Num(m)) => Num(n + m)
       case _ =>   zero
     }
-  
-  def poly_ladd(vars: List[String], pol1: Term, pol2: Term): Term = 
+
+  def poly_ladd(vars: List[String], pol1: Term, pol2: Term): Term =
     pol2 match {
       case (Fn("+",List(d,Fn("*",List(Var(y),q))))) =>
         Fn("+",List(poly_add(vars, pol1, d), Fn("*", List(Var(y), q))))
@@ -486,7 +486,7 @@ final object AM {
     r
   }
 
-  def poly_mul(vars: List[String], pol1: Term, pol2: Term): Term = 
+  def poly_mul(vars: List[String], pol1: Term, pol2: Term): Term =
     (pol1,pol2) match {
      case (Fn("+", List(c, Fn("*",List(Var(x),p)))),
            Fn("+", List(d, Fn("*",List(Var(y),q))))) =>
@@ -499,7 +499,7 @@ final object AM {
       case (Num(n),Num(m)) => Num(n * m)
       case _ => zero
     }
-  def poly_lmul(vars: List[String], pol1: Term, pol2: Term): Term = 
+  def poly_lmul(vars: List[String], pol1: Term, pol2: Term): Term =
     pol2 match {
       case (Fn("+",List(d,Fn("*",List(Var(y),q))))) =>
         poly_add(vars, poly_mul(vars, pol1, d),
@@ -540,10 +540,10 @@ final object AM {
 					polynate(vars,t))
     case Fn("*", List(s,t)) => poly_mul(vars,polynate(vars,s),
 					polynate(vars,t))
-    
+
     case Fn("/", List(Num(n),Num(m))) => Num(n / m)
-    
-    case Fn("^", List(p,Num(n))) => 
+
+    case Fn("^", List(p,Num(n))) =>
       poly_pow(vars,polynate(vars,p),n.intValue) //n is a Rational.
     case Num(n) => tm
     case _ => throw new Error("Unknown term: " + tm)
@@ -572,7 +572,7 @@ final object AM {
   def is_constant(vars: List[String], p: Term): Boolean = {
     degree(vars,p) == 0
   }
-  
+
   def head(vars: List[String], p: Term): Term = {
     coefficients(vars,p).last
   }
@@ -613,9 +613,9 @@ final object AM {
     def shift1(x: String): Term => Term = p =>  Fn("+",List(zero,
                                                        Fn("*",List(Var(x),
                                                                    p))));
-    def pdivide_aux(vars: List[String], 
-                    a: Term, 
-                    n: Int, 
+    def pdivide_aux(vars: List[String],
+                    a: Term,
+                    n: Int,
                     p: Term,
                     k: Int,
                     s: Term): (Int, Term) = {
@@ -634,11 +634,11 @@ final object AM {
     vars => s => p => pdivide_aux(vars, head(vars,p), degree(vars,p), p, 0, s)
   }
 
-  
+
 
   def poly_diffn(x: Term, n: Int, p: Term): Term = p match {
-    case Fn("+", List(c, Fn("*", List(y,q)))) if y == x => 
-      Fn("+", List(poly_cmul(new Exact.Rational(n), c), 
+    case Fn("+", List(c, Fn("*", List(y,q)))) if y == x =>
+      Fn("+", List(poly_cmul(new Exact.Rational(n), c),
                    Fn("*", List(x, poly_diffn(x,n+1,q)))))
     case _ => poly_cmul( new Exact.Rational(n), p)
   }
@@ -680,19 +680,19 @@ final object AM {
 
   def lift_qelim(afn: (List[String], Formula) => Formula,
                  nfn: Formula => Formula,
-                 qfn: List[String] => Formula => Formula) : 
+                 qfn: List[String] => Formula => Formula) :
   Formula => Formula = {
     def qelift(vars: List[String], fm: Formula): Formula = fm match {
       case Atom(R(_,_)) => afn(vars,fm)
       case Not(p) => Not(qelift(vars,p))
-      case Binop(c,p,q) => 
+      case Binop(c,p,q) =>
         Binop(c,qelift(vars,p), qelift(vars,q))
-      case Quantifier(Forall,Real,x,p) => 
+      case Quantifier(Forall,Real,x,p) =>
         Not(qelift(vars,Quantifier(Exists,Real,x,Not(p))))
-      case Quantifier(Exists,Real,x,p) => 
+      case Quantifier(Exists,Real,x,p) =>
         val djs = disjuncts(nfn(qelift(x::vars,p)));
         println("In qelift.  Number of disjuncts = " + djs.length);
-        print("["); 
+        print("[");
         for(i <- 0 until djs.length){ print(".");}
         print("]\u0008");
         for(i <- 0 until djs.length){ print("\u0008");}
@@ -716,7 +716,7 @@ final object AM {
 
   class FindSignFailure() extends Exception;
 
-  def findsign(sgns: List[(Term,Sign)], p: Term): Sign = 
+  def findsign(sgns: List[(Term,Sign)], p: Term): Sign =
     try {
       val (p_1,swf) = monic(p);
       swap(swf,assoc(p_1,sgns))
@@ -728,7 +728,7 @@ final object AM {
   = {
     val (p,s) = pr;
     if( p == zero ) {
-      if(s == Zero()) sgns 
+      if(s == Zero()) sgns
       else throw new Error("assertsign") }
     else {
     val (p_1,swf) = monic(p);
@@ -740,14 +740,14 @@ final object AM {
     }
   }
 
-  final def split_zero(sgns: List[(Term,Sign)], pol: Term, 
+  final def split_zero(sgns: List[(Term,Sign)], pol: Term,
                  cont_z: List[(Term,Sign)] => Formula,
-                 cont_n: List[(Term,Sign)] => Formula) : Formula 
+                 cont_n: List[(Term,Sign)] => Formula) : Formula
   = try {
       val z = findsign(sgns,pol);
       (if(z == Zero()) cont_z else cont_n)(sgns)
   } catch {
-    case f: FindSignFailure => 
+    case f: FindSignFailure =>
       val eq = Atom(R("=",List(pol,zero)));
       Binop(Or,Binop(And,eq, cont_z(assertsign(sgns, (pol,Zero())))),
          Binop(And,Not(eq), cont_n(assertsign(sgns,(pol,Nonzero())))))
@@ -766,14 +766,14 @@ final object AM {
 
  def testform(pmat: List[(Term, Sign)], fm: Formula): Boolean = {
 //   println("in testform. pmat = ");
-//   pmat.map( x => {print("("); 
-//                   P.printert(x._1); 
+//   pmat.map( x => {print("(");
+//                   P.printert(x._1);
 //                   println(", " + x._2 + ")");});
 //   println("fm = ");
 //   P.print_fol_formula(fm);
 //   println();
     def f(r: Pred): Boolean = r match {
-      case R(a,List(p,z)) => 
+      case R(a,List(p,z)) =>
 	mem(assoc(p, pmat), assoc(a, rel_signs))
       case _ => throw new Error("testform: bad Pred:" + r)
     };
@@ -792,7 +792,7 @@ final object AM {
   }
 
   def condense(ps: List[List[Sign]]): List[List[Sign]] = ps match {
-    case int::pt::other => 
+    case int::pt::other =>
       val rest = condense(other);
       if(mem(Zero(), pt)) int::pt::rest
       else rest
@@ -804,12 +804,12 @@ final object AM {
     case ((x@(l::ls))::(_::ints)::(pts@((r::rs)::xs))) =>
       (l,r) match {
         case (Zero(), Zero()) => throw new Error("inferisign: inconsistent")
-        case (Nonzero() ,_) 
+        case (Nonzero() ,_)
           |  (_, Nonzero()) => throw new Error("inferisign: indeterminate")
         case (Zero(),_) => x::(r::ints)::inferisign(pts)
         case (_,Zero()) => x::(l::ints)::inferisign(pts)
-        case (Negative(), Negative()) 
-          |  (Positive(), Positive()) =>  
+        case (Negative(), Negative())
+          |  (Positive(), Positive()) =>
             x::(l::ints)::inferisign(pts)
         case _ => x::(l::ints)::(Zero()::ints)::(r::ints)::inferisign(pts)
       }
@@ -826,10 +826,10 @@ final object AM {
     val mat2 = List(swap(true, el(1,mat1.head)))::
                           (mat1 ++ List(List(el(1,mat1.last))));
     val mat3 = inferisign(mat2).tail.init;
-    cont(condense(mat3.map((l:List[Sign]) => l.head :: l.tail.tail)))      
+    cont(condense(mat3.map((l:List[Sign]) => l.head :: l.tail.tail)))
   }
 
-  def pdivide_pos(vars: List[String], sgns: List[(Term,Sign)], 
+  def pdivide_pos(vars: List[String], sgns: List[(Term,Sign)],
                  s: Term, p: Term): Term
    = {
      val a = head(vars,p);
@@ -841,17 +841,17 @@ final object AM {
      else poly_mul(vars,a,r)
    }
 
-  def split_sign(sgns: List[(Term,Sign)], pol: Term, 
-                 cont: List[(Term,Sign)] => Formula) : Formula = 
+  def split_sign(sgns: List[(Term,Sign)], pol: Term,
+                 cont: List[(Term,Sign)] => Formula) : Formula =
     findsign(sgns, pol) match {
-      case Nonzero() => 
+      case Nonzero() =>
         val fm = Atom(R(">",List(pol,zero)));
         Binop(Or,Binop(And,fm,cont(assertsign(sgns,(pol,Positive())))),
            Binop(And,Not(fm),cont(assertsign(sgns,(pol,Negative())))))
       case _ => cont(sgns)
     }
 
-  final def split_trichotomy(sgns: List[(Term,Sign)], 
+  final def split_trichotomy(sgns: List[(Term,Sign)],
                        pol: Term,
                        cont_z: List[(Term,Sign)] => Formula,
                        cont_pn: List[(Term,Sign)] => Formula) : Formula =
@@ -859,7 +859,7 @@ final object AM {
 
 
 /* inlined
-  final def monicize(vars: List[String], 
+  final def monicize(vars: List[String],
                      pols: List[Term],
                      cont: List[List[Sign]] => Formula,
                      sgns: List[(Term,Sign)] ): Formula = {
@@ -888,7 +888,7 @@ final object AM {
                   (swaps zip indices).map( pr => swap(pr._1, el(pr._2, m)))}
                 val (cont_1 : (List[List[Sign]] => Formula)) = mat => cont(mat.map(transform));
                 matrix(vars,sols,cont_1,sgns)
-    case p::ops => 
+    case p::ops =>
       split_trichotomy(sgns,head(vars,p),
                        (if(is_constant(vars,p)) delconst(vars,dun,p,ops,cont)
                         else casesplit(vars,dun,behead(vars,p)::ops,cont)),
@@ -896,13 +896,13 @@ final object AM {
                         else casesplit(vars,dun++List(p),ops,cont)))
   }
 
-  final def delconst(vars: List[String], 
-               dun: List[Term], 
-               p: Term, 
+  final def delconst(vars: List[String],
+               dun: List[Term],
+               p: Term,
                ops: List[Term],
                cont: List[List[Sign]] => Formula) :
                List[(Term,Sign)] => Formula = sgns => {
-    def cont_1(m: List[List[Sign]]): Formula = 
+    def cont_1(m: List[List[Sign]]): Formula =
       cont(m.map((rw:List[Sign]) => insertat(dun.length,findsign(sgns,p),rw)));
     casesplit(vars,dun,ops,cont_1)(sgns)
   }
@@ -920,7 +920,7 @@ final object AM {
     if(pols == Nil) try { cont(List(Nil)) } catch {case e => False} else {
     /* find the polynomial of highest degree */
     val (p,_) = pols.foldLeft[(Term,Int)](zero,-1)(
-      (bst:(Term,Int),ths:Term) => {val (p_1,n_1) = bst; 
+      (bst:(Term,Int),ths:Term) => {val (p_1,n_1) = bst;
                                     val n_2 =  degree(vars, ths);
                                     if(n_2 > n_1) (ths,n_2) else bst});
     val p_1 = poly_diff(vars,p);
@@ -930,27 +930,27 @@ final object AM {
 //    println("in matrix. number of divisions to perform = " + qs.length);
     val gs = qs.map((p_3:Term) => pdivide_pos(vars,sgns,p,p_3));
 //    val gs = Parallel.pmap(qs,((p_3:Term) => pdivide_pos(vars,sgns,p,p_3)));
-    def cont_1(m: List[List[Sign]]): Formula = 
+    def cont_1(m: List[List[Sign]]): Formula =
       cont(m.map(l => insertat(i,l.head,l.tail)));
     casesplit(vars, Nil, qs ++ gs, ls => dedmatrix(cont_1,ls))(sgns)
-                                      
+
     }
   }
 
   val init_sgns:List[(Term,Sign)] = List((one, Positive()),
                                          (zero, Zero()));
 
-  def basic_real_qelim(vars: List[String]): Formula => Formula 
+  def basic_real_qelim(vars: List[String]): Formula => Formula
   = fm => fm match {
     case Quantifier(Exists,Real,x,p) =>
       val pols = atom_union(
         fm1 => fm1 match{case R(a,List(t,Num(n))) if n.is_zero => List(t)
                          case _ => Nil},
         p);
-      val cont = (mat:List[List[Sign]]) => 
+      val cont = (mat:List[List[Sign]]) =>
         if(mat.exists(m => testform(pols.zip(m),p))) True else False;
       casesplit(x::vars, Nil, pols, cont)(init_sgns)
-    case _ => 
+    case _ =>
       throw new Error("impossible")
   }
 
@@ -978,13 +978,13 @@ final object AM {
 
   def unaryFns_Term(tm : Term): List[String] = tm match {
     case Fn(f, Nil) => List(f)
-    case Fn(f, args) => 
+    case Fn(f, args) =>
       args.map(unaryFns_Term).flatten.distinct
     case _ => Nil
   }
-  
+
   def unaryFns_Pred(fol: Pred) : List[String] = fol match {
-    case R(r, args) => 
+    case R(r, args) =>
       args.map(unaryFns_Term).flatten.distinct
   }
 
@@ -993,16 +993,16 @@ final object AM {
     case Fn(f, args) => Fn(f, args.map(replaceUnaryFns_Term))
     case _ => tm
   }
-  
+
   def replaceUnaryFns_Pred(fol: Pred) : Pred = fol match {
-    case R(r, args) => 
+    case R(r, args) =>
       R(r,args.map(replaceUnaryFns_Term))
   }
 
   // free variables are existentially quantified.
   def makeQEable(fm : Formula) : Formula = {
     val fvs = fv(fm);
-    val unary_fns = overatoms(fol => (lst: List[String]) 
+    val unary_fns = overatoms(fol => (lst: List[String])
                                  => unaryFns_Pred(fol)++lst  ,
                                   fm,Nil).distinct
     // XXX should uniqify
@@ -1029,7 +1029,7 @@ final object AM {
       case _ => false
     }
   }
-  
+
 
 
   @throws(classOf[CHAbort])
@@ -1049,11 +1049,11 @@ final object AM {
       }
 
   }
-  
+
 
   def elim_fractional_literals(fm: Formula): Formula = {
     def elim_fraction_term : Term => Term = tm => tm match {
-      case Num(Exact.Rational(p,q)) => 
+      case Num(Exact.Rational(p,q)) =>
         if(p == BigInt(0)) Num(Exact.Integer(0))
         else if (q == BigInt(1)) Num(Exact.Integer(p))
 	else  Fn("/", List(Num(Exact.Integer(p)), Num(Exact.Integer(q))))
@@ -1061,7 +1061,7 @@ final object AM {
       case _ => tm
     }
     def elim_fraction_atom : Pred => Formula = fol => fol match {
-      case R(s, List(t1,t2)) => 
+      case R(s, List(t1,t2)) =>
         Atom(R(s, List(elim_fraction_term(t1),elim_fraction_term(t2))))
       case _ => Atom(fol)
     }
@@ -1069,9 +1069,7 @@ final object AM {
   }
 
 
-
-
-  def test = poly_pow(List(), 
+  def test = poly_pow(List(),
                       Fn("+",List(one, Fn("*",List(Var("x"), one)))),5);
 //  def test1 = polynate(List("x"), P.parset("1 + x"));
 
@@ -1095,12 +1093,3 @@ final object AM {
 
 
 }
-
-
-
-
-  
-
-  
-
-

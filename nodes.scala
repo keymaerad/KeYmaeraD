@@ -25,7 +25,7 @@ object Nodes {
 
   abstract class ProofNode() {
     //val nodeType : NodeType = t
-    val nodeID = nextNodeID 
+    val nodeID = nextNodeID
     private var children : List[NodeID] = Nil
     private var parent : Option[NodeID] = None
     private var status: Status  = Open
@@ -73,13 +73,13 @@ object Nodes {
   }
 
 
-  case class AndNode(rule: String, 
+  case class AndNode(rule: String,
                      goal:Sequent,
                      svs: List[String]) extends ProofNode() {
     val schemavars = svs
 
     override def toString: String = {
-      nodeID.toString + " & " + rule 
+      nodeID.toString + " & " + rule
     }
 
    override def toPrettyString : String = {
@@ -93,7 +93,7 @@ object Nodes {
    }
   }
 
-  case class OrNode (rule: String, 
+  case class OrNode (rule: String,
                      goal: Sequent) extends ProofNode() {
 
     override def toString: String = {
@@ -112,10 +112,10 @@ object Nodes {
 
   }
 
-  case class WorkingNode (rule: String, 
+  case class WorkingNode (rule: String,
                           goal: Sequent) extends ProofNode() {
    setStatus(Open)
-    
+
     override def toString: String = {
       "WorkingNode " + nodeID.toString
     }
@@ -130,10 +130,10 @@ object Nodes {
    }
   }
 
-  case class DoneNode (rule: String, 
+  case class DoneNode (rule: String,
                        goal: Sequent) extends ProofNode() {
    setStatus(Proved)
-    
+
     override def toString: String = {
       "DoneNode " + nodeID.toString
     }
@@ -153,19 +153,19 @@ object Nodes {
     scala.collection.mutable.HashMap[NodeID, ProofNode] with
     scala.collection.mutable.SynchronizedMap[NodeID, ProofNode]
 
-  
-  val nodeTable = 
+
+  val nodeTable =
     new SyncHashMap
-  
+
   def register(nd: ProofNode): Unit = {
     nodeTable.put(nd.nodeID, nd)
   }
 
-  val nullNode = new OrNode("null", 
+  val nullNode = new OrNode("null",
                             Sequent(scala.collection.immutable.HashMap.empty,
                                     Nil,Nil))
   register(nullNode)
-  
+
   var rootNode = nullNode
 
   var sourceFileName: Option[String] = None
@@ -174,8 +174,8 @@ object Nodes {
     case Some(nd) =>
       nd
     case None =>
-      throw new Error("node does not exist: " + ndID) 
-    
+      throw new Error("node does not exist: " + ndID)
+
   }
 
 }

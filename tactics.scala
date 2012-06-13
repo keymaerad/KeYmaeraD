@@ -6,7 +6,7 @@ class TacticActor extends scala.actors.Actor {
 
   def act() : Unit = {
   // TODO. only communicate asynchronously with the frontactor.
-  
+
   }
 
 }
@@ -19,15 +19,15 @@ object Tactics {
   import RulesUtil._
   import Rules._
 
-  
+
   // A tactic returns a list of the new open leaves that it spawns.
 
-  abstract class Tactic(name: String) 
+  abstract class Tactic(name: String)
          extends ((OrNode) =>  Option[List[NodeID]]) {
     override def toString: String = {
       name
     }
-    def * : Tactic = repeatT(this)  
+    def * : Tactic = repeatT(this)
     def | (alternative : =>Tactic) = eitherT(this, alternative)
     def ~ (continued : =>Tactic) = composeT(this, continued)
     def & (continued : =>Tactic) = composeT(this, continued)
@@ -35,21 +35,21 @@ object Tactics {
   }
 
 
-  def trylistofrules(rs: List[ProofRule], nd: OrNode) 
+  def trylistofrules(rs: List[ProofRule], nd: OrNode)
          : Option[List[NodeID]] = {
            val sq = nd.goal;
            var res: Option[List[NodeID]] = None;
-   
+
            for (p <- positions(sq)) {
              for(r <- rs) {
                if(res == None){
-            
+
                 val res0 = r.apply(p)(sq);
                 res0 match {
                   case Some(_) =>
-                    res = applyrule(nd,p,r) 
+                    res = applyrule(nd,p,r)
                     ()
-                  case None => 
+                  case None =>
                     ()
                 }
                }
@@ -78,7 +78,7 @@ object Tactics {
         val res0 = rl.apply(pos)(nd.goal)
         res0 match {
           case Some(_) =>
-            applyrule(nd,pos,rl) 
+            applyrule(nd,pos,rl)
           case None =>
             None
         }
@@ -91,12 +91,12 @@ object Tactics {
         val Sequent(sig, cs, ss) = nd.goal
         val pnc = cs.indexOf(fm)
         val pns = ss.indexOf(fm)
-        (pnc,pns) match { 
+        (pnc,pns) match {
           case (-1,-1) => None
-          case (-1, pn) => 
-            applyrule(nd,RightP(pn),rl) 
-          case (pn, _) => 
-            applyrule(nd,LeftP(pn),rl) 
+          case (-1, pn) =>
+            applyrule(nd,RightP(pn),rl)
+          case (pn, _) =>
+            applyrule(nd,LeftP(pn),rl)
         }
       }
     }
@@ -117,7 +117,7 @@ object Tactics {
     }
 
   val tryrulepredT : ProofRule
-                        => (Formula => Boolean) => Tactic = 
+                        => (Formula => Boolean) => Tactic =
     rl => pred =>
     new Tactic("tryrulepred " ) {
       def apply(nd: OrNode) : Option[List[NodeID]] = {
@@ -138,7 +138,7 @@ object Tactics {
   def usehintsT(pos: Position): Tactic = new Tactic("usehints") {
     def apply(nd: OrNode ) = try {
       lookup(pos, nd.goal) match {
-        case Modality(Box,Loop(hp, True, inv_hints), phi) => 
+        case Modality(Box,Loop(hp, True, inv_hints), phi) =>
           val rules = inv_hints.map(loopInduction)
           // XXX be smarter about success and failure.
           Some(rules.map(r => applyrule(nd, pos, r)).flatten.flatten)
@@ -154,7 +154,7 @@ object Tactics {
           val sol_res2 = applyrule(nd,pos,sol_rule2) match {
             case None => Nil
             case Some(lst) => lst
-          } 
+          }
           // XXX
           Some(sol_res1 ++ sol_res2 ++ inv_res)
         case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
@@ -167,10 +167,10 @@ object Tactics {
           val sol_res2 = applyrule(nd,pos,sol_rule2) match {
             case None => Nil
             case Some(lst) => lst
-          } 
+          }
           Some(sol_res1 ++ sol_res2)
 
-        
+
         case _ => None
       }
     } catch { case _ => None }
@@ -179,7 +179,7 @@ object Tactics {
 
   object LinearAlgebra {
 
-    type Mat = List[List[Term]]      
+    type Mat = List[List[Term]]
     type Vec = List[Term]
 
 
@@ -196,15 +196,15 @@ object Tactics {
          case  _ => throw new Error("impossible")
        })
        val (nr,rest) = splt.unzip
-       
+
        nr::transpose(rest)
-       
+
      }
     }
 
     def dot(v1 : Vec, v2 : Vec) : Term = {
       val v3 = v1.zip(v2).map({case (t1, t2) => Fn("*", List(t1,t2))})
-      v3.foldRight[Term](Num(Exact.Integer(0)))((t1,t2) => 
+      v3.foldRight[Term](Num(Exact.Integer(0)))((t1,t2) =>
         Fn("+", List(t1,t2)))
     }
 
@@ -254,7 +254,7 @@ object Tactics {
         mult(m, pow(m, n-1))
       }
     }
-    
+
     def factorial(n: Int) : Int = {
       if (n <= 0 ) {
         1
@@ -262,7 +262,7 @@ object Tactics {
         n * factorial(n-1)
       }
     }
-    
+
     def exp(m : Mat) : Mat = {
       val n = m.length
       val ks = Range(1, n + 1).toList
@@ -270,14 +270,14 @@ object Tactics {
       {
         plusM(r, scalarM(pow(m, k),
                          Num(Exact.Rational(1,factorial(k)))))
-        
+
       })
     }
 
 
   }
 
-  def diffsolveT(pos: Position, md: DiffSolveMode): Tactic = 
+  def diffsolveT(pos: Position, md: DiffSolveMode): Tactic =
       new Tactic("diffsolveT " + md) {
 
     import Prover._
@@ -302,8 +302,8 @@ object Tactics {
                  vs.map(v =>
                    AM.tsimplify(
                      vs.foldRight[Term](theta)(
-                       (v1:Fn, th1:Term) => 
-                         if(v1 == v) 
+                       (v1:Fn, th1:Term) =>
+                         if(v1 == v)
                            {extract_Term(v1, th1)(one)}
                          else
                            {extract_Term(v1, th1)(zero)}
@@ -333,8 +333,8 @@ object Tactics {
       val vsol = plusV(v1, v2S)
       println("vsol = " + vsol)
 
-      
-      val sols = vs.zip(vsol).map({case (Fn(v, Nil), tm) => 
+
+      val sols = vs.zip(vsol).map({case (Fn(v, Nil), tm) =>
         Quantifier(Forall, Real, t1name,
                    Atom(R("=", List(Fn(v, List(Var(t1name))),
                                     tm))))})
@@ -345,18 +345,18 @@ object Tactics {
     def apply(nd: OrNode ) =
       try {
         lookup(pos,nd.goal) match {
-        
+
           case Modality(Box,Evolve(derivs, h, inv_hints, Nil), phi) =>
             val sols = derivsToSols(derivs)
             applyrule(nd, pos, diffSolve(md)(sols))
 
           case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
             val sol_rule1 = diffSolve(md)(sols)
-            applyrule(nd,pos,sol_rule1) 
+            applyrule(nd,pos,sol_rule1)
 
           case Modality(Box,EvolveQuantified(i,c,vs,h,sols), phi) =>
             val sol_rule1 = qDiffSolve(md)(sols)
-            applyrule(nd,pos,sol_rule1)         
+            applyrule(nd,pos,sol_rule1)
           case _ => None
         }
       } catch { case _ => None }
@@ -365,27 +365,27 @@ object Tactics {
 
 
 
-  val hpeasy = List(seq, choose, check, 
+  val hpeasy = List(seq, choose, check,
                     assign, assignAnyRight, qassign,
                     diffClose
                   )
 
-  val hpalpha = List(seq, check, 
+  val hpalpha = List(seq, check,
                     assign, assignAnyRight, qassign, choose
                   )
 
   val needhints = List(loopInduction, diffStrengthen)
 
 
-  def composeT(t1: Tactic, t2: Tactic) : Tactic = 
+  def composeT(t1: Tactic, t2: Tactic) : Tactic =
     new Tactic("compose " + t1.toString + "," + t2.toString) {
       def apply(nd: OrNode) : Option[List[NodeID]] = {
         val mbe_newnds = t1(nd)
         mbe_newnds match {
           case None => None
-          case Some(newnds) => 
-           val nnds: List[NodeID] = 
-             newnds.map(c => 
+          case Some(newnds) =>
+           val nnds: List[NodeID] =
+             newnds.map(c =>
               {getnodethen(c,gotonode _);
                hereNode match {
                  case ornd@OrNode(_,_) =>
@@ -393,49 +393,49 @@ object Tactics {
                  case _ => None
                }}).flatten.flatten
            // XXX think about success and failure
-           Some(nnds) 
+           Some(nnds)
         }
 
       }
 
     }
 
-  val unitT : Tactic = 
+  val unitT : Tactic =
     new Tactic("unit") {
       def apply(nd: OrNode) = {
         Some(List(nd.nodeID))
       }
     }
 
-  val nilT : Tactic = 
+  val nilT : Tactic =
     new Tactic("nil") {
       def apply(nd: OrNode) = {
         None
       }
     }
 
-  def composelistT(tcts : Tactic * ) : Tactic = 
+  def composelistT(tcts : Tactic * ) : Tactic =
     tcts.toList.foldRight(unitT)( (t1,t2) => composeT(t1,t2)  )
 
 
 
   // do t1. Then, if no new nodes, do t2.
   //@todo it could make sense to optimize for special case t1=nilT or t2=nilT or, instead, optimize eitherlistT to avoid nilT except for empty list
-  def eitherT(t1: Tactic, t2: Tactic) : Tactic = 
+  def eitherT(t1: Tactic, t2: Tactic) : Tactic =
     new Tactic("either " + t1.toString + "," + t2.toString) {
       def apply(nd: OrNode) = {
         val nds = t1.apply(nd);
         nds match {
-          case None => 
+          case None =>
             t2.apply(nd)
-          case _ => 
+          case _ =>
             nds
         }
-        
+
       }
     }
 
-  def eitherlistT(tcts : Tactic *) : Tactic = 
+  def eitherlistT(tcts : Tactic *) : Tactic =
     tcts.toList.foldRight(nilT)( (t1,t2) => eitherT(t1,t2)  )
 
 
@@ -444,7 +444,7 @@ object Tactics {
       case Sequent(sig, c,List(s)) =>
         // try all the box hp easy rules
         val pos = RightP(0)
-        eitherT(trylistofrulesT(hpeasy),usehintsT(pos))(nd) 
+        eitherT(trylistofrulesT(hpeasy),usehintsT(pos))(nd)
       case _ => None
     }
   }
@@ -455,8 +455,8 @@ object Tactics {
     def apply(nd: OrNode) = {
       t(nd) match {
         case None => Some(List(nd.nodeID))
-        case Some(newnds) => 
-          Some(newnds.map( 
+        case Some(newnds) =>
+          Some(newnds.map(
             c => {getnodethen(c,gotonode _);
                   hereNode match {
                     case ornd@OrNode(_,_) =>
@@ -483,7 +483,7 @@ object Tactics {
                   case Some(_) =>
                     return applyrule(nd,pos,substitute);
                   ()
-                  case None => 
+                  case None =>
                     ()
                 }
               case _ => ()
@@ -509,12 +509,12 @@ object Tactics {
   val alpha = List(andLeft, impRight, allRight, orRight, not)
 
   val alphaT : Tactic = new Tactic("alpha") {
-    def apply(nd: OrNode) = 
+    def apply(nd: OrNode) =
       trylistofrules(alpha,nd)
   }
 
   val hpalphaT : Tactic = new Tactic("hpalpha") {
-    def apply(nd: OrNode) = 
+    def apply(nd: OrNode) =
       trylistofrules(hpalpha ++ alpha,nd)
   }
 
@@ -523,21 +523,21 @@ object Tactics {
   val beta = List(andRight, orLeft, impLeft)
 
   val betaT : Tactic = new Tactic("beta") {
-    def apply(nd: OrNode) = 
+    def apply(nd: OrNode) =
       trylistofrules(beta,nd)
   }
 
 
-  val nonarithcloseT = 
+  val nonarithcloseT =
     trylistofrulesT(List(close,identity))
 
   val closeOrArithT = nonarithcloseT | arithT
-  
+
   // lazy arithmetic
   //@todo could add cheap close earlier.
   val alleasyT: Tactic = composelistT(hpalphaT*,
                                       substT*,
-                                      (hpalphaT | betaT)*, 
+                                      (hpalphaT | betaT)*,
                                       closeOrArithT)
 
 
@@ -550,7 +550,7 @@ object Tactics {
         val lvs = kds.map(getOpenLeaves).flatten
         lvs
     }
-    
+
   }
 
 
@@ -564,7 +564,7 @@ object Tactics {
      }
 
 
-  val nullarizeT : Tactic = 
+  val nullarizeT : Tactic =
     new Tactic("nullarize") {
       import Prover._
       def getunaryfn(tm: Term) : List[Term] = tm match {
@@ -576,8 +576,8 @@ object Tactics {
       def apply(nd: OrNode): Option[List[NodeID]] = {
         val Sequent(sig, c, s) = nd.goal
         val fms = c ++ s
-        val unaryfns = fms.map(fm => 
-                              overterms_Formula(tm => (b:List[Term]) => 
+        val unaryfns = fms.map(fm =>
+                              overterms_Formula(tm => (b:List[Term]) =>
                                               getunaryfn(tm) ++ b,
                                                 fm, Nil)).flatten.distinct
         val rls = unaryfns.map(tm => unsubstitute(tm))
@@ -585,13 +585,13 @@ object Tactics {
       }
     }
 
-  val instantiateAuxT : Sort => Term => Formula => Tactic = srt => tm => fm => 
+  val instantiateAuxT : Sort => Term => Formula => Tactic = srt => tm => fm =>
     new Tactic("instantiateAux") {
       def apply(nd: OrNode): Option[List[NodeID]] = {
         val Sequent(sig,cs,ss) = nd.goal
         val pn = cs.indexOf(fm)
         if(pn == -1) None
-        else { 
+        else {
           RulesUtil.lookup(LeftP(pn), nd.goal) match {
             case Quantifier(Forall, srt1, _,_) if srt == srt1 =>
               applyrule(nd,LeftP(pn),allLeft(tm))
@@ -601,7 +601,7 @@ object Tactics {
         }
 
       }
-      
+
     }
 
 
@@ -639,7 +639,7 @@ object Tactics {
   }
 
 
-  val instantiateT : Sort => List[Term] => Tactic = srt => tms => 
+  val instantiateT : Sort => List[Term] => Tactic = srt => tms =>
     new Tactic("instantiate") {
       def apply(nd: OrNode): Option[List[NodeID]] = {
         val Sequent(sig,_,_) = nd.goal
@@ -647,16 +647,16 @@ object Tactics {
         var tct1 = unitT
         for(tm <- tms) {
           if(Prover.infersort(sig, tm) == srt){
-            tct1 = 
-              fms.foldRight(tct1)((fm1,rt) => 
-                composeT(instantiateAuxT(srt)(tm)(fm1),rt))          
+            tct1 =
+              fms.foldRight(tct1)((fm1,rt) =>
+                composeT(instantiateAuxT(srt)(tm)(fm1),rt))
           }
         }
         tct1(nd)
       }
     }
 
-  val instantiatesinglesT : Sort => List[Term] => Tactic = srt => tms => 
+  val instantiatesinglesT : Sort => List[Term] => Tactic = srt => tms =>
     new Tactic("instantiate") {
       def apply(nd: OrNode): Option[List[NodeID]] = {
         val Sequent(sig,_,_) = nd.goal
@@ -664,9 +664,9 @@ object Tactics {
         var tct1 = unitT
         for(tm <- tms) {
           if(Prover.infersort(sig, tm) == srt){
-            tct1 = 
-              fms.foldRight(tct1)((fm1,rt) => 
-                composeT(instantiateAuxT(srt)(tm)(fm1),rt))          
+            tct1 =
+              fms.foldRight(tct1)((fm1,rt) =>
+                composeT(instantiateAuxT(srt)(tm)(fm1),rt))
           }
         }
         tct1(nd)
@@ -679,7 +679,7 @@ object Tactics {
        val Sequent(sig,_,_) = nd.goal
        val sig1 =
          sig.filter((kv) => kv._2 match { case (Nil, srt1) if srt == srt1 => true
-                                         case _ => false}) 
+                                         case _ => false})
        val insts = sig1.keys.toList
        val fms = findunivs(srt, nd.goal)
        var tcts : List[Tactic] = Nil
@@ -688,9 +688,9 @@ object Tactics {
            case Quantifier(Forall, s, i, fm0) =>
              Prover.assoc(Prover.ununiqify(i), alist) match {
                case None => ()
-               case Some(js) => 
+               case Some(js) =>
                  for (j <- js) {
-                   tcts = 
+                   tcts =
                      insts.filter(x => Prover.ununiqify(x) == j).map(x =>
                        instantiateAuxT(srt)(Fn(x,Nil))(fm)) ++ tcts
                  }
@@ -714,7 +714,7 @@ object Tactics {
        val Sequent(sig,_,_) = nd.goal
        val sig1 =
          sig.filter((kv) => kv._2 match { case (Nil, srt1) if srt == srt1 => true
-                                         case _ => false}) 
+                                         case _ => false})
        val insts =
          sig1.keys.toList.map(k => Prover.ununiqify(k)).distinct.map(x => (x,List(x)))
        instantiatebyT(srt)(insts)(nd)
@@ -727,7 +727,7 @@ object Tactics {
        val Sequent(sig,_,_) = nd.goal
        val sig1 =
          sig.filter((kv) => kv._2 match { case (Nil, srt1) if srt == srt1 => true
-                                         case _ => false}) 
+                                         case _ => false})
        val insts = sig1.keys.toList
        val fms = findunivs(srt, nd.goal)
        var tcts : List[Tactic] = Nil
@@ -756,7 +756,7 @@ object Tactics {
       var res: List[(Term,Term)] = Nil
       for(c <- cs) {
         c match {
-          case Not(Atom(R("=", List(t1,t2)))) => 
+          case Not(Atom(R("=", List(t1,t2)))) =>
             res = (t1,t2)::res
             ()
           case _ =>
@@ -765,7 +765,7 @@ object Tactics {
       }
       for(s <- ss) {
         s match {
-          case Atom(R("=", List(t1,t2))) => 
+          case Atom(R("=", List(t1,t2))) =>
             res = (t1,t2)::res
             ()
           case _ =>
@@ -778,8 +778,8 @@ object Tactics {
   val instantiate0T : Sort => Tactic = srt => new Tactic("instantiate0") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val idcs = findidx(nd.goal)
-      val tct1 =             
-        idcs.foldRight(unitT)((idx,rt) => 
+      val tct1 =
+        idcs.foldRight(unitT)((idx,rt) =>
           composeT(instantiateT(srt)(List(idx._1,idx._2)),rt))
       tct1(nd)
     }
@@ -789,24 +789,24 @@ object Tactics {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val idcs = findidx(nd.goal)
       val uvs = findunivs(srt,nd.goal)
-      val tct1 =             
-        idcs.foldRight(unitT)((idx,rt) => 
+      val tct1 =
+        idcs.foldRight(unitT)((idx,rt) =>
           composeT(instantiateT(srt)(List(idx._1,idx._2)),rt))
-      val tct2 =             
-        uvs.foldRight(unitT)((fm1,rt) => 
+      val tct2 =
+        uvs.foldRight(unitT)((fm1,rt) =>
           composeT(tryrulematchT(hide)(fm1),rt));
       composeT(tct1,tct2)(nd)
     }
   }
 
 
-  val instantiate2T : Term => Term => Tactic =  tm1 => tm2 => 
+  val instantiate2T : Term => Term => Tactic =  tm1 => tm2 =>
     new Tactic("instantiate2") {
       def apply(nd: OrNode) : Option[List[NodeID]] = {
         val sq = nd.goal
         for(p <- positions(sq)){
           lookup(p,sq) match {
-            case fm@Quantifier(Forall, srt1, i1, 
+            case fm@Quantifier(Forall, srt1, i1,
                                fm1@Quantifier(Forall, srt2, i2, fm2)) =>
                                  return composelistT(
                                    tryruleatT(allLeft(tm1))(p),
@@ -825,8 +825,8 @@ object Tactics {
   val instantiate3T : Tactic  =new Tactic("instantiate3") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val idcs = findidx(nd.goal)
-      val tct1 =             
-        idcs.foldRight(unitT)((idx,rt) => 
+      val tct1 =
+        idcs.foldRight(unitT)((idx,rt) =>
           composeT(instantiate2T(idx._1)(idx._2),rt))
       tct1(nd)
     }
@@ -835,8 +835,8 @@ object Tactics {
   val instantiate4T : Tactic  =new Tactic("instantiate4") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val idcs = findidx(nd.goal)
-      val tct1 =             
-        idcs.foldRight(unitT)((idx,rt) => 
+      val tct1 =
+        idcs.foldRight(unitT)((idx,rt) =>
           composeT(instantiate2T(idx._2)(idx._1),rt))
       tct1(nd)
     }
@@ -847,8 +847,8 @@ object Tactics {
       val Sequent(sig,s,c) = nd.goal
       val sig1 = sig.filter((kv) => kv._2 match { case (Nil, srt1) if srt == srt1 => true
                                                 case _ => false})
-      val tms = 
-        sig1.keys.toList.sortWith((s1,s2) => 
+      val tms =
+        sig1.keys.toList.sortWith((s1,s2) =>
           s1.compareTo(s2) < 0 ).map( k => (Fn(k,Nil): Term) )
       instantiateT(srt)(tms)(nd)
     }
@@ -860,33 +860,33 @@ object Tactics {
       val Sequent(sig,s,c) = nd.goal
       val sig1 = sig.filter((kv) => kv._2 match { case (Nil, srt1) if srt == srt1 => true
                                                 case _ => false})
-      val tms = 
-        sig1.keys.toList.sortWith((s1,s2) => 
+      val tms =
+        sig1.keys.toList.sortWith((s1,s2) =>
           s1.compareTo(s2) < 0 ).map( k => (Fn(k,Nil): Term) )
       instantiatesinglesT(srt)(tms)(nd)
     }
   }
 
-  
+
 
   val hideunivsT : Sort => Tactic = srt => new Tactic("hideunivs") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val fms = findunivs(srt,nd.goal)
-      val tct1 =             
-        fms.foldRight(unitT)((fm1,rt) => 
+      val tct1 =
+        fms.foldRight(unitT)((fm1,rt) =>
           composeT(tryrulematchT(hide)(fm1),rt));
       tct1(nd)
-      
+
     }
   }
 
-  val hidedoublequantT : Tactic = 
+  val hidedoublequantT : Tactic =
     new Tactic("hidedoublequant") {
       def apply(nd: OrNode) : Option[List[NodeID]] = {
         val sq = nd.goal
         for(p <- positions(sq)){
           lookup(p,sq) match {
-            case fm@Quantifier(Forall, srt1, i1, 
+            case fm@Quantifier(Forall, srt1, i1,
                                fm1@Quantifier(Forall, srt2, i2, fm2)) =>
                                  return tryruleatT(hide)(p)(nd);
 
@@ -901,20 +901,20 @@ object Tactics {
 
 
 
-  def branchT(tct: Tactic, tcts: List[Tactic]) : Tactic = 
+  def branchT(tct: Tactic, tcts: List[Tactic]) : Tactic =
     new Tactic("branch " + tct + " " + tcts) {
 
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       tct(nd) match {
         case None => None
-        case Some(newndids) => 
+        case Some(newndids) =>
           val newnds = newndids.map(getnode)
           val ndstcts = tcts.zip(newnds)
-          val newnds1 = ndstcts.map(  x => 
+          val newnds1 = ndstcts.map(  x =>
               x._2 match {
                 case ornd@OrNode(_,_) => (x._1)(ornd)
                 case _ => None } ) .flatten.flatten
-      
+
         Some(newnds1)
       }
 
@@ -922,7 +922,7 @@ object Tactics {
 
     }
 
-  
+
 
 
 
@@ -935,7 +935,7 @@ object Tactics {
         cantqe = if(Prover.canQE(fm, sig)) cantqe else fm::cantqe
       }
 
-      val tct = cantqe.foldRight(unitT)((fm1,rt) 
+      val tct = cantqe.foldRight(unitT)((fm1,rt)
                                         => composeT(tryrulematchT(hide)(fm1),
                                                     rt));
       tct(nd)
@@ -951,7 +951,7 @@ object Tactics {
         tohide = if(keepers.contains(p)) tohide else fm::tohide
       }
 
-      val tct = tohide.foldRight(unitT)((fm1,rt) 
+      val tct = tohide.foldRight(unitT)((fm1,rt)
                                         => composeT(tryrulematchT(hide)(fm1),
                                                     rt));
       tct(nd)
@@ -966,7 +966,7 @@ object Tactics {
   case object StandardCut extends CutType
   case object StandardKeepCut extends CutType
 
-  def cutT(ct: CutType, cutout: Formula, cutin: Formula): Tactic 
+  def cutT(ct: CutType, cutout: Formula, cutin: Formula): Tactic
   = new Tactic("cut " + ct) {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val sq@Sequent(sig,cs,ss) = nd.goal
@@ -976,9 +976,9 @@ object Tactics {
         val fm = lookup(p,sq)
         if(mbesubs == None) {
           Prover.unify(fm, cutout) match {
-            case None => 
+            case None =>
               ()
-            case Some(subs) => 
+            case Some(subs) =>
               mbesubs = Some(subs)
               foundidx = p;
           }
@@ -994,11 +994,11 @@ object Tactics {
             case StandardKeepCut => cutKeepSucc
           }
           tryruleatT(rl(cutin1))(foundidx)(nd)
-      }   
+      }
     }
   }
 
-  def cutmT(ct: CutType, cutouts: List[Formula], cutin: Formula): Tactic 
+  def cutmT(ct: CutType, cutouts: List[Formula], cutin: Formula): Tactic
   = new Tactic("cut " + ct) {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val sq@Sequent(sig,cs,ss) = nd.goal
@@ -1006,13 +1006,13 @@ object Tactics {
       var foundidx: Option[Position] = None;
       for (cutout <- cutouts) {
         var continue = true
-        for(p <- positions(sq)) 
+        for(p <- positions(sq))
           if (continue) {
             val fm = lookup(p,sq)
             Prover.unify(fm, cutout) match {
-              case None => 
+              case None =>
                 ()
-              case Some(subs1) => 
+              case Some(subs1) =>
                 subs = subs ++ subs1
                 foundidx = Some(p);
                 continue = false
@@ -1029,11 +1029,11 @@ object Tactics {
             case StandardKeepCut => cutKeepSucc
           }
           tryruleatT(rl(cutin1))(idx)(nd)
-      }   
+      }
     }
   }
 
-  def unsubT(tomatch: Formula, tounsublst: List[Term]): Tactic 
+  def unsubT(tomatch: Formula, tounsublst: List[Term]): Tactic
   = new Tactic("unsub") {
     def apply(nd: Nodes.OrNode) : Option[List[Nodes.NodeID]] = {
       val Sequent(sig,cs,ss) = nd.goal
@@ -1043,7 +1043,7 @@ object Tactics {
         if(mbesubs == None) {
           Prover.unify(cs(i), tomatch) match {
             case None => ()
-            case Some(subs) => 
+            case Some(subs) =>
               mbesubs = Some(subs)
               foundidx = i;
           }
@@ -1054,11 +1054,11 @@ object Tactics {
         case Some(subs) =>
           val tounsublst1 = tounsublst.map(
                         t => Prover.simul_substitute_Term(subs.toList, t))
-          val tcts = 
+          val tcts =
                tounsublst1.map(
                  t => tryruleatT(unsubstitute(t))(LeftP(foundidx)))
           tcts.toList.foldRight(unitT)( (t1,t2) => composeT(t1,t2)  )(nd)
-      }   
+      }
     }
   }
 
@@ -1067,7 +1067,7 @@ object Tactics {
 
 
 
-  val vacuousT: Tactic 
+  val vacuousT: Tactic
   = new Tactic("vacuous") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
       val Sequent(sig,cs,ss) = nd.goal
@@ -1078,29 +1078,29 @@ object Tactics {
           case Binop(Imp, fm1, fm2) if ss.contains(fm1) =>
               return tryruleatT(hide)(LeftP(i))(nd)
 
-          case Binop(Imp, 
+          case Binop(Imp,
                      Not(Atom(R("=", List(f1,f2)))),
                      fm) if f1 == f2 =>
                        return tryruleatT(hide)(LeftP(i))(nd)
 
-          case Binop(Imp, 
+          case Binop(Imp,
                      Atom(R("/=", List(f1,f2))),
                      fm) if f1 == f2 =>
                        return tryruleatT(hide)(LeftP(i))(nd)
 
-          case Binop(Imp, 
+          case Binop(Imp,
                      Binop(And, _,
                            Not(Atom(R("=", List(f1,f2))))),
                      fm) if f1 == f2 =>
                        return tryruleatT(hide)(LeftP(i))(nd)
 
-          case Binop(Imp, 
+          case Binop(Imp,
                      Binop(And,
                            Not(Atom(R("=", List(f1,f2)))),
                            _),
                      fm) if f1 == f2 =>
                        return tryruleatT(hide)(LeftP(i))(nd)
-          case Binop(Imp, 
+          case Binop(Imp,
                      Binop(And,
                            Binop(And,
                                  Not(Atom(R("=", List(f1,f2)))),
@@ -1108,7 +1108,7 @@ object Tactics {
                            _),
                      fm) if f1 == f2 =>
                        return tryruleatT(hide)(LeftP(i))(nd)
-          case Binop(Imp, 
+          case Binop(Imp,
                      Binop(And,
                            Binop(And, _,
                                  Not(Atom(R("=", List(f1,f2))))
@@ -1117,7 +1117,7 @@ object Tactics {
                      fm) if f1 == f2 =>
                        return tryruleatT(hide)(LeftP(i))(nd)
 
-          case _ => 
+          case _ =>
             ()
         }
       }
@@ -1209,7 +1209,7 @@ object Tactics {
     }
   }
 
-  val easywithforallsT: Sort => Tactic = srt => 
+  val easywithforallsT: Sort => Tactic = srt =>
     composelistT(
       (nonarithcloseT | hpeasyT | alphaT | betaT   )*,
       instantiatebyeverythingT(srt),
@@ -1230,7 +1230,7 @@ object Tactics {
             case _ => ()
           }
         }
-      
+
       }
       return None
     }
@@ -1240,7 +1240,7 @@ object Tactics {
 
   val easiestT : Tactic =
     (nonarithcloseT | alphaT | trylistofrulesT(hpalpha) |
-     diffsolveT(RightP(0), Endpoint) | usehintsT(RightP(0)) | hpeasyT | 
+     diffsolveT(RightP(0), Endpoint) | usehintsT(RightP(0)) | hpeasyT |
      betaT | arithT)*
 
 

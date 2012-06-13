@@ -43,7 +43,7 @@ object CommandLine {
     println("Starting " + workers + " workers.")
     if (workers > 0) dl('findworkers, workers);
 
-  } 
+  }
 
   def dl(cmd: Symbol): Unit = {
     frontactor !? cmd

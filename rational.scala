@@ -4,7 +4,7 @@ package KeYmaeraD
 /*
 abstract class Rational
 case class ExactInt(n) extends Rational
-case class 
+case class
 */
 
 // exact nums are either rationals or integers. Is this worth it?
@@ -18,12 +18,12 @@ object Exact {
 
 
  trait Num {
-  def +(that: Num): Num 
-  def -(that: Num): Num 
-  def unary_- : Num 
+  def +(that: Num): Num
+  def -(that: Num): Num
+  def unary_- : Num
   def *(that: Num): Num
   def /(that: Num): Num
-  def <(that: Num): Boolean 
+  def <(that: Num): Boolean
   def <=(that: Num): Boolean
   def >(that: Num): Boolean
   def >=(that: Num): Boolean
@@ -40,7 +40,7 @@ object Exact {
  case class Rational(p: BigInt, q: BigInt) extends Num  {
  // This check eats a lot of time!
  //  require(q != 0);
-  
+
 
   def this(p: Int, q: Int) = this(BigInt(p),BigInt(q));
   def this(n: Int) = this(BigInt(n),BigInt(1));
@@ -48,13 +48,13 @@ object Exact {
   def this(s: String) = this(BigInt(s),1);
 
   def +(that: Num): Num = that match {
-    case Rational(p1,q1) => 
+    case Rational(p1,q1) =>
      new Rational(p * q1 + p1 * q, q * q1)
     case Integer(m) => new Rational(p + m * q, q)
-  } 
+  }
 
   def -(that: Num): Num = that match {
-    case Rational(p1,q1) => 
+    case Rational(p1,q1) =>
      new Rational(p * q1 - p1 * q, q * q1)
     case Integer(m) => new Rational(p - m*q, q)
   }
@@ -126,7 +126,7 @@ object Exact {
   }
 
   override def toString = {
-    if(q == BigInt(1)) p.toString 
+    if(q == BigInt(1)) p.toString
     else {p.toString + "/" + q.toString}
   }
 
@@ -136,7 +136,7 @@ object Exact {
  case class Integer(n: BigInt) extends Num  {
  // This check eats a lot of time!
  //  require(q != 0);
-  
+
 
   def this(n: Int) = this(BigInt(n));
   def this(s: String) = this(BigInt(s));

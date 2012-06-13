@@ -18,12 +18,12 @@ object Util {
   }
 
   def mem[A](x: A, lst: List[A]): Boolean = lst match {
-    case e::es => 
+    case e::es =>
       if( e == x ) true
       else mem(x, es)
     case Nil => false
   }
-  
+
   final def index1[A](x: A, lst: List[A], n: Int): Int = lst match {
     case e::es => if(x == e) n
 		  else index1(x, es, n + 1)
@@ -41,13 +41,13 @@ object Util {
     case Nil => throw new Failure()
   }
 
-  def earlier[A](lst: List[A], x: A, y: A): Boolean = 
+  def earlier[A](lst: List[A], x: A, y: A): Boolean =
     lst match {
-      case h::t => 
+      case h::t =>
         y != h && (h == x || earlier(t,x,y))
       case Nil => false
     }
-  
+
 /*
   def insertat1[A](n: Int, x: A, lst: List[A], accum: List[A]): List[A] = {
     if (n < 1) (accum.reverse ++ (x :: lst))
@@ -68,7 +68,7 @@ object Util {
 
 
 
-  def allpairs[A,B](f: (A,A) => B, lst1: List[A], lst2: List[A]): List[B] 
+  def allpairs[A,B](f: (A,A) => B, lst1: List[A], lst2: List[A]): List[B]
   = lst1 match {
     case e::es => lst2.map((a:A)=>f(e,a)) ++ allpairs(f,es,lst2)
     case Nil => Nil
@@ -86,7 +86,7 @@ object Util {
       case (Num(_), Var(_)) => 1
       case (Num(_), Fn(_,_)) => 1
       case (Var(x), Var(y)) => x compare y
-      case (Fn(f,fargs), Fn(g,gargs)) => 
+      case (Fn(f,fargs), Fn(g,gargs)) =>
         if(f != g) f compare g
         else fargs compare gargs
       case (Num(n), Num(m)) => n compare m
@@ -95,13 +95,13 @@ object Util {
 
   implicit def fol2Ordered(f: Pred): Ordered[Pred] = new Ordered[Pred] {
     def compare(that: Pred): Int = (f,that) match {
-      case (R(s,ps), R(s2,ps2)) => 
+      case (R(s,ps), R(s2,ps2)) =>
         if(s != s2) s compare s2
         else ps compare ps2
     }
   }
 
-  implicit def connective2Ordered(c: Connective): Ordered[Connective] = 
+  implicit def connective2Ordered(c: Connective): Ordered[Connective] =
     new Ordered[Connective] {
       def connectiveEnum(c1 : Connective): Int = c1 match {
         case And => 0
@@ -118,7 +118,7 @@ object Util {
 
   // yuck. Is there a better way to write this?
   // also: untested since some refactoring
-  implicit def formula2Ordered(f: Formula): Ordered[Formula] = 
+  implicit def formula2Ordered(f: Formula): Ordered[Formula] =
     new Ordered[Formula] {
       def compare(that: Formula): Int = f match {
         case False => if(that == False) 0 else -1
@@ -150,7 +150,7 @@ object Util {
           case _ => -1
         }
         case Quantifier(Forall,Real,x,f) => that match {
-          case False | True | Atom(_) | Not(_) 
+          case False | True | Atom(_) | Not(_)
              | Binop(_,_,_) => 1
           case Quantifier(Forall,Real,y,g) =>
             val c = x compare y;
@@ -165,12 +165,12 @@ object Util {
             else c
           case _ => 1
         }
-        case _ => 
+        case _ =>
           throw new Error("nonfirstorder arithmetic")
       }
     }
 
-  
+
   implicit def formulaList2Ordered(flst: List[Formula])
     : Ordered[List[Formula]] =  new Ordered[List[Formula]] {
       def compare(that: List[Formula]): Int = (flst,that) match {
@@ -195,7 +195,7 @@ object Util {
           else h1 compare h2
       }
     }
-    
+
 
   def setifiedp[A <% Ordered[A]](lst: List[A]): Boolean = lst match {
     case x::(rest@(y::_)) => x < y && setifiedp(rest)
@@ -206,33 +206,33 @@ object Util {
     if(setifiedp(lst)) lst else lst.sortWith((x,y) => x < y).distinct
   }
 
-  
 
-  def subtract[A <% Ordered[A]](l1: List[A], l2: List[A]): List[A] = 
+
+  def subtract[A <% Ordered[A]](l1: List[A], l2: List[A]): List[A] =
     (l1,l2) match {
       case (Nil, _) => Nil
       case (_, Nil) => l1
-      case (h1::t1, h2::t2) => 
+      case (h1::t1, h2::t2) =>
         if(h1 == h2) subtract(t1,t2)
         else if (h1 < h2) h1::subtract(t1,l2)
         else subtract(l1,t2)
     }
 
   def psubset[A <% Ordered[A]](lst1: List[A], lst2: List[A]): Boolean = {
-    def subset(l1: List[A], l2: List[A]): Boolean = 
+    def subset(l1: List[A], l2: List[A]): Boolean =
       (l1,l2) match {
         case (Nil, _) => true
         case (_, Nil) => false
-        case (h1::t1, h2::t2) => 
+        case (h1::t1, h2::t2) =>
           if(h1 == h2) subset(t1,t2)
           else if (h1 < h2) false
           else subset(l1,t2)
       }
-    def psubset(l1: List[A], l2: List[A]): Boolean = 
+    def psubset(l1: List[A], l2: List[A]): Boolean =
       (l1,l2) match {
         case (_, Nil) => false
         case (Nil, _) => true
-        case (h1::t1, h2::t2) => 
+        case (h1::t1, h2::t2) =>
           if(h1 == h2) psubset(t1,t2)
           else if (h1 < h2) false
           else subset(l1,t2)
@@ -244,11 +244,11 @@ object Util {
 
 
   // Assumes inputs are setified.
-  def intersect[A <% Ordered[A]](l1: List[A], l2: List[A]): List[A] = 
+  def intersect[A <% Ordered[A]](l1: List[A], l2: List[A]): List[A] =
     (l1,l2) match {
       case (Nil, _) => Nil
       case (_, Nil) => Nil
-      case (h1::t1, h2::t2) => 
+      case (h1::t1, h2::t2) =>
         if(h1 == h2) h1::intersect(t1,t2)
         else if (h1 < h2) intersect(t1,l2)
         else intersect(l1,t2)
@@ -256,13 +256,13 @@ object Util {
 
 
 
- 
+
   def  union[A <% Ordered[A]](lst1: List[A], lst2: List[A]): List[A] =  {
-    def union(l1: List[A], l2: List[A]) : List[A] = 
+    def union(l1: List[A], l2: List[A]) : List[A] =
       (l1,l2) match {
         case (Nil, _) => l2
         case (_, Nil) => l1
-        case (h1::t1, h2::t2) => 
+        case (h1::t1, h2::t2) =>
           if(h1 == h2) h1::union(t1,t2)
           else if (h1 < h2) h1::union(t1,l2)
           else h2::union(l1,t2)
@@ -272,7 +272,7 @@ object Util {
 
 
 
-  
+
   def unions[A <% Ordered[A]](lst: List[List[A]]): List[A] = {
     val lst1 = lst.flatten(identity[List[A]] _) ;
     setify(lst1)
@@ -291,7 +291,7 @@ object Util {
     case Binop(And,p,q) => Binop(And,nnf(p), nnf(q))
     case Binop(Or,p,q) => Binop(Or,nnf(p), nnf(q))
     case Binop(Imp,p,q) => Binop(Or,nnf(Not(p)), nnf(q))
-    case Binop(Iff,p,q) => Binop(Or, Binop(And, nnf(p), nnf(q)), 
+    case Binop(Iff,p,q) => Binop(Or, Binop(And, nnf(p), nnf(q)),
                                      Binop(And,nnf(Not(p)), nnf(Not(q))))
     case Not(Not(p)) => p
     case Not(True) => False
@@ -349,7 +349,7 @@ object Util {
     case Quantifier(qt,srt,i,f1) =>
       Quantifier(qt,srt,i,prenex(f1))
     case _ => throw new Error("unsupported in prenex: " + fm)
-      
+
   }
 
   def subFormulas(fm: Formula): List[Formula] = fm match {
@@ -370,7 +370,7 @@ object Util {
     case Not(p) => vari(p)
     case Binop(_,p,q) => union(vari(p), vari(q))
     case Quantifier(_,_,x,p) => insert(x, vari(p))
-    case _ => 
+    case _ =>
       throw new Error("nonfirstorder arithmetic")
   }
 
@@ -392,9 +392,9 @@ object Util {
       Nil // XXX
     case Check(fm) =>
       fv(fm)
-    case Seq(p,q) => 
+    case Seq(p,q) =>
       union(fv_HP(p), fv_HP(q))
-    case Choose(p,q) => 
+    case Choose(p,q) =>
       union(fv_HP(p), fv_HP(q))
     case Loop(p,fm, inv_hints) =>
       union(fv_HP(p), fv(fm))
@@ -414,7 +414,7 @@ object Util {
     case Binop(_,p,q) => union(fv(p), fv(q))
     case Quantifier(_,_,x,p) => subtract(fv(p) ,List(x))
     case Modality(m, hp, p) => union(fv_HP(hp), fv(p))
-    case _ => 
+    case _ =>
       throw new Error("nonfirstorder arithmetic")
   }
 

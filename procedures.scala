@@ -26,7 +26,7 @@ object Procedures {
   }
 
 
- 
+
 
 
   object CohenHormander extends Procedure {
@@ -38,14 +38,14 @@ object Procedures {
 
 
     def proceed(sq: Sequent): Option[Sequent] = sq match {
-      case Sequent(sig, c,s) => 
+      case Sequent(sig, c,s) =>
 //       println("about to attempt quantifier elimination on:\n")
 //       P.print_Formula(fm)
       val fm = Binop(Imp,AM.list_conj(c), AM.list_disj(s));
 //      val fm1 = AM.univ_close(fm);
       val fm1 = AM.makeQEable(fm);
-       try{ 
- 
+       try{
+
         CV.start()
          println("real eliming")
 //         val r =  AM.real_elim_goal(fm)
@@ -62,9 +62,9 @@ object Procedures {
            println("failure!")
            println(r)
            Some(Sequent(sig, Nil, List(r)))
-         }      
+         }
        } catch {
-         case e: CHAbort => 
+         case e: CHAbort =>
            println("aborted quantifier elimination")
            None
        }
@@ -104,7 +104,7 @@ object Procedures {
     }
 
     def proceed(sq: Sequent, tm: Long): Option[Sequent] = sq match {
-      case Sequent(sig, c,s) => 
+      case Sequent(sig, c,s) =>
         val fm0 = Binop(Imp, AM.list_conj(c), AM.list_disj(s));
 //        val fm = AM.univ_close(fm0);
         val fm = AM.makeQEable(fm0);
@@ -113,30 +113,30 @@ object Procedures {
         println()
         System.out.flush
         val mfm = mathematica_of_formula(fm)
-        val mfm_red = 
+        val mfm_red =
          new Expr(new Expr(Expr.SYMBOL, "Reduce"),
-                  List(mfm, 
+                  List(mfm,
                        new Expr(Expr.SYMBOL, "Reals")).toArray)
 
-      
-        val mfm_tmt = 
+
+        val mfm_tmt =
           if(tm > 0){
             new Expr(new Expr(Expr.SYMBOL, "TimeConstrained"),
-                     List(mfm_red, 
-                          new Expr(Expr.REAL, 
+                     List(mfm_red,
+                          new Expr(Expr.REAL,
                                    (tm / 1000.0).toString)).toArray)
           }
           else mfm_red
 
-        val check = new Expr(new Expr(Expr.SYMBOL, "Check"), 
-                            List(mfm_red, 
-                                 new Expr("$Exception"), 
+        val check = new Expr(new Expr(Expr.SYMBOL, "Check"),
+                            List(mfm_red,
+                                 new Expr("$Exception"),
                                  mBlist ).toArray)
 
 
        println("\nmathematica version of formula = ")
        println(mfm_tmt)
- 
+
        val link = linkLock.synchronized{
          mbe_link match {
            case None =>
@@ -146,7 +146,7 @@ object Procedures {
          }
        }
 
-       try{ 
+       try{
 
            link.newPacket()
 
@@ -154,7 +154,7 @@ object Procedures {
 
            link.evaluate(mfm_tmt)
 
-         
+
            var early_abort = false
 
            println("error code = " + link.error())
@@ -194,7 +194,7 @@ object Procedures {
            None
          } else if(result == new Expr(Expr.SYMBOL, "True")) {
            println("success!")
-           
+
            println("error code = " + link.error())
            Some(Sequent(sig, Nil,List(True)))
          } else if(result == new Expr(Expr.SYMBOL, "False")) {
@@ -211,14 +211,14 @@ object Procedures {
 
 
        } catch {
-         case e:MathLinkException if e.getErrCode() == 11 => 
+         case e:MathLinkException if e.getErrCode() == 11 =>
 
 	     // error code 11 indicates that the mathkernel has died
 
                println("caught code 11")
                None
-       } 
-    }  
+       }
+    }
 
 // TODO
     def proceed(sq: Sequent): Option[Sequent] = {
@@ -226,7 +226,7 @@ object Procedures {
     }
 
 
-    def abort : Unit = 
+    def abort : Unit =
       linkLock.synchronized {
         mbe_link match {
           case Some(lnk) =>
@@ -236,12 +236,12 @@ object Procedures {
                 println("about to signal an abort. ")
                 System.out.flush
                 lnk.abortEvaluation()
-                
+
                 aborted = true
               }
             }
           case None =>
-        }      
+        }
       }
 
 

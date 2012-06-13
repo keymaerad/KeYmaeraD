@@ -32,7 +32,7 @@ final object Prover {
     val dol = s.indexOf("$")
     if(dol == -1) s else s.substring(0,dol);
   }
-  
+
   def assoc[A,B](k: A, al: List[(A,B)]): Option[B] = al match {
     case (a,b) :: rest =>
       if( k == a ) Some(b)
@@ -56,7 +56,7 @@ final object Prover {
     case True | False => true
     case Atom(R(r,ps)) => true
     case Not(f) => firstorder(f)
-    case Binop(_,f1,f2) => 
+    case Binop(_,f1,f2) =>
       firstorder(f1) && firstorder(f2)
     case Quantifier(_,_,v,f) =>
       firstorder(f)
@@ -65,7 +65,7 @@ final object Prover {
   }
 
 
-  def canQE_Term(sig:Map[String,(List[Sort],Sort)]) : Term =>  Boolean 
+  def canQE_Term(sig:Map[String,(List[Sort],Sort)]) : Term => Boolean
    = tm => tm match {
     case Fn(f, args) if List("+","-", "*", "/", "^").contains(f) =>
       args.forall(canQE_Term(sig))
@@ -80,21 +80,21 @@ final object Prover {
   }
 
   // Can we apply quantifier elimination on this formula?
-  def canQE(fm: Formula, sig : Map[String,(List[Sort],Sort)]): Boolean 
+  def canQE(fm: Formula, sig : Map[String,(List[Sort],Sort)]): Boolean
    = fm match {
     case True | False => true
-    case Atom(R(r,ps)) if List("/=", "=","<", ">", ">=", "<=").contains(r) => 
+    case Atom(R(r,ps)) if List("/=", "=","<", ">", ">=", "<=").contains(r) =>
       ps.forall(canQE_Term(sig))
     case Not(f) => canQE(f,sig)
-    case Binop(_,f1,f2) => 
+    case Binop(_,f1,f2) =>
       canQE(f1,sig) && canQE(f2,sig)
     case Quantifier(_,Real,v,f) =>
       canQE(f,sig)
     case _ => false
   }
-  
-  def totalDerivTerm(forall_i: Option[String], 
-                     d: List[(Fn, Term)], 
+
+  def totalDerivTerm(forall_i: Option[String],
+                     d: List[(Fn, Term)],
                      tm: Term) : Term = tm match {
     case Fn("+", List(t1, t2)) =>
       AM.tsimplify(
@@ -102,7 +102,7 @@ final object Prover {
                      totalDerivTerm(forall_i, d, t2)))
       )
     case Fn("-", List(t1, t2)) =>
-      AM.tsimplify(Fn("-", List(totalDerivTerm(forall_i, d, t1), 
+      AM.tsimplify(Fn("-", List(totalDerivTerm(forall_i, d, t1),
                                 totalDerivTerm(forall_i, d, t2))))
     case Fn("-", List(t1)) =>
       val t = totalDerivTerm(forall_i, d, t1)
@@ -127,17 +127,17 @@ final object Prover {
 	  )))
     case Fn("^", List(t1, Num(n))) =>
       if(n == Exact.Integer(2)) {
-        Fn("*", 
-           List(Num(n),  
+        Fn("*",
+           List(Num(n),
                 Fn("*", List(t1,
                              totalDerivTerm(forall_i, d, t1 )))))
-      } else { 
-        Fn("*", 
-           List(Num(n),  
+      } else {
+        Fn("*",
+           List(Num(n),
                 Fn("*", List(Fn("^",List(t1,Num(n-Exact.Integer(1)))),
                              totalDerivTerm(forall_i, d, t1 )))))
       }
-    case Var(s) =>  
+    case Var(s) =>
       Num(Exact.Integer(0))
     case Fn(f, Nil) =>  assoc(tm,d) match {
       case Some(x) => x
@@ -173,7 +173,7 @@ final object Prover {
   // TODO handle other cases
   def totalDerivAux(forall_i: Option[String],
                     d: List[(Fn,Term)],
-                    fm: Formula) : Formula 
+                    fm: Formula) : Formula
     = fm match {
       case True => True
       case False => False
@@ -183,7 +183,7 @@ final object Prover {
           // An optimization.
           case Num(n1)::Num(n2)::nil if n1.is_zero && n2.is_zero =>
             True
-          case _ => 
+          case _ =>
             Atom(R( totalDerivR(r) , tms1))
         }
       case Not(Atom(p)) =>
@@ -191,22 +191,20 @@ final object Prover {
       case Binop(And, f1, f2) =>
         Binop(And, totalDerivAux(forall_i, d, f1), totalDerivAux(forall_i, d, f2))
 
-       
       case Binop(Or,f1,f2) =>
         Binop(And, // N.B. this is not "or"!
-              totalDerivAux(forall_i, d, f1), 
+              totalDerivAux(forall_i, d, f1),
               totalDerivAux(forall_i, d, f2))
-      
+
       //case Iff(f1,f2) => Iff(totalDerivAux(d,f1), totalDerivAux(d,f2))
       case Quantifier(Forall, s, v, f) =>
         Quantifier(Forall, s, v, totalDerivAux(forall_i, d, f))
-      case _ => 
+      case _ =>
         throw new Error("can't take total derivative of formula " +
                         fm)
     }
-    
 
-  def totalDeriv(forall_i: Option[String], 
+  def totalDeriv(forall_i: Option[String],
                  d: List[(Fn,Term)],
                  fm: Formula) : Formula = {
     totalDerivAux(forall_i, d, Util.nnf(fm))
@@ -229,7 +227,6 @@ final object Prover {
       case Num(x) if x.is_zero => true
       case _ => false
     }
-    
   }
 
   // conservative guess as to whether this formula is an open set
@@ -267,7 +264,7 @@ final object Prover {
                      xnew: String,
                      fm: Formula): Formula = fm match {
     case True | False => fm
-    case Atom(R(r, ps)) => 
+    case Atom(R(r, ps)) =>
       Atom(R(r, ps.map(p => rename_Term(xold, xnew, p))))
     case Not(f) => Not(rename_Formula(xold, xnew, f))
     case Binop(c, f1, f2) =>
@@ -296,7 +293,7 @@ final object Prover {
         val args1 = args.map(a => rename_Term(xold, xnew, a));
         val t1 = rename_Term(xold, xnew, t);
         (Fn(f, args1), t1)});
-      AssignQuantified(i, st, vs1) 
+      AssignQuantified(i, st, vs1)
     case AssignAny(Fn(f, args)) =>
       val args1 = args.map(a => rename_Term(xold, xnew, a))
       AssignAny(Fn(f, args1))
@@ -306,9 +303,9 @@ final object Prover {
       AssignAnyQuantified(i, c, Fn(v, args1))
     case Check(fm) =>
       Check(rename_Formula(xold, xnew, fm))
-    case Seq(p,q) => 
+    case Seq(p,q) =>
       Seq(rename_HP(xold, xnew, p), rename_HP(xold, xnew, q))
-    case Choose(p1,p2) => 
+    case Choose(p1,p2) =>
       Choose(rename_HP(xold, xnew, p1), rename_HP(xold, xnew, p2))
     case Loop(p,fm, inv_hints) =>
       Loop(rename_HP(xold, xnew, p),
@@ -321,7 +318,7 @@ final object Prover {
         val t1 = rename_Term(xold, xnew, t)
         (Fn(f, args1), t1)
       }
-      Evolve(derivs.map(replace_deriv), 
+      Evolve(derivs.map(replace_deriv),
              rename_Formula(xold,xnew,fm),
              inv_hints.map(f => rename_Formula(xold,xnew,f)),
              sols.map(f => rename_Formula(xold,xnew,f)))
@@ -334,10 +331,9 @@ final object Prover {
         (Fn(f, args1), t1)
       }
       EvolveQuantified(i, st,
-                       derivs.map(replace_deriv), 
+                       derivs.map(replace_deriv),
                        rename_Formula(xold, xnew, h),
                        sols.map(f => rename_Formula(xold, xnew, f)))
-      
   }
 
 // do generic thing to terms
@@ -345,13 +341,13 @@ final object Prover {
   def onterms_Formula(g : Term => Term,
                       fm: Formula): Formula = fm match {
     case True | False => fm
-    case Atom(R(r,ps)) => 
+    case Atom(R(r,ps)) =>
       Atom(R(r, ps.map(p => g(p))))
     case Not(f1) => Not(onterms_Formula(g,f1))
-    case Binop(c,f1,f2) => 
+    case Binop(c,f1,f2) =>
       Binop(c,onterms_Formula(g,f1),onterms_Formula(g,f2))
     case Quantifier(q, c, v,f) =>
-      Quantifier(q, c, v, onterms_Formula(g,f))      
+      Quantifier(q, c, v, onterms_Formula(g,f))
     case Modality(m,hp,phi) =>
       Modality(m,onterms_HP(g,hp), onterms_Formula(g,phi))
   }
@@ -376,16 +372,16 @@ final object Prover {
         AssignAnyQuantified(i,c,Fn(f,args))
       case Check(fm) =>
         Check(onterms_Formula(g,fm))
-      case Seq(p,q) => 
+      case Seq(p,q) =>
         Seq(onterms_HP(g,p), onterms_HP(g,q))
-      case Choose(p,q) => 
+      case Choose(p,q) =>
         Choose(onterms_HP(g,p), onterms_HP(g,q))
       case Loop(p,fm, inv_hints) =>
-          Loop(onterms_HP(g,p), 
-               onterms_Formula(g,fm), 
+          Loop(onterms_HP(g,p),
+               onterms_Formula(g,fm),
                inv_hints.map(f => onterms_Formula(g,f)))
       case Evolve(derivs, fm, inv_hints, sols) =>
-        Evolve(derivs.map( replace), 
+        Evolve(derivs.map( replace),
                onterms_Formula(g,fm),
                inv_hints.map(f => onterms_Formula(g,f)),
                sols.map(f => onterms_Formula(g,f)))
@@ -394,20 +390,19 @@ final object Prover {
                          vs.map(replace),
                          onterms_Formula(g,h),
                          sols.map(f => onterms_Formula(g,f)))
-      
     }
   }
 
 // do generic fold over terms
 
   def overterms_Formula[B](g : Term => B => B,
-                           fm: Formula, 
+                           fm: Formula,
                            b : B) : B = fm match {
     case True | False => b
-    case Atom(R(r,ps)) => 
+    case Atom(R(r,ps)) =>
       ps.foldRight(b)((x,y) => g(x)(y))
     case Not(f1) => overterms_Formula(g,f1,b)
-    case Binop(c,f1,f2) => 
+    case Binop(c,f1,f2) =>
       overterms_Formula(g,f1,
                         overterms_Formula(g,f2,b))
     case Quantifier(q, c, v,f) =>
@@ -435,20 +430,19 @@ final object Prover {
         b // is this right?
       case Check(fm) =>
         overterms_Formula(g,fm,b)
-      case Seq(p,q) => 
+      case Seq(p,q) =>
         overterms_HP(g,p,
                      overterms_HP(g,q,b))
-      case Choose(p,q) => 
+      case Choose(p,q) =>
         overterms_HP(g,p,
                      overterms_HP(g,q,b))
       case Loop(p,fm, inv_hints) =>
-          overterms_HP(g,p, 
+          overterms_HP(g,p,
                        overterms_Formula(g,fm,b))
       case Evolve(derivs, fm, inv_hints, sols) =>
         overterms_Formula(g,fm,foldit(derivs)( b))
       case EvolveQuantified(i,c, vs, h, sols) =>
         overterms_Formula(g,h,foldit(vs)(b))
-      
     }
   }
 
@@ -460,7 +454,7 @@ final object Prover {
     case _ => tm
   }
 
-  def renameFn(fold: String, fnew: String, fm : Formula) : Formula = 
+  def renameFn(fold: String, fnew: String, fm : Formula) : Formula =
     onterms_Formula(t => renameFn_Term(fold,fnew,t),fm)
 
 
@@ -475,7 +469,7 @@ final object Prover {
     case _ => tm
   }
 
-  def varifyFn(fold: String, fnew: String, fm : Formula) : Formula = 
+  def varifyFn(fold: String, fnew: String, fm : Formula) : Formula =
     onterms_Formula(t => varifyFn_Term(fold,fnew,t),fm)
 
 
@@ -488,15 +482,14 @@ final object Prover {
     case _ => false
   }
 
-  def hasFn_Formula(f: String, fm: Formula) : Boolean = 
-    AM.overatoms((a: Pred) => (r1: Boolean) => 
+  def hasFn_Formula(f: String, fm: Formula) : Boolean =
+    AM.overatoms((a: Pred) => (r1: Boolean) =>
       {
         val R(r,ps) = a;
         val psr = ps.map(p => hasFn_Term(f,p))
         val res = psr.contains(true)
         r1 || res
       }, fm , false)
-
 
 //
 
@@ -564,17 +557,17 @@ final object Prover {
                       xnew_fv: Set[String],
                       fm: Formula): Formula = fm match {
     case True | False => fm
-    case Atom(R(r,ps)) => 
+    case Atom(R(r,ps)) =>
       Atom(R(r, ps.map(p => substitute_Term(xold,xnew,p))))
     case Not(f) => Not(substitute_Formula1(xold,xnew,xnew_fv,f))
-    case Binop(c,f1,f2) => 
+    case Binop(c,f1,f2) =>
       Binop(c,substitute_Formula1(xold,xnew,xnew_fv,f1),
           substitute_Formula1(xold,xnew,xnew_fv,f2))
     case Quantifier(q,c,v,f) =>
       if (xold == v) {
         // Nothing to do.
         Quantifier(q, c, v, f)
-      } else if( (! xnew_fv.contains(v))){ 
+      } else if( (! xnew_fv.contains(v))){
         // don't need to rename.
         Quantifier(q, c, v, substitute_Formula1(xold, xnew, xnew_fv, f))
       } else {
@@ -601,11 +594,11 @@ final object Prover {
                       new_fv: Set[String],
                       fm: Formula): Formula = fm match {
     case True | False => fm
-    case Atom(R(r, ps)) => 
+    case Atom(R(r, ps)) =>
       Atom(R(r, ps.map(p => simul_substitute_Term(subs,p))))
-    case Not(f) => 
+    case Not(f) =>
       Not(simul_substitute_Formula1(subs,new_fv, f))
-    case Binop(c, f1, f2) => 
+    case Binop(c, f1, f2) =>
       Binop(c,simul_substitute_Formula1(subs,new_fv, f1),
           simul_substitute_Formula1(subs,new_fv, f2))
     case Quantifier(q,c,v,f) =>
@@ -621,7 +614,7 @@ final object Prover {
       throw new Error("unimplemented")
   }
 
-  def simul_substitute_Formula(                      
+  def simul_substitute_Formula(
                       subs: List[(String,Term)],
                       fm: Formula): Formula =  {
     val ts = subs.map(_._2)
@@ -630,33 +623,33 @@ final object Prover {
   }
 
 
-/* To extract a term |tm_ex| from a term |tm| is to 
+/* To extract a term |tm_ex| from a term |tm| is to
  * find all instances of |tm_ex| in |tm|, and to return
  * a function |f| that represents |tm| with holes whereever |tm_ex|
  * appears. Contract: f(tm_ex) == tm
  */
 
   def extract_Term(tm_ex: Term,  tm : Term) : Term => Term = tm match {
-    case _ if tm == tm_ex =>     
+    case _ if tm == tm_ex =>
        tm1 => tm1
     case Fn(f, args) =>
       val argsfn = (tm1: Term) => args.map(a =>  extract_Term(tm_ex,a)(tm1))
       tm1 => Fn(f,argsfn(tm1)  )
-    case _ => 
+    case _ =>
       tm1 => tm
   }
 
   def extract(tm_ex : Term, fm: Formula ) : (Term => Formula) = fm match {
-    case True | False => 
+    case True | False =>
       tm1 => fm
-    case Atom(R(r,args)) => 
+    case Atom(R(r,args)) =>
       val argsfn = (tm1: Term) => args.map(a => extract_Term(tm_ex,a)(tm1))
       tm1 => Atom(R(r,argsfn(tm1)))
     case Not(f) =>
       tm1 => Not(extract(tm_ex, f)(tm1))
     case Binop(c, f1, f2) =>
       tm1 => Binop(c, extract(tm_ex,f1)(tm1), extract(tm_ex,f2)(tm1))
-    case Quantifier(q, c, v, f) => 
+    case Quantifier(q, c, v, f) =>
       // Should we do some alpha renaming magic here?
       tm1 => Quantifier(q, c, v, extract(tm_ex,f)(tm1))
     case Modality(m, hp, f) =>
@@ -667,9 +660,9 @@ final object Prover {
 
   /* If we find an update, return a formula with a hole where it was, and
    *  the formula that was in that hole.
-   */ 
+   */
   def extract_update(fm: Formula) : Option[(Formula => Formula, Formula)] = fm match {
-    case True | False | Atom(_) => 
+    case True | False | Atom(_) =>
       None
     case Not(f) =>
       extract_update_aux(x => Not(x), f)
@@ -678,7 +671,7 @@ final object Prover {
         case None => extract_update_aux(x => Binop(c,fm1,x), fm2)
         case Some((fn1,fm0)) => Some((x => Binop(c,fn1(x),fm2),fm0))
       }
-    case Quantifier(q, c, v,f) => 
+    case Quantifier(q, c, v,f) =>
       extract_update_aux(x => Quantifier(q,c,v,x), f)
     case Modality(m, AssignQuantified(i,srt,vs), f) =>
       Some((x => x ,fm))
@@ -687,27 +680,26 @@ final object Prover {
 
   }
 
-  def extract_update_aux(g: Formula => Formula, fm: Formula) 
+  def extract_update_aux(g: Formula => Formula, fm: Formula)
      : Option[(Formula => Formula, Formula)] = extract_update(fm) match {
         case None => None
-        case Some((fn1, f1)) => 
+        case Some((fn1, f1)) =>
           Some(((fm1 => g(fn1(fm1)) ), f1))
      }
 
 
-  
 
-  type Subst = Map[String,Term] 
+  type Subst = Map[String,Term]
 
   val nilmap = scala.collection.immutable.HashMap[String,Term]()
 
-  def unify_Terms(subs: Subst, tms1 : List[Term], tms2 : List[Term]) : Option[Subst] 
+  def unify_Terms(subs: Subst, tms1 : List[Term], tms2 : List[Term]) : Option[Subst]
       = (tms1, tms2) match {
         case (Nil, Nil) => Some(subs)
         case (tm1::rest1, tm2::rest2) =>
           unify_Term(subs, tm1,tm2) match {
             case None =>  None
-            case Some(subs1) => unify_Terms(subs1,rest1,rest2) 
+            case Some(subs1) => unify_Terms(subs1,rest1,rest2)
           }
         case _ => None
 
@@ -716,7 +708,7 @@ final object Prover {
 
     // tm1 is specific, tm2 has free variables.
     // figure out what to associate to those free variables in to get tm1.
-  def unify_Term(subs: Subst, tm1 : Term, tm2 : Term) : Option[Subst] 
+  def unify_Term(subs: Subst, tm1 : Term, tm2 : Term) : Option[Subst]
   = (tm1,tm2) match {
     case (Fn(f1,args1), Fn(f2,args2)) if f1 == f2 =>
       unify_Terms(subs, args1,args2)
@@ -734,33 +726,33 @@ final object Prover {
     case _ =>  None
   }
 
-  def unify_Formulas(subs: Subst, 
-                     fms1 : List[Formula], 
-                     fms2 : List[Formula]) : Option[Subst] 
+  def unify_Formulas(subs: Subst,
+                     fms1 : List[Formula],
+                     fms2 : List[Formula]) : Option[Subst]
       = (fms1, fms2) match {
         case (Nil, Nil) => Some(subs)
         case (fm1::rest1, fm2::rest2) =>
           unify_Formula(subs, fm1,fm2) match {
             case None => None
-            case Some(subs1) => unify_Formulas(subs1,rest1,rest2) 
+            case Some(subs1) => unify_Formulas(subs1,rest1,rest2)
           }
-        case _ => 
+        case _ =>
           None
       }
 
     // fm1 is specific, fm2 has free variables.
     // figure out what to associate to those free variables in to get fm1.
-  def unify_Formula(subs: Subst, fm1 : Formula, fm2 : Formula) : Option[Subst] 
+  def unify_Formula(subs: Subst, fm1 : Formula, fm2 : Formula) : Option[Subst]
   = (fm1,fm2) match {
-    case (True,True) | (False, False) => 
+    case (True,True) | (False, False) =>
       Some(subs)
-    case (Atom(R(r1,args1)), Atom(R(r2,args2))) if r1 == r2 => 
+    case (Atom(R(r1,args1)), Atom(R(r2,args2))) if r1 == r2 =>
       unify_Terms(subs,args1,args2)
     case (Not(f1), Not(f2) )=>
       unify_Formula(subs,f1,f2)
-    case (Binop(op1,f1,g1), Binop(op2, f2,g2)) if op1 == op2 => 
+    case (Binop(op1,f1,g1), Binop(op2, f2,g2)) if op1 == op2 =>
       unify_Formulas(subs,List(f1,g1),List(f2,g2))
-    case (Quantifier(qt1, srt1, bv1, f1), Quantifier(qt2, srt2, bv2, f2)) 
+    case (Quantifier(qt1, srt1, bv1, f1), Quantifier(qt2, srt2, bv2, f2))
            if qt1 == qt2 && srt1 == srt2 =>
              val f3 = rename_Formula(bv2, bv1, f2)
              unify_Formula(subs, f1,f3)
@@ -780,7 +772,7 @@ final object Prover {
         case Some((_, srt)) => srt
         case _ => Real // Perhaps should throw error here.
       }
-    case Num(_) => 
+    case Num(_) =>
       Real
     case Var(_) =>
       Real // XXX ??
@@ -789,7 +781,7 @@ final object Prover {
   // not yet fully implemented
   def alphaeq(fm1: Formula, fm2: Formula) : Boolean = (fm1, fm2) match {
     case (Not(p1), Not(p2)) =>
-      alphaeq(p1,p2) 
+      alphaeq(p1,p2)
     case (Binop(o1,p1,q1), Binop(o2,p2,q2)) if o1 == o2 =>
       alphaeq(p1,p2) && alphaeq(q1,q2)
     case (Quantifier(q1,c1,i1, f1), Quantifier(q2,c2,i2,f2)) if q1 == q2 && c1 == c2 =>
