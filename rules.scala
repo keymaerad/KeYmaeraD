@@ -507,7 +507,10 @@ object Rules {
    }
  }
 
-
+ /* This rule lets us work on updates that are are perhaps not at the
+  * outermost level of our sequent. (We don't seem to be using this rule
+  * at all... perhaps we could get rid of it?)
+  */
   val update = new ProofRule("update") {
     def apply(p: Position) = sq => {
       val Sequent(sig, c, s) = sq
@@ -521,7 +524,7 @@ object Rules {
           for(v <- vs) v match {
               case (Fn(vr,Nil), tm) if Prover.firstorder(phi1) =>
                 phi1 = Prover.extract(Fn(vr, Nil), phi1)(tm)
-              case (Fn(vr, args), tm)  if Prover.hasFn_Formula(vr, phi) =>
+              case (Fn(vr, args), tm) if Prover.hasFn_Formula(vr, phi) =>
                 val vr1 = Prover.uniqify(vr);
                 phi1 = Prover.renameFn(vr, vr1, phi1);
                 sig1 = sig.get(vr) match {
@@ -537,7 +540,7 @@ object Rules {
                 // order matters! we want p to still point to phi
                 c1 = c1 ++ List(fm1);
 
-            case _ => ()
+              case _ => ()
           }
           phi1 = AM.list_conj(phi1 :: c1)
           val sq1 = replace(p, Sequent(sig1, c, s), g(phi1))
@@ -551,29 +554,29 @@ object Rules {
   /* this assumes that we don't have any
    *  free variables from existentials */
  val assignAnyRight = new ProofRule("assignanyright") {
-    def apply(p: Position) = sq => (p,sq) match {
-     case (RightP(n),Sequent(sig, c,s)) => 
+    def apply(p: Position) = sq => (p, sq) match {
+     case (RightP(n),Sequent(sig, c, s)) => 
       val fm = lookup(p,sq)
       fm match {
         case Modality(Box,AssignAny(Fn(vr, Nil)),phi) =>
           val vr1 = Prover.uniqify(vr)
-          val phi1 = Prover.renameFn(vr,vr1,phi)
+          val phi1 = Prover.renameFn(vr, vr1, phi)
           val sig1 = sig.get(vr) match {
             case Some(sg ) =>
-              sig.+((vr1,sg))
+              sig.+((vr1, sg))
             case _ => 
               sig
           }
-          val sq1 = replace(p, Sequent(sig1 ,c,s), phi1)
-          Some((List(sq1),Nil))
-        case Modality(Box,AssignAny(f@Fn(vr, List(i))),phi) =>
+          val sq1 = replace(p, Sequent(sig1, c, s), phi1)
+          Some((List(sq1), Nil))
+        case Modality(Box,AssignAny(f@Fn(vr, List(i))), phi) =>
           val vr1 = Prover.uniqify(vr)
           val vr2 = Prover.uniqify(vr)
           val f1 = Fn(vr1, List(i))
-          val phi1 = Prover.renameFn(vr,vr1,phi)
+          val phi1 = Prover.renameFn(vr, vr1, phi)
           val (srt1, sig1) = sig.get(vr) match {
-            case Some(sg@( List(srt1), rtn) ) =>
-              (srt1, sig + ((vr1,sg)) + ((vr2, (Nil,rtn)))  )
+            case Some(sg@( List(srt1), rtn)) =>
+              (srt1, sig + ((vr1, sg)) + ((vr2, (Nil, rtn))))
             case _ => 
               (AnySort, sig)
           }
@@ -1114,32 +1117,6 @@ object Rules {
       
     }
   }
-
-  val concave : Fn => Term => Term => ProofRule = v => startpoint => endpoint => 
-   new ProofRule("concave[" + v + "," + startpoint + "," + endpoint + "]") {
-    def apply(pos: Position) = sq => (pos,sq) match {
-      case (RightP(n), Sequent(sig, c, s)) =>
-        val fm = lookup(pos,sq)
-        fm match {
-          case Atom(R(">", List(lhs, rhs))) =>
-            val d = List((v, Num(Exact.Integer(1))))
-            val lhs1 = Prover.totalDerivTerm(None, d, lhs);
-            val lhs2 = Prover.totalDerivTerm(None, d, lhs1);
-            val rhs1 = Prover.totalDerivTerm(None, d, rhs);
-            val rhs2 = Prover.totalDerivTerm(None, d, rhs1);
-            val fm1 = Atom(R("<=", List(lhs2, rhs2)));
-            val sq1 = replace(pos,sq,fm1)
-          // XXX need to and endpoints and maybe some other conditions (?)
-            Some((List(sq1), Nil))
-          case _ =>
-            None
-        }
-      case _ =>
-        None
-    }
-  }
-
-
 
 }
 

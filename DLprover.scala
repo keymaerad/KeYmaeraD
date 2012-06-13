@@ -774,10 +774,10 @@ final object Prover {
 
 
   def infersort(sig: Map[String, (List[Sort],Sort)], tm: Term) : Sort = tm match {
-    case Fn(f,args) =>
+    case Fn(f, args) =>
       sig.get(f) match {
         case None if List("+", "-", "*", "/", "^").contains(f) => Real
-        case Some((_,srt)) => srt
+        case Some((_, srt)) => srt
         case _ => Real // Perhaps should throw error here.
       }
     case Num(_) => 
@@ -785,7 +785,6 @@ final object Prover {
     case Var(_) =>
       Real // XXX ??
   }
-                
 
   // not yet fully implemented
   def alphaeq(fm1: Formula, fm2: Formula) : Boolean = (fm1, fm2) match {
@@ -797,10 +796,6 @@ final object Prover {
       alphaeq(f1, rename_Formula(i2,i1,f2))
     case _ => fm1 == fm2
   }
-
-
-
-
 
 }
 
