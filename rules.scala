@@ -27,9 +27,6 @@ object RulesUtil {
             }
           }
   
-
-//  type ProofRuleCtxt = Formula => FormulaCtxt => ProofRule
-
   class LookupError() extends Exception()
 
 
@@ -169,12 +166,9 @@ object Rules {
     }
   }
 
-  
-
-
   val hide = new ProofRule("hide") {
     def apply(p:Position) = sq => 
-      Some( (List(remove(p,sq)   ), Nil )   )
+      Some((List(remove(p, sq)), Nil))
   }
    
   //
@@ -508,8 +502,8 @@ object Rules {
  }
 
  /* This rule lets us work on updates that are are perhaps not at the
-  * outermost level of our sequent. (We don't seem to be using this rule
-  * at all... perhaps we could get rid of it?)
+  * outermost level of our sequent. This may be useful after an
+  * application of qdiffsolve in StandardMode.
   */
   val update = new ProofRule("update") {
     def apply(p: Position) = sq => {
