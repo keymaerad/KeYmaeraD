@@ -133,6 +133,9 @@ object Tactics {
       }
     }
 
+  /* Unify on |matcher|, and use the resulting substitution to 
+   * instantiate |template|. Then pass the result to |f|.
+   */
   def unifyT(matcher : Formula, template : Formula, f : Formula => Tactic) : Tactic
   = new Tactic("unifyT ") {
     def apply(nd: OrNode) : Option[List[NodeID]] = {
