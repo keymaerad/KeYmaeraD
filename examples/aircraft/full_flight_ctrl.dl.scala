@@ -363,8 +363,8 @@ val postors =
                     tryruleatT(hide)(LeftP(6)),
                     tryruleatT(hide)(LeftP(6)),
                     tryruleatT(hide)(LeftP(5)),
-// I get a weird AWT error if I uncomment this.
-//                  tryruleatT(hide)(LeftP(4)),
+// Sometimes, I get a weird AWT error unless the following line is commented out.
+                    tryruleatT(hide)(LeftP(4)),
                     arithT
                   ),
                   tryruleT(close)
