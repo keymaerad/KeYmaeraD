@@ -516,8 +516,7 @@ final object Prover {
   def substitute_Term(xold: String,
                  xnew: Term,
                  tm: Term): Term = tm match {
-    case Var(x) if x == xold =>
-      xnew
+    case Var(x) if x == xold => xnew
     case Fn(f, ps) =>
       Fn(f, ps.map(p => substitute_Term(xold, xnew, p)))
     case _ => tm
@@ -527,9 +526,8 @@ final object Prover {
   def simul_substitute_Term(subs: List[(String,Term)],
                             tm: Term): Term = tm match {
     case Var(x) =>
-      assoc(x,subs) match {
-        case Some(xnew) =>
-          xnew
+      assoc(x, subs) match {
+        case Some(xnew) => xnew
         case None => Var(x)
       }
     case Fn(f, ps) =>
@@ -537,20 +535,16 @@ final object Prover {
     case _ => tm
   }
 
-
-
   def substitute_HP(xold: String,
                     xnew: Term,
                     hp : HP) : HP = {
-    val subst : Term => Term = tm => tm match{
-      case Var(x) if x == xold => xnew
-      case _ => tm
-    }
-    onterms_HP(subst, hp)
+    onterms_HP(tm => substitute_Term(xold, xnew, tm), hp)
   }
 
-
-
+  def simul_substitute_HP(subs : List[(String, Term)],
+                          hp : HP) : HP = {
+    onterms_HP(tm => simul_substitute_Term(subs, tm), hp)
+  }
 
   def substitute_Formula1(xold: String,
                       xnew: Term,
@@ -575,9 +569,10 @@ final object Prover {
         val f1 = rename_Formula(v, v1, f)
         Quantifier(q,c,v1,substitute_Formula1(xold, xnew, xnew_fv, f1))
       }
-    //XXX  we don't check for captured function symbols!
+    // Note that we don't check for captured function symbols.
     // This is okay if we uniqify function symbols in the
-    // xnew.
+    // xnew. Also, the |substitute| proof rule only applies
+    // if there are no modalities.
     case Modality(m, hp, f) =>
       Modality(m, substitute_HP(xold, xnew, hp),
                  substitute_Formula1(xold, xnew, xnew_fv, f))
@@ -610,8 +605,10 @@ final object Prover {
         val f1 = rename_Formula(v, v1, f)
         Quantifier(q,c,v1,simul_substitute_Formula1(subs, new_fv, f1))
       }
-    case Modality(_, _, _) =>
-      throw new Error("unimplemented")
+
+    case Modality(m, hp, fm) =>
+      Modality(m, simul_substitute_HP(subs, hp),
+               simul_substitute_Formula1(subs, new_fv, fm))
   }
 
   def simul_substitute_Formula(

@@ -308,11 +308,11 @@ object Rules {
     def apply(p: Position) = sq => (p,sq) match {
       case (RightP(n), Sequent(fs, c,s)) =>
         val fm = lookup(p,sq)
-        val fvs = Util.fv(fm).map( x => Var(x))
+        val fvs = Util.fv(fm).map(x => Var(x))
         (fm) match {
           case Quantifier(Forall, c, v, phi) =>
             val v1 = Prover.uniqify(v)
-            val phi1 = Prover.substitute_Formula(v, Fn(v1,fvs), phi)
+            val phi1 = Prover.substitute_Formula(v, Fn(v1, fvs), phi)
             val Sequent(fs1,c1,s1) = replace(p,sq, phi1)
             val sq2 = Sequent(fs1.+((v1,(Nil, c) )),
                               c1,s1 )// XXX add args of v1 to signature map
