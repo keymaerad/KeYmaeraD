@@ -133,7 +133,32 @@ object Tactics {
       }
     }
 
-
+  def unifyT(matcher : Formula, template : Formula, f : Formula => Tactic) : Tactic
+  = new Tactic("unifyT ") {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val sq@Sequent(sig,cs,ss) = nd.goal
+      var mbesubs : Option[Prover.Subst] = None;
+      var foundidx: Position = RightP(0);
+      for(p <- positions(sq)) {
+        val fm = lookup(p ,sq)
+        if(mbesubs == None) {
+          Prover.unify(fm, matcher) match {
+            case None =>
+              ()
+            case Some(subs) =>
+              mbesubs = Some(subs)
+              foundidx = p;
+          }
+        }
+      }
+      mbesubs match {
+        case None => None
+        case Some(subs) =>
+          val template1 = Prover.simul_substitute_Formula(subs.toList, template)
+          f(template1)(nd)
+      }
+    }
+  }
 
   def usehintsT(pos: Position): Tactic = new Tactic("usehints") {
     def apply(nd: OrNode ) = try {

@@ -338,53 +338,29 @@ val postconditiontct =
                 nullarizeT*,
                 easiestT
               ),
-              cutT(
-                StandardCut,
-                cutfm,
-                parseFormula("minr(I) > 0") )<(
-                  easiestT,
-                  cutT(
-                    StandardCut,
-                    cutfm,
-                    parseFormula("minr(J) > 0") )<(
-                      easiestT,
-                      cutT(
-                        StandardCut,
-                        parseFormula("protectedzone() > 0"),
-                        parseFormula("protectedzone() > 0"))<(
-                          easiestT,
-                          composelistT(
-                            tryruleatT(hide)(LeftP(6)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            tryruleatT(hide)(LeftP(7)),
-                            unsubT(
-                              parseFormula(
-                                "(D1 * Y - D2 * Z + C)^2 " +
-                                "+ (D3 * A - D4 * B + D)^2" +
-                                ">= (X)^2"),
-                              List(Var("A"),
-                                   Var("B"),
-                                   Var("C"),
-                                   Var("D"),
-                                   Var("Y"),
-                                   Var("Z"))),
-                            nullarizeT*,
-                            arithT
+              composelistT(
+                unifyT(cutfm, parseFormula("minr(I) > 0"),
+                       tryruleunifyT(reorder)),
+                unifyT(cutfm, parseFormula("minr(J) > 0"),
+                       tryruleunifyT(reorder)),
+                tryruleunifyT(reorder)(parseFormula("protectedzone() > 0")),
+                hideallbutT(List(LeftP(0), LeftP(1), LeftP(2), LeftP(3),
+                                 LeftP(4), LeftP(5), LeftP(7), RightP(0))),
 
-                          )
-                        )
-                    )
-                )
+                unsubT(
+                  parseFormula(
+                    "(D1 * Y - D2 * Z + C)^2 " +
+                    "+ (D3 * A - D4 * B + D)^2" +
+                    ">= (X)^2"),
+                  List(Var("A"),
+                       Var("B"),
+                       Var("C"),
+                       Var("D"),
+                       Var("Y"),
+                       Var("Z"))),
+                nullarizeT*,
+                arithT
+              )
             )
           ),
           composelistT(

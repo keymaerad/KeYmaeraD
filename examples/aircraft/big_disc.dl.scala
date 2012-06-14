@@ -288,46 +288,25 @@ val postconditiontct =
               hideallbutT(List(LeftP(0), LeftP(1), LeftP(4), LeftP(4),
                                LeftP(13), LeftP(15), LeftP(17),
                                RightP(0))),
+              unifyT(cutfm2, parseFormula("minr(I) > 0"),
+                     tryruleunifyT(reorder)),
+              unifyT(cutfm2, parseFormula("minr(J) > 0"),
+                     tryruleunifyT(reorder)),
+              tryruleunifyT(reorder)(parseFormula("protectedzone() > 0")),
               cutT(
-                StandardKeepCut,
+                DirectedCut,
                 cutfm2,
-                parseFormula("minr(I) > 0")
+                parseFormula("(x1(I) - bigdisc1(J))^2 + (x2(I) - bigdisc2(J))^2 >= (2 * minr(J) + protectedzone())^2")
               )<(
-                nonarithcloseT,
-                cutT(
-                  StandardKeepCut,
-                  cutfm2,
-                  parseFormula("minr(J) > 0")
-                )<(
-                  nonarithcloseT,
-                  cutT(
-                    StandardKeepCut,
-                    cutfm2,
-                    parseFormula("protectedzone() > 0")
-                  )<(
-                    nonarithcloseT,
-                    composelistT(
-                      tryruleatT(hide)(LeftP(6)),
-                      tryruleatT(hide)(LeftP(6)),
-                      tryruleatT(hide)(LeftP(6)),
-                      cutT(
-                        DirectedCut,
-                        cutfm2,
-                        parseFormula("(x1(I) - bigdisc1(J))^2 + (x2(I) - bigdisc2(J))^2 >= (2 * minr(J) + protectedzone())^2")
-                      )<(
-                        composelistT(
-                          tryruleatT(hide)(LeftP(5)),
-                          nullarizeT*,
-                          arithT
-                        ),
-                        composelistT(
-                          tryruleatT(hide)(LeftP(4)),
-                          nullarizeT*,
-                          arithT
-                        )
-                      )
-                    )
-                  )
+                composelistT(
+                  tryruleatT(hide)(LeftP(5)),
+                  nullarizeT*,
+                  arithT
+                ),
+                composelistT(
+                  tryruleatT(hide)(LeftP(4)),
+                  nullarizeT*,
+                  arithT
                 )
               )
             )
