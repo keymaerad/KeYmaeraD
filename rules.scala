@@ -73,7 +73,7 @@ object RulesUtil {
   def lookup(p: Position, s: Sequent): Formula = (p,s) match {
     case (LeftP(n), Sequent(fs,ct,st)) =>
       if(n >= ct.length || n < 0 )
-        throw new   LookupError()
+        throw new LookupError()
       else ct.slice(n,n+1).head
     case (RightP(n), Sequent(fs,ct,st)) =>
       if(n >= st.length || n < 0 )
@@ -85,7 +85,7 @@ object RulesUtil {
   def remove(p: Position, s: Sequent): Sequent = (p,s) match {
     case (LeftP(n), Sequent(fs,ct,st)) =>
       if(n >= ct.length || n < 0 )
-        throw new  LookupError()
+        throw new LookupError()
       else Sequent(fs,removelist(n,ct),st)
     case (RightP(n), Sequent(fs,ct,st)) =>
       if(n >= st.length || n < 0 )

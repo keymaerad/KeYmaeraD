@@ -75,7 +75,9 @@ object Tactics {
   val tryruleatT : ProofRule => Position => Tactic = rl => pos =>
     new Tactic("tryruleat " + rl +  " " + pos ) {
       def apply(nd: OrNode) : Option[List[NodeID]] = {
-        val res0 = rl.apply(pos)(nd.goal)
+        val res0 = try rl.apply(pos)(nd.goal) catch {
+          case e : LookupError => None
+        }
         res0 match {
           case Some(_) =>
             applyrule(nd,pos,rl)
