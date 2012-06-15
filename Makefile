@@ -7,9 +7,11 @@ BACKENDSOURCES= types.scala rational.scala logicutil.scala arithmetic.scala \
 FRONTENDSOURCES= frontend.scala frontactor.scala GUI/guifrontend.scala \
 	tactics.scala
 
-TESTSOURCES= tests/examples.scala
-
 LIBRARIES= .:$(JLINK)/JLink.jar:./commons-cli-1.2/commons-cli-1.2.jar
+
+TESTSOURCES= tests/examples.scala tests/unittests.scala
+
+TESTLIBRARIES= .:./commons-cli-1.2/commons-cli-1.2.jar:./tests/scalatest.jar
 
 ifndef SCALAC
 SCALAC= fsc
@@ -38,7 +40,7 @@ specialoptions :
 	mv specialoptions.tmp specialoptions
 
 tests : prover $(TESTSOURCES)
-	$(SCALAC) -classpath $(LIBRARIES) $(TESTSOURCES) $(ALLOPTIONS)
+	$(SCALAC) -classpath $(TESTLIBRARIES) $(TESTSOURCES) $(ALLOPTIONS)
 
 clean :
 	rm -f specialoptions specialoptions.tmp

@@ -1,0 +1,2 @@
+#!/bin/sh
+scala -classpath tests/scalatest.jar org.scalatest.run KeYmaeraD.Tests.UnitTests

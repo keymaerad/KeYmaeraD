@@ -113,21 +113,25 @@ object Examples {
     println("Starting " + workers + " workers.")
     if (workers > 0) dl('findworkers, workers);
 
-    dl('load, "examples/simple.dl")
-    dl('tactic, easiestT)
 
+
+    dl('load, "examples/simple.dl")
+
+    println("\nAttempting to prove simple.dl with easiestT. This shouldn't take long.")
+    dl('tactic, easiestT)
 
     while (true != (frontactor !? 'rootproved)) {
       Thread.sleep(500)
     }
-      println("proved!")
+    println("proved!")
 
 
     val examples =
       List(("examples/aircraft/big_disc.dl.scala", 30),
            ("examples/aircraft/two_tiny_discs.dl.scala", 30),
-           ("examples/dtpdhs/lhc.dl.scala", 120),
-           ("examples/dtpdhs/lhc_distclocks.dl.scala", 6 * 60))
+           ("examples/dtpdhs/lhc.dl.scala", 120)
+//           ("examples/dtpdhs/lhc_distclocks.dl.scala", 6 * 60)
+         )
 
 
 

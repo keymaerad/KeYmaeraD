@@ -6,8 +6,7 @@ Original author: David Renshaw
 
 Requires: 
    - Scala 2.9.0 or higher
-   - Mathematica, if you want to use the good backend.
-
+   - Mathematica
 
 To set up, define the following environment variables: (in parentheses
 are appropriate values on my system.)
@@ -28,6 +27,11 @@ You may also start workers manually with the "runworker" command:
 ./runworker [-c jobmaster address] [-cp jobmaster port]
 
 The jobmaster port can be read from the output of the prover.
+
+If you are doing development on KeYmaeraD, you may want to use the
+test suite. You will need to download scalatest (www.scalatest.org) to
+do so. To compile the tests, make sure that tests/scalatest.jar is a
+symbolic link to your copy of scalatest, and type "make tests".
 
 
 --------
