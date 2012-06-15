@@ -92,7 +92,7 @@ object TreeActions {
         val ornd = new OrNode(rl.toString, sq)
         attachnode(hn,ornd)
         Some(List(ornd.nodeID))
-      case Some( (sqs, fvs)  ) =>
+      case Some((sqs, fvs)) =>
         val andnd = new AndNode(rl.toString, hn.goal, Nil)
         attachnode(hn,andnd)
         val subname = rl.toString + " subgoal"
@@ -537,9 +537,3 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
   }
 
 }
-
-
-
-
-
-
