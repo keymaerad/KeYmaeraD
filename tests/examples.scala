@@ -1,4 +1,4 @@
-package KeYmaeraD.Testing
+package KeYmaeraD.Tests
 
 import scala.actors.Actor
 import scala.actors.Actor._
@@ -21,7 +21,7 @@ object Examples {
   var frontactor : KeYmaeraD.FrontActor = null;
 
   def interpretfile(i : IMain, filename : String) {
-     val fi = 
+     val fi =
         new java.io.FileInputStream(filename)
      val br = new java.io.BufferedReader(new java.io.InputStreamReader(fi))
      var ins1 = ""
@@ -30,7 +30,7 @@ object Examples {
        ins1 = ins1 + ln + "\n"
        ln = br.readLine()
      }
-    
+
     i.interpret(ins1)
 
     fi.close()
@@ -46,7 +46,7 @@ object Examples {
     val problemfile = filename.substring(0, filename.length - 6)
     println("loading " + problemfile)
     dl('load, problemfile)
-    
+
     println("interpreting " + filename)
     interpretfile(i, filename)
     i.interpret("script(0) = Script.main")
@@ -123,7 +123,7 @@ object Examples {
       println("proved!")
 
 
-    val examples = 
+    val examples =
       List(("examples/aircraft/big_disc.dl.scala", 30),
            ("examples/aircraft/two_tiny_discs.dl.scala", 30),
            ("examples/dtpdhs/lhc.dl.scala", 120),
@@ -156,6 +156,5 @@ object Examples {
   def dl(cmd: Symbol, arg1: Any, arg2: Any, arg3 : Any): Unit = {
     frontactor.!?((cmd,arg1,arg2,arg3))
   }
-
 
 }
