@@ -775,15 +775,48 @@ final object Prover {
       Real // XXX ??
   }
 
-  // not yet fully implemented
+  // alpha equality.
+  def alphaeq_HP(hp1 : HP, hp2: HP) : Boolean = (hp1, hp2) match {
+    case (Assign(vs1), Assign(vs2)) => vs1 == vs2
+    case (AssignAny(v1), AssignAny(v2)) => v1 == v2
+    case (AssignQuantified(i1, st1, vs1), AssignQuantified(i2, st2, vs2)) =>
+      st1 == st2 &&
+        vs1 == vs2.map({case (v, tm) =>
+                        (rename_Term(i2, i1, v), rename_Term(i2, i1, tm))})
+    case (AssignAnyQuantified(i1, st1, v1),
+          AssignAnyQuantified(i2, st2, v2)) =>
+      st1 == st2 && v1 == rename_Term(i2, i1, v2)
+    case (Check(h1), Check(h2)) => alphaeq(h1, h2)
+    case (Seq(p1, q1), Seq(p2, q2)) =>
+      alphaeq_HP(p1, p2) && alphaeq_HP(q1, q2)
+    case (Choose(p1, q1), Choose(p2, q2)) =>
+      alphaeq_HP(p1, p2) && alphaeq_HP(q1, q2)
+    case (Loop(p1, h1, _), Loop(p2, h2, _)) => 
+      alphaeq_HP(p1, p2) && alphaeq(h1, h2)
+    case (Evolve(ds1, h1, _, _), Evolve(ds2, h2, _, _)) => 
+      ds1 == ds2 && alphaeq(h1, h2)
+    case (EvolveQuantified(i1, st1, vs1, h1, _),
+          EvolveQuantified(i2, st2, vs2, h2, _)) =>
+      st1 == st2 &&
+         vs1 == vs2.map({case (v, tm) =>
+                   (rename_Term(i2, i1, v), rename_Term(i2, i1, tm))}) &&
+            alphaeq(h1, rename_Formula(i2, i1, h2))
+    case _ => false
+  }
+
   def alphaeq(fm1: Formula, fm2: Formula) : Boolean = (fm1, fm2) match {
+    case (Atom(_), Atom(_)) => fm1 == fm2
+    case (True, True) => true
+    case (False, False) => true
     case (Not(p1), Not(p2)) =>
-      alphaeq(p1,p2)
-    case (Binop(o1,p1,q1), Binop(o2,p2,q2)) if o1 == o2 =>
-      alphaeq(p1,p2) && alphaeq(q1,q2)
-    case (Quantifier(q1,c1,i1, f1), Quantifier(q2,c2,i2,f2)) if q1 == q2 && c1 == c2 =>
+      alphaeq(p1, p2)
+    case (Binop(o1, p1, q1), Binop(o2, p2, q2)) if o1 == o2 =>
+      alphaeq(p1, p2) && alphaeq(q1, q2)
+    case (Quantifier(q1,c1,i1,f1), Quantifier(q2,c2,i2,f2)) if q1 == q2 && c1 == c2 =>
       alphaeq(f1, rename_Formula(i2,i1,f2))
-    case _ => fm1 == fm2
+    case (Modality(m1, hp1, phi1), Modality(m2, hp2, phi2)) =>
+      m1 == m2 && alphaeq_HP(hp1, hp2) && alphaeq(phi1, phi2)
+    case _ => false
   }
 
 }
