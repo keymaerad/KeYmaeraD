@@ -17,33 +17,34 @@ To set up, define the following environment variables: (in parentheses
 are appropriate values on my Mac OSX system.)
 
 JLINK (=/Applications/Mathematica.app/SystemFiles/Links/JLink)
+
 MATHKERNEL (=/Applications/Mathematica.app/Contents/MacOS/MathKernel)
 
-To compile, navigate to the KeYmaeraD root directory and type "make".
+To compile, navigate to the KeYmaeraD root directory and type `make`.
+To run, use the `runprover` script:
 
-To run, use the "runprover" script:
-
-~~~~
+```
 ./runprover [-workers (# workers)]  [-nogui]
-~~~~
+what what
+```
 
 The default number of workers is the number of available processors on
-your machine, determined by a call to Runtime.getRuntime().availableProcessors().
+your machine, determined by a call to `Runtime.getRuntime().availableProcessors()`.
 This command will launch these workers as subprocesses.
 
 You may also start workers manually with the "runworker" command:
 
-~~~~
+```
 ./runworker [-c jobmaster address] [-cp jobmaster port]
-~~~~
+```
 
 The jobmaster port can be read from the output of the prover.
 
 ## A First Example
 
-~~~~
+```
 dl('load, "examples/simple.dl")
-~~~~
+```
 
 # Proving Theorems
 
