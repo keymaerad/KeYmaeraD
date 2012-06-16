@@ -120,7 +120,8 @@ You may also start workers manually with the "runworker" command:
 ./runworker [-c jobmaster address] [-cp jobmaster port]
 ```
 
-The jobmaster port can be read from the output of the prover.
+The jobmaster port is determined upon startup
+of the prover and can be read from its output.
 
 ## A Simple Example
 
