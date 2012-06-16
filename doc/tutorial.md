@@ -122,7 +122,17 @@ You may also start workers manually with the "runworker" command:
 
 The jobmaster port can be read from the output of the prover.
 
-## A First Example
+## A Simple Example
+
+Start up KeYmaeraD by typing `./runprover`.
+On startup, KeYmaeraD automatically loads
+the file "examples.simple.dl". Once the GUI
+loads, press Cmd-d. You should see
+a proof tree grow and eventually
+get closed, as indicated by green checkmarks.
+to quit KeYmaeraD, close the GUI window.
+
+## A More Involved Example
 
 When learning how KeYmaeraD works, it helps
 to start with the commandline interface. 
@@ -163,7 +173,7 @@ The top line is the theorem we are trying to prove.
 
 ```
 scala> dl('rule, seq, RightP(0))
-sucess
+success
 
 scala> dl('here)
 {  }  |- [x() := 0; (x() := x() + 1) ++ (x() := 40)] x() > 0
@@ -182,7 +192,8 @@ with the command `dl('goto, 3)`.
 Once there, we may try to apply 
 other proof rules; in this case `assign`
 is what would make progress.
-We may 
+We may also apply a tactic,
+which finished up the proof in this case.
 
 ```
 scala> dl('tactic, easiestT)
