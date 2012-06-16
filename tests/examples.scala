@@ -66,7 +66,6 @@ object Examples {
   }
 
   def main(args: Array[String]) : Unit = {
-    println("worker says: hello world.")
 
 //  var i = new ILoop()
 //  i.settings = s

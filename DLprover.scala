@@ -636,22 +636,22 @@ final object Prover {
       tm1 => tm
   }
 
-  def extract(tm_ex : Term, fm: Formula ) : (Term => Formula) = fm match {
+  def extract(tm_ex : Term, fm: Formula) : (Term => Formula) = fm match {
     case True | False =>
       tm1 => fm
-    case Atom(R(r,args)) =>
-      val argsfn = (tm1: Term) => args.map(a => extract_Term(tm_ex,a)(tm1))
-      tm1 => Atom(R(r,argsfn(tm1)))
+    case Atom(R(r, args)) =>
+      val argsfn = (tm1: Term) => args.map(a => extract_Term(tm_ex, a)(tm1))
+      tm1 => Atom(R(r, argsfn(tm1)))
     case Not(f) =>
       tm1 => Not(extract(tm_ex, f)(tm1))
     case Binop(c, f1, f2) =>
-      tm1 => Binop(c, extract(tm_ex,f1)(tm1), extract(tm_ex,f2)(tm1))
+      tm1 => Binop(c, extract(tm_ex, f1)(tm1), extract(tm_ex, f2)(tm1))
     case Quantifier(q, c, v, f) =>
-      // Should we do some alpha renaming magic here?
-      tm1 => Quantifier(q, c, v, extract(tm_ex,f)(tm1))
+      // We intentionally do not do any capture avoidance.
+      tm1 => Quantifier(q, c, v, extract(tm_ex, f)(tm1))
     case Modality(m, hp, f) =>
       // Ignores |hp|.
-      tm1 => Modality(m, hp, extract(tm_ex,f)(tm1))
+      tm1 => Modality(m, hp, extract(tm_ex, f)(tm1))
   }
 
 
@@ -665,15 +665,15 @@ final object Prover {
       extract_update_aux(x => Not(x), f)
     case Binop(c, fm1, fm2) =>
       extract_update(fm1) match {
-        case None => extract_update_aux(x => Binop(c,fm1,x), fm2)
-        case Some((fn1,fm0)) => Some((x => Binop(c,fn1(x),fm2),fm0))
+        case None => extract_update_aux(x => Binop(c, fm1, x), fm2)
+        case Some((fn1, fm0)) => Some((x => Binop(c, fn1(x), fm2), fm0))
       }
-    case Quantifier(q, c, v,f) =>
-      extract_update_aux(x => Quantifier(q,c,v,x), f)
-    case Modality(m, AssignQuantified(i,srt,vs), f) =>
-      Some((x => x ,fm))
+    case Quantifier(q, c, v, f) =>
+      extract_update_aux(x => Quantifier(q, c, v, x), f)
+    case Modality(m, AssignQuantified(i, srt, vs), f) =>
+      Some((x => x, fm))
     case Modality(m, hp, f) =>
-      extract_update_aux(x => Modality(m,hp,x), f)
+      extract_update_aux(x => Modality(m, hp, x), f)
 
   }
 
@@ -681,25 +681,23 @@ final object Prover {
      : Option[(Formula => Formula, Formula)] = extract_update(fm) match {
         case None => None
         case Some((fn1, f1)) =>
-          Some(((fm1 => g(fn1(fm1)) ), f1))
+          Some(((fm1 => g(fn1(fm1))), f1))
      }
 
 
+  type Subst = Map[String, Term]
 
-  type Subst = Map[String,Term]
-
-  val nilmap = scala.collection.immutable.HashMap[String,Term]()
+  val nilmap = scala.collection.immutable.HashMap[String, Term]()
 
   def unify_Terms(subs: Subst, tms1 : List[Term], tms2 : List[Term]) : Option[Subst]
       = (tms1, tms2) match {
         case (Nil, Nil) => Some(subs)
         case (tm1::rest1, tm2::rest2) =>
-          unify_Term(subs, tm1,tm2) match {
-            case None =>  None
-            case Some(subs1) => unify_Terms(subs1,rest1,rest2)
+          unify_Term(subs, tm1, tm2) match {
+            case None => None
+            case Some(subs1) => unify_Terms(subs1, rest1, rest2)
           }
         case _ => None
-
       }
 
 
@@ -707,13 +705,13 @@ final object Prover {
     // figure out what to associate to those free variables in to get tm1.
   def unify_Term(subs: Subst, tm1 : Term, tm2 : Term) : Option[Subst]
   = (tm1,tm2) match {
-    case (Fn(f1,args1), Fn(f2,args2)) if f1 == f2 =>
-      unify_Terms(subs, args1,args2)
+    case (Fn(f1, args1), Fn(f2, args2)) if f1 == f2 =>
+      unify_Terms(subs, args1, args2)
     case (tm1, Var(x)) =>
       subs.get(x) match {
         case None =>
-          Some(subs + ((x,tm1)))
-        case Some(tm)  if tm1 == tm =>
+          Some(subs + ((x, tm1)))
+        case Some(tm) if tm1 == tm =>
           Some(subs)
         case _ =>
           None
@@ -729,9 +727,9 @@ final object Prover {
       = (fms1, fms2) match {
         case (Nil, Nil) => Some(subs)
         case (fm1::rest1, fm2::rest2) =>
-          unify_Formula(subs, fm1,fm2) match {
+          unify_Formula(subs, fm1, fm2) match {
             case None => None
-            case Some(subs1) => unify_Formulas(subs1,rest1,rest2)
+            case Some(subs1) => unify_Formulas(subs1, rest1, rest2)
           }
         case _ =>
           None
@@ -740,25 +738,25 @@ final object Prover {
     // fm1 is specific, fm2 has free variables.
     // figure out what to associate to those free variables in to get fm1.
   def unify_Formula(subs: Subst, fm1 : Formula, fm2 : Formula) : Option[Subst]
-  = (fm1,fm2) match {
-    case (True,True) | (False, False) =>
+  = (fm1, fm2) match {
+    case (True, True) | (False, False) =>
       Some(subs)
-    case (Atom(R(r1,args1)), Atom(R(r2,args2))) if r1 == r2 =>
-      unify_Terms(subs,args1,args2)
-    case (Not(f1), Not(f2) )=>
+    case (Atom(R(r1, args1)), Atom(R(r2, args2))) if r1 == r2 =>
+      unify_Terms(subs, args1, args2)
+    case (Not(f1), Not(f2)) =>
       unify_Formula(subs,f1,f2)
-    case (Binop(op1,f1,g1), Binop(op2, f2,g2)) if op1 == op2 =>
+    case (Binop(op1, f1, g1), Binop(op2, f2, g2)) if op1 == op2 =>
       unify_Formulas(subs,List(f1,g1),List(f2,g2))
     case (Quantifier(qt1, srt1, bv1, f1), Quantifier(qt2, srt2, bv2, f2))
            if qt1 == qt2 && srt1 == srt2 =>
              val f3 = rename_Formula(bv2, bv1, f2)
-             unify_Formula(subs, f1,f3)
+             unify_Formula(subs, f1, f3)
     case _ => None
   }
 
 
   def unify(fm1 : Formula, fm2 : Formula) : Option[Subst] = {
-    unify_Formula(nilmap, fm1,fm2)
+    unify_Formula(nilmap, fm1, fm2)
   }
 
 
@@ -812,8 +810,9 @@ final object Prover {
       alphaeq(p1, p2)
     case (Binop(o1, p1, q1), Binop(o2, p2, q2)) if o1 == o2 =>
       alphaeq(p1, p2) && alphaeq(q1, q2)
-    case (Quantifier(q1,c1,i1,f1), Quantifier(q2,c2,i2,f2)) if q1 == q2 && c1 == c2 =>
-      alphaeq(f1, rename_Formula(i2,i1,f2))
+    case (Quantifier(q1, c1, i1, f1),
+          Quantifier(q2,c2,i2,f2)) if q1 == q2 && c1 == c2 =>
+      alphaeq(f1, rename_Formula(i2, i1, f2))
     case (Modality(m1, hp1, phi1), Modality(m2, hp2, phi2)) =>
       m1 == m2 && alphaeq_HP(hp1, hp2) && alphaeq(phi1, phi2)
     case _ => false

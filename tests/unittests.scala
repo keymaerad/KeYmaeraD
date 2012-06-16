@@ -8,6 +8,19 @@ import KeYmaeraD.Prover._
 
 class UnitTests extends FunSuite {
 
+  test("uniqify") {
+    val x0 = "x"
+    val x1 = uniqify(x0)
+    val x2 = uniqify(x1)
+
+    assert (! (x0 == x1))
+    assert (! (x1 == x2))
+
+    assert (ununiqify(x0) === "x")
+    assert (ununiqify(x1) === "x")
+    assert (ununiqify(x2) === "x")
+  }
+
   test("alpha equality") {
     assert (alphaeq(True, True))
     assert (alphaeq(False, False))
@@ -57,6 +70,12 @@ class UnitTests extends FunSuite {
 
     assert (!alphaeq(fm14, fm15))
 
+    val fm16 = parseFormula("[x() := 0 ; ((?true) ++ y() := 0)] x() = 0")
+    val fm17 = parseFormula("[x() := 0 ; ((?true) ++ x() := 0)] x() = 0")
+
+    assert (alphaeq(fm16, fm16))
+    assert (!alphaeq(fm16, fm17))
+
   }
 
   test("substitution in terms") {
@@ -98,8 +117,37 @@ class UnitTests extends FunSuite {
     val fm2 = parseFormula("[g(x()) := f(x())] true")
     assert (substitute_Formula("i", x, fm1) === fm2)
 
+    val fm3 = parseFormula("X > 4 & X < 10")
+    val fm4 = parseFormula("x() > 4 & x() < 10")
+    assert (substitute_Formula("X", x, fm3) === fm4)
+
   }
 
+ test("extraction") {
+
+   val tm1 = Fn("x", Nil)
+
+   val fm1 = parseFormula("y() = 0 & x() = 1")
+
+   assert (extract(tm1, fm1)(tm1) === fm1)
+
+   val tm2 = Var("i")
+   val fm2 = parseFormula("forall i : C. i = j()")
+
+   assert (extract(tm2, fm2)(tm2) === fm2)
+
+   val tm3 = Fn("k", Nil)
+   val fm3 = parseFormula("forall i : C. k() = j()")
+
+   assert (extract(tm2, fm2)(tm3) === fm3)
+
+ }
+
+ test("unification") {
+   val fm1 = parseFormula("y() = 0 & x() = 1")
+
+   assert (unify(fm1, fm1) === Some(nilmap))
+ }
 
 
 }
