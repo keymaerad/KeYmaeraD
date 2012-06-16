@@ -191,8 +191,10 @@ We may also apply a tactic, which finished up the proof in this case.
 scala> dl('tactic, easiestT)
 ```
 
-If we try `dl('here)` again, we see that the status is `Proved`.  We
-may exit with `dl('quit)`.
+If we try `dl('here)` again, we see that the status is `Proved`.
+Remember when we pressed Cmd-d in the GUI in the previous example?
+What that actually did was exactly what we just did here: apply the
+`easiestT` tactic. We are done and we may exit with `dl('quit)`.
 
 
 
@@ -205,6 +207,8 @@ rules.scala
 ## Tactics
 
 tactics.scala
+
+## Writing Tactic Scripts
 
 ## Contributing
 

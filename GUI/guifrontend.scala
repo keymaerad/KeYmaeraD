@@ -409,7 +409,7 @@ object FE {
             ActionEvent.CTRL_MASK));
 	  contents += tstop
 		 
-	  val tdefault = new MenuItem(Action("Default") 
+	  val tdefault = new MenuItem(Action("Default (easiestT)") 
                                    {fa ! ('tactic, easiestT)})
 	  tdefault.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, keymask));
 	  contents += tdefault
