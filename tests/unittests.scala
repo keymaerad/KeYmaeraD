@@ -144,9 +144,20 @@ class UnitTests extends FunSuite {
  }
 
  test("unification") {
+   val x = Fn("x", Nil)
+   val y = Fn("y", Nil)
    val fm1 = parseFormula("y() = 0 & x() = 1")
-
    assert (unify(fm1, fm1) === Some(nilmap))
+
+   val fm2 = parseFormula("Y = 0 & X = 1")
+
+   unify(fm1, fm2) match {
+     case None => assert (false)
+     case Some(subs) =>
+       assert (subs("X") === x)
+       assert (subs("Y") === y)
+   }
+
  }
 
 

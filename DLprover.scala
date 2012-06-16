@@ -746,11 +746,15 @@ final object Prover {
     case (Not(f1), Not(f2)) =>
       unify_Formula(subs,f1,f2)
     case (Binop(op1, f1, g1), Binop(op2, f2, g2)) if op1 == op2 =>
-      unify_Formulas(subs,List(f1,g1),List(f2,g2))
+      unify_Formulas(subs, List(f1, g1), List(f2, g2))
     case (Quantifier(qt1, srt1, bv1, f1), Quantifier(qt2, srt2, bv2, f2))
            if qt1 == qt2 && srt1 == srt2 =>
              val f3 = rename_Formula(bv2, bv1, f2)
              unify_Formula(subs, f1, f3)
+
+    // TODO implement for HPs
+    case (Modality(m1, hp1, fm1), Modality(m2, hp2, fm2)) => None
+
     case _ => None
   }
 
