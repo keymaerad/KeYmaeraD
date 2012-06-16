@@ -109,6 +109,10 @@ To run, use the `runprover` script:
 The default number of workers is the number of available processors on
 your machine, determined by a call to `Runtime.getRuntime().availableProcessors()`.
 This command will launch these workers as subprocesses.
+It is important that you do not start more workers than
+the number of instances of Mathematica you are authorized
+to run simultaneously. Otherwise, KeYmaeraD will deadlock
+as it waits for Mathematica to load.
 
 You may also start workers manually with the "runworker" command:
 
@@ -120,19 +124,91 @@ The jobmaster port can be read from the output of the prover.
 
 ## A First Example
 
+When learning how KeYmaeraD works, it helps
+to start with the commandline interface. 
+
 ```
-dl('load, "examples/simple.dl")
+./runprover -nogui
 ```
+
+After a few moments, you will be presented
+with a `scala>` prompt. The way
+to communicate with the main KeYmaeraD actor
+is through the `dl` function, as in the 
+following command, which loads the file
+"examples/simple.dl".
+
+```
+scala> dl('load, "examples/simple.dl")
+```
+
+At any time, you can look at the
+current proof node by typing `dl('here)`.
+In the current case, you should see something like:
+
+
+```
+{  }  |- [x() := 0; (x() := x() + 1) ++ (x() := 40)] x() > 0
+
+OrNode
+rule = loaded from examples/simple.dl
+nodeID = 2
+status = Open
+parent = None
+children = List()
+
+```
+
+The top line is the theorem we are trying to prove.
+
+```
+scala> dl('rule, seq, RightP(0))
+sucess
+
+scala> dl('here)
+{  }  |- [x() := 0; (x() := x() + 1) ++ (x() := 40)] x() > 0
+
+OrNode
+rule = loaded from examples/simple.dl
+nodeID = 2
+status = Open
+parent = None
+children = List(3)
+```
+
+Now our node has a child of ID 3.
+We may navigate to that node like
+with the command `dl('goto, 3)`.
+Once there, we may try to apply 
+other proof rules; in this case `assign`
+is what would make progress.
+We may 
+
+```
+scala> dl('tactic, easiestT)
+```
+
+If we try `dl('here)`
+again, we see that the status is `Proved`.
+We may exit with `dl('quit)`.
+
+
 
 # Proving Theorems
 
 ## Proof Rules
 
+rules.scala
+
 ## Tactics
+
+tactics.scala
 
 ## Contributing
 
-If you find any bugs, please let the developers know.
+If you find any bugs, please let the developers know,
+either by submitting an "issue" to the github repository
+or by direct email.
 
 If you are doing development on KeYmaeraD, you may want to use the
 test suite. You will need to download scalatest (www.scalatest.org) to
