@@ -210,7 +210,7 @@ tactics.scala
 
 ## Writing Tactic Scripts
 
-## Contributing
+# Contributing
 
 If you find any bugs, please let the developers know, either by
 submitting an "issue" to the github repository or by direct email.
