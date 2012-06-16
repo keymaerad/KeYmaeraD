@@ -89,8 +89,9 @@ For more information, also see
 
 KeYmaeraD is currently supported on Mac OSX and Linux.
 To compile KeYmaeraD, you will need:
-   - Scala 2.9.0 or higher
-   - Mathematica
+
+* Scala 2.9.0 or higher
+* Mathematica
 
 To set up, define the following environment variables: (in parentheses
 are appropriate values on my Mac OSX system.)
@@ -155,14 +156,12 @@ At any time, you can look at the current proof node by typing
 
 ```
 {  }  |- [x() := 0; (x() := x() + 1) ++ (x() := 40)] x() > 0
-
 OrNode
 rule = loaded from examples/simple.dl
 nodeID = 2
 status = Open
 parent = None
 children = List()
-
 ```
 
 The top line is the theorem we are trying to prove.
@@ -170,10 +169,11 @@ The top line is the theorem we are trying to prove.
 ```
 scala> dl('rule, seq, RightP(0))
 success
+```
 
+```
 scala> dl('here)
 {  }  |- [x() := 0; (x() := x() + 1) ++ (x() := 40)] x() > 0
-
 OrNode
 rule = loaded from examples/simple.dl
 nodeID = 2
