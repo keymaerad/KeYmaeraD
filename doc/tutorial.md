@@ -134,7 +134,7 @@ the GUI window.
 ## A More Involved Example
 
 When learning how KeYmaeraD works, it helps
-to start with the commandline interface. 
+to start with just the commandline interface. 
 
 ```
 ./runprover -nogui
@@ -209,6 +209,20 @@ rules.scala
 tactics.scala
 
 ## Writing Tactic Scripts
+
+Tactic scripts are a way to save your work on in-progress and
+completed proofs. If you are trying to prove "problem.dl" you may
+create a file "problem.dl.scala" which will contain scala code. Your
+script should consist of an object named `Script` with a value named
+`main` that has type `Tactic`. Then, whenever you load
+"problem.dl.scala", in addition to "problem.dl" loading, like normal,
+the script will be compiled and loaded so that you have access to it
+on the command line. This may take several moments; a success message
+will appear on the command line when compilation is complete. At this
+point, if you press Cmd-u in the GUI, the `main` tactic will be 
+executed.
+
+
 
 # Contributing
 
