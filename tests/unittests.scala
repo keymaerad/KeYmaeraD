@@ -19,6 +19,9 @@ class UnitTests extends FunSuite {
     assert (ununiqify(x0) === "x")
     assert (ununiqify(x1) === "x")
     assert (ununiqify(x2) === "x")
+
+    assert (getuniqid(x1) > getuniqid(x0))
+    assert (getuniqid(x2) > getuniqid(x1))
   }
 
   test("alpha equality") {
