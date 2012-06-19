@@ -14,8 +14,7 @@ final object Prover {
   val uniqids: HashMap[String, Int] = new HashMap[String,Int];
 
   def uniqify(s: String): String = {
-    val dol = s.indexOf("$")
-    val s0 = if(dol == -1) s else s.substring(0,dol);
+    val s0 = ununiqify(s);
     uniqids.get(s0) match {
       case None =>
         val s1 = s + "$" + 1;
@@ -32,6 +31,13 @@ final object Prover {
     val dol = s.indexOf("$")
     if(dol == -1) s else s.substring(0,dol);
   }
+
+
+  def getuniqid (s : String) : Int = {
+    val dol = s.indexOf("$")
+    if(dol == -1) 0 else Integer.parseInt(s.substring(dol + 1, s.length()));
+  }
+
 
   def assoc[A,B](k: A, al: List[(A,B)]): Option[B] = al match {
     case (a,b) :: rest =>

@@ -165,6 +165,27 @@ object Tactics {
     }
   }
 
+
+  /* 
+   * Say we have var, var$2, and var$3 in our context.
+   * newestT picks out the newest incarnation of the variable from the context,
+   * in this case "var$3" gets passed to f to fill in the appropriate name
+   */
+  def newestT (rootname : String, f : String => Tactic) : Tactic
+  = new Tactic("fooT ") {
+    def apply(nd: OrNode) : Option[List[NodeID]] = {
+      val sq@Sequent(sig,cs,ss) = nd.goal
+      var max = 0
+
+      for((key, v) <- sig) {
+        if (Prover.ununiqify(key) == rootname) {
+	  if (Prover.getuniqid(key) > max)
+	    max = Prover.getuniqid(key)	}}
+
+      val s = if (max == 0) rootname else (rootname + "$" + max);
+      f(s)(nd) }}
+
+
   def usehintsT(pos: Position): Tactic = new Tactic("usehints") {
     def apply(nd: OrNode ) = try {
       lookup(pos, nd.goal) match {
