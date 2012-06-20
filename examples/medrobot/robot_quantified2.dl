@@ -67,6 +67,10 @@
  i : () -> B,
  j : () -> B,
 
+ r : () -> B,
+ w : () -> B,
+ m : () -> B,
+
  tmp : () -> Real,
  tmp2 : () -> Real,
  tmp3 : () -> Real,
@@ -92,7 +96,7 @@ dd() > 0,
 
   i() := first();
 
-  {?(i /= last()); 
+  {?(i /= next(last())); 
      xtr(i) := *; u(i) := 1;
      d0(i) := (qx() - px(i)) * nx(i) + (qy() - py(i)) * ny(i);
 
@@ -143,7 +147,7 @@ dd() > 0,
       ((? fnp(i) >= 0 & fn(i) >= 0);
                g := u));
       i := next(i)}*;
-  (? i=last());
+  (? i=next(last()));
   t() := 0;
   {  qx' = K() * fx() * g(), 
      qy' = K() * fy() * g(),
@@ -157,5 +161,5 @@ dd() > 0,
                forall s. fy(s) = fy() + fyp() * s,
                forall s. t(s) = t() + s)
 }*]
-[j() := first(); {?j()/=last(); j() := next(j())}*]((qx() - px(j())) * nx(j()) + (qy() - py(j())) * ny(j()) >= 0)
+[r() := first(); {?r()/=last(); r() := next(r())}*]((qx() - px(r())) * nx(r()) + (qy() - py(r())) * ny(r()) >= 0)
 

@@ -655,14 +655,14 @@ object Rules {
                           hp1@Loop(hp, True, inv_hints), phi) =>
               val fm1 = Binop(And, phi,
                               Modality(Box,
-                                       Seq(hp, hp1), fm))
+                                       Seq(hp, hp1), phi))
               val sq1 = replace(p, sq, fm1)
               Some((List(sq1),Nil))
             case Modality(Diamond,
                           hp1@Loop(hp, True, inv_hints), phi) =>
               val fm1 = Binop(Or, phi,
-                              Modality(Box,
-                                       Seq(hp, hp1), fm))
+                              Modality(Diamond,
+                                       Seq(hp, hp1), phi))
               val sq1 = replace(p, sq, fm1)
               Some((List(sq1),Nil))
             case _ =>
