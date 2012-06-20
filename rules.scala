@@ -464,7 +464,7 @@ object Rules {
               c1 = c1 ++ List(fm1, fm2);
 
             case (Fn(vr, _), tm) =>
-              throw new Error("Unimplimented: assign to nonunary function")
+              throw new Error("Unimplemented: assign to nonunary function")
           }
           val sq1 = replace(p, Sequent(sig1, c1, s), phi1)
           Some((List(sq1), Nil))
