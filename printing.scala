@@ -122,7 +122,7 @@ object Printing {
       bracketp(pr>pr1)("(",")",
                        docOfFormulaAux(pr1)(fm1) :: text(" <=> ") ::
                        docOfFormulaAux(pr1+1)(fm2))
-    case Quantifier(qt, c,x, fm) =>
+    case Quantifier(qt, x, c, fm) =>
       val pr1 = 2;
       val dq = qt match { case Forall => text("forall ")
                           case Exists => text("exists ") }

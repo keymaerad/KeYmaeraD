@@ -96,16 +96,16 @@ class DLParser(ins : String)
 
    def formula00 : Parser[Formula] =
      "forall" ~> ident ~ "."~ formula00 ^^
-               { case x ~ "." ~ f => Quantifier(Forall,Real,x, f)} |
+               { case x ~ "." ~ f => Quantifier(Forall, x, Real, f)} |
      "exists" ~> ident ~ "."~ formula00 ^^
-               { case x ~ "." ~ f => Quantifier(Exists,Real,x, f)} |
+               { case x ~ "." ~ f => Quantifier(Exists, x, Real, f)} |
      "forall" ~> ident ~ ":" ~ ident ~ "." ~ formula00 ^^
-               { case x ~ ":" ~ "Real" ~ "." ~ f => Quantifier(Forall, Real, x, f)
-                 case x ~ ":" ~ c ~ "." ~ f => Quantifier(Forall, St(c), x, f)
+               { case x ~ ":" ~ "Real" ~ "." ~ f => Quantifier(Forall, x, Real, f)
+                 case x ~ ":" ~ c ~ "." ~ f => Quantifier(Forall, x, St(c), f)
                } |
      "exists" ~> ident ~ ":" ~ ident ~ "." ~ formula00 ^^
-               { case x ~ ":" ~ "Real" ~ "." ~ f => Quantifier(Exists,Real,x, f)
-                 case x ~ ":" ~ c ~ "." ~ f => Quantifier(Exists,St(c),x, f)
+               { case x ~ ":" ~ "Real" ~ "." ~ f => Quantifier(Exists, x, Real, f)
+                 case x ~ ":" ~ c ~ "." ~ f => Quantifier(Exists, x, St(c), f)
                } |
      formula0
 
@@ -210,9 +210,9 @@ class DLParser(ins : String)
        case Not(f) => Not(freeVarsAreFns(bndVars, f))
        case Binop(c,f1,f2) =>
          Binop(c, freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
-       case Quantifier(q,c,v,f) =>
-         Quantifier(q,c,v, freeVarsAreFns(v :: bndVars, f))
-       case Modality(m,hp,phi) =>
+       case Quantifier(q, v, c, f) =>
+         Quantifier(q, v, c, freeVarsAreFns(v :: bndVars, f))
+       case Modality(m, hp, phi) =>
          Modality(m,freeVarsAreFns_HP(bndVars, hp), freeVarsAreFns(bndVars, phi))
      }
 

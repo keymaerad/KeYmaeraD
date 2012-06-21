@@ -310,7 +310,7 @@ object Rules {
         val fm = lookup(p,sq)
         val fvs = Util.fv(fm).map(x => Var(x))
         (fm) match {
-          case Quantifier(Forall, c, v, phi) =>
+          case Quantifier(Forall, v, c, phi) =>
             val v1 = Prover.uniqify(v)
             val phi1 = Prover.substitute_Formula(v, Fn(v1, fvs), phi)
             val Sequent(fs1,c1,s1) = replace(p,sq, phi1)
@@ -337,11 +337,11 @@ object Rules {
         val srttm = Prover.infersort(sig,tm)
         fm match {
           // first case is an optimization
-          case Quantifier(Forall, srt, v, phi)
+          case Quantifier(Forall, v, srt, phi)
              if srt == srttm && Prover.firstorder(phi) =>
             val phi1 = Prover.substitute_Formula(v, tm, phi)
             Some( (List(Sequent(sig, phi1::c,s)), Nil))
-          case Quantifier(Forall, srt, v, phi) if srt == srttm =>
+          case Quantifier(Forall, v, srt, phi) if srt == srttm =>
             val v1 = Prover.uniqify(v)
             val fv1 = Fn(v1,Nil)
             val phi1 = Prover.substitute_Formula(v, fv1, phi)
@@ -454,7 +454,7 @@ object Rules {
               sig1 = sig2
               val j = Prover.uniqify("j")
               val fm1 = Atom(R("=", List(Fn(vr1, List(arg)), tm)));
-              val fm2 = Quantifier(Forall, srt1, j,
+              val fm2 = Quantifier(Forall, j, srt1,
                                    Binop(Imp,
                                          Not(Atom(R("=", List(Var(j), arg)))),
                                          Atom(R("=", List(Fn(vr1, List(Var(j))),
@@ -499,8 +499,7 @@ object Rules {
                 case _ =>
                   sig1
               }
-              val fm1 = Quantifier(Forall, srt,
-                                   i,
+              val fm1 = Quantifier(Forall, i, srt,
                                    Atom(R("=",List(Fn(vr1,args),tm))));
 
               // order matters! we want p to still point to phi
@@ -541,8 +540,7 @@ object Rules {
                   case _ =>
                     sig1
                 }
-                val fm1 = Quantifier(Forall, srt,
-                                     i,
+                val fm1 = Quantifier(Forall, i, srt,
                                      Atom(R("=", List(Fn(vr1, args), tm))));
 
                 // order matters! we want p to still point to phi
@@ -589,7 +587,7 @@ object Rules {
               (AnySort, sig)
           }
           val j = Prover.uniqify("j")
-          val asgn = Quantifier(Forall, srt1, j,
+          val asgn = Quantifier(Forall, j, srt1,
                                 Binop(Imp,
                                       Not(Atom(R("=", List(Var(j),i)))),
                                       Atom(R("=",
@@ -688,7 +686,7 @@ object Rules {
                         EvolveQuantified(i, st, derivs, h, _),
                         phi) =>
             val closed = Sequent(sig,
-                                 List(Quantifier(Forall, st, i, h)),
+                                 List(Quantifier(Forall, i, st, h)),
                                  List(phi))
             Some((List(closed), Nil))
           case _ => None
@@ -726,7 +724,7 @@ object Rules {
                           EvolveQuantified(i, st, derivs, h, sols),
                           phi) =>
               val (ind_asm, ind_cons) =
-                (List(Quantifier(Forall, st, i, h)),
+                (List(Quantifier(Forall, i, st, h)),
                  Prover.totalDeriv(Some(i), derivs, inv))
               val fm1 = Modality(Box,
                                  EvolveQuantified(i, st,
@@ -735,7 +733,7 @@ object Rules {
                                                   sols),
                                  phi)
               val iv = Sequent(sig,
-                               (Quantifier(Forall, st, i, h))::c,
+                               (Quantifier(Forall, i, st, h))::c,
                                List(inv))
               val ind = Sequent(sig, ind_asm, List(ind_cons))
               val str = replace(pos, sq, fm1)
@@ -761,11 +759,11 @@ object Rules {
       class BadSolution extends Exception
 
       def extract(sol: Formula): (String, (Fn, Term)) = sol match {
-        case Quantifier(Forall,Real,
-                        t, Atom(R("=",
-                                  List(Fn(f,args),
-                                       sol_tm)))) if Var(t) == args.head =>
-                                         (t,(Fn(f, args.tail),sol_tm))
+        case Quantifier(Forall, t, Real,
+                        Atom(R("=",
+                               List(Fn(f,args),
+                                    sol_tm)))) if Var(t) == args.head =>
+                                      (t,(Fn(f, args.tail),sol_tm))
         case _ =>
           println( sol)
         throw new BadSolution
@@ -855,7 +853,7 @@ object Rules {
               val phi2 =
                 Modality(Box,assign_hp, phi1)
               val stay_in_h =
-                Quantifier(Forall, Real, t2, Binop(Imp,t2_range, interm_h))
+                Quantifier(Forall, t2, Real, Binop(Imp, t2_range, interm_h))
               val newgoal = mode match {
                 case Standard =>
                   replace(pos,Sequent(sig, stay_in_h ::t_range::c,s), phi2)
@@ -884,11 +882,11 @@ object Rules {
       class BadSolution extends Exception
 
       def extract(sol: Formula): (String, (Fn, Term)) = sol match {
-        case Quantifier(Forall,Real,
-                        t, Atom(R("=",
-                                  List(Fn(f, args),
-                                       sol_tm)))) if Var(t) == args.head =>
-                                         (t,(Fn(f, args.tail),sol_tm))
+        case Quantifier(Forall, t, Real,
+                        Atom(R("=",
+                               List(Fn(f, args),
+                                    sol_tm)))) if Var(t) == args.head =>
+                                      (t,(Fn(f, args.tail),sol_tm))
         case _ =>
           println( "bad solution:" + sol)
         throw new BadSolution
@@ -964,7 +962,7 @@ object Rules {
                       Atom(R("<=", List(Var(t2), Fn(t,Nil)))))
               val qh =
                 if(Util.fv(h).contains(i)){
-                  Quantifier(Forall, srt, i, h)
+                  Quantifier(Forall, i, srt, h)
                 } else {
                   h // cheating so I don't have to deal with such quantifiers for now.
                 }
@@ -977,7 +975,7 @@ object Rules {
                                          Binop(Imp, qh, phi))
 
               val stay_in_h =
-                Quantifier(Forall, Real, t2, Binop(Imp,t2_range, interm_h))
+                Quantifier(Forall, t2, Real, Binop(Imp,t2_range, interm_h))
               val newgoal = mode match {
                 case Standard =>
                   replace(pos,Sequent(sig, stay_in_h ::t_range::c,s), phi1)
@@ -1114,11 +1112,11 @@ object Rules {
 
   val commutequantifiers = new ProofRule("commutequantifiers"){
     def apply(pos: Position) = sq => lookup(pos,sq) match {
-      case Quantifier(qt1,srt1,i1,
-                      Quantifier(qt2,srt2,i2, qfm))
+      case Quantifier(qt1, i1, srt1,
+                      Quantifier(qt2, i2, srt2, qfm))
       if qt1 == qt2 =>
-        val fm1 = Quantifier(qt2,srt2,i2,
-                             Quantifier(qt1,srt1,i1, qfm))
+        val fm1 = Quantifier(qt2, i2, srt2,
+                             Quantifier(qt1, i1, srt1, qfm))
         val sq1 = replace(pos,sq,fm1)
         Some((List(sq1), Nil))
       case _ => None

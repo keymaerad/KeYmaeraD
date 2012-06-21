@@ -225,11 +225,11 @@ class KEYParser(ins : String)
 
    def formula00 : Parser[Formula] =
      "\\forall" ~> ident ~ ident ~ ";" ~ formula00 ^^
-               { case "R" ~ x ~ ";" ~ f  => Quantifier(Forall,Real,x, f)
-                 case c ~ x ~ ";"  ~ f  => Quantifier(Forall,St(c),x,f) } |
+               { case "R" ~ x ~ ";" ~ f  => Quantifier(Forall, x, Real, f)
+                 case c ~ x ~ ";"  ~ f  => Quantifier(Forall, x, St(c), f) } |
      "\\exists" ~> ident ~ ident ~ ";" ~ formula00 ^^
-               { case "R" ~ x ~ ";" ~ f  => Quantifier(Exists,Real,x, f)
-                 case c ~ x ~ ";" ~  f => Quantifier(Exists,St(c),x,f)} |
+               { case "R" ~ x ~ ";" ~ f  => Quantifier(Exists, x, Real, f)
+                 case c ~ x ~ ";" ~  f => Quantifier(Exists, x, St(c), f)} |
      //"\forall" ~> ident ~ ":" ~ ident ~ ";" ~ formula00 ^^
      //          { case x ~ ":" ~ c ~ ";" ~ f => Quantifier(Forall,St(c), x, f)} |
      //"\exists" ~> ident ~ ":" ~ ident ~ ";" ~ formula00 ^^
@@ -258,11 +258,11 @@ class KEYParser(ins : String)
 
    def formula5 : Parser[Formula] =
    "\\forall" ~> ident ~ ident ~ ";" ~ formula00 ^^
-               { case "R" ~ x ~ ";" ~ f  => Quantifier(Forall,Real,x, f)
-                 case c ~ x ~ ";"  ~ f  => Quantifier(Forall,St(c),x,f) } |
+               { case "R" ~ x ~ ";" ~ f  => Quantifier(Forall, x, Real, f)
+                 case c ~ x ~ ";"  ~ f  => Quantifier(Forall, x, St(c), f) } |
      "\\exists" ~> ident ~ ident ~ ";" ~ formula00 ^^
-               { case "R" ~ x ~ ";" ~ f  => Quantifier(Exists,Real,x, f)
-                 case c ~ x ~ ";" ~  f => Quantifier(Exists,St(c),x,f)} |
+               { case "R" ~ x ~ ";" ~ f  => Quantifier(Exists, x, Real, f)
+                 case c ~ x ~ ";" ~  f => Quantifier(Exists, x, St(c), f)} |
      "(" ~> formula00 <~  ")" |
      pred ^^ (x => Atom(x))  |
      "true" ^^^ True |
@@ -345,8 +345,8 @@ class KEYParser(ins : String)
        case Not(f) => Not(freeVarsAreFns(bndVars, f))
        case Binop(c,f1,f2) =>
          Binop(c, freeVarsAreFns(bndVars, f1),freeVarsAreFns(bndVars, f2))
-       case Quantifier(q,c,v,f) =>
-         Quantifier(q,c,v, freeVarsAreFns(v :: bndVars, f))
+       case Quantifier(q, v, c, f) =>
+         Quantifier(q, v, c, freeVarsAreFns(v :: bndVars, f))
        case Modality(m,hp,phi) =>
          Modality(m,freeVarsAreFns_HP(bndVars, hp), freeVarsAreFns(bndVars, phi))
      }

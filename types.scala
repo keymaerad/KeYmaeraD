@@ -33,12 +33,12 @@ case object Diamond extends ModalityType
 sealed abstract class Formula
 case object True extends Formula
 case object False extends Formula
-case class Atom(p: Pred) extends Formula
-case class Not(f: Formula) extends Formula
-case class Binop(c: Connective, f1 : Formula, f2: Formula) extends Formula
-case class Quantifier(t: QuantifierType, c: Sort,
-                      v: String, f: Formula) extends Formula
-case class Modality(m: ModalityType, hp: HP, rest: Formula) extends Formula
+case class Atom(p : Pred) extends Formula
+case class Not(f : Formula) extends Formula
+case class Binop(c : Connective, f1 : Formula, f2 : Formula) extends Formula
+case class Quantifier(t : QuantifierType, v : String,
+                      c: Sort, f: Formula) extends Formula
+case class Modality(m : ModalityType, hp: HP, rest : Formula) extends Formula
 
 
 sealed abstract class HP
