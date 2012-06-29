@@ -63,9 +63,20 @@
  nx : (B) -> Real,
  ny : (B) -> Real,
 
+ // 0 if we have not adjusted for this boundary during this step
+ w : (B) -> Real,
+
  // a particular boundary
  i : () -> B,
  j : () -> B,
+ m : () -> B,
+ r : () -> B,
+ v : () -> B,
+ z : () -> B,
+
+
+ first : () -> B,
+ end : () -> B,
 
  tmp : () -> Real,
  tmp2 : () -> Real,
@@ -75,21 +86,27 @@
 K() > 0, 
 e() > 0, 
 dd() > 0,
-(forall i : B. nx(i)^2 + ny(i)^2 = 1),
+(forall r : B. nx(r)^2 + ny(r)^2 = 1),
+//first() /= end(),
 
 // Start on the correct side of boundary line.
-(forall i : B. ~(i = last) ==> (qx() - px(i)) * nx(i) + (qy() - py(i)) * ny(i) >= 0) &
-(forall i : B. <j := first; {?~(j = last); j := next(j)}* >(i=j))
+w(end()) = 0,
+(forall z : B. (z /= end()) ==> (w(z) = 1)),
+(forall qq : B. (w(qq) = 1) ==> (qq /= end())),
+(forall i : B. <j() := first(); {?(j() /= end()); j := next(j())}* >(i=j())),
+(forall m : B. (w(m) = 1) ==> (qx() - px(m)) * nx(m) + (qy() - py(m)) * ny(m) >= 0),
+i() = end()
 
 |-
 
 [{
   fxp := *;
   fyp := *;
+  forall z : B w(z) := 0;
 
-  i := first;
+  i() := first;
 
-  {?~(i=last); 
+  {?(i/=end);
      xtr(i) := *; u(i) := 1;
      d0(i) := (qx() - px(i)) * nx(i) + (qy() - py(i)) * ny(i);
 
@@ -139,8 +156,9 @@ dd() > 0,
                g := u) ++
       ((? fnp(i) >= 0 & fn(i) >= 0);
                g := u));
-      i := next(i)}*;
-  (? i=last);
+      w(i()) := 1;
+      i() := next(i())}*;
+  (? i=end);
   t() := 0;
   {  qx' = K() * fx() * g(), 
      qy' = K() * fy() * g(),
@@ -154,4 +172,4 @@ dd() > 0,
                forall s. fy(s) = fy() + fyp() * s,
                forall s. t(s) = t() + s)
 }*]
-(forall i : B. ~(i = last) ==> (qx() - px(i)) * nx(i) + (qy() - py(i)) * ny(i) >= 0)
+(forall v : B. (w(v) = 1) ==> (qx() - px(v)) * nx(v) + (qy() - py(v)) * ny(v) >= 0)

@@ -84,6 +84,7 @@ K() > 0,
 e() > 0, 
 dd() > 0,
 (forall i : B. nx(i)^2 + ny(i)^2 = 1),
+first() /= next(last()),
 
 // Start on the correct side of boundary line.
 [j() := first(); {?j()/=last(); j() := next(j())}*]((qx() - px(j())) * nx(j()) + (qy() - py(j())) * ny(j()) >= 0)
@@ -96,7 +97,7 @@ dd() > 0,
 
   i() := first();
 
-  {?(i /= next(last())); 
+  {  ?(i /= next(last())); 
      xtr(i) := *; u(i) := 1;
      d0(i) := (qx() - px(i)) * nx(i) + (qy() - py(i)) * ny(i);
 
