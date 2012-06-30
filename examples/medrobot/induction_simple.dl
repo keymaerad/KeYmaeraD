@@ -7,6 +7,6 @@
 }
 j() = first(),
 < {? j() /= last(); j() := next(j())}* > here() = j(),
-[ {? j() /= last(); j() := next(j()) }* ] x(j()) = 1
+[ {? j() /= last(); j() := next(j())}* ] x(j()) = 1
 |-
 x(here()) = 1
