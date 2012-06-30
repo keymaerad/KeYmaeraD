@@ -1,0 +1,12 @@
+{ j : () -> C,
+  first : () -> C,
+  last : () -> C,
+  next : (C) -> C,
+  x : (C) -> Real,
+  here : () -> C
+}
+j() = first(),
+< {? j() /= last(); j() := next(j())}* > here() = j(),
+[ {? j() /= last(); j() := next(j()) }*] x(j()) = 1
+|-
+x(here()) = 1
