@@ -1112,17 +1112,38 @@ object Rules {
   }
 
   val commutequantifiers = new ProofRule("commutequantifiers"){
-    def apply(pos: Position) = sq => lookup(pos,sq) match {
+    def apply(pos : Position) = sq => lookup(pos, sq) match {
       case Quantifier(qt1, i1, srt1,
                       Quantifier(qt2, i2, srt2, qfm))
       if qt1 == qt2 =>
         val fm1 = Quantifier(qt2, i2, srt2,
                              Quantifier(qt1, i1, srt1, qfm))
-        val sq1 = replace(pos,sq,fm1)
+        val sq1 = replace(pos, sq, fm1)
         Some((List(sq1), Nil))
       case _ => None
-
     }
   }
+
+ val duality = new ProofRule("duality") {
+   def apply(pos : Position) = sq => {
+     val fm1o = lookup(pos, sq) match {
+       case Modality(Box, hp, fm) =>
+         Some(Not(Modality(Diamond, hp, Not(fm))))
+       case Modality(Diamond, hp, fm) =>
+         Some(Not(Modality(Box, hp, Not(fm))))
+       case Quantifier(Forall, i, st, fm) => 
+         Some(Not(Quantifier(Exists, i, st, Not(fm))))
+       case Quantifier(Exists, i, st, fm) => 
+         Some(Not(Quantifier(Forall, i, st, Not(fm))))
+       case _ => 
+         None
+     }
+     fm1o match {
+       case Some(fm1) => Some((List(replace(pos, sq, fm1)), Nil))
+       case None => None
+     }
+   }
+
+ }
 
 }
