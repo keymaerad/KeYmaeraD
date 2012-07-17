@@ -356,6 +356,30 @@ object Rules {
     }
   }
 
+  // can we combine this with allRight?
+  val existsLeft = new ProofRule("existsleft") {
+    def apply(p: Position) = sq => (p, sq) match {
+      case (LeftP(n), Sequent(fs, c, s)) =>
+        val fm = lookup(p, sq)
+        val fvs = Util.fv(fm).map(x => Var(x))
+        (fm) match {
+          case Quantifier(Exists, v, c, phi) =>
+            val v1 = Prover.uniqify(v)
+            val phi1 = Prover.substitute_Formula(v, Fn(v1, fvs), phi)
+            val Sequent(fs1, c1, s1) = replace(p, sq, phi1)
+            val sq2 = Sequent(fs1.+((v1, (Nil, c) )),
+                              c1, s1)// XXX add args of v1 to signature map
+            Some((List(sq2), Nil))
+          case _ =>
+            None
+        }
+      case _ =>
+        None
+    }
+
+  }
+
+
   //
   // regular hybrid program rules
   //
@@ -626,19 +650,56 @@ object Rules {
   val loopInduction : Formula => ProofRule =
     inv => new ProofRule("loopInduction["
                          + Printing.stringOfFormula(inv) + "]") {
-      def apply(pos: Position) = sq => (pos,sq) match {
-        case (RightP(n), Sequent(sig, c,s)) =>
-          val fm = lookup(pos,sq)
+      def apply(pos: Position) = sq => (pos, sq) match {
+        case (RightP(n), Sequent(sig, c, s)) =>
+          val fm = lookup(pos, sq)
+          val initiallyvalid = replace(pos, sq, inv)
           fm match {
             case Modality(Box,Loop(hp, True, inv_hints), phi) =>
-              val initiallyvalid =
-                replace(pos, sq, inv)
               val inductionstep =
                 Sequent(sig, List(inv), List(Modality(Box, hp, inv)))
               val closestep =
                 Sequent(sig, List(inv), List(phi))
               Some((List(initiallyvalid, inductionstep, closestep),
                     Nil))
+            case Modality(Diamond, Loop(hp, True, _), phi) =>
+              inv match {
+                case Quantifier(Exists, x, Real, variant) =>
+                  val inductionstep = 
+                    Sequent(sig, Nil,
+                            List(
+                              Quantifier(
+                                Forall, x, Real,
+                                Binop(
+                                  Imp,
+                                  Atom(R(">",
+                                         List(Var(x),
+                                              Num(Exact.zero)))),
+                                Binop(
+                                  Imp, variant,
+                                  Modality(
+                                    Diamond, hp,
+                                    Prover.substitute_Formula(x,
+                                                              Fn("-",
+                                                                 List(Var(x),
+                                                                      Num(Exact.one))),
+                                                              variant)))))))
+                  val closestep =
+                    Sequent(sig, Nil,
+                            List(
+                              Binop(Imp,
+                                    Quantifier(
+                                      Exists, x, Real,
+                                      Binop(And,
+                                            Atom(R("<=", List(Var(x),
+                                                              Num(Exact.zero)))),
+                                            variant)),
+                                    phi)))
+                  Some((List(initiallyvalid, inductionstep, closestep),
+                        Nil))
+                                           
+                case _ => None
+              }
             case _ =>
               None
           }
