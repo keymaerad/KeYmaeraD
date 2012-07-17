@@ -432,7 +432,7 @@ object Tactics {
 
 
       val sols = vs.zip(vsol).map({case (Fn(v, Nil), tm) =>
-        Quantifier(Forall, Real, t1name,
+        Quantifier(Forall, t1name, Real,
                    Atom(R("=", List(Fn(v, List(Var(t1name))),
                                     tm))))})
       sols
@@ -687,9 +687,9 @@ object Tactics {
         if(pn == -1) None
         else {
           RulesUtil.lookup(LeftP(pn), nd.goal) match {
-            case Quantifier(Forall, srt1, _,_) if srt == srt1 =>
+            case Quantifier(Forall, _, srt1, _) if srt == srt1 =>
               applyrule(nd,LeftP(pn),allLeft(tm))
-            case Quantifier(Forall, srt1, _,_)  => Some(List(nd.nodeID))
+            case Quantifier(Forall, _, srt1, _)  => Some(List(nd.nodeID))
             case _ => None
           }
         }
@@ -704,7 +704,7 @@ object Tactics {
       var res: List[Formula] = Nil
       for(c <- cs) {
         c match {
-          case Quantifier(Forall,srt1,_,_) if srt1 == srt =>
+          case Quantifier(Forall, _, srt1, _) if srt1 == srt =>
             res = c::res
             ()
           case _ =>
@@ -719,10 +719,10 @@ object Tactics {
       var res: List[Formula] = Nil
       for(c <- cs) {
         c match {
-          case Quantifier(Forall, srt1, _,
+          case Quantifier(Forall, _, srt1,
                           Quantifier(Forall, _, _, _))  =>
             ()
-          case Quantifier(Forall,srt1,_,_) if srt1 == srt =>
+          case Quantifier(Forall, _, srt1, _) if srt1 == srt =>
             res = c::res
             ()
           case _ =>
@@ -779,7 +779,7 @@ object Tactics {
        var tcts : List[Tactic] = Nil
        for (fm <- fms) {
          fm match {
-           case Quantifier(Forall, s, i, fm0) =>
+           case Quantifier(Forall, i, s, fm0) =>
              Prover.assoc(Prover.ununiqify(i), alist) match {
                case None => ()
                case Some(js) =>
@@ -827,7 +827,7 @@ object Tactics {
        var tcts : List[Tactic] = Nil
        for (fm <- fms) {
          fm match {
-           case Quantifier(Forall, s, i, fm0) =>
+           case Quantifier(Forall, i, s, fm0) =>
              tcts = insts.map(x =>
                instantiateAuxT(srt)(Fn(x,Nil))(fm)) ++ tcts
            case _ => ()
@@ -900,8 +900,8 @@ object Tactics {
         val sq = nd.goal
         for(p <- positions(sq)){
           lookup(p,sq) match {
-            case fm@Quantifier(Forall, srt1, i1,
-                               fm1@Quantifier(Forall, srt2, i2, fm2)) =>
+            case fm@Quantifier(Forall, i1, srt1,
+                               fm1@Quantifier(Forall, i2, srt2, fm2)) =>
                                  return composelistT(
                                    tryruleatT(allLeft(tm1))(p),
                                    tryruleunifyT(allLeft(tm2))(fm1),
@@ -980,8 +980,8 @@ object Tactics {
         val sq = nd.goal
         for(p <- positions(sq)){
           lookup(p,sq) match {
-            case fm@Quantifier(Forall, srt1, i1,
-                               fm1@Quantifier(Forall, srt2, i2, fm2)) =>
+            case fm@Quantifier(Forall, i1, srt1,
+                               fm1@Quantifier(Forall, i2, srt2, fm2)) =>
                                  return tryruleatT(hide)(p)(nd);
 
             case _ => ()

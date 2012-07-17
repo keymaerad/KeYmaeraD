@@ -149,17 +149,17 @@ object Util {
             }
           case _ => -1
         }
-        case Quantifier(Forall,Real,x,f) => that match {
+        case Quantifier(Forall, x, Real, f) => that match {
           case False | True | Atom(_) | Not(_)
              | Binop(_,_,_) => 1
-          case Quantifier(Forall,Real,y,g) =>
+          case Quantifier(Forall, y, Real, g) =>
             val c = x compare y;
             if(c == 0) f compare g
             else c
           case _ => -1
         }
-        case Quantifier(Exists,Real,x,f) => that match {
-          case Quantifier(Exists,Real,y,g) =>
+        case Quantifier(Exists, x, Real, f) => that match {
+          case Quantifier(Exists, y, Real, g) =>
             val c = x compare y;
             if(c == 0) f compare g
             else c
@@ -301,10 +301,10 @@ object Util {
     case Not(Binop(Imp,p,q)) => Binop(And,nnf(p), nnf(Not(q)))
     case Not(Binop(Iff,p,q)) => Binop(Or,Binop(And,nnf(p),nnf(Not(q))),
                                       Binop(And,nnf(Not(p)),nnf(q)))
-    case Quantifier(Forall,c, x, p) => Quantifier(Forall,c,x,nnf(p))
-    case Quantifier(Exists,c, x, p) => Quantifier(Exists,c,x,nnf(p))
-    case Not(Quantifier(Forall,c@Real,x,p)) => Quantifier(Exists,c,x,nnf(Not(p)))
-    case Not(Quantifier(Exists,c@Real,x,p)) => Quantifier(Forall,c,x,nnf(Not(p)))
+    case Quantifier(Forall, x, c, p) => Quantifier(Forall,x,c,nnf(p))
+    case Quantifier(Exists, x, c, p) => Quantifier(Exists,x,c,nnf(p))
+    case Not(Quantifier(Forall,x,c@Real,p)) => Quantifier(Exists,x,c,nnf(Not(p)))
+    case Not(Quantifier(Exists,x,c@Real,p)) => Quantifier(Forall,x,c,nnf(Not(p)))
     case _ => fm
   }
 
@@ -313,41 +313,41 @@ object Util {
     case True | False | Atom(_) => fm
     case Not(f1) =>
       prenex(f1) match {
-        case Quantifier(Forall, srt, i, pf1) =>
-          Quantifier(Exists, srt, i, prenex(Not(pf1)))
-        case Quantifier(Exists, srt, i, pf1) =>
-          Quantifier(Forall, srt, i, prenex(Not(pf1)))
+        case Quantifier(Forall, i, srt, pf1) =>
+          Quantifier(Exists, i, srt, prenex(Not(pf1)))
+        case Quantifier(Exists, i, srt, pf1) =>
+          Quantifier(Forall, i, srt, prenex(Not(pf1)))
         case _ => fm
       }
     case Binop(op, f1, f2) if op == And || op == Or =>
       prenex(f1) match {
-        case Quantifier(qt, srt, i, pf1) =>
-          Quantifier(qt, srt, i, prenex(Binop(op,pf1,f2)))
+        case Quantifier(qt, i, srt, pf1) =>
+          Quantifier(qt, i, srt, prenex(Binop(op, pf1, f2)))
         case pf1 =>
           prenex(f2) match {
-            case Quantifier(qt, srt, i, pf2) =>
-              Quantifier(qt, srt, i, prenex(Binop(op,pf1,pf2)))
+            case Quantifier(qt, i, srt, pf2) =>
+              Quantifier(qt, i, srt, prenex(Binop(op, pf1, pf2)))
             case pf2 =>
               fm
           }
       }
     case Binop(Imp, f1, f2)  =>
       prenex(f1) match {
-        case Quantifier(Forall, srt, i, pf1) =>
-          Quantifier(Exists, srt, i, prenex(Binop(Imp,pf1,f2)))
-        case Quantifier(Exists, srt, i, pf1) =>
-          Quantifier(Forall, srt, i, prenex(Binop(Imp,pf1,f2)))
+        case Quantifier(Forall, i, srt, pf1) =>
+          Quantifier(Exists, i, srt, prenex(Binop(Imp, pf1, f2)))
+        case Quantifier(Exists, i, srt, pf1) =>
+          Quantifier(Forall, i, srt, prenex(Binop(Imp, pf1, f2)))
         case pf1 =>
           prenex(f2) match {
-            case Quantifier(qt, srt, i, pf2) =>
-              Quantifier(qt, srt, i, prenex(Binop(Imp,pf1,pf2)))
+            case Quantifier(qt, i, srt, pf2) =>
+              Quantifier(qt, i, srt, prenex(Binop(Imp, pf1, pf2)))
             case pf2 =>
               fm
           }
       }
     // TODO IFF
-    case Quantifier(qt,srt,i,f1) =>
-      Quantifier(qt,srt,i,prenex(f1))
+    case Quantifier(qt, i, srt, f1) =>
+      Quantifier(qt, i, srt, prenex(f1))
     case _ => throw new Error("unsupported in prenex: " + fm)
 
   }
@@ -369,7 +369,7 @@ object Util {
     case Atom(R(p,args)) => unions(args.map(fv_Term))
     case Not(p) => vari(p)
     case Binop(_,p,q) => union(vari(p), vari(q))
-    case Quantifier(_,_,x,p) => insert(x, vari(p))
+    case Quantifier(_,x,_,p) => insert(x, vari(p))
     case _ =>
       throw new Error("nonfirstorder arithmetic")
   }
@@ -412,7 +412,7 @@ object Util {
     case Atom(R(p,args)) => unions(args.map(fv_Term))
     case Not(p) => fv(p)
     case Binop(_,p,q) => union(fv(p), fv(q))
-    case Quantifier(_,_,x,p) => subtract(fv(p) ,List(x))
+    case Quantifier(_,x,_,p) => subtract(fv(p) ,List(x))
     case Modality(m, hp, p) => union(fv_HP(hp), fv(p))
     case _ =>
       throw new Error("nonfirstorder arithmetic")

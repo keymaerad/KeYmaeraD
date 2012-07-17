@@ -64,7 +64,7 @@ final object Prover {
     case Not(f) => firstorder(f)
     case Binop(_,f1,f2) =>
       firstorder(f1) && firstorder(f2)
-    case Quantifier(_,_,v,f) =>
+    case Quantifier(_, v, _, f) =>
       firstorder(f)
     case Modality(_,_,_) => false
     case _ => false
@@ -94,7 +94,7 @@ final object Prover {
     case Not(f) => canQE(f,sig)
     case Binop(_,f1,f2) =>
       canQE(f1,sig) && canQE(f2,sig)
-    case Quantifier(_,Real,v,f) =>
+    case Quantifier(_, v, Real, f) =>
       canQE(f,sig)
     case _ => false
   }
@@ -203,8 +203,8 @@ final object Prover {
               totalDerivAux(forall_i, d, f2))
 
       //case Iff(f1,f2) => Iff(totalDerivAux(d,f1), totalDerivAux(d,f2))
-      case Quantifier(Forall, s, v, f) =>
-        Quantifier(Forall, s, v, totalDerivAux(forall_i, d, f))
+      case Quantifier(Forall, v, s, f) =>
+        Quantifier(Forall, v, s, totalDerivAux(forall_i, d, f))
       case _ =>
         throw new Error("can't take total derivative of formula " +
                         fm)
@@ -276,9 +276,9 @@ final object Prover {
     case Binop(c, f1, f2) =>
       Binop(c,rename_Formula(xold, xnew, f1),
             rename_Formula(xold, xnew, f2))
-    case fm@Quantifier(q, c, v, f) if v == xold => fm
-    case Quantifier(q, c, v, f) =>
-      Quantifier(q, c, v, rename_Formula(xold, xnew, f))
+    case fm@Quantifier(q, v, c, f) if v == xold => fm
+    case Quantifier(q, v, c, f) =>
+      Quantifier(q, v, c, rename_Formula(xold, xnew, f))
     case Modality(m, hp, phi) =>
       Modality(m,rename_HP(xold, xnew, hp),
                rename_Formula(xold, xnew, phi))
@@ -352,9 +352,9 @@ final object Prover {
     case Not(f1) => Not(onterms_Formula(g,f1))
     case Binop(c,f1,f2) =>
       Binop(c,onterms_Formula(g,f1),onterms_Formula(g,f2))
-    case Quantifier(q, c, v,f) =>
-      Quantifier(q, c, v, onterms_Formula(g,f))
-    case Modality(m,hp,phi) =>
+    case Quantifier(q, v, c, f) =>
+      Quantifier(q, v, c, onterms_Formula(g, f))
+    case Modality(m, hp, phi) =>
       Modality(m,onterms_HP(g,hp), onterms_Formula(g,phi))
   }
 
@@ -411,7 +411,7 @@ final object Prover {
     case Binop(c,f1,f2) =>
       overterms_Formula(g,f1,
                         overterms_Formula(g,f2,b))
-    case Quantifier(q, c, v,f) =>
+    case Quantifier(q, v, c, f) =>
       overterms_Formula(g,f,b)
     case Modality(m,hp,phi) =>
       overterms_HP(g,hp,
@@ -563,17 +563,18 @@ final object Prover {
     case Binop(c,f1,f2) =>
       Binop(c,substitute_Formula1(xold,xnew,xnew_fv,f1),
           substitute_Formula1(xold,xnew,xnew_fv,f2))
-    case Quantifier(q,c,v,f) =>
+    case Quantifier(q, v, c, f) =>
       if (xold == v) {
         // Nothing to do.
-        Quantifier(q, c, v, f)
+        Quantifier(q, v, c, f)
       } else if( (! xnew_fv.contains(v))){
         // don't need to rename.
-        Quantifier(q, c, v, substitute_Formula1(xold, xnew, xnew_fv, f))
+        Quantifier(q, v, c, substitute_Formula1(xold, xnew, xnew_fv, f))
       } else {
         val v1 = uniqify(v)
         val f1 = rename_Formula(v, v1, f)
-        Quantifier(q,c,v1,substitute_Formula1(xold, xnew, xnew_fv, f1))
+        Quantifier(q, v1, c,
+                   substitute_Formula1(xold, xnew, xnew_fv, f1))
       }
     // Note that we don't check for captured function symbols.
     // This is okay if we uniqify function symbols in the
@@ -602,14 +603,15 @@ final object Prover {
     case Binop(c, f1, f2) =>
       Binop(c,simul_substitute_Formula1(subs,new_fv, f1),
           simul_substitute_Formula1(subs,new_fv, f2))
-    case Quantifier(q,c,v,f) =>
+    case Quantifier(q, v, c, f) =>
       if( (! new_fv.contains(v)) && (!subs.map(_._1).contains(v)) ){
         // don't need to rename.
-        Quantifier(q, c, v, simul_substitute_Formula1(subs, new_fv, f))
+        Quantifier(q, v, c, simul_substitute_Formula1(subs, new_fv, f))
       } else {
         val v1 = uniqify(v)
         val f1 = rename_Formula(v, v1, f)
-        Quantifier(q,c,v1,simul_substitute_Formula1(subs, new_fv, f1))
+        Quantifier(q, v1, c,
+                   simul_substitute_Formula1(subs, new_fv, f1))
       }
 
     case Modality(m, hp, fm) =>
@@ -652,9 +654,9 @@ final object Prover {
       tm1 => Not(extract(tm_ex, f)(tm1))
     case Binop(c, f1, f2) =>
       tm1 => Binop(c, extract(tm_ex, f1)(tm1), extract(tm_ex, f2)(tm1))
-    case Quantifier(q, c, v, f) =>
+    case Quantifier(q, v, c, f) =>
       // We intentionally do not do any capture avoidance.
-      tm1 => Quantifier(q, c, v, extract(tm_ex, f)(tm1))
+      tm1 => Quantifier(q, v, c, extract(tm_ex, f)(tm1))
     case Modality(m, hp, f) =>
       // Ignores |hp|.
       tm1 => Modality(m, hp, extract(tm_ex, f)(tm1))
@@ -674,8 +676,8 @@ final object Prover {
         case None => extract_update_aux(x => Binop(c, fm1, x), fm2)
         case Some((fn1, fm0)) => Some((x => Binop(c, fn1(x), fm2), fm0))
       }
-    case Quantifier(q, c, v, f) =>
-      extract_update_aux(x => Quantifier(q, c, v, x), f)
+    case Quantifier(q, v, c, f) =>
+      extract_update_aux(x => Quantifier(q, v, c, x), f)
     case Modality(m, AssignQuantified(i, srt, vs), f) =>
       Some((x => x, fm))
     case Modality(m, hp, f) =>
@@ -753,7 +755,7 @@ final object Prover {
       unify_Formula(subs,f1,f2)
     case (Binop(op1, f1, g1), Binop(op2, f2, g2)) if op1 == op2 =>
       unify_Formulas(subs, List(f1, g1), List(f2, g2))
-    case (Quantifier(qt1, srt1, bv1, f1), Quantifier(qt2, srt2, bv2, f2))
+    case (Quantifier(qt1, bv1, srt1, f1), Quantifier(qt2, bv2, srt2, f2))
            if qt1 == qt2 && srt1 == srt2 =>
              val f3 = rename_Formula(bv2, bv1, f2)
              unify_Formula(subs, f1, f3)
@@ -820,8 +822,8 @@ final object Prover {
       alphaeq(p1, p2)
     case (Binop(o1, p1, q1), Binop(o2, p2, q2)) if o1 == o2 =>
       alphaeq(p1, p2) && alphaeq(q1, q2)
-    case (Quantifier(q1, c1, i1, f1),
-          Quantifier(q2,c2,i2,f2)) if q1 == q2 && c1 == c2 =>
+    case (Quantifier(q1, i1, c1, f1),
+          Quantifier(q2, i2, c2, f2)) if q1 == q2 && c1 == c2 =>
       alphaeq(f1, rename_Formula(i2, i1, f2))
     case (Modality(m1, hp1, phi1), Modality(m2, hp2, phi2)) =>
       m1 == m2 && alphaeq_HP(hp1, hp2) && alphaeq(phi1, phi2)

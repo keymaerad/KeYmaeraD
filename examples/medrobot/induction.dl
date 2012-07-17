@@ -1,0 +1,10 @@
+{ j : () -> C,
+  first : () -> C,
+  last : () -> C,
+  next : (C) -> C,
+  x : (C) -> Real
+}
+|-
+( forall i : C . ( < j() := first(); {? j() /= last(); j() := next(j())}* > i = j() ))
+==>
+( [ j() := first();  {x(j()) := 1 ; j() := next(j()) }*; ?j = last()] (forall i : C . i /= last() ==> x(i) = 1))
