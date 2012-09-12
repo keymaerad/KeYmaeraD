@@ -1200,7 +1200,7 @@ object Tactics {
       val insts =
         fname :: sig.keys.toList.filter(k => Prover.ununiqify(k) == fname)
       val matches : Formula => Boolean = fm => {
-        insts.exists(i => Prover.hasFn_Formula(i, fm))
+        insts.exists(i => Prover.hasFn(i, fm))
       }
       tryrulepredT(hide)(matches)(nd)
     }

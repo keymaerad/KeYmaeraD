@@ -441,10 +441,42 @@ object Rules {
   // assignment rules
   //
 
+ val renameAssign : String => ProofRule = v0 =>
+   new ProofRule("renameassign") {
+     def apply(p: Position) = sq => {
+      val Sequent(sig, c, s) = sq
+      val fm = lookup(p, sq)
+      val vnew = if (v0 == "") "x" else v0
+      fm match {
+        case Modality(md, Assign(List((Fn(vold, Nil), tm))), phi) =>
+          val phi1 = Prover.renameFn(vold, vnew, phi)
+          val Sequent(sig1, c1, s1) =
+            replace(p, sq,
+                    Modality(md, Assign(List((Fn(vnew, Nil), tm))), phi1))
+          def return_result(newsig:Map[String, (List[Sort], Sort)]) : ProofRuleResult = {
+            Some((List(Sequent(newsig, c1, s1)), Nil))
+          }
+          if (Prover.hasFn(vnew, phi)) None // don't want to overwrite
+          else (sig.get(vold), sig.get(vnew)) match {
+             case (Some(sg1), Some(sg2)) =>
+               if (sg1 == sg2) return_result(sig1)
+               else None
+             case (Some(sg1), None) =>
+               return_result(sig1.+((vnew, sg1)))
+            case _ =>
+               return_result(sig1)
+           }
+
+        case _ => None
+      }
+     }
+
+   }
+
  val assign = new ProofRule("assign") {
     def apply(p: Position) = sq =>   {
-      val Sequent(sig, c,s) = sq
-      val fm = lookup(p,sq)
+      val Sequent(sig, c, s) = sq
+      val fm = lookup(p, sq)
       fm match {
 
         // Same rule for Box and Diamond.
@@ -455,7 +487,7 @@ object Rules {
           for(v <- vs) v match {
             case (Fn(vr, Nil), tm) =>
               val vr1 = Prover.uniqify(vr);
-              phi1 = Prover.renameFn(vr,vr1,phi1);
+              phi1 = Prover.renameFn(vr, vr1, phi1);
               sig1 = sig.get(vr) match {
                 case Some(sg) =>
                   sig1.+((vr1, sg))
@@ -556,7 +588,7 @@ object Rules {
           for(v <- vs) v match {
               case (Fn(vr,Nil), tm) if Prover.firstorder(phi1) =>
                 phi1 = Prover.extract(Fn(vr, Nil), phi1)(tm)
-              case (Fn(vr, args), tm) if Prover.hasFn_Formula(vr, phi) =>
+              case (Fn(vr, args), tm) if Prover.hasFn(vr, phi) =>
                 val vr1 = Prover.uniqify(vr);
                 phi1 = Prover.renameFn(vr, vr1, phi1);
                 sig1 = sig.get(vr) match {
@@ -665,7 +697,7 @@ object Rules {
             case Modality(Diamond, Loop(hp, True, _), phi) =>
               inv match {
                 case Quantifier(Exists, x, Real, variant) =>
-                  val inductionstep = 
+                  val inductionstep =
                     Sequent(sig, Nil,
                             List(
                               Quantifier(
@@ -697,7 +729,7 @@ object Rules {
                                     phi)))
                   Some((List(initiallyvalid, inductionstep, closestep),
                         Nil))
-                                           
+
                 case _ => None
               }
             case _ =>
@@ -1192,11 +1224,11 @@ object Rules {
          Some(Not(Modality(Diamond, hp, Not(fm))))
        case Modality(Diamond, hp, fm) =>
          Some(Not(Modality(Box, hp, Not(fm))))
-       case Quantifier(Forall, i, st, fm) => 
+       case Quantifier(Forall, i, st, fm) =>
          Some(Not(Quantifier(Exists, i, st, Not(fm))))
-       case Quantifier(Exists, i, st, fm) => 
+       case Quantifier(Exists, i, st, fm) =>
          Some(Not(Quantifier(Forall, i, st, Not(fm))))
-       case _ => 
+       case _ =>
          None
      }
      fm1o match {

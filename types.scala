@@ -45,20 +45,20 @@ sealed abstract class HP
 case class Assign(vs : List[(Fn, Term)]) extends HP
 case class AssignAny(v: Fn) extends HP
 case class AssignAnyQuantified(i: String, c: Sort, v: Fn) extends HP
-case class AssignQuantified(i : String, 
-                            c: Sort, 
-                            vs: List[(Fn,Term)]) extends HP 
+case class AssignQuantified(i : String,
+                            c: Sort,
+                            vs: List[(Fn,Term)]) extends HP
 case class Check(h: Formula) extends HP
 case class Seq(p1: HP, p2: HP) extends HP
 case class Choose(p1: HP, p2: HP) extends HP
-case class Loop(p1: HP, 
+case class Loop(p1: HP,
                 h: Formula,
                 inv_hints: List[Formula]) extends HP
-case class Evolve(derivs: List[(Fn,Term)], 
+case class Evolve(derivs: List[(Fn,Term)],
                   h: Formula,
                   inv_hints: List[Formula],
                   sols: List[Formula]) extends HP
-case class EvolveQuantified(i:String, 
+case class EvolveQuantified(i:String,
                             c: Sort,
                             vs : List[(Fn, Term)],
                             h : Formula,
@@ -67,7 +67,7 @@ case class EvolveQuantified(i:String,
 
 
 //abstract class Goal
-case class Sequent(fn_sorts: Map[String, (List[Sort],Sort)],
+case class Sequent(fn_sorts: Map[String, (List[Sort], Sort)],
                    ctxt: List[Formula],
                    scdts: List[Formula])
 //case class FOGoal(fm: Formula) extends Goal

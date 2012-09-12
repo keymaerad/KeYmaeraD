@@ -1,13 +1,13 @@
 
-object Script { 
+object Script {
 
-val okcuttctfm1 = 
+val okcuttctfm1 =
   parseFormula(
    "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A+B())*(A *" +
    "(eps()-T3)^2+2*(eps()-T3)*V1)"
   )
 
-val okcuttctfm2 = 
+val okcuttctfm2 =
   parseFormula(
    "2 * B() * X2 > 2 * B() * X1 + V1^2- V2^2 + (A+B())*(A *" +
    "(s())^2+2*(s())*V1)"
@@ -41,15 +41,15 @@ val diffinv = parseFormula(
    "(f /= l & e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
 "  ( (v(f) + a(f) * (eps() - t(f)) >= 0 & " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
-     " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
+     " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" +
 " (v(f) + a(f) * (eps() - t(f)) < 0  & " +
 " 2 * B() * a(f)^2 * x(f) - B() * a(f) * v(f)^2 < 2 * B() * a(f)^2 * x(l) + a(f)^2 * v(l)^2   ))  "
  )
 
 
 
-val instT =   instantiatebyT(St("C")) (List(("i", List("f", "l")), 
-                                            ("f", List("f")), 
+val instT =   instantiatebyT(St("C")) (List(("i", List("f", "l")),
+                                            ("f", List("f")),
                                             ("l", List("l"))))
 
 val cutdiffinv2 = cutT(
@@ -66,9 +66,9 @@ val tyltct = composelistT(
   tryruleT(diffStrengthen(
     parseFormula(
       "eps() > 0 & B() > 0 &" +
-      "(forall i : C. (  " + 
+      "(forall i : C. (  " +
       "t(i) >= 0 & a(i) >= -B()))" )))<(
-        
+
         // initially valid
         composelistT(
           (alphaT | betaT | tryruleT(close))*,
@@ -84,7 +84,7 @@ val tyltct = composelistT(
 
         // strengthened
         tryruleT(diffStrengthen(diffinv))< (
-           
+
           //initially valid
           composelistT(
             alphaT*,
@@ -149,7 +149,7 @@ val tyltct = composelistT(
                                     hidethencloseT
                                   ),
                                   composelistT(
-                                    hidenotmatchT(List(okcuttct2fm1, 
+                                    hidenotmatchT(List(okcuttct2fm1,
                                                        okcuttct2fm2,
                                                        okcuttctfm2))*,
                                     hidethencloseT
@@ -175,16 +175,16 @@ val tyltct = composelistT(
                                  sig.keys.toList.filter(k => Prover.ununiqify(k) == "l")
                                   match {
                                     case List(lname) =>
-                                       val matches : Formula => Boolean = fm => 
-                                            (Prover.hasFn_Formula(lname, fm) &&
-                                             Prover.hasFn_Formula("t", fm))
+                                       val matches : Formula => Boolean = fm =>
+                                            (Prover.hasFn(lname, fm) &&
+                                             Prover.hasFn("t", fm))
                                        tryrulepredT(hide)(matches)(nd)
                                     case _ => None
                                   }
                                }
                               }
-                            )*, 
-                            
+                            )*,
+
                             nullarizeT*,
                             hidehasfnT("id")*,
                             hidehasfnT("A")*,
@@ -209,7 +209,7 @@ val tyltct = composelistT(
 
 
 
-val deletetct = 
+val deletetct =
   composelistT(
     hpalphaT*,
     tryruleT(andRight)<(
@@ -218,7 +218,7 @@ val deletetct =
         composelistT(
           hpalphaT*,
           instantiatebyT(St("C"))(List(("i", List("i")), ("j", List("i")))),
-          tryruleT( impLeft)*, 
+          tryruleT( impLeft)*,
           alphaT*,
           substT*,
           nullarizeT*,
@@ -235,13 +235,13 @@ val deletetct =
         alphaT*,
         nonarithcloseT*,
         cutT(StandardKeepCut,
-             parseFormula("~ F = N ==> T1 = T2"), 
+             parseFormula("~ F = N ==> T1 = T2"),
              parseFormula("~ F = N")) < (
                composelistT(
                  vacuousT*,
                  alphaT*,
                  cutT(StandardKeepCut,
-                      parseFormula("~ L = N ==> T1 = T2"), 
+                      parseFormula("~ L = N ==> T1 = T2"),
                       parseFormula("~ L = N")) < (
                         composelistT(
                           vacuousT*,
@@ -262,7 +262,7 @@ val deletetct =
                composelistT(
                  impleftknownT*,
                  cutT(StandardKeepCut,
-                      parseFormula("~ L = N ==> T1 = T2"), 
+                      parseFormula("~ L = N ==> T1 = T2"),
                       parseFormula("~ L = N")) < (
                         composelistT(
                           vacuousT*,
@@ -285,8 +285,8 @@ val deletetct =
       )
     )
   )
- 
-val createtct = 
+
+val createtct =
   composelistT(
     hpalphaT*,
     tryruleT(andRight)<(
@@ -294,9 +294,9 @@ val createtct =
         alleasyT,
         composelistT(
           hpalphaT*,
-          instantiatebyT(St("C"))(List(("i", List("i")), 
+          instantiatebyT(St("C"))(List(("i", List("i")),
                                        ("j", List("i"))))*,
-          tryruleT( impLeft)*, 
+          tryruleT( impLeft)*,
           alphaT*,
           substT*,
           nullarizeT*,
@@ -313,13 +313,13 @@ val createtct =
         alphaT*,
         nonarithcloseT*,
         cutT(StandardKeepCut,
-             parseFormula("~ F = N ==> T1 = T2"), 
+             parseFormula("~ F = N ==> T1 = T2"),
              parseFormula("~ F = N")) < (
                composelistT(
                  vacuousT*,
                  alphaT*,
                  cutT(StandardKeepCut,
-                      parseFormula("~ L = N ==> T1 = T2"), 
+                      parseFormula("~ L = N ==> T1 = T2"),
                       parseFormula("~ L = N")) < (
                         composelistT(
                           vacuousT*,
@@ -343,7 +343,7 @@ val createtct =
                composelistT(
                  impleftknownT*,
                  cutT(StandardKeepCut,
-                      parseFormula("~ L = N ==> T1 = T2"), 
+                      parseFormula("~ L = N ==> T1 = T2"),
                       parseFormula("~ L = N")) < (
                         composelistT(
                           vacuousT*,
@@ -365,14 +365,14 @@ val createtct =
                           hidethencloseT
 
 
-                         
+
                         )
                       )
                )
              )
       )))
 
-val controltct = 
+val controltct =
   composelistT(
     hpalphaT*,
     tryruleT(andRight)<(
@@ -380,9 +380,9 @@ val controltct =
         alleasyT,
         composelistT(
           hpalphaT*,
-          instantiatebyT(St("C"))(List(("i", List("i")), 
+          instantiatebyT(St("C"))(List(("i", List("i")),
                                        ("j", List("i"))))*,
-          tryruleT( impLeft)*, 
+          tryruleT( impLeft)*,
           alphaT*,
           substT*,
           nullarizeT*,
@@ -398,7 +398,7 @@ val controltct =
                                      ("i", List("f","l"))
                                    ))*,
         cutT(StandardKeepCut,
-             parseFormula("~ F = N ==> T1 = T2"), 
+             parseFormula("~ F = N ==> T1 = T2"),
              parseFormula("~ F = N")) < (
                composelistT(
                  vacuousT*,
@@ -429,21 +429,21 @@ val controltct =
 
 val loopinv = parseFormula(
   "eps() > 0 & B() > 0 & " +
-  "(forall i : C. (  a(i) >= -B() & v(i) >= 0 & " + 
+  "(forall i : C. (  a(i) >= -B() & v(i) >= 0 & " +
   "t(i) >= 0 & t(i) <= eps()   )) & " +
   "(forall f : C. forall l : C. " +
    "(f /= l & e(f) = 1 & e(l) = 1 & id(f) <= id(l))  ==> " +
-" x(f) < x(l) & " + 
+" x(f) < x(l) & " +
 "  ((v(f) + a(f) * (eps() - t(f)) >= 0 &  " +
 "2 * B() *  x(l)  > 2 *  B() * x(f) + v(f)^2 - v(l)^2 " +
-     " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" + 
+     " + (a(f) + B()) * (a(f) * (eps() - t(f) )^2 + 2 * (eps() - t(f) ) * v(f)))  |" +
 " (v(f) + a(f) * (eps() - t(f)) < 0  &  " +
 " 2 * B() * a(f)^2 * x(f) - B() * a(f) * v(f)^2 < 2 * B() * a(f)^2 * x(l) + a(f)^2 * v(l)^2   )))  "
  )
 
 
 
-val starttct = 
+val starttct =
   tryruleT(loopInduction(loopinv))<(
     easywithforallsT(St("C")),
     composelistT(
@@ -472,8 +472,8 @@ val starttct =
            composelistT(
              hpalphaT*,
              instantiatebyT(St("C"))
-               (List(("i", List("f", "l")), 
-                     ("f", List("f")), 
+               (List(("i", List("f", "l")),
+                     ("f", List("f")),
                      ("l", List("l"))))*,
               nullarizeT*,
               (nonarithcloseT | alphaT | betaT)*,
@@ -481,7 +481,7 @@ val starttct =
            composelistT(
              hpalphaT*,
              instantiatebyT(St("C"))
-               (List(("f", List("f", "l")), 
+               (List(("f", List("f", "l")),
                      ("l", List("f", "l"))))*,
              (nonarithcloseT | alphaT | betaT | commuteequalsT)*,
              nullarizeT*,

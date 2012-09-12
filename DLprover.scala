@@ -488,16 +488,9 @@ final object Prover {
     case _ => false
   }
 
-  def hasFn_Formula(f: String, fm: Formula) : Boolean =
-    AM.overatoms((a: Pred) => (r1: Boolean) =>
-      {
-        val R(r,ps) = a;
-        val psr = ps.map(p => hasFn_Term(f,p))
-        val res = psr.contains(true)
-        r1 || res
-      }, fm , false)
-
-//
+  def hasFn(f: String, fm: Formula) : Boolean =
+    overterms_Formula((tm:Term) => (b:Boolean) => b || hasFn_Term(f, tm),
+                      fm, false)
 
   def matchAndSplice[A](lst: List[A],
                         f : A => Option[List[A]]): Option[List[A]]
@@ -801,9 +794,9 @@ final object Prover {
       alphaeq_HP(p1, p2) && alphaeq_HP(q1, q2)
     case (Choose(p1, q1), Choose(p2, q2)) =>
       alphaeq_HP(p1, p2) && alphaeq_HP(q1, q2)
-    case (Loop(p1, h1, _), Loop(p2, h2, _)) => 
+    case (Loop(p1, h1, _), Loop(p2, h2, _)) =>
       alphaeq_HP(p1, p2) && alphaeq(h1, h2)
-    case (Evolve(ds1, h1, _, _), Evolve(ds2, h2, _, _)) => 
+    case (Evolve(ds1, h1, _, _), Evolve(ds2, h2, _, _)) =>
       ds1 == ds2 && alphaeq(h1, h2)
     case (EvolveQuantified(i1, st1, vs1, h1, _),
           EvolveQuantified(i2, st2, vs2, h2, _)) =>
