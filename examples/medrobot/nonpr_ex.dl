@@ -1,0 +1,10 @@
+{ jind : () -> C,
+  iind : () -> C,
+  first : () -> C,
+  next : (C) -> C,
+  x : (C) -> Real
+}
+
+[iind() := first(); {iind() := next(iind()) }*] (x(iind()) = 1)
+|-
+[jind() := first(); {jind() := next(jind()) }*] (x(jind()) = 1)
