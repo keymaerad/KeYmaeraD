@@ -418,13 +418,13 @@ final object Prover {
                    overterms_Formula(g,phi,b))
   }
 
-  def overterms_HP[B](g : Term => B => B, hp:HP, b: B):B = {
+  def overterms_HP[B](g : Term => B => B, hp : HP, b : B) : B = {
     val foldit: (List[(Fn, Term)]) => B => B = vs => b0 => {
-      val (fs,ts) = vs.unzip
+      val (fs, ts) = vs.unzip
       val fsr = fs.foldRight(b0)((x,y) => g(x)(y))
-      val tsr = fs.foldRight(fsr)((x,y) => g(x)(y))
+      val tsr = ts.foldRight(fsr)((x,y) => g(x)(y))
       tsr
-    }    ;
+    };
     hp match {
       case Assign(vs) =>
         foldit(vs)(b)
@@ -571,7 +571,7 @@ final object Prover {
       }
     // Note that we don't check for captured function symbols.
     // This is okay if we uniqify function symbols in the
-    // xnew. Also, the |substitute| proof rule only applies
+    // xnew. Also, the relevant proof rules only apply
     // if there are no modalities.
     case Modality(m, hp, f) =>
       Modality(m, substitute_HP(xold, xnew, hp),
@@ -684,6 +684,29 @@ final object Prover {
         case Some((fn1, f1)) =>
           Some(((fm1 => g(fn1(fm1))), f1))
      }
+
+  def try_equality_substitution(told: Term,
+                                tnew: Term,
+                                fm: Formula) : Option[Formula] = {
+    if (Util.fv_Term(told) == Nil && firstorder(fm))
+      Some(extract(told, fm)(tnew))
+    else (told, tnew, fm) match {
+      case (Fn(x, Nil), Fn(y, Nil),
+            Modality(m, Assign(List((Fn(z, Nil), Fn(w, Nil)))), phi)) if w == x =>
+              val res = Modality(m, Assign(List((Fn(z, Nil),
+                                                 Fn(y, Nil)))),
+                                 phi)
+
+                 // Is this too conservative?
+              if (!hasFn(x, phi))
+                Some(res)
+              else None
+      case (Fn(x, Nil), Fn(y, Nil), phi) if (!hasFn(x, phi)) =>
+        Some(phi)
+      case _ => None
+
+    }
+  }
 
 
   type Subst = Map[String, Term]

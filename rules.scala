@@ -1093,15 +1093,31 @@ object Rules {
   val substitute = new ProofRule("substitute") {
     import Prover._
 
-    def apply(pos: Position) = sq => (pos,sq, lookup(pos, sq)) match {
-      case (LeftP(n), Sequent(sig, ctxt,sc), Atom(R("=", List(tm1,tm2))))
-        if Util.fv_Term(tm1) == Nil
-             &&  (ctxt ++ sc).forall(firstorder) =>
-          val ctxt1 = removelist(n, ctxt)
-          val ctxt2 =
-            ctxt1.map(x => extract(tm1, x)(tm2))
-          val sc1 = sc.map(x => extract(tm1, x)(tm2))
-          Some(List(Sequent(sig, ctxt2, sc1)), Nil)
+    def map_valOf[A](lst : List[Option[A]]) : Option[List[A]] = {
+      lst match {
+        case Nil => Some(Nil)
+        case (None::xs) => None
+        case (Some(x) :: mxs) => map_valOf(mxs) match {
+            case None => None
+            case Some(xs) => Some(x::xs)
+        }
+      }
+    }
+
+
+    def apply(pos: Position) = sq => (pos, sq, lookup(pos, sq)) match {
+      case (LeftP(n), Sequent(sig, ctxt, sc), Atom(R("=", List(tm1, tm2)))) =>
+        val ctxt1 = removelist(n, ctxt)
+        val mbe_ctxt2 = ctxt1.map(x => try_equality_substitution(tm1, tm2, x))
+        val mbe_sc1 = sc.map(x => try_equality_substitution(tm1, tm2, x))
+        print("mbe_ctxt2: " + mbe_ctxt2)
+        print("mbe_sc1: " + mbe_sc1)
+        (map_valOf(mbe_ctxt2), map_valOf(mbe_sc1)) match {
+          case (Some(ctxt2), Some(sc1)) =>
+            Some((List(Sequent(sig, ctxt2, sc1)), Nil))
+          case _ => None
+        }
+
       case _ =>
         None
     }
