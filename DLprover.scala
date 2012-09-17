@@ -688,20 +688,23 @@ final object Prover {
   def try_equality_substitution(told: Term,
                                 tnew: Term,
                                 fm: Formula) : Option[Formula] = {
-    if (Util.fv_Term(told) == Nil && firstorder(fm))
+    if (Util.fv_Term(told) == Nil &&
+        Util.fv_Term(tnew) == Nil &&
+        firstorder(fm))
       Some(extract(told, fm)(tnew))
     else (told, tnew, fm) match {
-      case (Fn(x, Nil), Fn(y, Nil),
-            Modality(m, Assign(List((Fn(z, Nil), Fn(w, Nil)))), phi)) if w == x =>
+      case (Fn(x, Nil), _,
+            Modality(m, Assign(List((Fn(z, Nil), theta))), phi)) =>
+              val theta1 = extract_Term(told, theta)(tnew)
               val res = Modality(m, Assign(List((Fn(z, Nil),
-                                                 Fn(y, Nil)))),
+                                                 theta1))),
                                  phi)
 
                  // Is this too conservative?
               if (!hasFn(x, phi))
                 Some(res)
               else None
-      case (Fn(x, Nil), Fn(y, Nil), phi) if (!hasFn(x, phi)) =>
+      case (Fn(x, Nil), _, phi) if (!hasFn(x, phi)) =>
         Some(phi)
       case _ => None
 
