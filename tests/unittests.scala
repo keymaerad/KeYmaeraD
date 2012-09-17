@@ -24,6 +24,24 @@ class UnitTests extends FunSuite {
     assert (getuniqid(x2) > getuniqid(x1))
   }
 
+  test("hasFn") {
+   val fm1 = parseFormula("g(x()) = f(x())  + 16 * h(x())")
+   assert(hasFn("x", fm1))
+   assert(hasFn("f", fm1))
+   assert(hasFn("g", fm1))
+   assert(hasFn("h", fm1))
+   assert(!hasFn("y", fm1))
+
+   val fm2 = parseFormula("[w() := x()] true")
+   assert(hasFn("x", fm2))
+
+   val fm3 = parseFormula("[w() := x()][{w() := z() + 1}*] true")
+   assert(hasFn("x", fm3))
+   assert(hasFn("z", fm3))
+   assert(!hasFn("y", fm3))
+
+  }
+
   test("alpha equality") {
     assert (alphaeq(True, True))
     assert (alphaeq(False, False))
@@ -125,6 +143,30 @@ class UnitTests extends FunSuite {
     assert (substitute_Formula("X", x, fm3) === fm4)
 
   }
+
+ test("equality substitution") {
+   val x = Fn("x", Nil)
+   val y = Fn("y", Nil)
+   val fm1 = parseFormula("g(x()) = f(x())  + 16 * h(x())")
+   val fm2 = parseFormula("g(y()) = f(y())  + 16 * h(y())")
+   assert(try_equality_substitution(x, y, fm1) == Some(fm2))
+
+   val fm3 = parseFormula("[w() := x()][{w() := w() + 1}*] true")
+   val fm4 = parseFormula("[w() := y()][{w() := w() + 1}*] true")
+   assert(try_equality_substitution(x, y, fm3) == Some(fm4))
+
+   // We only substitute in modalities if we can guarantee
+   // that we've gotten rid of all instances.
+   val fm5 = parseFormula("[w() := x()][{w() := x() + 1}*] true")
+   // Substituting should give [w() := y()][{w() := y() + 1}*] true,
+   // but we have not implemented the analysis that would allow this.
+   // Instead of only eliminating the outside instance of x, we fail.
+   assert(try_equality_substitution(x, y, fm5) == None)
+
+
+   val fm6 = parseFormula("[w() := y()][{w() := w() + 1}*] true")
+   assert(try_equality_substitution(x, y, fm6) == Some(fm6))
+ }
 
  test("extraction") {
 
