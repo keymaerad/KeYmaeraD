@@ -156,11 +156,23 @@ object Rules {
       val fm = lookup(p, sq)
       fm match {
         case (Atom(R("=", List(t1,t2))))  =>
-          val sq1 = replace(p,sq, Atom(R("=", List(t2,t1))))
-          Some((List(sq1),Nil))
+          val sq1 = replace(p, sq, Atom(R("=", List(t2,t1))))
+          Some((List(sq1), Nil))
         case (Atom(R("/=", List(t1,t2))))  =>
-          val sq1 = replace(p,sq, Atom(R("/=", List(t2,t1))))
-          Some((List(sq1),Nil))
+          val sq1 = replace(p, sq, Atom(R("/=", List(t2,t1))))
+          Some((List(sq1), Nil))
+        case _ => None
+      }
+    }
+  }
+
+  val notEquals = new ProofRule("notequals"){
+    def apply(p: Position) = sq => {
+      val fm = lookup(p, sq)
+      fm match {
+        case (Atom(R("/=", List(t1,t2)))) =>
+          val sq1 = replace(p, sq, Not(Atom(R("=", List(t1, t2)))))
+          Some((List(sq1), Nil))
         case _ => None
       }
     }
