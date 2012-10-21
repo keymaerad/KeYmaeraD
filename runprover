@@ -12,7 +12,7 @@ do if [ "$i" -ne "0" ]; then
 done
 args="$args)"
 echo $args > _args.scala ;
-cat init.scala - | scala  -cp \
+cat init.scala - | scala -J-Xms64m -J-Xmx4096m -cp \
 .:$JLINK/JLink.jar:./commons-cli-1.2/commons-cli-1.2.jar \
 `cat specialoptions` -Dscala.repl.power
 # HACK. Need to do this or else mac terminal gets messed up.

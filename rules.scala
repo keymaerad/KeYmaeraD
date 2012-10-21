@@ -6,6 +6,8 @@ package KeYmaeraD
 
 
 object RulesUtil {
+  var logging = false
+  def log(x: =>Any) = if (logging) println(x)
 
   abstract class Position
   case class LeftP(n: Int) extends Position
@@ -806,7 +808,7 @@ object Rules {
                          + Printing.stringOfFormula(inv) + "]") {
       def apply(pos: Position) = sq => (pos,sq) match {
         case (RightP(n), Sequent(sig, c,s)) =>
-          println("checking diffstrengthen")
+          log("checking diffstrengthen")
           val fm = lookup(pos,sq)
           fm match {
             case Modality(Box,Evolve(derivs,h,inv_hints,sols), phi) =>
@@ -1122,8 +1124,8 @@ object Rules {
         val ctxt1 = removelist(n, ctxt)
         val mbe_ctxt2 = ctxt1.map(x => try_equality_substitution(tm1, tm2, x))
         val mbe_sc1 = sc.map(x => try_equality_substitution(tm1, tm2, x))
-        print("mbe_ctxt2: " + mbe_ctxt2)
-        print("mbe_sc1: " + mbe_sc1)
+        log("mbe_ctxt2: " + mbe_ctxt2)
+        log("mbe_sc1: " + mbe_sc1)
         (map_valOf(mbe_ctxt2), map_valOf(mbe_sc1)) match {
           case (Some(ctxt2), Some(sc1)) =>
             Some((List(Sequent(sig, ctxt2, sc1)), Nil))
