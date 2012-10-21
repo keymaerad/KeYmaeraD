@@ -90,6 +90,10 @@ object Procedures {
     import com.wolfram.jlink._
     import MathematicaUtil._
     
+    // @todo could use import annotation.elidable._ and
+    // @elidable(FINE) def log(x: =>Any) = println(x)
+    // scalac -Xelide-below=1000
+    // http://www.scala-lang.org/api/current/scala/annotation/elidable.html
     var logging = false
     def log(x: =>Any) = if (logging) println(x)
 
