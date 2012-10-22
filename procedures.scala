@@ -89,7 +89,13 @@ object Procedures {
   object Mathematica extends Procedure {
     import com.wolfram.jlink._
     import MathematicaUtil._
-
+    
+    // @todo could use import annotation.elidable._ and
+    // @elidable(FINE) def log(x: =>Any) = println(x)
+    // scalac -Xelide-below=1000
+    // http://www.scala-lang.org/api/current/scala/annotation/elidable.html
+    var logging = false
+    def log(x: =>Any) = if (logging) println(x)
 
     var eval = false
     val evalLock = new Lock()
@@ -108,9 +114,9 @@ object Procedures {
         val fm0 = Binop(Imp, AM.list_conj(c), AM.list_disj(s));
 //        val fm = AM.univ_close(fm0);
         val fm = AM.makeQEable(fm0);
-        println("about to attempt quantifier elimination on:")
-        println(fm.toString)
-        println()
+        log("about to attempt quantifier elimination on:")
+        log(fm.toString)
+        log("")
         System.out.flush
         val mfm = mathematica_of_formula(fm)
         val mfm_red =
@@ -134,8 +140,8 @@ object Procedures {
                                  mBlist ).toArray)
 
 
-       println("\nmathematica version of formula = ")
-       println(mfm_tmt)
+       log("\nmathematica version of formula = ")
+       log(mfm_tmt)
 
        val link = linkLock.synchronized{
          mbe_link match {
@@ -150,14 +156,14 @@ object Procedures {
 
            link.newPacket()
 
-           println("evaluating expression")
+           log("evaluating expression")
 
            link.evaluate(mfm_tmt)
 
 
            var early_abort = false
 
-           println("error code = " + link.error())
+           log("error code = " + link.error())
            evalLock.synchronized{
              eval = true
              aborted = false
@@ -170,8 +176,8 @@ object Procedures {
              }
            }
 
-           println("answer ready")
-           println("error code = " + link.error())
+           log("answer ready")
+           log("error code = " + link.error())
 
 
          val abortExpr = new Expr(Expr.SYMBOL, "$Aborted")
@@ -188,18 +194,18 @@ object Procedures {
 
          link.newPacket()
 
-         println("result = " + result)
+         log("result = " + result)
 
          if(result == abortExpr) {
            None
          } else if(result == new Expr(Expr.SYMBOL, "True")) {
-           println("success!")
+           log("success!")
 
-           println("error code = " + link.error())
+           log("error code = " + link.error())
            Some(Sequent(sig, Nil,List(True)))
          } else if(result == new Expr(Expr.SYMBOL, "False")) {
-           println("that formula is false!")
-           println("error code = " + link.error())
+           log("that formula is false!")
+           log("error code = " + link.error())
        	   Some(Sequent(sig, Nil, Nil))
          } else {
            // This means neither disproved nor aborted.
