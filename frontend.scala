@@ -8,6 +8,7 @@ object CommandLine {
   val opts = new org.apache.commons.cli.Options();
   opts.addOption("workers", true, "number of worker subproceses")
   opts.addOption("nogui", /* hasArg = */ false, "turn gui off")
+  opts.addOption("noexpand", false, "do not expand new nodes in the gui")
 
   val message = "options:\n-workers\n-nogui "
 
@@ -27,6 +28,10 @@ object CommandLine {
       val cmd = parser.parse(opts, args, false)
       if (!cmd.hasOption("nogui")) {
         dl('gui)
+      }
+
+      if (cmd.hasOption("noexpand")) {
+        dl('setexpandnewnodes, false)
       }
 
       if (!cmd.hasOption("workers")) {
