@@ -72,7 +72,7 @@ object TreeActions {
     if (expandNewNodes) {
       treemodel.map(_.fireNodesInserted(pt, newnds)) // GUI
     }
-//    treemodel.map(_.fireChanged(pt)) // GUI
+    //treemodel.map(_.fireChanged(pt)) // GUI
   }
 
   def attachnode(pt: ProofNode, newnd: ProofNode): Unit = {

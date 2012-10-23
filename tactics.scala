@@ -597,13 +597,12 @@ object Tactics {
   def getOpenLeaves(nd: ProofNode) : List[OrNode] = {
     val kds = nd.getChildren.map(getnode)
     (kds, nd.getStatus, nd) match {
-      case (Nil,Open, nd1@OrNode(_,_)) =>
+      case (Nil, Open, nd1@OrNode(_,_)) =>
         List(nd1)
       case _ =>
         val lvs = kds.map(getOpenLeaves).flatten
         lvs
     }
-
   }
 
 

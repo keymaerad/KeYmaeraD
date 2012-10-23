@@ -79,7 +79,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
       l.treeNodesInserted(e)
 //      l.treeStructureChanged(e)
     }
-    frontend.fireNodesInserted(path)
+    frontend.expandPath(path)
   }
 
   def fireChanged(nd: ProofNode): Unit = {
@@ -252,7 +252,7 @@ class FrontEnd(fa: Actor)
       tree.collapsePath(tpath)
     }
 
-    def fireNodesInserted(path: Array[Object]): Unit = {
+    def expandPath(path: Array[Object]): Unit = {
       val tpath = new javax.swing.tree.TreePath(path)
       tree.expandPath(tpath)
     }
@@ -391,8 +391,8 @@ object FE {
     	    contents += quit
         }
 	contents += new Menu("View") {
-		contents += new MenuItem(Action("Font Size Smaller") {fe.htmlPane.setFont( fe.htmlPane.getFont().deriveFont(fe.htmlPane.getFont().getSize()*0.8f))})
-		contents += new MenuItem(Action("Font Size Larger") {fe.htmlPane.setFont( fe.htmlPane.getFont().deriveFont(fe.htmlPane.getFont().getSize()*1.25f))})
+	  contents += new MenuItem(Action("Font Size Smaller") {fe.htmlPane.setFont( fe.htmlPane.getFont().deriveFont(fe.htmlPane.getFont().getSize()*0.8f))})
+	  contents += new MenuItem(Action("Font Size Larger") {fe.htmlPane.setFont( fe.htmlPane.getFont().deriveFont(fe.htmlPane.getFont().getSize()*1.25f))})
 	}
 	contents += new Menu("Prove") {
 
