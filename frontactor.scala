@@ -34,9 +34,8 @@ object TreeActions {
   jobmaster.start
 
   var hereNode: ProofNode = nullNode
-
-
   var treemodel: Option[KeYmaeraD.GUI.TreeModel] = None
+  var expandNewNodes = true
 
   def getnodethen(ndID: NodeID, f: (ProofNode) => Unit ): Unit =
     nodeTable.get(ndID) match {
@@ -70,8 +69,10 @@ object TreeActions {
       pt.addchild(newnd.nodeID)
     }
 //    println("treemodel attaching nodes: " + newnds)
-    treemodel.map(_.fireNodesInserted(pt, newnds)) // GUI
-//    treemodel.map(_.fireChanged(pt)) // GUI
+    if (expandNewNodes) {
+      treemodel.map(_.fireNodesInserted(pt, newnds)) // GUI
+    }
+    //treemodel.map(_.fireChanged(pt)) // GUI
   }
 
   def attachnode(pt: ProofNode, newnd: ProofNode): Unit = {
@@ -125,7 +126,6 @@ object TreeActions {
       if(pr.applies(ornd.goal)) {
         val wknd = new WorkingNode(proc,ornd.goal)
         attachnode(ornd, wknd)
-
         jobmaster ! (('job, proc, ornd.goal, wknd.nodeID))
         val t = System.currentTimeMillis
         jobs.put(wknd.nodeID, t)
@@ -321,6 +321,10 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
             case Proved => sender ! true
             case _ => sender ! false
           }
+
+        case ('setexpandnewnodes, b : Boolean) =>
+          expandNewNodes = b
+          sender ! ()
 
         case ('rule, rl: ProofRule, pos: Position) =>
           val r = applyrulegen(hereNode,pos,rl)
