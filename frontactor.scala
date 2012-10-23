@@ -37,6 +37,17 @@ object TreeActions {
   var treemodel: Option[KeYmaeraD.GUI.TreeModel] = None
   var expandNewNodes = true
 
+  def getOpenLeaves(nd: ProofNode) : List[ProofNode] = {
+    val kds = nd.getChildren.map(getnode)
+    (kds, nd.getStatus, nd) match {
+      case (Nil, Open, nd1) =>
+        List(nd1)
+      case _ =>
+        val lvs = kds.map(getOpenLeaves).flatten
+        lvs
+    }
+  }
+
   def getnodethen(ndID: NodeID, f: (ProofNode) => Unit ): Unit =
     nodeTable.get(ndID) match {
       case Some(nd) => f(nd)
@@ -156,7 +167,9 @@ object TreeActions {
              }
            case Some(_) =>
              // Collapse the newly proved child.
-             treemodel.map(_.fireProved(getnode(from))) // GUI
+             if (expandNewNodes) {
+               treemodel.map(_.fireProved(getnode(from))) // GUI
+             }
 
       }
 
@@ -189,7 +202,7 @@ object TreeActions {
       case None =>
 
     }
-    nd.getChildren.map( propagateIrrelevantDown)
+    nd.getChildren.map(propagateIrrelevantDown)
 
   }
 }
@@ -324,6 +337,12 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
 
         case ('setexpandnewnodes, b : Boolean) =>
           expandNewNodes = b
+          sender ! ()
+
+        case 'expandopenbranches =>
+          // Only expand the first ten.
+          var openLeaves = getOpenLeaves(hereNode).take(10)
+          openLeaves.map(lv => treemodel.map(_.makeNodeVisible(lv)))
           sender ! ()
 
         case ('rule, rl: ProofRule, pos: Position) =>
