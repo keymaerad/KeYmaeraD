@@ -52,7 +52,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
   val frontend = fe
 
-  val treeModelListeners =  
+  val treeModelListeners =
     new scala.collection.mutable.HashSet[TreeModelListener]()
 
   def addTreeModelListener(l: TreeModelListener): Unit =  {
@@ -65,13 +65,13 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 
   def fireProved(nd: ProofNode) : Unit = {
     val path = getPath(nd)
-    frontend.fireProved(path)
+    frontend.collapsePath(path)
   }
 
   def fireNodesInserted(pt: ProofNode, newnds: List[ProofNode]): Unit = {
     val path = getPath(pt)
     val c: Array[Object] = newnds.toArray
-    val newlength = pt.getChildren.length 
+    val newlength = pt.getChildren.length
     val oldlength = newlength - newnds.length
     val ci: Array[Int] = Range(oldlength, newlength).toArray
     val e = new TreeModelEvent(this, path, ci, c)
@@ -81,6 +81,16 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
     }
     frontend.expandPath(path)
   }
+
+  def makeNodeVisible(nd: ProofNode) : Unit = {
+    // This collapses the node, but ensures that it is visible.
+    frontend.collapsePath(getPath(nd))
+
+    // Doing it the following way, which may seem more natural,
+    // does not work because expandPath is a no-op on leaf nodes.
+    // frontend.expandPath(getPath(pt))
+  }
+
 
   def fireChanged(nd: ProofNode): Unit = {
     val path = getPath(nd)
@@ -127,7 +137,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
   def getIndexOfChild(parent: Any, child: Any): Int = (parent, child) match {
     case (p: ProofNode, c: ProofNode) =>
       p.getChildren.indexOf(c.nodeID)
-    case _ => 
+    case _ =>
       throw new Error("child not found")
   }
 
@@ -137,17 +147,17 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 //      println("getting child  " + index + " of " + pn)
 //      println("it is " + r)
       r
-    case _ => 
+    case _ =>
       null
   }
 
   def getChildCount(parent: Any): Int = parent match {
     case (pn: ProofNode) =>
       pn.getChildren.length
-    case _ => 
+    case _ =>
       0
   }
-  
+
   def getRoot(): Object = {
     rootNode
   }
@@ -155,7 +165,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
   def isLeaf(node: Any): Boolean = node match {
     case (pn: ProofNode) =>
       pn.getChildren.isEmpty
-    case _ => 
+    case _ =>
       true
   }
 
@@ -166,7 +176,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
   }
 }
 
-class FrontEnd(fa: Actor) 
+class FrontEnd(fa: Actor)
   extends GridPanel(1,0) with TreeSelectionListener {
 
     import javax.swing.tree.DefaultTreeCellRenderer
@@ -174,7 +184,7 @@ class FrontEnd(fa: Actor)
 
     val frontactor = fa
 
-    var htmlPane :JEditorPane = null 
+    var htmlPane :JEditorPane = null
     var tree : JTree = null
 
     val tm = new TreeModel(this)
@@ -209,9 +219,9 @@ class FrontEnd(fa: Actor)
       }
     })
 
-    //Create the scroll pane and add the tree to it. 
+    //Create the scroll pane and add the tree to it.
     val treeView = new JScrollPane(tree)
-  
+
     //Create the HTML viewing pane.
     htmlPane = new JEditorPane()
     htmlPane.setEditable(false)
@@ -240,20 +250,21 @@ class FrontEnd(fa: Actor)
     /** Required by TreeSelectionListener interface. */
     def valueChanged(e: TreeSelectionEvent) : Unit = {
       tree.getLastSelectedPathComponent() match {
-        case (nd : ProofNode) => 
+        case (nd : ProofNode) =>
           htmlPane.setText(nd.toPrettyString)
           TreeActions.gotonode(nd)
         case _ => null
       }
     }
 
-    def fireProved(path: Array[Object]): Unit = {
+    def collapsePath(path: Array[Object]): Unit = {
       val tpath = new javax.swing.tree.TreePath(path)
       tree.collapsePath(tpath)
     }
 
     def expandPath(path: Array[Object]): Unit = {
       val tpath = new javax.swing.tree.TreePath(path)
+      println("expanding: " + tpath)
       tree.expandPath(tpath)
     }
 
@@ -265,7 +276,7 @@ class FrontEnd(fa: Actor)
         val i = try {
           new javax.swing.ImageIcon(filename)
         } catch {
-          case e => 
+          case e =>
             println ("using default icon")
             default
           }
@@ -290,20 +301,20 @@ class FrontEnd(fa: Actor)
         super.getTreeCellRendererComponent(
           tree, value, sel,
           expanded, leaf, row,
-          hasFocus) 
+          hasFocus)
 
         value match {
           case (nd: ProofNode) =>
             nd.getStatus match {
-              case Open => 
+              case Open =>
                 setIcon(openIcon)
-              case Irrelevant(_) => 
+              case Irrelevant(_) =>
                 setIcon(irrelevantIcon)
-              case Disproved => 
+              case Disproved =>
                 setIcon(disprovedIcon)
-              case Proved => 
+              case Proved =>
                 setIcon(provedIcon)
-              case Aborted => 
+              case Aborted =>
                 setIcon(abortedIcon)
             }
           case _ =>
@@ -335,7 +346,7 @@ object FE {
   var mf: Frame = null;
 
   var fe : FrontEnd = null;
-  
+
 
   def createAndShowGUI(fa: Actor) : Unit =  {
     //Create and set up the window.
@@ -363,7 +374,7 @@ object FE {
 	contents += new Menu("File") {
 	  val open = new MenuItem(Action("Open") {
 	    val chooser = new FileChooser(new File("."))
-	    if (chooser.showOpenDialog(menuBar) == 
+	    if (chooser.showOpenDialog(menuBar) ==
               FileChooser.Result.Approve) {
               val pth = chooser.selectedFile
               loadProblem(fa, pth)
@@ -371,7 +382,7 @@ object FE {
 	  })
 	  open.action.accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, keymask));
 	  contents += open
-          
+
           val reopen = new MenuItem(Action("Reopen") {
             fa ! 'reload
           })
@@ -393,32 +404,37 @@ object FE {
 	contents += new Menu("View") {
 	  contents += new MenuItem(Action("Font Size Smaller") {fe.htmlPane.setFont( fe.htmlPane.getFont().deriveFont(fe.htmlPane.getFont().getSize()*0.8f))})
 	  contents += new MenuItem(Action("Font Size Larger") {fe.htmlPane.setFont( fe.htmlPane.getFont().deriveFont(fe.htmlPane.getFont().getSize()*1.25f))})
+	  val expand = new MenuItem(Action("Expand Open Branches") {fa ! ('expandopenbranches)})
+          expand.peer.setAccelerator(KeyStroke.getKeyStroke(
+            KeyEvent.VK_G,
+            keymask));
+          contents += expand
 	}
 	contents += new Menu("Prove") {
 
           val trunscript = new MenuItem(Action("Scripted Tactic")
                                         {fa ! ('runscripttactic)})
-          trunscript.peer.setAccelerator(  
+          trunscript.peer.setAccelerator(
             KeyStroke.getKeyStroke(KeyEvent.VK_U, keymask));
           contents += trunscript
 
 	  val tstop = new MenuItem(Action("Stop")
                                    {fa ! ('abortall)})
 	  tstop.action.accelerator = Some(KeyStroke.getKeyStroke(
-            KeyEvent.VK_Z, 
+            KeyEvent.VK_Z,
             ActionEvent.CTRL_MASK));
 	  contents += tstop
-		 
-	  val tdefault = new MenuItem(Action("Default (easiestT)") 
+
+	  val tdefault = new MenuItem(Action("Default (easiestT)")
                                    {fa ! ('tactic, easiestT)})
 	  tdefault.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, keymask));
 	  contents += tdefault
 
-	  val teasy = new MenuItem(Action("All Easy") 
+	  val teasy = new MenuItem(Action("All Easy")
                                    {fa ! ('tactic, alleasyT)})
 	  teasy.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, keymask));
 	  contents += teasy
-          val thtc = new MenuItem(Action("Hide Then Close") 
+          val thtc = new MenuItem(Action("Hide Then Close")
                                   {fa ! ('tactic, hidethencloseT)})
 	  thtc.peer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, keymask));
 	  contents +=  thtc
@@ -426,7 +442,7 @@ object FE {
 	}
 
     }
-      
+
       override def close = {
 	fa ! ('quit)
         super.close
@@ -437,7 +453,7 @@ object FE {
       pack()
       visible = true
       }
-    
+
       var fileOpener = new DropTargetAdapter() {
         def drop(event: DropTargetDropEvent) = {
           try {
@@ -478,7 +494,7 @@ object FE {
 
 
   }
-  
+
   def loadProblem(fa: Actor, path: File) : Unit = {
 	val pth = path.getCanonicalPath
     if (!recentFiles.contains(pth)) {
@@ -493,7 +509,7 @@ object FE {
         props.close()
       } catch {
 	    case e:IOException => e.printStackTrace();
-	  }	
+	  }
 	}
 	fa ! ('load, pth)
   }
@@ -503,10 +519,10 @@ object FE {
       def run() {
         createAndShowGUI(fa)
       }
-    });    
+    });
   }
 
-  
+
 
 
 }
