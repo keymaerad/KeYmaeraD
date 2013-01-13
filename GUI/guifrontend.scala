@@ -147,8 +147,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 //      println("getting child  " + index + " of " + pn)
 //      println("it is " + r)
       r
-    case _ =>
-      null
+    case _ => null
   }
 
   def getChildCount(parent: Any): Int = parent match {
@@ -253,7 +252,7 @@ class FrontEnd(fa: Actor)
         case (nd : ProofNode) =>
           htmlPane.setText(nd.toPrettyString)
           TreeActions.gotonode(nd)
-        case _ => null
+        case _ => ()
       }
     }
 
