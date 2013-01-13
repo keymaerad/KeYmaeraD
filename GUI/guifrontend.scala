@@ -127,7 +127,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
       val p = getPathAux(nd)
       p.reverse.toArray
     } catch {
-      case e =>
+      case (e : Throwable) =>
         println(e)
         println("was starting at " + nd)
         new Array[Object](0)
@@ -276,7 +276,7 @@ class FrontEnd(fa: Actor)
         val i = try {
           new javax.swing.ImageIcon(filename)
         } catch {
-          case e =>
+          case (e : Throwable) =>
             println ("using default icon")
             default
           }

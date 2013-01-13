@@ -198,7 +198,7 @@ object Util {
 
 
   def setifiedp[A <% Ordered[A]](lst: List[A]): Boolean = lst match {
-    case x::(rest@(y::_)) => x < y && setifiedp(rest)
+    case x::(rest@(y::_)) => x < y && setifiedp[A](rest)
     case _ => true
   }
 

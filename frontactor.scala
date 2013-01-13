@@ -93,7 +93,7 @@ object TreeActions {
   def applyrule(hn: OrNode,
                 p: Position,
                 rl: ProofRule): Option[List[NodeID]] = try {
-    val res =  try { rl(p)(hn.goal) } catch {case _ => None}
+    val res =  try { rl(p)(hn.goal) } catch {case _ : Throwable => None}
     res match {
       case Some((Nil, _)) | Some((List(Sequent(_,Nil,List(True))),_)) => //proved
         val pnd = new DoneNode(rl.toString, hn.goal)
@@ -243,7 +243,7 @@ class WorkerTracer(id: Int, ins: InputStream) extends BlockingActor {
       ins.close();
       println("created trace in " + f)
     }
-    catch { case e => println("caught while tracing: " + e) }
+    catch { case (e : Throwable) => println("caught while tracing: " + e) }
 
   }
 }
@@ -455,7 +455,7 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
     }
 
   } catch {
-      case e =>
+      case (e : Throwable) =>
         println( "can't do that due to " + e)
   }
 
@@ -547,7 +547,7 @@ class FrontActor(mberepl: Option[scala.tools.nsc.interpreter.ILoop])
         ()
 
       } catch {
-        case e =>
+        case (e : Throwable) =>
           println("failed to load file " + filename)
           println("due to " + e)
       } finally { if (fi != null) fi.close() }

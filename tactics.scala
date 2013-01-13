@@ -226,7 +226,7 @@ object Tactics {
 
         case _ => None
       }
-    } catch { case _ => None }
+    } catch { case (_ : Throwable) => None }
 
   }
 
@@ -412,7 +412,7 @@ object Tactics {
             applyrule(nd,pos,sol_rule1)
           case _ => None
         }
-      } catch { case _ => None }
+      } catch { case (_ : Throwable) => None }
     }
 
 
