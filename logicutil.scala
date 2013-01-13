@@ -1,6 +1,5 @@
 package KeYmaeraD
 
-
 object Util {
 
 

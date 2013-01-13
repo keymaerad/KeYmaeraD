@@ -18,7 +18,7 @@ SCALAC= fsc
 endif
 
 OPTIONS=
-ALLOPTIONS=${OPTIONS} -deprecation -unchecked -feature
+ALLOPTIONS=${OPTIONS} -deprecation -unchecked
 
 prover : frontend backend
 .PHONY : prover

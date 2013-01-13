@@ -263,7 +263,6 @@ class FrontEnd(fa: Actor)
 
     def expandPath(path: Array[Object]): Unit = {
       val tpath = new javax.swing.tree.TreePath(path)
-      println("expanding: " + tpath)
       tree.expandPath(tpath)
     }
 
