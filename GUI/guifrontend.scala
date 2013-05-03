@@ -127,7 +127,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
       val p = getPathAux(nd)
       p.reverse.toArray
     } catch {
-      case e =>
+      case (e : Throwable) =>
         println(e)
         println("was starting at " + nd)
         new Array[Object](0)
@@ -147,8 +147,7 @@ class TreeModel(fe: FrontEnd) extends javax.swing.tree.TreeModel {
 //      println("getting child  " + index + " of " + pn)
 //      println("it is " + r)
       r
-    case _ =>
-      null
+    case _ => null
   }
 
   def getChildCount(parent: Any): Int = parent match {
@@ -253,7 +252,7 @@ class FrontEnd(fa: Actor)
         case (nd : ProofNode) =>
           htmlPane.setText(nd.toPrettyString)
           TreeActions.gotonode(nd)
-        case _ => null
+        case _ => ()
       }
     }
 
@@ -264,7 +263,6 @@ class FrontEnd(fa: Actor)
 
     def expandPath(path: Array[Object]): Unit = {
       val tpath = new javax.swing.tree.TreePath(path)
-      println("expanding: " + tpath)
       tree.expandPath(tpath)
     }
 
@@ -276,7 +274,7 @@ class FrontEnd(fa: Actor)
         val i = try {
           new javax.swing.ImageIcon(filename)
         } catch {
-          case e =>
+          case (e : Throwable) =>
             println ("using default icon")
             default
           }

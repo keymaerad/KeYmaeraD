@@ -5,7 +5,7 @@ case class Var(s: String) extends Term
 case class Fn(f: String, ps: List[Term]) extends Term
 case class Num(n: Exact.Num) extends Term
 
-abstract class Pred
+sealed abstract class Pred
 case class R(r: String, ps: List[Term]) extends Pred
 
 

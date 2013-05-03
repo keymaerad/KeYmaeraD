@@ -39,7 +39,7 @@ object MathematicaUtil {
       val link = try {
         MathLinkFactory.createKernelLink(linkCall);
       } catch {
-        case e =>
+        case e : Throwable =>
           println("could not created kernel link")
           throw e
       }

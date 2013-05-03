@@ -1,0 +1,148 @@
+// a theorem about the safety of the control algorithm that enforces a
+// single virtual fixture in 2D, with force feedback
+// uses subtraction of the normal component to the boundary
+
+
+{
+ /*  position of tip */
+ qx : () -> Real,
+ qy : () -> Real,
+ qz : () -> Real,
+
+ K : () -> Real,
+
+ // force input. piecewise linear, according to fxp, fyp
+ fx : () -> Real,
+ fy : () -> Real,
+ fz : () -> Real,
+
+
+ // the actual inputs. derivative of force input.
+ fxp : () -> Real,
+ fyp : () -> Real,
+ fzp : () -> Real,
+
+ // time length of a step
+ e : () -> Real,
+
+ // stopwatch that enforces e
+ t : () -> Real,
+
+ // force response, normal to barrier line
+ // g positive means towards the barrier 
+ // (source of confusion)
+ g : () -> Real,
+
+ // perpendicular distance from tool tip to barrier
+ // at beginning of step.
+ d0 : () -> Real,
+
+ // predicted perpendicular distance from tool tip to barrier,
+ // at end of step, if g = 0
+ dist : () -> Real,
+
+ // discriminant
+ disc : () -> Real,
+
+ // normal (wrt barrier) component of (fxp, fyp, fzp)
+ fnp : () -> Real,
+ // normal (wrt barrier) component of (fx, fy, fz)
+ fn : () -> Real,
+
+ // An arbitrary point on the boundary line.
+ px : () -> Real,
+ py : () -> Real,
+
+ // Unit normal for boundary line.
+ nx : () -> Real,
+ ny : () -> Real,
+
+ tmp : () -> Real,
+ tmp2 : () -> Real,
+ tmp3 : () -> Real,
+ gt : () -> Real
+}
+
+K() > 0, 
+e() > 0, 
+
+nx()^2 + ny()^2 = 1,
+
+// Start on the correct side of boundary line.
+(qx() - px()) * nx() + (qy() - py()) * ny() >=0
+
+|-
+
+[
+{
+ (fxp := *;
+  fyp := *;
+  fnp := fxp() * nx() + fyp() * ny();
+  fn := fx() * nx() + fy() * ny();
+  d0 := (qx() - px()) * nx() + (qy() - py()) * ny();
+  dist := (d0 + K() * (fn() * e() + fnp() * e()^2 * (1/2)));
+  disc := (( K() * fn())^2 - 2 * K() * fnp() * d0())
+  );
+
+  ((? (fnp() <= 0 & dist() >= 0); g :=0)
+  ++
+   (?(fnp() <= 0 & dist() <= 0);
+    tmp := *;
+    (? tmp() * K() * e() = 1);
+    g := fn() + ((d0() + (1/2) * K() * fnp() * (e()^2)) * tmp())
+  ) 
+  ++ 
+  ( (? fnp() >= 0 & fn() <= 0 & disc() <= 0);
+    g := 0
+  )
+  ++
+  // This one takes several minutes to prove.
+  ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() >= 0);
+    tmp := *;
+    (? tmp() * tmp() * K() = 2 * d0() * fnp() & tmp() >= 0);
+    g := fn() - tmp()
+  ) 
+  ++
+  ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() <= 0 & dist() <= 0);
+    tmp := *;
+    (? tmp() * K() * e() = 1);
+    gt := fn() + ((d0() + (1/2) * K() * fnp() * (e()^2)) * tmp());
+    tmp2 := *;
+    (((? fnp() > 0 & fnp() * tmp2() = -1 * (fn() - gt()));
+       tmp3 := *;
+       (((? tmp2() <= e() & tmp3() * tmp3() * K() = 2 * d0() * fnp() & tmp3() >= 0);
+              g := fn() - tmp3())++ // here
+	 ((? tmp2() >= e());
+              g := gt)))++
+     ((? fnp() = 0); 
+              g := gt))
+  )
+  ++
+  ( (? fnp() >= 0 & fn() <= 0 & disc() >= 0 & fn() + fnp() * e() <= 0 & dist() >= 0);
+    g := 0
+  ) 
+
+  ++
+  ( (? fnp() >= 0 & fn() >= 0);
+    g := 0
+  ) 
+ );
+ t() := 0;
+ {qx' = K() * (fx() - g() * nx()), 
+  qy' = K() * (fy() - g() * ny()),
+  fx' = fxp(),
+  fy' = fyp(),
+  t' = 1;
+  t() <= e()}
+  @solution(forall s. qx(s) = qx() + K() * (fx() - g() * nx()) * s() + (1/2) * K() * fxp() * s^2,
+            forall s. qy(s) = qy() + K() * (fy() - g() * ny()) * s() + (1/2) * K() * fyp() * s^2,
+            forall s. fx(s) = fx() + fxp() * s,
+            forall s. fy(s) = fy() + fyp() * s,
+            forall s. t(s) = t() + s)
+
+
+}*
+] 
+(qx() - px()) * nx() + (qy() - py()) * ny() >= 0
+
+ 

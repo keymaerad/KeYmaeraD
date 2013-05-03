@@ -1,0 +1,11 @@
+{ j : () -> C,
+  i : () -> C,
+  first : () -> C,
+  next : (C) -> C,
+  x : (C) -> Real
+}
+
+j() = first(),
+[i() := j(); {i() := next(i()) }*] (x(i()) = 1)
+|-
+[i() := first(); {i() := next(i()) }*] (x(i()) = 1)
