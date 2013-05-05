@@ -30,9 +30,9 @@
  // dampening factor, between 0 and 1
  g : () -> Real,
  gt : () -> Real,
+
  // attenuation computed for force feedback
  u : (B) -> Real,
-
 
  // perpendicular distance from tool tip to a barrier
  // at beginning of step.
@@ -42,7 +42,7 @@
  dd : () -> Real,
 
  // predicted perpendicular distance from tool tip to barrier,
- // at end of step, if g = 0
+ // at end of step, if g = 1
  dist : (B) -> Real,
 
  // discriminant
@@ -76,31 +76,35 @@
  tmp2 : () -> Real,
  tmp3 : () -> Real,
 
- first : () -> B,
- last : () -> B,
- next : (B) -> B
+ first : () -> B, // we enforce boundaries between first and the one right before end
+ last : () -> B, 
+ end : () -> B, // end is unenforced ; one beyond the last enforced boundary
+ next : (B) -> B // next moves us down the list
 }
 
 K() > 0, 
 e() > 0, 
 dd() > 0,
+g() >= 0,
 (forall i : B. nx(i)^2 + ny(i)^2 = 1),
-first() /= next(last()), // ensure that this is not a circular structure, this would lead to short-circuit
+next(end()) = end(),
+(forall h : B . forall g :B . 
+(next(h) /= end()) ==> (h /= g) ==> (next(h) /= next(g))),
 
 // Start on the correct side of boundary line.
 // assertion includes all indices from first to last, inclusive
-[j() := first(); {?j()/=last(); j() := next(j())}*]
-((qx() - px(j())) * nx(j()) + (qy() - py(j())) * ny(j()) >= 0)
+[j() := first(); { j() := next(j())}*]
+((j() /= end()) ==> ((qx() - px(j())) * nx(j()) + (qy() - py(j())) * ny(j()) >= 0))
 
 |-
 
 [{
   fxp := *;
   fyp := *;
-
+  g := 1;
   i() := first();
 
-  {  ?(i /= next(last())); 
+  {  ?(i /= end()); 
      xtr(i) := *; u(i) := 1;
      d0(i) := (qx() - px(i)) * nx(i) + (qy() - py(i)) * ny(i);
 
@@ -108,37 +112,39 @@ first() /= next(last()), // ensure that this is not a circular structure, this w
      fn(i) := fx() * nx(i) + fy() * ny(i);
 
      // force feedback
-     ((?(d0(i) >= dd());
-               u(i) := 1) ++ // none
+     ((?(d0(i) >= dd()  & (3 >= 3));
+               u(i) := *; (?u(i) * 1 = 1) ) ++ // none
       (?((0 <= d0(i)) & (d0(i) <= dd())); // maybe slow depending on direction
                ((? fnp(i) >= 0 & fn(i) >= 0);
-                          u(i) := 1)++
+                          u(i) := *; (?u(i) * 1 = 1) )++
                ((? fnp(i) >  0 & fn(i) <= 0 & (xtr(i) * fnp(i) = -1*fn(i)) & (xtr <= (1/2) * e));
-                          u(i) := 1)++
+                          u(i) := *; (?u(i) * 1 = 1) )++
                ((? fnp(i) >  0 & fn(i) <= 0 & (xtr(i) * fnp(i) = -1*fn(i)) & (xtr >= (1/2) * e()));
                           u(i) := *; (?u(i) * dd() = d0(i)) )++
-               ((? fnp(i)  = 0 & fn(i) <= 0 );                      
+               ((? fnp(i)  = 0 & fn(i) <= 0 );
                           u(i) := *; (?u(i) * dd() = d0(i)) )++
                ((? fnp(i) <  0 & fn(i) >= 0 & (xtr(i) * fnp(i) = -1*fn(i)) & (xtr <= (1/2) * e()));  
                           u(i) := *; (?u(i) * dd() = d0(i)) )++
                ((? fnp(i) <  0 & fn(i) >= 0 & (xtr(i) * fnp(i) = -1*fn(i)) & (xtr >= (1/2) * e()));  
-                          u(i) := 1)++
-               ((? fnp(i)  = 0 & fn(i) >= 0 );                      
-                          u(i) := 1)++
+                          u(i) := *; (?u(i) * 1 = 1) )++
+               ((? fnp(i)  = 0 & fn(i) >= 0 );
+                          u(i) := *; (?u(i) * 1 = 1) )++
                ((? fnp(i) <= 0 & fn(i) <= 0);
                           u(i) := *; (? u(i) * dd() = d0(i)) )) ++
-      (?((d0(i) <= 0));
-  	        u(i) := 0)); // stuck
+      (?((d0(i) <= 0) & (3 >= 3));
+  	        u(i) := *; (?u(i) * 1 = 0) )); // stuck
 
       dist(i) := (d0(i) + K() * u(i) * (fn(i) * e() + fnp(i) * e()^2 * (1/2)));
       disc(i) := (( K() * u(i) * fn(i))^2 - 2 * K() * u(i) * fnp(i) * d0(i));
 
       ((? (fnp(i) <= 0 & dist(i) >= 0);
+               tmp := *; (? tmp() * K() = 1);
                gt := u(i)) ++
-      (?(fnp(i) <= 0 & dist(i) <= 0);
+       (?(fnp(i) <= 0 & dist(i) <= 0);
                tmp := *; (? tmp() * K() * (fn(i)*e() + (1/2) * fnp(i)* (e()^2)) = 1);
                gt := (-1) * d0(i) * tmp()) ++ 
       ((? fnp(i) >= 0 & fn(i) <= 0 & disc(i) <= 0);
+               tmp := *; (? tmp() * K() = 1);
                gt := u(i)) ++
       ((? fnp(i) >= 0 & fn(i) <= 0 & disc(i) >= 0 & fn(i) + fnp(i) * e() >= 0);
                tmp := *; (? tmp() * K() * (fn(i)^2) = 1);
@@ -147,13 +153,15 @@ first() /= next(last()), // ensure that this is not a circular structure, this w
                tmp() := *; (? tmp() * K() * (fn(i)*e() + (1/2) * fnp(i)* (e()^2)) = 1);
                gt := (-1) * d0(i) * tmp()) ++
       ((? fnp(i) >= 0 & fn(i) <= 0 & disc(i) >= 0 & fn(i) + fnp(i) * e() <= 0 & dist(i) >= 0);
+               tmp := *; (? tmp() * K() = 1);
                gt := u(i)) ++
       ((? fnp(i) >= 0 & fn(i) >= 0);
-               gt := u(i)));
+               tmp := *; (? tmp() * K() = 1);
+               gt := u(i())));
       ((? gt >= g ; g := g) ++
        (? gt < g ; g := gt));
-      i := next(i)}*;
-  (? i=next(last()));
+      i() := next(i())}*;
+  (? i()=end());
   t() := 0;
   {  qx' = K() * fx() * g(), 
      qy' = K() * fy() * g(),
@@ -167,6 +175,6 @@ first() /= next(last()), // ensure that this is not a circular structure, this w
                forall s. fy(s) = fy() + fyp() * s,
                forall s. t(s) = t() + s)
 }*]
-[r() := first(); {?r()/=last(); r() := next(r())}*]
-((qx() - px(r())) * nx(r()) + (qy() - py(r())) * ny(r()) >= 0)
+[r() := first(); {r() := next(r())}*]
+((r() /= end()) ==> ((qx() - px(r())) * nx(r()) + (qy() - py(r())) * ny(r()) >= 0))
 

@@ -49,7 +49,8 @@ val main =
                     unifyT(parseFormula("ZZ = first()"),
                        Prover.substitute_Formula("FYP", Fn(fyp_string, Nil),
 	                  Prover.substitute_Formula("FXP", Fn(fxp_string, Nil),
-	                    Prover.extract(Var("W"), loopInvInner)(Fn(w_string, List(Var("z")))))),
+	                    Prover.extract(Var("W"), loopInvInner)
+			        (Fn(w_string, List(Var("z")))))),
 	               (x => tryruleT(loopInduction(x)))))))<(
 			      composelistT(easiestT,
 			         instantiatebyT(St("B"))(List (("z", List("z")))),
