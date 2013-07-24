@@ -1,22 +1,25 @@
+ === Usage
+-scala >=2.9 required (use of sys.process introduced in 2.9)
+-export SPACEEX=/path/to/spaceex
+-see Makefile for compiling and running
+
  === Notes
-scala >=2.9 required -- use of sys.process introduced in 2.9
-export SPACEEX=/path/to/spaceex
-this is a proof of concept, many details are not well written
-//{{{ and //}}} are vim fold markers
+-this is a proof of concept, many details are not well written
+-//{{{ and //}}} are vim fold markers
 
- === limitations
+ === Limitations
 modeling:
--non linear -- spaceex only supports linear equations although spaceex has plans to support non-linear equations
--not distributed -- technically speaking no quantified assignements/differential_equations supported
--no way found to support invariants/guards beeing an hybrid system -- technically speaking no modalities in invariants/guards supported
--diamond hybrid program
--existencial quantifier
--[hp]([hp1]f1 \/ [hp2]f2)
+-only linear (SpaceEx only supports linear equations for now)
+-not distributed, i.e. quantified assignements/differential_equations not supported
+-no way found to support invariants/guards beeing hybrid systems, i.e. modalities in invariants/guards are not supported
+-diamond hybrid program not supported
+-existencial quantifier not supported
+-formula in the form [hp]([hp1]f1 \/ [hp2]f2) not supported
 proveness:
--spaceex's LGG scenario formally not sound
--spaceex only proves stable systems
+-SpaceEx's LGG scenario formally not sound
+-SpaceEx only proves stable systems
 platform:
--spaceex only call-able via command line only on linux otherwise virtual machine needed
+-SpaceEx call-able via command line only on Linux/macOS (for Windows a virtual machine is needed)
 
- === assumptions
-inv_hints and sols parameters of Evolve and Loop are ignore-able -- see types.scala
+ === Assumptions
+inv_hints and sols parameters of Evolve and Loop are ignore-able, see types.scala
